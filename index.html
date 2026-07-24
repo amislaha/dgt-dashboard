@@ -289,6 +289,19 @@
   .prov-tile .layer.shm { background: var(--gold); bottom: 0; }
   .prov-tile.selected { outline: 2px solid var(--gold); }
 
+  /* ---------- peta (map) view ---------- */
+  .peta-wrap { position: relative; border-radius: 8px; overflow: hidden; background: var(--panel-2); border: 1px solid var(--border-soft); }
+  .peta-svg { display: block; width: 100%; height: auto; cursor: default; }
+  .peta-pin { cursor: pointer; }
+  .peta-pin circle.core { transition: r 0.12s ease, stroke-width 0.12s ease; }
+  .peta-pin:hover circle.core, .peta-pin.selected circle.core { stroke: var(--gold); stroke-width: 2.4; }
+  .peta-caption { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.5rem; text-align: center; }
+  .peta-legend { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.7rem; }
+  .peta-legend .grp { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; font-size: 0.7rem; color: var(--text-dim); }
+  .peta-legend .sw { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .peta-legend .chip { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .peta-legend .size-dot { border-radius: 50%; background: var(--text-faint); display: inline-block; }
+
   /* ---------- chat / AI assistant ---------- */
   .chat-log { display: flex; flex-direction: column; gap: 0.55rem; max-height: 320px; overflow-y: auto; padding-right: 0.2rem; }
   .msg { max-width: 82%; padding: 0.55rem 0.75rem; border-radius: 10px; font-size: 0.8rem; line-height: 1.45; }
@@ -376,18 +389,19 @@
 
   var STAGES = ["Rintisan", "Tumbuh", "Berkembang", "Mandiri"];
   var stageClass = { "Rintisan": "rintisan", "Tumbuh": "tumbuh", "Berkembang": "berkembang", "Mandiri": "mandiri" };
+  var STAGE_COLOR = { "Rintisan": "var(--critical)", "Tumbuh": "var(--warn)", "Berkembang": "var(--series-2)", "Mandiri": "var(--good)" };
 
   var kawasan = [
-    { id: "k1", nama: "SKP Salor", provinsi: "Papua Selatan", tipe: "SKP", tahap: "Berkembang", populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: "med" },
-    { id: "k2", nama: "KPB Rambutan", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Mandiri", populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: "low" },
-    { id: "k3", nama: "SKP Towuti", provinsi: "Sulawesi Tengah", tipe: "SKP", tahap: "Tumbuh", populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: "high" },
-    { id: "k4", nama: "KPB Malinau", provinsi: "Kalimantan Utara", tipe: "KPB", tahap: "Berkembang", populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: "med" },
-    { id: "k5", nama: "SKP Tobadak", provinsi: "Sulawesi Barat", tipe: "SKP", tahap: "Rintisan", populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: "high" },
-    { id: "k6", nama: "KPB Bathin III", provinsi: "Jambi", tipe: "KPB", tahap: "Mandiri", populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: "low" },
-    { id: "k7", nama: "SKP Bina Buay", provinsi: "Bengkulu", tipe: "SKP", tahap: "Tumbuh", populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: "med" },
-    { id: "k8", nama: "KPB Pulau Rimau", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Berkembang", populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: "low" },
-    { id: "k9", nama: "SKP Kobisonta", provinsi: "Maluku Utara", tipe: "SKP", tahap: "Rintisan", populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: "high" },
-    { id: "k10", nama: "KPB Air Terang", provinsi: "Kalimantan Tengah", tipe: "KPB", tahap: "Tumbuh", populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: "med" }
+    { id: "k1", nama: "SKP Salor", provinsi: "Papua Selatan", tipe: "SKP", tahap: "Berkembang", populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: "med", mapX: 840, mapY: 320 },
+    { id: "k2", nama: "KPB Rambutan", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Mandiri", populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: "low", mapX: 212, mapY: 231 },
+    { id: "k3", nama: "SKP Towuti", provinsi: "Sulawesi Tengah", tipe: "SKP", tahap: "Tumbuh", populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: "high", mapX: 498, mapY: 199 },
+    { id: "k4", nama: "KPB Malinau", provinsi: "Kalimantan Utara", tipe: "KPB", tahap: "Berkembang", populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: "med", mapX: 423, mapY: 102 },
+    { id: "k5", nama: "SKP Tobadak", provinsi: "Sulawesi Barat", tipe: "SKP", tahap: "Rintisan", populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: "high", mapX: 460, mapY: 225 },
+    { id: "k6", nama: "KPB Bathin III", provinsi: "Jambi", tipe: "KPB", tahap: "Mandiri", populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: "low", mapX: 181, mapY: 202 },
+    { id: "k7", nama: "SKP Bina Buay", provinsi: "Bengkulu", tipe: "SKP", tahap: "Tumbuh", populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: "med", mapX: 169, mapY: 248 },
+    { id: "k8", nama: "KPB Pulau Rimau", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Berkembang", populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: "low", mapX: 235, mapY: 210 },
+    { id: "k9", nama: "SKP Kobisonta", provinsi: "Maluku Utara", tipe: "SKP", tahap: "Rintisan", populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: "high", mapX: 618, mapY: 136 },
+    { id: "k10", nama: "KPB Air Terang", provinsi: "Kalimantan Tengah", tipe: "KPB", tahap: "Tumbuh", populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: "med", mapX: 369, mapY: 199 }
   ];
 
   var provinces = [];
@@ -586,6 +600,29 @@
     return svg;
   }
 
+  /* smooth closed curve through a small set of anchor points (Catmull-Rom -> cubic Bezier) */
+  function smoothClosedPath(points) {
+    var n = points.length, d = "";
+    for (var i = 0; i < n; i++) {
+      var p0 = points[(i - 1 + n) % n], p1 = points[i], p2 = points[(i + 1) % n], p3 = points[(i + 2) % n];
+      if (i === 0) d += "M " + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + " ";
+      var c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+      var c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+      d += "C " + c1x.toFixed(1) + " " + c1y.toFixed(1) + ", " + c2x.toFixed(1) + " " + c2y.toFixed(1) + ", " + p2[0].toFixed(1) + " " + p2[1].toFixed(1) + " ";
+    }
+    return d + "Z";
+  }
+
+  /* schematic island silhouettes, positioned by rough longitude/latitude — illustrative, not survey-accurate */
+  var ISLANDS = [
+    { name: "", muted: true, points: [[150,300],[250,285],[350,295],[420,305],[400,325],[300,330],[200,325],[150,315]] },
+    { name: "SUMATERA", labelX: 105, labelY: 60, points: [[150,25],[235,85],[268,180],[248,275],[160,345],[95,305],[65,205],[85,95]] },
+    { name: "KALIMANTAN", labelX: 415, labelY: 45, points: [[340,80],[430,50],[500,90],[520,170],[480,250],[400,270],[330,230],[310,150]] },
+    { name: "SULAWESI", labelX: 505, labelY: 300, points: [[460,150],[500,110],[560,80],[600,110],[575,155],[590,220],[545,275],[480,270],[445,215],[440,170]] },
+    { name: "MALUKU", labelX: 635, labelY: 70, points: [[590,100],[630,90],[655,120],[645,160],[610,170],[585,140]] },
+    { name: "PAPUA", labelX: 775, labelY: 45, points: [[700,70],[800,60],[870,110],[880,220],[850,330],[780,390],[720,370],[680,280],[670,180],[680,110]] }
+  ];
+
   /* ============ app state / router ============ */
 
   var ICON_PATHS = {
@@ -622,7 +659,8 @@
     sortDir: -1,
     showHPL: true,
     showSHM: true,
-    selectedProv: null
+    selectedProv: null,
+    geoView: "peta"
   };
 
   var railItemsEl = document.getElementById("railItems");
@@ -762,37 +800,134 @@
   function renderGeospasial() {
     var wrap = h(
       pageHead("Geospasial, HPL, SHM & Legalitas Lahan", "Tumpang susun peta digital Hak Pengelolaan Lahan (HPL) dan Sertifikat Hak Milik (SHM) transmigran untuk mendukung Trans Tuntas.",
-        '<button class="btn small" id="toggleHPL" aria-pressed="true">Layer HPL</button><button class="btn small" id="toggleSHM" aria-pressed="true">Layer SHM</button>') +
+        '<button class="btn small" id="viewPeta">Peta</button><button class="btn small" id="viewGrid">Grid Provinsi</button>') +
       '<div class="grid-2">' +
-        '<div class="panel"><div class="panel-header"><h2>Sebaran Provinsi</h2><span class="hint">klik provinsi untuk highlight kawasan</span></div>' +
-        '<div class="map-legend" style="margin-bottom:0.7rem">' +
-          '<span class="sw"><span class="chip" style="background:var(--series-2)"></span>Luas HPL</span>' +
-          '<span class="sw"><span class="chip" style="background:var(--gold)"></span>Luas SHM Terbit</span>' +
-        '</div>' +
-        '<div class="province-grid" id="provGrid"></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2 id="sebaranTitle">Peta Kawasan</h2><span class="hint" id="sebaranHint">klik titik untuk detail kawasan</span></div>' +
+        '<div id="sebaranBody"></div></div>' +
         '<div class="panel"><div class="panel-header"><h2>Titik Rawan Tumpang Tindih</h2></div><div id="conflictList"></div></div>' +
       '</div>' +
       '<div class="panel"><div class="panel-header"><h2>Rasio Legalitas Lahan per Kawasan (SHM / HPL)</h2><span class="hint">Trans Tuntas — semakin tinggi rasio, semakin tuntas legalitas</span></div>' +
         '<div id="legalBar"></div></div>'
     );
 
+    /* ---- grid-of-provinces view (original) ---- */
     function renderProvGrid() {
-      var grid = qs(wrap, "#provGrid");
-      grid.innerHTML = provinces.map(function (p) {
-        var hplPct = Math.min(100, (p.hpl / 15000) * 100);
-        var shmPct = Math.min(100, (p.shm / 15000) * 100);
-        return '<div class="prov-tile' + (state.selectedProv === p.nama ? " selected" : "") + '" data-p="' + p.nama + '">' +
-          '<div class="p-name">' + p.nama + '</div><div class="p-count">' + p.count + ' kawasan</div>' +
-          (state.showHPL ? '<div class="layer hpl" style="width:' + hplPct + '%"></div>' : "") +
-          (state.showSHM ? '<div class="layer shm" style="width:' + shmPct + '%"></div>' : "") +
-          '</div>';
-      }).join("");
-      qsa(grid, ".prov-tile").forEach(function (t) {
-        t.addEventListener("click", function () {
-          state.selectedProv = state.selectedProv === t.dataset.p ? null : t.dataset.p;
-          renderProvGrid(); renderConflict();
+      qs(wrap, "#sebaranTitle").textContent = "Sebaran Provinsi";
+      qs(wrap, "#sebaranHint").textContent = "klik provinsi untuk highlight kawasan";
+      var body = qs(wrap, "#sebaranBody");
+      body.innerHTML =
+        '<div class="toolbar" style="margin-bottom:0.7rem">' +
+          '<button class="btn small" id="toggleHPL" aria-pressed="true">Layer HPL</button>' +
+          '<button class="btn small" id="toggleSHM" aria-pressed="true">Layer SHM</button>' +
+        '</div>' +
+        '<div class="map-legend" style="margin-bottom:0.7rem">' +
+          '<span class="sw"><span class="chip" style="background:var(--series-2)"></span>Luas HPL</span>' +
+          '<span class="sw"><span class="chip" style="background:var(--gold)"></span>Luas SHM Terbit</span>' +
+        '</div>' +
+        '<div class="province-grid" id="provGrid"></div>';
+
+      function draw() {
+        var grid = qs(wrap, "#provGrid");
+        grid.innerHTML = provinces.map(function (p) {
+          var hplPct = Math.min(100, (p.hpl / 15000) * 100);
+          var shmPct = Math.min(100, (p.shm / 15000) * 100);
+          return '<div class="prov-tile' + (state.selectedProv === p.nama ? " selected" : "") + '" data-p="' + p.nama + '">' +
+            '<div class="p-name">' + p.nama + '</div><div class="p-count">' + p.count + ' kawasan</div>' +
+            (state.showHPL ? '<div class="layer hpl" style="width:' + hplPct + '%"></div>' : "") +
+            (state.showSHM ? '<div class="layer shm" style="width:' + shmPct + '%"></div>' : "") +
+            '</div>';
+        }).join("");
+        qsa(grid, ".prov-tile").forEach(function (t) {
+          t.addEventListener("click", function () {
+            state.selectedProv = state.selectedProv === t.dataset.p ? null : t.dataset.p;
+            draw(); renderConflict();
+          });
+        });
+      }
+      qs(wrap, "#toggleHPL").addEventListener("click", function (e) {
+        state.showHPL = !state.showHPL; e.target.setAttribute("aria-pressed", state.showHPL); draw();
+      });
+      qs(wrap, "#toggleSHM").addEventListener("click", function (e) {
+        state.showSHM = !state.showSHM; e.target.setAttribute("aria-pressed", state.showSHM); draw();
+      });
+      draw();
+    }
+
+    /* ---- schematic map view (new) ---- */
+    function renderPeta() {
+      qs(wrap, "#sebaranTitle").textContent = "Peta Kawasan";
+      qs(wrap, "#sebaranHint").textContent = "klik titik untuk detail kawasan";
+      var body = qs(wrap, "#sebaranBody");
+      var maxPop = Math.max.apply(null, kawasan.map(function (k) { return k.populasi; }));
+
+      body.innerHTML = '<div class="peta-wrap"><svg class="peta-svg" viewBox="0 0 900 420" role="img" aria-label="Peta sebaran kawasan transmigrasi"></svg></div>' +
+        '<div class="peta-legend">' +
+          '<span class="grp">' + STAGES.map(function (s) {
+            return '<span class="sw"><span class="chip" style="background:' + STAGE_COLOR[s] + '"></span>' + s + '</span>';
+          }).join("") + '</span>' +
+          '<span class="grp">Populasi:' +
+            '<span class="sw"><span class="size-dot" style="width:7px;height:7px"></span>kecil</span>' +
+            '<span class="sw"><span class="size-dot" style="width:11px;height:11px"></span>sedang</span>' +
+            '<span class="sw"><span class="size-dot" style="width:15px;height:15px"></span>besar</span>' +
+          '</span>' +
+        '</div>' +
+        '<p class="peta-caption">Peta skematik — posisi relatif per provinsi, bukan peta geospasial presisi.</p>' +
+        '<div class="drawer" id="petaInfo" style="margin-top:0.7rem"></div>';
+
+      var svg = qs(wrap, ".peta-svg");
+
+      // faint graticule
+      for (var gx = 0; gx <= 900; gx += 90) el("line", { x1: gx, y1: 0, x2: gx, y2: 420, stroke: "var(--border-soft)", "stroke-width": 1 }, svg);
+      for (var gy = 0; gy <= 420; gy += 70) el("line", { x1: 0, y1: gy, x2: 900, y2: gy, stroke: "var(--border-soft)", "stroke-width": 1 }, svg);
+
+      // islands
+      ISLANDS.forEach(function (isl) {
+        var path = el("path", {
+          d: smoothClosedPath(isl.points),
+          fill: "var(--panel-3)", stroke: "var(--border)", "stroke-width": 1,
+          opacity: isl.muted ? 0.35 : 0.85
+        }, svg);
+        if (isl.name) {
+          el("text", {
+            x: isl.labelX, y: isl.labelY, fill: "var(--text-faint)", "font-size": "10",
+            "letter-spacing": "1.5", "font-weight": "600"
+          }, svg).textContent = isl.name;
+        }
+      });
+
+      // pins
+      kawasan.forEach(function (k) {
+        var r = 4 + (k.populasi / maxPop) * 10;
+        var g = el("g", { class: "peta-pin" + (state.selectedKawasan === k.id ? " selected" : ""), "data-id": k.id }, svg);
+        el("circle", { class: "core", cx: k.mapX, cy: k.mapY, r: r, fill: STAGE_COLOR[k.tahap], stroke: "var(--bg)", "stroke-width": 1.4, opacity: 0.92 }, g);
+        el("title", {}, g).textContent = k.nama + " · " + k.provinsi + " · " + k.populasi.toLocaleString("id-ID") + " jiwa";
+      });
+
+      function renderInfo() {
+        var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
+        var infoEl = qs(wrap, "#petaInfo");
+        if (!k) { infoEl.innerHTML = '<p class="empty">Klik titik pada peta untuk melihat detail kawasan.</p>'; return; }
+        infoEl.innerHTML = '<h3>' + k.nama + '</h3>' +
+          '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
+          '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
+          '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>' +
+          '<div class="row"><span>Indeks 5T</span><span>' + k.indeks5t + ' / 100</span></div>' +
+          '<div class="row"><span>HPL vs SHM</span><span>' + k.hplHa.toLocaleString("id-ID") + ' Ha / ' + k.shmHa.toLocaleString("id-ID") + ' Ha</span></div>';
+      }
+
+      qsa(svg, ".peta-pin").forEach(function (pin) {
+        pin.addEventListener("click", function () {
+          var id = pin.getAttribute("data-id");
+          var k = kawasan.find(function (x) { return x.id === id; });
+          state.selectedKawasan = id;
+          state.selectedProv = k.provinsi;
+          qsa(svg, ".peta-pin").forEach(function (p2) { p2.classList.toggle("selected", p2 === pin); });
+          renderInfo();
+          renderConflict();
         });
       });
+
+      renderInfo();
     }
 
     function renderConflict() {
@@ -808,17 +943,19 @@
       }).join("") || '<p class="empty" style="color:var(--text-faint)">Tidak ada data untuk filter ini.</p>';
     }
 
-    qs(wrap, "#toggleHPL").addEventListener("click", function (e) {
-      state.showHPL = !state.showHPL; e.target.setAttribute("aria-pressed", state.showHPL); renderProvGrid();
-    });
-    qs(wrap, "#toggleSHM").addEventListener("click", function (e) {
-      state.showSHM = !state.showSHM; e.target.setAttribute("aria-pressed", state.showSHM); renderProvGrid();
-    });
+    function renderSebaran() {
+      qs(wrap, "#viewPeta").setAttribute("aria-pressed", state.geoView === "peta");
+      qs(wrap, "#viewGrid").setAttribute("aria-pressed", state.geoView === "grid");
+      if (state.geoView === "peta") renderPeta(); else renderProvGrid();
+    }
+
+    qs(wrap, "#viewPeta").addEventListener("click", function () { state.geoView = "peta"; renderSebaran(); });
+    qs(wrap, "#viewGrid").addEventListener("click", function () { state.geoView = "grid"; renderSebaran(); });
 
     var legalData = kawasan.map(function (k) { return { label: k.nama.replace(/^SKP |^KPB /, ""), value: Math.round((k.shmHa / k.hplHa) * 100), color: "var(--gold)" }; });
     qs(wrap, "#legalBar").appendChild(barChart(legalData, { height: 190, suffix: "%", max: 100 }));
 
-    renderProvGrid();
+    renderSebaran();
     renderConflict();
     return wrap;
   }
