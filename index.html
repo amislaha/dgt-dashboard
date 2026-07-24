@@ -1,0 +1,1089 @@
+<title>SVKE — Executive Decision Support · Kawasan Transmigrasi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0a0f1c;
+    --bg-2: #0d1526;
+    --panel: #111a2e;
+    --panel-2: #16213a;
+    --panel-3: #1c2a47;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-soft: rgba(255, 255, 255, 0.05);
+    --text: #eef1f7;
+    --text-dim: #8fa0bd;
+    --text-faint: #5b6885;
+    --gold: #c9a13b;
+    --gold-soft: rgba(201, 161, 59, 0.14);
+    --gold-line: rgba(201, 161, 59, 0.4);
+    --series-2: #5b7fae;
+    --good: #3ecf8e;
+    --good-soft: rgba(62, 207, 142, 0.14);
+    --warn: #f0b429;
+    --warn-soft: rgba(240, 180, 41, 0.14);
+    --critical: #ef5a6f;
+    --critical-soft: rgba(239, 90, 111, 0.14);
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+
+  body {
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(201, 161, 59, 0.06), transparent 60%),
+      radial-gradient(1000px 700px at 100% 0%, rgba(91, 127, 174, 0.08), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .mono { font-family: "Cascadia Code", "Consolas", ui-monospace, SFMono-Regular, monospace; font-variant-numeric: tabular-nums; }
+
+  a { color: inherit; }
+  button { font-family: inherit; }
+
+  ::selection { background: var(--gold-soft); }
+
+  :focus-visible { outline: 2px dashed var(--gold); outline-offset: 2px; }
+
+  /* ---------- topbar ---------- */
+  .topbar {
+    height: 56px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1.1rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .brand { display: flex; align-items: center; gap: 0.65rem; min-width: 0; }
+
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 7px;
+    background: linear-gradient(155deg, var(--gold), #8a6d21);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.72rem; color: #1a1305;
+    flex: 0 0 auto;
+  }
+
+  .brand-text { line-height: 1.15; min-width: 0; }
+  .brand-text .name {
+    font-weight: 700; font-size: 0.86rem; letter-spacing: 0.06em;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .brand-text .sub {
+    font-size: 0.72rem; color: var(--text-dim); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .topbar-right {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 1.1rem;
+    color: var(--text-dim);
+  }
+
+  .live-pill {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--good);
+    background: var(--good-soft);
+    border: 1px solid rgba(62,207,142,0.3);
+    padding: 0.3rem 0.6rem; border-radius: 999px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--good);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(62,207,142,0.5); }
+    50% { opacity: 0.55; box-shadow: 0 0 0 4px rgba(62,207,142,0); }
+  }
+
+  .clock { font-size: 0.78rem; }
+
+  .data-note {
+    font-size: 0.68rem; color: var(--text-faint);
+    border: 1px solid var(--border); padding: 0.25rem 0.55rem; border-radius: 6px;
+  }
+
+  /* ---------- shell ---------- */
+  .shell { display: flex; flex: 1 1 auto; min-height: 0; }
+
+  .rail {
+    width: 232px; flex: 0 0 auto;
+    border-right: 1px solid var(--border);
+    padding: 0.9rem 0.6rem;
+    overflow-y: auto;
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+  }
+
+  .rail-group-label {
+    font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-faint); padding: 0.4rem 0.6rem 0.5rem;
+  }
+
+  .rail-item {
+    display: flex; align-items: center; gap: 0.65rem;
+    width: 100%; text-align: left;
+    background: transparent; border: 1px solid transparent; border-radius: 8px;
+    color: var(--text-dim); padding: 0.55rem 0.6rem; margin-bottom: 0.15rem;
+    cursor: pointer; font-size: 0.82rem;
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  }
+
+  .rail-item:hover { background: var(--panel-2); color: var(--text); }
+
+  .rail-item.active {
+    background: var(--gold-soft);
+    border-color: var(--gold-line);
+    color: var(--text);
+  }
+
+  .rail-icon {
+    width: 18px; height: 18px; flex: 0 0 auto;
+    color: var(--text-faint);
+  }
+  .rail-icon svg { display: block; width: 100%; height: 100%; }
+  .rail-item.active .rail-icon { color: var(--gold); }
+
+  .rail-item .rail-label { line-height: 1.25; }
+  .rail-item .rail-sub { display: block; font-size: 0.68rem; color: var(--text-faint); }
+
+  .main {
+    flex: 1 1 auto; min-width: 0; overflow-y: auto;
+    padding: 1.3rem 1.5rem 3rem;
+  }
+
+  .page-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; margin-bottom: 1.1rem; flex-wrap: wrap;
+  }
+
+  .page-head h1 {
+    margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+  .page-head .desc { margin: 0.2rem 0 0; color: var(--text-dim); font-size: 0.82rem; max-width: 62ch; }
+
+  .toolbar { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+  select, .btn {
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 0.42rem 0.7rem; font-size: 0.78rem; cursor: pointer;
+  }
+  select:hover, .btn:hover { border-color: var(--gold-line); }
+  .btn.primary { background: var(--gold-soft); border-color: var(--gold-line); color: var(--gold); }
+  .btn.small { padding: 0.3rem 0.55rem; font-size: 0.7rem; }
+  .btn[aria-pressed="true"] { background: var(--gold-soft); border-color: var(--gold-line); color: var(--gold); }
+
+  /* ---------- kpi grid ---------- */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.7rem; margin-bottom: 1.1rem;
+  }
+
+  .kpi-tile {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 0.85rem 0.95rem;
+  }
+  .kpi-tile .k-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  .kpi-tile .k-value { font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem; }
+  .kpi-tile .k-delta { font-size: 0.72rem; margin-top: 0.2rem; }
+  .k-delta.up { color: var(--good); }
+  .k-delta.down { color: var(--critical); }
+  .k-delta.flat { color: var(--text-faint); }
+
+  /* ---------- panel/grid layout ---------- */
+  .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 0.9rem; align-items: start; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; align-items: start; }
+  @media (max-width: 980px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1rem 1.05rem; margin-bottom: 0.9rem;
+  }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.75rem; gap: 0.6rem; flex-wrap: wrap;
+  }
+  .panel-header h2 { margin: 0; font-size: 0.92rem; font-weight: 700; }
+  .panel-header .hint { font-size: 0.7rem; color: var(--text-faint); }
+
+  /* ---------- badges ---------- */
+  .badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.68rem; padding: 0.16rem 0.5rem; border-radius: 999px;
+    text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge.mandiri { background: var(--good-soft); color: var(--good); }
+  .badge.berkembang { background: rgba(91,127,174,0.18); color: #8fb3e0; }
+  .badge.tumbuh { background: var(--warn-soft); color: var(--warn); }
+  .badge.rintisan { background: var(--critical-soft); color: var(--critical); }
+  .badge.dot::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  .sev { font-size: 0.66rem; padding: 0.14rem 0.45rem; border-radius: 5px; font-weight: 700; letter-spacing: 0.04em; }
+  .sev.high { background: var(--critical-soft); color: var(--critical); }
+  .sev.med { background: var(--warn-soft); color: var(--warn); }
+  .sev.low { background: rgba(91,127,174,0.18); color: #8fb3e0; }
+
+  /* ---------- table ---------- */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-faint); font-weight: 600; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border);
+    white-space: nowrap; cursor: pointer; user-select: none; }
+  th:hover { color: var(--text-dim); }
+  th .arrow { opacity: 0.5; font-size: 0.6rem; margin-left: 0.2rem; }
+  td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+  tbody tr { cursor: pointer; transition: background 0.1s ease; }
+  tbody tr:hover { background: var(--panel-2); }
+  tbody tr.selected { background: var(--gold-soft); }
+
+  .bar-cell { display: flex; align-items: center; gap: 0.5rem; }
+  .bar-track { width: 70px; height: 5px; border-radius: 3px; background: var(--panel-3); overflow: hidden; flex: 0 0 auto; }
+  .bar-fill { height: 100%; border-radius: 3px; background: var(--gold); }
+
+  /* ---------- drawer ---------- */
+  .drawer {
+    background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: var(--radius);
+    padding: 0.9rem 1rem; font-size: 0.8rem; color: var(--text-dim);
+  }
+  .drawer h3 { margin: 0 0 0.4rem; color: var(--text); font-size: 0.88rem; }
+  .drawer .row { display: flex; justify-content: space-between; padding: 0.28rem 0; border-bottom: 1px dashed var(--border-soft); }
+  .drawer .row span:last-child { color: var(--text); }
+  .drawer .empty { color: var(--text-faint); font-style: italic; }
+
+  /* ---------- map / geospatial ---------- */
+  .map-legend { display: flex; gap: 1rem; font-size: 0.72rem; color: var(--text-dim); flex-wrap: wrap; }
+  .map-legend .sw { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .map-legend .chip { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  .province-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 0.55rem;
+  }
+  .prov-tile {
+    position: relative; border-radius: 8px; padding: 0.55rem 0.6rem;
+    background: var(--panel-2); border: 1px solid var(--border);
+    cursor: pointer; overflow: hidden; min-height: 68px;
+  }
+  .prov-tile:hover { border-color: var(--gold-line); }
+  .prov-tile .p-name { font-size: 0.7rem; font-weight: 600; }
+  .prov-tile .p-count { font-size: 0.68rem; color: var(--text-dim); margin-top: 0.15rem; }
+  .prov-tile .layer { position: absolute; inset: auto 0 0 0; height: 5px; }
+  .prov-tile .layer.hpl { background: var(--series-2); bottom: 5px; }
+  .prov-tile .layer.shm { background: var(--gold); bottom: 0; }
+  .prov-tile.selected { outline: 2px solid var(--gold); }
+
+  /* ---------- chat / AI assistant ---------- */
+  .chat-log { display: flex; flex-direction: column; gap: 0.55rem; max-height: 320px; overflow-y: auto; padding-right: 0.2rem; }
+  .msg { max-width: 82%; padding: 0.55rem 0.75rem; border-radius: 10px; font-size: 0.8rem; line-height: 1.45; }
+  .msg.user { align-self: flex-end; background: var(--gold-soft); color: var(--text); border: 1px solid var(--gold-line); }
+  .msg.ai { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--border); color: var(--text-dim); }
+  .msg.ai b { color: var(--text); }
+  .chat-input-row { display: flex; gap: 0.5rem; margin-top: 0.7rem; }
+  .chat-input-row input {
+    flex: 1; background: var(--panel-2); border: 1px solid var(--border); border-radius: 7px;
+    padding: 0.5rem 0.7rem; color: var(--text); font-size: 0.8rem;
+  }
+  .chat-suggest { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.6rem; }
+  .chat-suggest button { font-size: 0.7rem; }
+
+  /* ---------- stepper (hulu-hilir) ---------- */
+  .stepper { display: flex; align-items: stretch; gap: 0; }
+  .step { flex: 1; text-align: center; padding: 0.7rem 0.4rem; position: relative; }
+  .step .s-icon {
+    width: 34px; height: 34px; border-radius: 50%; margin: 0 auto 0.4rem;
+    background: var(--panel-3); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;
+    color: var(--gold);
+  }
+  .step .s-label { font-size: 0.72rem; color: var(--text-dim); }
+  .step:not(:last-child)::after {
+    content: ""; position: absolute; top: 17px; left: 50%; width: 100%; height: 1px;
+    background: var(--border); z-index: -1;
+  }
+
+  /* ---------- EWS ---------- */
+  .ews-item {
+    display: flex; gap: 0.65rem; align-items: flex-start;
+    padding: 0.6rem 0; border-bottom: 1px solid var(--border-soft);
+  }
+  .ews-item:last-child { border-bottom: none; }
+  .ews-item.ack { opacity: 0.45; }
+  .ews-body { flex: 1; }
+  .ews-body .t { font-size: 0.8rem; font-weight: 600; }
+  .ews-body .d { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.1rem; }
+  .ews-meta { font-size: 0.66rem; color: var(--text-faint); margin-top: 0.25rem; }
+
+  .footnote { color: var(--text-faint); font-size: 0.7rem; margin-top: 1.5rem; padding-top: 0.9rem; border-top: 1px dashed var(--border); }
+
+  @media (max-width: 760px) {
+    .rail { position: fixed; left: -240px; top: 56px; bottom: 0; z-index: 30; transition: left 0.2s ease; background: var(--bg-2); }
+    .rail.open { left: 0; }
+    .main { padding: 1rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live-dot { animation: none; }
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="topbar">
+  <button class="btn small" id="railToggle" style="display:none" aria-label="Toggle menu">☰</button>
+  <div class="brand">
+    <div class="brand-mark">5T</div>
+    <div class="brand-text">
+      <div class="name">SVKE · Situation Room</div>
+      <div class="sub">Sistem Visualisasi Keputusan Eksekutif — Kawasan Transmigrasi</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="data-note">Data ilustratif — prototipe tampilan</span>
+    <span class="clock mono" id="clock">--:--:--</span>
+    <span class="live-pill"><span class="live-dot"></span>Live</span>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="rail" id="rail">
+    <div class="rail-group-label">Modul Eksekutif</div>
+    <div id="railItems"></div>
+  </nav>
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============ mock dataset (illustrative, not official statistics) ============ */
+
+  var STAGES = ["Rintisan", "Tumbuh", "Berkembang", "Mandiri"];
+  var stageClass = { "Rintisan": "rintisan", "Tumbuh": "tumbuh", "Berkembang": "berkembang", "Mandiri": "mandiri" };
+
+  var kawasan = [
+    { id: "k1", nama: "SKP Salor", provinsi: "Papua Selatan", tipe: "SKP", tahap: "Berkembang", populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: "med" },
+    { id: "k2", nama: "KPB Rambutan", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Mandiri", populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: "low" },
+    { id: "k3", nama: "SKP Towuti", provinsi: "Sulawesi Tengah", tipe: "SKP", tahap: "Tumbuh", populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: "high" },
+    { id: "k4", nama: "KPB Malinau", provinsi: "Kalimantan Utara", tipe: "KPB", tahap: "Berkembang", populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: "med" },
+    { id: "k5", nama: "SKP Tobadak", provinsi: "Sulawesi Barat", tipe: "SKP", tahap: "Rintisan", populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: "high" },
+    { id: "k6", nama: "KPB Bathin III", provinsi: "Jambi", tipe: "KPB", tahap: "Mandiri", populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: "low" },
+    { id: "k7", nama: "SKP Bina Buay", provinsi: "Bengkulu", tipe: "SKP", tahap: "Tumbuh", populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: "med" },
+    { id: "k8", nama: "KPB Pulau Rimau", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Berkembang", populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: "low" },
+    { id: "k9", nama: "SKP Kobisonta", provinsi: "Maluku Utara", tipe: "SKP", tahap: "Rintisan", populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: "high" },
+    { id: "k10", nama: "KPB Air Terang", provinsi: "Kalimantan Tengah", tipe: "KPB", tahap: "Tumbuh", populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: "med" }
+  ];
+
+  var provinces = [];
+  (function () {
+    var map = {};
+    kawasan.forEach(function (k) {
+      if (!map[k.provinsi]) { map[k.provinsi] = { nama: k.provinsi, count: 0, hpl: 0, shm: 0 }; }
+      map[k.provinsi].count++;
+      map[k.provinsi].hpl += k.hplHa;
+      map[k.provinsi].shm += k.shmHa;
+    });
+    for (var key in map) provinces.push(map[key]);
+  })();
+
+  var ewsAlerts = [
+    { id: "e1", sev: "high", title: "Penurunan produktivitas — SKP Kobisonta", detail: "Indeks 5T turun 9 poin dalam 2 kuartal terakhir; realisasi anggaran di bawah 20%.", when: "2 jam lalu", ack: false },
+    { id: "e2", sev: "high", title: "Potensi sengketa lahan — SKP Towuti", detail: "Tumpang tindih HPL–SHM terdeteksi di 3 blok, estimasi 1.100 Ha.", when: "5 jam lalu", ack: false },
+    { id: "e3", sev: "med", title: "Realisasi anggaran tertinggal — SKP Tobadak", detail: "Serapan anggaran 22%, di bawah target kuartalan 35%.", when: "1 hari lalu", ack: false },
+    { id: "e4", sev: "med", title: "Tren kerawanan sosial — SKP Bina Buay", detail: "Laporan gesekan sosial meningkat pada 2 dusun sekitar kawasan.", when: "1 hari lalu", ack: true },
+    { id: "e5", sev: "low", title: "Verifikasi data penempatan — KPB Air Terang", detail: "9 KK menunggu validasi data kependudukan lebih dari 30 hari.", when: "3 hari lalu", ack: true }
+  ];
+
+  var sCurve = {
+    labels: ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"],
+    rencana: [4,9,15,22,30,39,49,59,69,80,91,100],
+    realisasi: [3,7,12,18,24,31,40,49,57,66,74,null]
+  };
+
+  var komoditas = [
+    { nama: "Kelapa Sawit", nilai: 82 }, { nama: "Karet", nilai: 61 },
+    { nama: "Kakao", nilai: 47 }, { nama: "Padi", nilai: 74 },
+    { nama: "Perikanan Tambak", nilai: 39 }, { nama: "Rumput Laut", nilai: 28 }
+  ];
+
+  var infraKategori = [
+    { nama: "Jalan Poros & Jembatan", capaian: 71 },
+    { nama: "Sarana Ibadah", capaian: 88 },
+    { nama: "Sekolah & PAUD", capaian: 64 },
+    { nama: "Fasilitas Kesehatan", capaian: 57 },
+    { nama: "Air Bersih & Sanitasi", capaian: 49 }
+  ];
+
+  var klCollab = [
+    { kl: "Kementerian PU", program: "Jalan Poros Kawasan", kawasanCount: 6, status: "Berjalan" },
+    { kl: "Kementerian Kesehatan", program: "Puskesmas Pembantu", kawasanCount: 4, status: "Berjalan" },
+    { kl: "Kementerian Pendidikan", program: "Rehabilitasi Sekolah", kawasanCount: 5, status: "Perencanaan" },
+    { kl: "Kementerian Pertanian", program: "Optimalisasi Lahan Sawah", kawasanCount: 3, status: "Berjalan" },
+    { kl: "Kementerian ESDM", program: "Elektrifikasi Desa", kawasanCount: 7, status: "Selesai" }
+  ];
+
+  var asalDaerah = [
+    { asal: "Jawa Tengah", jml: 3120 }, { asal: "Jawa Timur", jml: 2870 },
+    { asal: "Jawa Barat", jml: 2140 }, { asal: "NTB", jml: 1380 }, { asal: "Bali", jml: 690 }
+  ];
+
+  var nationalKPI = {
+    totalKawasan: kawasan.length,
+    totalSKP: kawasan.filter(function (k) { return k.tipe === "SKP"; }).length,
+    totalKPB: kawasan.filter(function (k) { return k.tipe === "KPB"; }).length,
+    totalPopulasi: kawasan.reduce(function (s, k) { return s + k.populasi; }, 0),
+    avgIndeks: Math.round(kawasan.reduce(function (s, k) { return s + k.indeks5t; }, 0) / kawasan.length),
+    hplTotal: kawasan.reduce(function (s, k) { return s + k.hplHa; }, 0),
+    shmTotal: kawasan.reduce(function (s, k) { return s + k.shmHa; }, 0)
+  };
+
+  /* ============ svg chart helpers ============ */
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  function barChart(data, opts) {
+    opts = opts || {};
+    var w = opts.width || 480, h = opts.height || 200;
+    var pad = { t: 10, r: 10, b: 34, l: 10 };
+    var innerW = w - pad.l - pad.r, innerH = h - pad.t - pad.b;
+    var max = opts.max || Math.max.apply(null, data.map(function (d) { return d.value; })) * 1.15;
+    var bw = innerW / data.length;
+    var svg = el("svg", { viewBox: "0 0 " + w + " " + h, width: "100%", height: h, role: "img", "aria-label": opts.ariaLabel || "bar chart" });
+
+    data.forEach(function (d, i) {
+      var barH = (d.value / max) * innerH;
+      var x = pad.l + i * bw + bw * 0.18;
+      var y = pad.t + innerH - barH;
+      var bwActual = bw * 0.64;
+      var rect = el("rect", {
+        x: x, y: y, width: bwActual, height: Math.max(barH, 1.5), rx: 3,
+        fill: d.color || opts.color || "var(--gold)", opacity: 0.92
+      }, svg);
+      var title = el("title", {}, rect);
+      title.textContent = d.label + ": " + d.value + (opts.suffix || "");
+
+      el("text", {
+        x: x + bwActual / 2, y: h - pad.b + 15, "text-anchor": "middle",
+        fill: "var(--text-faint)", "font-size": "9"
+      }, svg).textContent = d.label.length > 10 ? d.label.slice(0, 9) + "…" : d.label;
+
+      el("text", {
+        x: x + bwActual / 2, y: y - 5, "text-anchor": "middle",
+        fill: "var(--text-dim)", "font-size": "9.5", "font-family": "monospace"
+      }, svg).textContent = d.value + (opts.suffix || "");
+    });
+    return svg;
+  }
+
+  function lineChartDual(labels, s1, s2, opts) {
+    opts = opts || {};
+    var w = opts.width || 560, h = opts.height || 210;
+    var pad = { t: 14, r: 14, b: 26, l: 14 };
+    var innerW = w - pad.l - pad.r, innerH = h - pad.t - pad.b;
+    var all = s1.concat(s2).filter(function (v) { return v !== null && v !== undefined; });
+    var max = Math.max.apply(null, all) * 1.1;
+    var stepX = innerW / (labels.length - 1);
+
+    function pathFor(series) {
+      var d = "";
+      series.forEach(function (v, i) {
+        if (v === null || v === undefined) return;
+        var x = pad.l + i * stepX;
+        var y = pad.t + innerH - (v / max) * innerH;
+        d += (d === "" ? "M " : " L ") + x.toFixed(1) + " " + y.toFixed(1);
+      });
+      return d;
+    }
+
+    var svg = el("svg", { viewBox: "0 0 " + w + " " + h, width: "100%", height: h, role: "img", "aria-label": "s-curve chart" });
+
+    // grid
+    for (var g = 0; g <= 4; g++) {
+      var gy = pad.t + (innerH / 4) * g;
+      el("line", { x1: pad.l, y1: gy, x2: w - pad.r, y2: gy, stroke: "var(--border-soft)", "stroke-width": 1 }, svg);
+    }
+
+    el("path", { d: pathFor(s1), fill: "none", stroke: "var(--series-2)", "stroke-width": 2, "stroke-dasharray": "4 3" }, svg);
+    el("path", { d: pathFor(s2), fill: "none", stroke: "var(--gold)", "stroke-width": 2.4 }, svg);
+
+    labels.forEach(function (lb, i) {
+      if (i % 2 !== 0 && labels.length > 8) return;
+      el("text", {
+        x: pad.l + i * stepX, y: h - 6, "text-anchor": "middle",
+        fill: "var(--text-faint)", "font-size": "8.5"
+      }, svg).textContent = lb;
+    });
+
+    s2.forEach(function (v, i) {
+      if (v === null || v === undefined) return;
+      var x = pad.l + i * stepX, y = pad.t + innerH - (v / max) * innerH;
+      el("circle", { cx: x, cy: y, r: 2.6, fill: "var(--gold)" }, svg);
+    });
+
+    return svg;
+  }
+
+  function donut(segments, opts) {
+    opts = opts || {};
+    var size = opts.size || 150, stroke = opts.stroke || 16;
+    var r = (size - stroke) / 2, cx = size / 2, cy = size / 2;
+    var total = segments.reduce(function (s, d) { return s + d.value; }, 0) || 1;
+    var svg = el("svg", { viewBox: "0 0 " + size + " " + size, width: size, height: size, role: "img", "aria-label": "donut chart" });
+    var circumf = 2 * Math.PI * r;
+    var offset = 0;
+    segments.forEach(function (seg) {
+      var frac = seg.value / total;
+      var len = frac * circumf;
+      var circle = el("circle", {
+        cx: cx, cy: cy, r: r, fill: "none", stroke: seg.color, "stroke-width": stroke,
+        "stroke-dasharray": len + " " + (circumf - len),
+        "stroke-dashoffset": (-offset).toFixed(2),
+        transform: "rotate(-90 " + cx + " " + cy + ")"
+      }, svg);
+      el("title", {}, circle).textContent = seg.label + ": " + seg.value;
+      offset += len;
+    });
+    if (opts.centerLabel) {
+      el("text", { x: cx, y: cy - 2, "text-anchor": "middle", fill: "var(--text)", "font-size": "18", "font-weight": "700" }, svg).textContent = opts.centerLabel;
+      el("text", { x: cx, y: cy + 14, "text-anchor": "middle", fill: "var(--text-faint)", "font-size": "8.5" }, svg).textContent = opts.centerSub || "";
+    }
+    return svg;
+  }
+
+  function gauge(value, max, opts) {
+    opts = opts || {};
+    var w = opts.width || 180, h = opts.height || 100;
+    var cx = w / 2, cy = h - 8, r = w / 2 - 10;
+    var frac = Math.max(0, Math.min(1, value / max));
+    var angle = Math.PI * frac;
+    var x2 = cx - r * Math.cos(angle), y2 = cy - r * Math.sin(angle);
+    var svg = el("svg", { viewBox: "0 0 " + w + " " + h, width: "100%", height: h });
+    el("path", { d: "M " + (cx - r) + " " + cy + " A " + r + " " + r + " 0 0 1 " + (cx + r) + " " + cy, fill: "none", stroke: "var(--panel-3)", "stroke-width": 10, "stroke-linecap": "round" }, svg);
+    el("path", { d: "M " + (cx - r) + " " + cy + " A " + r + " " + r + " 0 " + (frac > 0.5 ? 1 : 0) + " 1 " + x2 + " " + y2, fill: "none", stroke: opts.color || "var(--gold)", "stroke-width": 10, "stroke-linecap": "round" }, svg);
+    el("text", { x: cx, y: cy - 10, "text-anchor": "middle", fill: "var(--text)", "font-size": "20", "font-weight": "700" }, svg).textContent = value;
+    el("text", { x: cx, y: cy + 6, "text-anchor": "middle", fill: "var(--text-faint)", "font-size": "8.5" }, svg).textContent = opts.label || "";
+    return svg;
+  }
+
+  /* ============ app state / router ============ */
+
+  var ICON_PATHS = {
+    profil: '<path d="M12 2 L21 7 L12 12 L3 7 Z"/><path d="M3 12 L12 17 L21 12"/><path d="M3 17 L12 22 L21 17"/>',
+    geospasial: '<path d="M12 21s7-7.58 7-12a7 7 0 1 0-14 0c0 4.42 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>',
+    demografi: '<circle cx="8.5" cy="8" r="3"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9.3" r="2.3"/><path d="M15 14.2c2.6.3 4.5 2.5 4.5 5.3"/>',
+    infrastruktur: '<rect x="4" y="8" width="7" height="13"/><rect x="13" y="3" width="7" height="18"/><path d="M6.5 11h2M6.5 14h2M6.5 17h2M15.5 6h2M15.5 9h2M15.5 12h2M15.5 15h2"/>',
+    monitoring: '<path d="M3 20h18"/><path d="M4 16l5-6 4 3 6-8"/><path d="M15 5h5v5"/>',
+    ekonomi: '<ellipse cx="12" cy="6" rx="7" ry="2.4"/><path d="M5 6v5c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4V6"/><path d="M5 11v5c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4v-5"/>',
+    analitik: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.7" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+    intelijen: '<rect x="6" y="6" width="12" height="12" rx="2.2"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/><circle cx="9.5" cy="10.2" r="1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="10.2" r="1" fill="currentColor" stroke="none"/><path d="M9 14.3c1 .8 3 .8 4 0"/>'
+  };
+
+  function railIcon(id) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + ICON_PATHS[id] + '</svg>';
+  }
+
+  var MODULES = [
+    { id: "profil", label: "Data Induk & Profil Kawasan", sub: "5T · SKP / KPB" },
+    { id: "geospasial", label: "Geospasial & Legalitas Lahan", sub: "HPL · SHM · Trans Tuntas" },
+    { id: "demografi", label: "Demografi & Pembauran", sub: "Transmigran · Masyarakat Lokal" },
+    { id: "infrastruktur", label: "Infrastruktur & Kolaborasi K/L", sub: "Trans Gotong Royong" },
+    { id: "monitoring", label: "Monitoring Program & Anggaran", sub: "Timeline · Kurva S" },
+    { id: "ekonomi", label: "Ekonomi & Investasi Kawasan", sub: "Trans Karya Nusa" },
+    { id: "analitik", label: "Analitik, Skoring & EWS", sub: "Prioritas · Peringatan Dini" },
+    { id: "intelijen", label: "Executive Intelligence & AI", sub: "Statistik · AI Assistant" }
+  ];
+
+  var state = {
+    tab: "profil",
+    selectedKawasan: kawasan[0].id,
+    provFilter: "Semua",
+    sortKey: "indeks5t",
+    sortDir: -1,
+    showHPL: true,
+    showSHM: true,
+    selectedProv: null
+  };
+
+  var railItemsEl = document.getElementById("railItems");
+  MODULES.forEach(function (m) {
+    var b = document.createElement("button");
+    b.className = "rail-item" + (m.id === state.tab ? " active" : "");
+    b.dataset.tab = m.id;
+    b.innerHTML = '<span class="rail-icon">' + railIcon(m.id) + '</span><span class="rail-label">' + m.label + '<span class="rail-sub">' + m.sub + '</span></span>';
+    b.addEventListener("click", function () { setTab(m.id); });
+    railItemsEl.appendChild(b);
+  });
+
+  function setTab(id) {
+    state.tab = id;
+    Array.prototype.forEach.call(railItemsEl.children, function (c) {
+      c.classList.toggle("active", c.dataset.tab === id);
+    });
+    document.getElementById("rail").classList.remove("open");
+    render();
+  }
+
+  var mainEl = document.getElementById("main");
+
+  function h(html) { var d = document.createElement("div"); d.innerHTML = html; return d; }
+  function qs(root, sel) { return root.querySelector(sel); }
+  function qsa(root, sel) { return Array.prototype.slice.call(root.querySelectorAll(sel)); }
+
+  function pageHead(title, desc, toolbarHtml) {
+    return '<div class="page-head"><div><h1>' + title + '</h1><p class="desc">' + desc + '</p></div>' +
+      '<div class="toolbar">' + (toolbarHtml || "") + '</div></div>';
+  }
+
+  function kpiTile(label, value, delta, dir) {
+    return '<div class="kpi-tile"><div class="k-label">' + label + '</div><div class="k-value mono">' + value + '</div>' +
+      (delta ? '<div class="k-delta ' + dir + '">' + delta + '</div>' : "") + '</div>';
+  }
+
+  /* ---------- render: 01 Profil Kawasan ---------- */
+  function renderProfil() {
+    var wrap = h(
+      pageHead("Data Induk & Profil Kawasan Transmigrasi", "Repositori tunggal status perkembangan kawasan (SKP/KPB) berbasis indikator program unggulan 5T.",
+        '<select id="provFilter"><option>Semua Provinsi</option></select>') +
+      '<div class="kpi-grid">' +
+        kpiTile("Total Kawasan", nationalKPI.totalKawasan, "Seluruh Indonesia", "flat") +
+        kpiTile("SKP / KPB", nationalKPI.totalSKP + " / " + nationalKPI.totalKPB, "Satuan Kawasan · Kawasan Pembangunan", "flat") +
+        kpiTile("Populasi Transmigran", nationalKPI.totalPopulasi.toLocaleString("id-ID"), "▲ 3.2% dari kuartal lalu", "up") +
+        kpiTile("Rata-rata Indeks 5T", nationalKPI.avgIndeks, "▲ 4 poin", "up") +
+      '</div>' +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-header"><h2>Daftar Kawasan</h2><span class="hint">klik baris untuk detail</span></div>' +
+        '<div class="table-wrap"><table><thead><tr>' +
+          '<th data-k="nama">Kawasan<span class="arrow"></span></th>' +
+          '<th data-k="provinsi">Provinsi<span class="arrow"></span></th>' +
+          '<th data-k="tahap">Tahap<span class="arrow"></span></th>' +
+          '<th data-k="indeks5t">Indeks 5T<span class="arrow"></span></th>' +
+        '</tr></thead><tbody id="profilTbody"></tbody></table></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2>Detail Kawasan</h2></div><div class="drawer" id="profilDrawer"></div>' +
+        '<div class="panel-header" style="margin-top:1rem"><h2>Distribusi Tahap Kawasan</h2></div>' +
+        '<div id="stageDonut" style="display:flex;justify-content:center"></div>' +
+        '<div class="map-legend" style="justify-content:center;margin-top:0.5rem" id="stageLegend"></div>' +
+        '</div>' +
+      '</div>'
+    );
+
+    var provSel = qs(wrap, "#provFilter");
+    ["Semua Provinsi"].concat(provinces.map(function (p) { return p.nama; })).forEach(function (p, i) {
+      if (i === 0) return;
+      var o = document.createElement("option"); o.textContent = p; provSel.appendChild(o);
+    });
+    provSel.value = state.provFilter === "Semua" ? "Semua Provinsi" : state.provFilter;
+    provSel.addEventListener("change", function () {
+      state.provFilter = provSel.value === "Semua Provinsi" ? "Semua" : provSel.value;
+      renderProfilTable();
+    });
+
+    qsa(wrap, "th[data-k]").forEach(function (th) {
+      th.addEventListener("click", function () {
+        var k = th.dataset.k;
+        if (state.sortKey === k) state.sortDir *= -1; else { state.sortKey = k; state.sortDir = 1; }
+        renderProfilTable();
+      });
+    });
+
+    function renderProfilTable() {
+      var tbody = qs(wrap, "#profilTbody");
+      var rows = kawasan.filter(function (k) { return state.provFilter === "Semua" || k.provinsi === state.provFilter; });
+      rows.sort(function (a, b) {
+        var av = a[state.sortKey], bv = b[state.sortKey];
+        if (typeof av === "string") return av.localeCompare(bv) * state.sortDir;
+        return (av - bv) * state.sortDir;
+      });
+      tbody.innerHTML = rows.map(function (k) {
+        return '<tr data-id="' + k.id + '" class="' + (k.id === state.selectedKawasan ? "selected" : "") + '">' +
+          '<td>' + k.nama + '<div class="hint" style="color:var(--text-faint);font-size:0.66rem">' + k.tipe + '</div></td>' +
+          '<td>' + k.provinsi + '</td>' +
+          '<td><span class="badge ' + stageClass[k.tahap] + ' dot">' + k.tahap + '</span></td>' +
+          '<td><div class="bar-cell"><span class="mono">' + k.indeks5t + '</span><div class="bar-track"><div class="bar-fill" style="width:' + k.indeks5t + '%"></div></div></div></td>' +
+          '</tr>';
+      }).join("");
+      qsa(wrap, "tbody#profilTbody tr").forEach(function (tr) {
+        tr.addEventListener("click", function () { state.selectedKawasan = tr.dataset.id; renderProfilTable(); renderDrawer(); });
+      });
+    }
+
+    function renderDrawer() {
+      var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
+      var d = qs(wrap, "#profilDrawer");
+      if (!k) { d.innerHTML = '<p class="empty">Pilih kawasan pada tabel.</p>'; return; }
+      d.innerHTML = '<h3>' + k.nama + '</h3>' +
+        row("Provinsi", k.provinsi) + row("Tipe", k.tipe) +
+        row("Tahap", '<span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span>') +
+        row("Populasi", k.populasi.toLocaleString("id-ID") + " jiwa") +
+        row("Indeks 5T", k.indeks5t + " / 100") +
+        row("HPL", k.hplHa.toLocaleString("id-ID") + " Ha") +
+        row("SHM Terbit", k.shmHa.toLocaleString("id-ID") + " Ha") +
+        row("Realisasi Anggaran", k.anggaranPct + "%") +
+        row("Tingkat Risiko", '<span class="sev ' + k.risiko + '">' + ({ high: "Tinggi", med: "Sedang", low: "Rendah" })[k.risiko] + '</span>');
+    }
+    function row(label, val) { return '<div class="row"><span>' + label + '</span><span>' + val + '</span></div>'; }
+
+    var counts = {};
+    STAGES.forEach(function (s) { counts[s] = 0; });
+    kawasan.forEach(function (k) { counts[k.tahap]++; });
+    var colors = { "Rintisan": "var(--critical)", "Tumbuh": "var(--warn)", "Berkembang": "var(--series-2)", "Mandiri": "var(--good)" };
+    var segs = STAGES.map(function (s) { return { label: s, value: counts[s], color: colors[s] }; });
+    qs(wrap, "#stageDonut").appendChild(donut(segs, { centerLabel: kawasan.length, centerSub: "kawasan" }));
+    qs(wrap, "#stageLegend").innerHTML = STAGES.map(function (s) {
+      return '<span class="sw"><span class="chip" style="background:' + colors[s] + '"></span>' + s + ' (' + counts[s] + ')</span>';
+    }).join("");
+
+    renderProfilTable();
+    renderDrawer();
+    return wrap;
+  }
+
+  /* ---------- render: 02 Geospasial ---------- */
+  function renderGeospasial() {
+    var wrap = h(
+      pageHead("Geospasial, HPL, SHM & Legalitas Lahan", "Tumpang susun peta digital Hak Pengelolaan Lahan (HPL) dan Sertifikat Hak Milik (SHM) transmigran untuk mendukung Trans Tuntas.",
+        '<button class="btn small" id="toggleHPL" aria-pressed="true">Layer HPL</button><button class="btn small" id="toggleSHM" aria-pressed="true">Layer SHM</button>') +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-header"><h2>Sebaran Provinsi</h2><span class="hint">klik provinsi untuk highlight kawasan</span></div>' +
+        '<div class="map-legend" style="margin-bottom:0.7rem">' +
+          '<span class="sw"><span class="chip" style="background:var(--series-2)"></span>Luas HPL</span>' +
+          '<span class="sw"><span class="chip" style="background:var(--gold)"></span>Luas SHM Terbit</span>' +
+        '</div>' +
+        '<div class="province-grid" id="provGrid"></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2>Titik Rawan Tumpang Tindih</h2></div><div id="conflictList"></div></div>' +
+      '</div>' +
+      '<div class="panel"><div class="panel-header"><h2>Rasio Legalitas Lahan per Kawasan (SHM / HPL)</h2><span class="hint">Trans Tuntas — semakin tinggi rasio, semakin tuntas legalitas</span></div>' +
+        '<div id="legalBar"></div></div>'
+    );
+
+    function renderProvGrid() {
+      var grid = qs(wrap, "#provGrid");
+      grid.innerHTML = provinces.map(function (p) {
+        var hplPct = Math.min(100, (p.hpl / 15000) * 100);
+        var shmPct = Math.min(100, (p.shm / 15000) * 100);
+        return '<div class="prov-tile' + (state.selectedProv === p.nama ? " selected" : "") + '" data-p="' + p.nama + '">' +
+          '<div class="p-name">' + p.nama + '</div><div class="p-count">' + p.count + ' kawasan</div>' +
+          (state.showHPL ? '<div class="layer hpl" style="width:' + hplPct + '%"></div>' : "") +
+          (state.showSHM ? '<div class="layer shm" style="width:' + shmPct + '%"></div>' : "") +
+          '</div>';
+      }).join("");
+      qsa(grid, ".prov-tile").forEach(function (t) {
+        t.addEventListener("click", function () {
+          state.selectedProv = state.selectedProv === t.dataset.p ? null : t.dataset.p;
+          renderProvGrid(); renderConflict();
+        });
+      });
+    }
+
+    function renderConflict() {
+      var rows = kawasan.filter(function (k) { return !state.selectedProv || k.provinsi === state.selectedProv; })
+        .map(function (k) { return { k: k, gap: k.hplHa - k.shmHa }; })
+        .sort(function (a, b) { return b.gap - a.gap; }).slice(0, 5);
+      qs(wrap, "#conflictList").innerHTML = rows.map(function (r) {
+        var pct = Math.round((r.gap / r.k.hplHa) * 100);
+        return '<div class="ews-item"><div class="ews-body">' +
+          '<div class="t">' + r.k.nama + ' <span class="hint" style="color:var(--text-faint)">· ' + r.k.provinsi + '</span></div>' +
+          '<div class="d">Selisih HPL–SHM ~' + r.gap.toLocaleString("id-ID") + ' Ha (' + pct + '% belum tersertifikasi)</div>' +
+          '</div><span class="sev ' + (pct > 50 ? "high" : pct > 30 ? "med" : "low") + '">' + pct + '%</span></div>';
+      }).join("") || '<p class="empty" style="color:var(--text-faint)">Tidak ada data untuk filter ini.</p>';
+    }
+
+    qs(wrap, "#toggleHPL").addEventListener("click", function (e) {
+      state.showHPL = !state.showHPL; e.target.setAttribute("aria-pressed", state.showHPL); renderProvGrid();
+    });
+    qs(wrap, "#toggleSHM").addEventListener("click", function (e) {
+      state.showSHM = !state.showSHM; e.target.setAttribute("aria-pressed", state.showSHM); renderProvGrid();
+    });
+
+    var legalData = kawasan.map(function (k) { return { label: k.nama.replace(/^SKP |^KPB /, ""), value: Math.round((k.shmHa / k.hplHa) * 100), color: "var(--gold)" }; });
+    qs(wrap, "#legalBar").appendChild(barChart(legalData, { height: 190, suffix: "%", max: 100 }));
+
+    renderProvGrid();
+    renderConflict();
+    return wrap;
+  }
+
+  /* ---------- render: 03 Demografi ---------- */
+  function renderDemografi() {
+    var wrap = h(
+      pageHead("Transmigran, Masyarakat Lokal & Kependudukan", "Visualisasi persebaran demografi, asal daerah transmigran, dan tingkat pembauran dengan masyarakat lokal.") +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-header"><h2>Asal Daerah Transmigran (Top 5)</h2></div><div id="asalBar"></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2>Indeks Pembauran Sosial</h2><span class="hint">rata-rata nasional</span></div>' +
+        '<div style="display:flex;justify-content:center">' + '</div><div id="pembauranGauge" style="display:flex;justify-content:center"></div>' +
+        '<p class="desc" style="text-align:center;margin-top:0.3rem">Skala 0–100 · berbasis survei interaksi sosial &amp; partisipasi kegiatan bersama</p></div>' +
+      '</div>' +
+      '<div class="panel"><div class="panel-header"><h2>Populasi per Kawasan</h2><span class="hint">jumlah jiwa transmigran terdaftar</span></div><div id="popBar"></div></div>'
+    );
+
+    var asalData = asalDaerah.map(function (a) { return { label: a.asal, value: a.jml, color: "var(--series-2)" }; });
+    qs(wrap, "#asalBar").appendChild(barChart(asalData, { height: 190 }));
+
+    qs(wrap, "#pembauranGauge").appendChild(gauge(67, 100, { label: "/ 100", color: "var(--good)" }));
+
+    var popData = kawasan.map(function (k) { return { label: k.nama.replace(/^SKP |^KPB /, ""), value: k.populasi, color: "var(--gold)" }; });
+    qs(wrap, "#popBar").appendChild(barChart(popData, { height: 200, width: 900 }));
+
+    return wrap;
+  }
+
+  /* ---------- render: 04 Infrastruktur ---------- */
+  function renderInfrastruktur() {
+    var wrap = h(
+      pageHead("Infrastruktur, Sarana Prasarana & Kolaborasi K/L", "Inventarisasi aset fisik kawasan dan pemetaan intervensi program lintas Kementerian/Lembaga — Trans Gotong Royong.") +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-header"><h2>Capaian Infrastruktur per Kategori</h2></div>' +
+        '<div id="infraList"></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2>Kolaborasi Kementerian/Lembaga</h2></div>' +
+        '<div class="table-wrap"><table><thead><tr><th>K/L</th><th>Program</th><th>Kawasan</th><th>Status</th></tr></thead><tbody>' +
+        klCollab.map(function (c) {
+          var statusClass = c.status === "Selesai" ? "mandiri" : c.status === "Berjalan" ? "berkembang" : "tumbuh";
+          return '<tr><td>' + c.kl + '</td><td>' + c.program + '</td><td class="mono">' + c.kawasanCount + '</td><td><span class="badge ' + statusClass + '">' + c.status + '</span></td></tr>';
+        }).join("") + '</tbody></table></div></div>' +
+      '</div>'
+    );
+
+    qs(wrap, "#infraList").innerHTML = infraKategori.map(function (i) {
+      return '<div style="margin-bottom:0.7rem"><div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:0.3rem">' +
+        '<span>' + i.nama + '</span><span class="mono">' + i.capaian + '%</span></div>' +
+        '<div class="bar-track" style="width:100%;height:7px"><div class="bar-fill" style="width:' + i.capaian + '%"></div></div></div>';
+    }).join("");
+
+    return wrap;
+  }
+
+  /* ---------- render: 05 Monitoring ---------- */
+  function renderMonitoring() {
+    var wrap = h(
+      pageHead("Monitoring 5T: Program, Kinerja, Anggaran & Tindak Lanjut", "Pelacakan linimasa program (Kurva S) dan realisasi penyerapan anggaran program unggulan 5T secara real-time.") +
+      '<div class="kpi-grid">' +
+        kpiTile("Realisasi Fisik", "74%", "vs. rencana 80%", "down") +
+        kpiTile("Realisasi Anggaran", "68%", "▲ 5% bulan ini", "up") +
+        kpiTile("Program Berjalan", "18", "dari 24 program aktif", "flat") +
+        kpiTile("Tenggat Terlewat", "3", "perlu tindak lanjut", "down") +
+      '</div>' +
+      '<div class="panel"><div class="panel-header"><h2>Kurva S — Rencana vs. Realisasi</h2>' +
+        '<span class="map-legend"><span class="sw"><span class="chip" style="background:var(--series-2)"></span>Rencana</span><span class="sw"><span class="chip" style="background:var(--gold)"></span>Realisasi</span></span></div>' +
+        '<div id="scurve"></div></div>' +
+      '<div class="panel"><div class="panel-header"><h2>Realisasi Anggaran per Kawasan</h2></div><div id="anggaranBar"></div></div>'
+    );
+
+    qs(wrap, "#scurve").appendChild(lineChartDual(sCurve.labels, sCurve.rencana, sCurve.realisasi, { width: 900, height: 220 }));
+
+    var angData = kawasan.map(function (k) {
+      return { label: k.nama.replace(/^SKP |^KPB /, ""), value: k.anggaranPct, suffix: "%", color: k.anggaranPct < 35 ? "var(--critical)" : k.anggaranPct < 60 ? "var(--warn)" : "var(--good)" };
+    });
+    qs(wrap, "#anggaranBar").appendChild(barChart(angData, { height: 200, width: 900, suffix: "%", max: 100 }));
+
+    return wrap;
+  }
+
+  /* ---------- render: 06 Ekonomi ---------- */
+  function renderEkonomi() {
+    var wrap = h(
+      pageHead("Potensi Ekonomi, Komoditas, Hilirisasi & Investasi Kawasan", "Dasbor komoditas unggulan, rantai pasok hulu-hilir, dan peta peluang investasi — Trans Karya Nusa.") +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-header"><h2>Indeks Komoditas Unggulan</h2></div><div id="komoditasBar"></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2>Rantai Hilirisasi — Kelapa Sawit</h2></div>' +
+        '<div class="stepper">' +
+          step("1", "Kebun Rakyat") + step("2", "Pengumpul") + step("3", "Pabrik CPO") + step("4", "Refinery") + step("5", "Pasar Ekspor") +
+        '</div></div>' +
+      '</div>' +
+      '<div class="panel"><div class="panel-header"><h2>Peluang Investasi Terbuka</h2><span class="hint">siap diakses calon mitra</span></div>' +
+        '<div class="table-wrap"><table><thead><tr><th>Kawasan</th><th>Sektor</th><th>Estimasi Nilai</th><th>Status</th></tr></thead><tbody>' +
+        '<tr><td>KPB Rambutan</td><td>Pengolahan Karet</td><td class="mono">Rp 42 M</td><td><span class="badge mandiri">Siap Tawar</span></td></tr>' +
+        '<tr><td>SKP Salor</td><td>Pergudangan Pangan</td><td class="mono">Rp 18 M</td><td><span class="badge berkembang">Studi Kelayakan</span></td></tr>' +
+        '<tr><td>KPB Bathin III</td><td>Agroindustri Kelapa Sawit</td><td class="mono">Rp 65 M</td><td><span class="badge mandiri">Siap Tawar</span></td></tr>' +
+        '<tr><td>KPB Air Terang</td><td>Perikanan Tambak</td><td class="mono">Rp 9 M</td><td><span class="badge tumbuh">Perencanaan</span></td></tr>' +
+        '</tbody></table></div></div>'
+    );
+    function step(n, label) { return '<div class="step"><div class="s-icon">' + n + '</div><div class="s-label">' + label + '</div></div>'; }
+
+    var komData = komoditas.map(function (k) { return { label: k.nama, value: k.nilai, color: "var(--gold)" }; });
+    qs(wrap, "#komoditasBar").appendChild(barChart(komData, { height: 200 }));
+
+    return wrap;
+  }
+
+  /* ---------- render: 07 Analitik / EWS ---------- */
+  function renderAnalitik() {
+    var wrap = h(
+      pageHead("Analitik Kawasan, Skoring Prioritas 5T & Early Warning", "Pemodelan statistik untuk skoring prioritas intervensi serta notifikasi otomatis Early Warning System (EWS).") +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-header"><h2>Skoring Prioritas Intervensi</h2><span class="hint">semakin rendah indeks 5T, semakin tinggi prioritas</span></div>' +
+        '<div class="table-wrap"><table><thead><tr><th>Kawasan</th><th>Indeks 5T</th><th>Risiko</th><th>Prioritas</th></tr></thead><tbody id="priorityTbody"></tbody></table></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2>Early Warning System</h2><span class="hint" id="ewsCount"></span></div><div id="ewsList"></div></div>' +
+      '</div>'
+    );
+
+    var ranked = kawasan.slice().sort(function (a, b) { return a.indeks5t - b.indeks5t; });
+    qs(wrap, "#priorityTbody").innerHTML = ranked.map(function (k, i) {
+      var priority = i < 2 ? "high" : i < 5 ? "med" : "low";
+      return '<tr><td class="mono">#' + (i + 1) + ' ' + k.nama + '</td><td class="mono">' + k.indeks5t + '</td>' +
+        '<td><span class="sev ' + k.risiko + '">' + ({ high: "Tinggi", med: "Sedang", low: "Rendah" })[k.risiko] + '</span></td>' +
+        '<td><span class="sev ' + priority + '">' + ({ high: "Segera", med: "Terjadwal", low: "Pantau" })[priority] + '</span></td></tr>';
+    }).join("");
+
+    function renderEWS() {
+      var active = ewsAlerts.filter(function (a) { return !a.ack; }).length;
+      qs(wrap, "#ewsCount").textContent = active + " aktif";
+      qs(wrap, "#ewsList").innerHTML = ewsAlerts.map(function (a) {
+        return '<div class="ews-item' + (a.ack ? " ack" : "") + '" data-id="' + a.id + '">' +
+          '<span class="sev ' + a.sev + '">' + ({ high: "Tinggi", med: "Sedang", low: "Rendah" })[a.sev] + '</span>' +
+          '<div class="ews-body"><div class="t">' + a.title + '</div><div class="d">' + a.detail + '</div>' +
+          '<div class="ews-meta">' + a.when + '</div></div>' +
+          '<button class="btn small" data-ack="' + a.id + '">' + (a.ack ? "Dibuka" : "Tandai") + '</button>' +
+          '</div>';
+      }).join("");
+      qsa(wrap, "[data-ack]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var a = ewsAlerts.find(function (x) { return x.id === b.dataset.ack; });
+          a.ack = !a.ack; renderEWS();
+        });
+      });
+    }
+    renderEWS();
+
+    return wrap;
+  }
+
+  /* ---------- render: 08 Executive Intelligence / AI ---------- */
+  function renderIntelijen() {
+    var wrap = h(
+      pageHead("Executive Intelligence, Pelaporan Strategis & AI Assistant", "Konsolidasi statistik sektoral transmigrasi tingkat nasional dan asisten AI untuk pertanyaan cepat pimpinan.") +
+      '<div class="kpi-grid">' +
+        kpiTile("Kawasan Mandiri", kawasan.filter(function (k) { return k.tahap === "Mandiri"; }).length, "dari " + kawasan.length + " kawasan", "flat") +
+        kpiTile("Luas HPL Nasional", (nationalKPI.hplTotal / 1000).toFixed(1) + "rb Ha", "seluruh kawasan terpantau", "flat") +
+        kpiTile("Luas SHM Terbit", (nationalKPI.shmTotal / 1000).toFixed(1) + "rb Ha", Math.round(nationalKPI.shmTotal / nationalKPI.hplTotal * 100) + "% dari HPL", "up") +
+        kpiTile("Peringatan Aktif", ewsAlerts.filter(function (a) { return !a.ack; }).length, "perlu tindak lanjut", "down") +
+      '</div>' +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-header"><h2>Laporan Strategis</h2></div>' +
+        '<p class="desc">Ringkasan otomatis kondisi seluruh kawasan untuk bahan rapat pimpinan, disusun dari data 8 modul di atas.</p>' +
+        '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.6rem">' +
+          '<button class="btn primary small">Unduh Ringkasan PDF</button>' +
+          '<button class="btn small">Jadwalkan Laporan Mingguan</button>' +
+        '</div>' +
+        '<p class="footnote" style="margin-top:1rem">Tindakan di atas dinonaktifkan pada prototipe ini — memerlukan integrasi backend pelaporan.</p>' +
+        '</div>' +
+        '<div class="panel"><div class="panel-header"><h2>AI Assistant</h2><span class="hint">tanya cepat seputar data kawasan</span></div>' +
+        '<div class="chat-log" id="chatLog"></div>' +
+        '<div class="chat-input-row"><input id="chatInput" type="text" placeholder="Contoh: kawasan mana yang paling berisiko?" />' +
+        '<button class="btn primary" id="chatSend">Kirim</button></div>' +
+        '<div class="chat-suggest">' +
+          '<button class="btn small" data-q="kawasan mandiri">kawasan mandiri</button>' +
+          '<button class="btn small" data-q="risiko tinggi">risiko tinggi</button>' +
+          '<button class="btn small" data-q="realisasi anggaran">realisasi anggaran</button>' +
+        '</div></div>' +
+      '</div>'
+    );
+
+    var log = [{ role: "ai", text: "Selamat datang. Saya dapat merangkum status kawasan, risiko, dan anggaran dari data pada dashboard ini." }];
+
+    function renderLog() {
+      qs(wrap, "#chatLog").innerHTML = log.map(function (m) {
+        return '<div class="msg ' + m.role + '">' + m.text + '</div>';
+      }).join("");
+      var elLog = qs(wrap, "#chatLog"); elLog.scrollTop = elLog.scrollHeight;
+    }
+
+    function answer(q) {
+      var s = q.toLowerCase();
+      if (s.indexOf("mandiri") > -1) {
+        var m = kawasan.filter(function (k) { return k.tahap === "Mandiri"; });
+        return "Ada <b>" + m.length + " kawasan</b> berstatus Mandiri: " + m.map(function (k) { return k.nama; }).join(", ") + ".";
+      }
+      if (s.indexOf("risiko") > -1 || s.indexOf("bahaya") > -1) {
+        var r = kawasan.filter(function (k) { return k.risiko === "high"; });
+        return "Kawasan risiko tinggi saat ini: " + r.map(function (k) { return k.nama + " (" + k.provinsi + ")"; }).join(", ") + ". Rekomendasi: prioritaskan intervensi anggaran &amp; pendampingan sosial.";
+      }
+      if (s.indexOf("anggaran") > -1 || s.indexOf("budget") > -1) {
+        var avg = Math.round(kawasan.reduce(function (a, k) { return a + k.anggaranPct; }, 0) / kawasan.length);
+        return "Rata-rata realisasi anggaran seluruh kawasan adalah <b>" + avg + "%</b>. Kawasan dengan realisasi terendah: " + kawasan.slice().sort(function (a, b) { return a.anggaranPct - b.anggaranPct; })[0].nama + ".";
+      }
+      if (s.indexOf("indeks") > -1 || s.indexOf("5t") > -1) {
+        return "Rata-rata Indeks 5T nasional adalah <b>" + nationalKPI.avgIndeks + " / 100</b>, dengan kawasan tertinggi " + kawasan.slice().sort(function (a, b) { return b.indeks5t - a.indeks5t; })[0].nama + ".";
+      }
+      return "Saya belum memiliki jawaban spesifik untuk itu pada data prototipe ini. Coba tanyakan tentang: kawasan mandiri, risiko tinggi, realisasi anggaran, atau indeks 5T.";
+    }
+
+    function send(text) {
+      if (!text.trim()) return;
+      log.push({ role: "user", text: text });
+      log.push({ role: "ai", text: answer(text) });
+      renderLog();
+    }
+
+    qs(wrap, "#chatSend").addEventListener("click", function () {
+      var inp = qs(wrap, "#chatInput"); send(inp.value); inp.value = "";
+    });
+    qs(wrap, "#chatInput").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { send(this.value); this.value = ""; }
+    });
+    qsa(wrap, "[data-q]").forEach(function (b) {
+      b.addEventListener("click", function () { send(b.dataset.q); });
+    });
+
+    renderLog();
+    return wrap;
+  }
+
+  var RENDERERS = {
+    profil: renderProfil, geospasial: renderGeospasial, demografi: renderDemografi,
+    infrastruktur: renderInfrastruktur, monitoring: renderMonitoring, ekonomi: renderEkonomi,
+    analitik: renderAnalitik, intelijen: renderIntelijen
+  };
+
+  function render() {
+    mainEl.innerHTML = "";
+    mainEl.appendChild(RENDERERS[state.tab]());
+    var footnote = document.createElement("div");
+    footnote.className = "footnote";
+    footnote.textContent = "SVKE — Prototipe visualisasi. Seluruh angka pada dasbor ini bersifat ilustratif untuk keperluan demonstrasi antarmuka, bukan data resmi kementerian.";
+    mainEl.appendChild(footnote);
+  }
+
+  /* ---------- clock ---------- */
+  function tickClock() {
+    var d = new Date();
+    var pad2 = function (n) { return (n < 10 ? "0" : "") + n; };
+    document.getElementById("clock").textContent = pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  /* ---------- responsive rail toggle ---------- */
+  var railToggle = document.getElementById("railToggle");
+  function checkWidth() {
+    var narrow = window.innerWidth <= 760;
+    railToggle.style.display = narrow ? "inline-flex" : "none";
+  }
+  window.addEventListener("resize", checkWidth);
+  checkWidth();
+  railToggle.addEventListener("click", function () {
+    document.getElementById("rail").classList.toggle("open");
+  });
+
+  render();
+})();
+</script>
