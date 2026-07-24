@@ -334,6 +334,48 @@
   .basemap-static .bm-attrib a { color: inherit; }
   .basemap-static-note { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.5rem; text-align: center; }
 
+  /* ---------- geospasial layout: map stage + photo gallery + AI review ---------- */
+  .geo-grid-top { display: grid; grid-template-columns: 2.1fr 1fr; gap: 0.9rem; align-items: start; margin-bottom: 0.9rem; }
+  .geo-grid-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; align-items: start; }
+  @media (max-width: 980px) { .geo-grid-top, .geo-grid-bottom { grid-template-columns: 1fr; } }
+
+  .geo-map-stage { position: relative; }
+  #sebaranBody { padding-bottom: 3.2rem; }
+
+  .map-style-switch {
+    position: absolute; left: 0.6rem; bottom: 0.6rem; z-index: 5;
+    display: flex; gap: 0.25rem; background: rgba(10, 15, 28, 0.72); border: 1px solid var(--border);
+    border-radius: 9px; padding: 0.3rem;
+  }
+  .ms-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+    background: transparent; border: 1px solid transparent; border-radius: 7px;
+    color: var(--text-dim); padding: 0.3rem 0.55rem; cursor: pointer; font-size: 0.6rem;
+  }
+  .ms-btn svg { width: 16px; height: 16px; }
+  .ms-btn:hover { color: var(--text); background: var(--panel-2); }
+  .ms-btn[aria-pressed="true"] { color: var(--gold); background: var(--gold-soft); border-color: var(--gold-line); }
+
+  .map-locator {
+    position: absolute; right: 0.6rem; bottom: 0.6rem; z-index: 5; width: 118px;
+    background: rgba(10, 15, 28, 0.72); border: 1px solid var(--border); border-radius: 9px;
+    padding: 0.35rem; text-align: center;
+  }
+  .map-locator svg { width: 100%; height: auto; display: block; }
+  .map-locator .loc-label {
+    font-size: 0.6rem; color: var(--text-faint); display: block; margin-top: 0.15rem;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  .photo-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.55rem; }
+  .photo-thumb { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; background: var(--panel-3); }
+  .photo-thumb img { display: block; width: 100%; height: 78px; object-fit: cover; }
+  .photo-thumb .pt-label {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 0.25rem 0.4rem; font-size: 0.62rem;
+    background: linear-gradient(180deg, transparent, rgba(10, 15, 28, 0.88)); color: var(--text);
+  }
+  .photo-thumb.selected { outline: 2px solid var(--gold); }
+
   /* ---------- area photo card ---------- */
   .area-photo {
     border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
@@ -878,17 +920,39 @@
   }
 
   /* ---------- render: 02 Geospasial ---------- */
+  function miniIconSvg(kind) {
+    var paths = {
+      dasar: ICON_PATHS.geospasial,
+      peta: ICON_PATHS.profil,
+      grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
+    };
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + paths[kind] + '</svg>';
+  }
+
   function renderGeospasial() {
     var wrap = h(
-      pageHead("Geospasial, HPL, SHM & Legalitas Lahan", "Tumpang susun peta digital Hak Pengelolaan Lahan (HPL) dan Sertifikat Hak Milik (SHM) transmigran untuk mendukung Trans Tuntas.",
-        '<button class="btn small" id="viewDasar">Peta Dasar</button><button class="btn small" id="viewPeta">Peta Skematik</button><button class="btn small" id="viewGrid">Grid Provinsi</button>') +
-      '<div class="grid-2">' +
-        '<div class="panel"><div class="panel-header"><h2 id="sebaranTitle">Peta Kawasan</h2><span class="hint" id="sebaranHint">klik titik untuk detail kawasan</span></div>' +
-        '<div id="sebaranBody"></div></div>' +
-        '<div class="panel"><div class="panel-header"><h2>Titik Rawan Tumpang Tindih</h2></div><div id="conflictList"></div></div>' +
+      pageHead("Geospasial, HPL, SHM & Legalitas Lahan", "Tumpang susun peta digital Hak Pengelolaan Lahan (HPL) dan Sertifikat Hak Milik (SHM) transmigran untuk mendukung Trans Tuntas.") +
+      '<div class="geo-grid-top">' +
+        '<div class="panel geo-map-panel"><div class="panel-header"><h2 id="sebaranTitle">Peta Kawasan</h2><span class="hint" id="sebaranHint">klik titik untuk detail kawasan</span></div>' +
+          '<div class="geo-map-stage">' +
+            '<div id="sebaranBody"></div>' +
+            '<div class="map-style-switch" id="styleSwitch">' +
+              '<button class="ms-btn" data-view="dasar" title="Peta Dasar">' + miniIconSvg("dasar") + '<span>Dasar</span></button>' +
+              '<button class="ms-btn" data-view="peta" title="Peta Skematik">' + miniIconSvg("peta") + '<span>Skematik</span></button>' +
+              '<button class="ms-btn" data-view="grid" title="Grid Provinsi">' + miniIconSvg("grid") + '<span>Grid</span></button>' +
+            '</div>' +
+            '<div class="map-locator"><svg viewBox="0 0 900 420" id="locatorSvg"></svg><span class="loc-label">Indonesia</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="panel geo-photos-panel"><div class="panel-header"><h2>Foto-foto</h2><span class="hint" id="photosHint">kawasan</span></div>' +
+          '<div class="photo-gallery" id="photoGallery"></div></div>' +
       '</div>' +
-      '<div class="panel"><div class="panel-header"><h2>Rasio Legalitas Lahan per Kawasan (SHM / HPL)</h2><span class="hint">Trans Tuntas — semakin tinggi rasio, semakin tuntas legalitas</span></div>' +
-        '<div id="legalBar"></div></div>'
+      '<div class="geo-grid-bottom">' +
+        '<div class="panel"><div class="panel-header"><h2>Rasio Legalitas Lahan per Kawasan (SHM / HPL)</h2><span class="hint">Trans Tuntas — semakin tinggi rasio, semakin tuntas legalitas</span></div>' +
+          '<div id="legalBar"></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2>Review by AI</h2><span class="hint">ringkasan legalitas &amp; risiko kawasan</span></div>' +
+          '<div id="geoAiReview"></div></div>' +
+      '</div>'
     );
 
     /* ---- grid-of-provinces view (original) ---- */
@@ -921,7 +985,7 @@
         qsa(grid, ".prov-tile").forEach(function (t) {
           t.addEventListener("click", function () {
             state.selectedProv = state.selectedProv === t.dataset.p ? null : t.dataset.p;
-            draw(); renderConflict();
+            draw(); renderReview(); renderGallery();
           });
         });
       }
@@ -1005,7 +1069,7 @@
           state.selectedProv = k.provinsi;
           qsa(svg, ".peta-pin").forEach(function (p2) { p2.classList.toggle("selected", p2 === pin); });
           renderInfo();
-          renderConflict();
+          renderReview(); renderGallery(); renderLocator();
         });
       });
 
@@ -1029,7 +1093,8 @@
         '<p class="peta-caption">Lokasi indikatif berdasarkan provinsi kawasan — bukan koordinat resmi kementerian.</p>' +
         '<div class="drawer" id="dasarInfo" style="margin-top:0.7rem"></div>';
 
-      var map = L.map(qs(wrap, "#basemapEl"), { scrollWheelZoom: false }).setView([-2.2, 118], 5);
+      var map = L.map(qs(wrap, "#basemapEl"), { scrollWheelZoom: false, attributionControl: false }).setView([-2.2, 118], 5);
+      L.control.attribution({ position: "topright" }).addTo(map);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
@@ -1058,7 +1123,7 @@
           '<br/>Populasi: ' + k.populasi.toLocaleString("id-ID") + ' jiwa');
         marker.on("click", function () {
           state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
-          renderDasarInfo(); renderConflict();
+          renderDasarInfo(); renderReview(); renderGallery(); renderLocator();
         });
       });
 
@@ -1101,45 +1166,96 @@
           state.selectedProv = k.provinsi;
           qsa(wrap, ".bm-pin").forEach(function (p2) { p2.classList.toggle("selected", p2 === pin); });
           renderDasarInfo();
-          renderConflict();
+          renderReview(); renderGallery(); renderLocator();
         });
       });
 
       renderDasarInfo();
     }
 
-    function renderConflict() {
-      var rows = kawasan.filter(function (k) { return !state.selectedProv || k.provinsi === state.selectedProv; })
-        .map(function (k) { return { k: k, gap: k.hplHa - k.shmHa }; })
-        .sort(function (a, b) { return b.gap - a.gap; }).slice(0, 5);
-      qs(wrap, "#conflictList").innerHTML = rows.map(function (r) {
-        var pct = Math.round((r.gap / r.k.hplHa) * 100);
+    /* AI-style narrative review + top HPL–SHM gap ranking, scoped to state.selectedProv */
+    function renderReview() {
+      var scope = state.selectedProv;
+      var rows = kawasan.filter(function (k) { return !scope || k.provinsi === scope; })
+        .map(function (k) { return { k: k, gap: k.hplHa - k.shmHa, pct: Math.round((k.hplHa - k.shmHa) / k.hplHa * 100) }; })
+        .sort(function (a, b) { return b.gap - a.gap; });
+      var top = rows.slice(0, 3);
+      var scopeLabel = scope || "seluruh kawasan";
+      var narrative;
+      if (rows.length === 0) {
+        narrative = "Tidak ada data untuk cakupan ini.";
+      } else {
+        var avgPct = Math.round(rows.reduce(function (s, r) { return s + (r.k.shmHa / r.k.hplHa * 100); }, 0) / rows.length);
+        var worst = top[0];
+        narrative = "Rata-rata legalitas lahan (SHM/HPL) di <b>" + scopeLabel + "</b> sekitar <b>" + avgPct + "%</b>. " +
+          "Kesenjangan terbesar ada di <b>" + worst.k.nama + "</b>, dengan " + worst.pct + "% area HPL yang belum bersertifikat SHM" +
+          (worst.pct > 50 ? ", masuk kategori risiko tinggi dan perlu percepatan sertifikasi." : ", masih dalam batas terkendali namun tetap perlu dipantau.");
+      }
+      var listHtml = top.map(function (r) {
         return '<div class="ews-item"><div class="ews-body">' +
           '<div class="t">' + r.k.nama + ' <span class="hint" style="color:var(--text-faint)">· ' + r.k.provinsi + '</span></div>' +
-          '<div class="d">Selisih HPL–SHM ~' + r.gap.toLocaleString("id-ID") + ' Ha (' + pct + '% belum tersertifikasi)</div>' +
-          '</div><span class="sev ' + (pct > 50 ? "high" : pct > 30 ? "med" : "low") + '">' + pct + '%</span></div>';
-      }).join("") || '<p class="empty" style="color:var(--text-faint)">Tidak ada data untuk filter ini.</p>';
+          '<div class="d">Selisih HPL–SHM ~' + r.gap.toLocaleString("id-ID") + ' Ha</div></div>' +
+          '<span class="sev ' + (r.pct > 50 ? "high" : r.pct > 30 ? "med" : "low") + '">' + r.pct + '%</span></div>';
+      }).join("") || '<p class="empty" style="color:var(--text-faint)">Tidak ada data.</p>';
+
+      qs(wrap, "#geoAiReview").innerHTML = '<p class="desc" style="margin:0 0 0.8rem">' + narrative + '</p>' + listHtml;
+    }
+
+    /* gallery of illustrative area photos, scoped to the selected province if any */
+    function renderGallery() {
+      var scopeList = kawasan.filter(function (k) { return !state.selectedProv || k.provinsi === state.selectedProv; });
+      if (scopeList.length === 0) scopeList = kawasan;
+      qs(wrap, "#photosHint").textContent = state.selectedProv || (scopeList.length + " kawasan");
+      qs(wrap, "#photoGallery").innerHTML = scopeList.slice(0, 6).map(function (k) {
+        return '<div class="photo-thumb' + (state.selectedKawasan === k.id ? " selected" : "") + '" data-id="' + k.id + '">' +
+          '<img src="https://picsum.photos/seed/' + k.id + '/300/200" alt="Foto ilustratif ' + k.nama + '" loading="lazy" ' +
+          'onerror="this.closest(\'.photo-thumb\').style.display=\'none\'" />' +
+          '<span class="pt-label">' + k.nama + '</span></div>';
+      }).join("");
+      qsa(wrap, ".photo-thumb").forEach(function (t) {
+        t.addEventListener("click", function () {
+          var k = kawasan.find(function (x) { return x.id === t.dataset.id; });
+          state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
+          renderSebaran(); renderGallery(); renderLocator(); renderReview();
+        });
+      });
+    }
+
+    /* small "you are here" locator inset — reuses the schematic ISLANDS geometry at a tiny scale */
+    function renderLocator() {
+      var svg = qs(wrap, "#locatorSvg");
+      svg.innerHTML = "";
+      ISLANDS.forEach(function (isl) {
+        el("path", {
+          d: smoothClosedPath(isl.points), fill: "var(--panel-3)", stroke: "var(--border)",
+          "stroke-width": 2, opacity: isl.muted ? 0.3 : 0.8
+        }, svg);
+      });
+      var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
+      var dotX = k ? k.mapX : 450, dotY = k ? k.mapY : 210;
+      el("circle", { cx: dotX, cy: dotY, r: 16, fill: "var(--gold)", opacity: 0.3 }, svg);
+      el("circle", { cx: dotX, cy: dotY, r: 6, fill: "var(--gold)", stroke: "var(--bg)", "stroke-width": 2 }, svg);
     }
 
     function renderSebaran() {
-      qs(wrap, "#viewDasar").setAttribute("aria-pressed", state.geoView === "dasar");
-      qs(wrap, "#viewPeta").setAttribute("aria-pressed", state.geoView === "peta");
-      qs(wrap, "#viewGrid").setAttribute("aria-pressed", state.geoView === "grid");
+      qsa(wrap, ".ms-btn").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.view === state.geoView); });
       if (state.geoView !== "dasar" && activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
       if (state.geoView === "dasar") renderDasar();
       else if (state.geoView === "peta") renderPeta();
       else renderProvGrid();
     }
 
-    qs(wrap, "#viewDasar").addEventListener("click", function () { state.geoView = "dasar"; renderSebaran(); });
-    qs(wrap, "#viewPeta").addEventListener("click", function () { state.geoView = "peta"; renderSebaran(); });
-    qs(wrap, "#viewGrid").addEventListener("click", function () { state.geoView = "grid"; renderSebaran(); });
+    qsa(wrap, ".ms-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () { state.geoView = btn.dataset.view; renderSebaran(); });
+    });
 
     var legalData = kawasan.map(function (k) { return { label: k.nama.replace(/^SKP |^KPB /, ""), value: Math.round((k.shmHa / k.hplHa) * 100), color: "var(--gold)" }; });
     qs(wrap, "#legalBar").appendChild(barChart(legalData, { height: 190, suffix: "%", max: 100 }));
 
     renderSebaran();
-    renderConflict();
+    renderReview();
+    renderGallery();
+    renderLocator();
     return wrap;
   }
 
