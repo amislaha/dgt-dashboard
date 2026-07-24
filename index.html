@@ -1,5 +1,10 @@
 <title>SVKE — Executive Decision Support · Kawasan Transmigrasi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- Leaflet powers the real-world basemap in the Geospasial module. Loaded from a CDN, so it
+     only works where external requests are allowed (GitHub Pages) — the schematic map and
+     province grid remain fully self-contained fallbacks for CSP-restricted previews. -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
     --bg: #0a0f1c;
@@ -302,6 +307,29 @@
   .peta-legend .chip { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
   .peta-legend .size-dot { border-radius: 50%; background: var(--text-faint); display: inline-block; }
 
+  /* ---------- basemap (Leaflet) view ---------- */
+  .basemap-wrap { border-radius: 8px; overflow: hidden; border: 1px solid var(--border-soft); }
+  .basemap-el { width: 100%; height: 360px; background: var(--panel-2); }
+  .basemap-fallback {
+    width: 100%; height: 220px; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 1rem; color: var(--text-faint); font-size: 0.78rem;
+    background: var(--panel-2);
+  }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel-2); color: var(--text); }
+  .leaflet-popup-content { font-size: 0.78rem; }
+  .leaflet-popup-content .area-photo { margin-bottom: 0.4rem; }
+
+  /* ---------- area photo card ---------- */
+  .area-photo {
+    border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
+    background: var(--panel-3); margin-bottom: 0.8rem;
+  }
+  .area-photo img { display: block; width: 100%; height: 140px; object-fit: cover; }
+  .area-photo .cap {
+    display: block; font-size: 0.62rem; color: var(--text-faint);
+    padding: 0.3rem 0.55rem; text-align: center; letter-spacing: 0.02em;
+  }
+
   /* ---------- chat / AI assistant ---------- */
   .chat-log { display: flex; flex-direction: column; gap: 0.55rem; max-height: 320px; overflow-y: auto; padding-right: 0.2rem; }
   .msg { max-width: 82%; padding: 0.55rem 0.75rem; border-radius: 10px; font-size: 0.8rem; line-height: 1.45; }
@@ -390,18 +418,31 @@
   var STAGES = ["Rintisan", "Tumbuh", "Berkembang", "Mandiri"];
   var stageClass = { "Rintisan": "rintisan", "Tumbuh": "tumbuh", "Berkembang": "berkembang", "Mandiri": "mandiri" };
   var STAGE_COLOR = { "Rintisan": "var(--critical)", "Tumbuh": "var(--warn)", "Berkembang": "var(--series-2)", "Mandiri": "var(--good)" };
+  /* plain hex twins of STAGE_COLOR — Leaflet's SVG renderer sets fill as a raw attribute,
+     which cannot resolve CSS custom properties, so var(--x) strings won't render there */
+  var STAGE_COLOR_HEX = { "Rintisan": "#ef5a6f", "Tumbuh": "#f0b429", "Berkembang": "#5b7fae", "Mandiri": "#3ecf8e" };
+  var activeLeafletMap = null;
+
+  /* placeholder imagery — deterministic per kawasan id, clearly captioned as illustrative
+     (not a real photo of the named location, since the location itself is illustrative data) */
+  function photoCard(k) {
+    var url = "https://picsum.photos/seed/" + k.id + "/480/280";
+    return '<div class="area-photo"><img src="' + url + '" alt="Foto ilustratif ' + k.nama + '" loading="lazy" ' +
+      'onerror="this.closest(\'.area-photo\').style.display=\'none\'" />' +
+      '<span class="cap">Foto ilustratif — bukan foto lokasi aktual</span></div>';
+  }
 
   var kawasan = [
-    { id: "k1", nama: "SKP Salor", provinsi: "Papua Selatan", tipe: "SKP", tahap: "Berkembang", populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: "med", mapX: 840, mapY: 320 },
-    { id: "k2", nama: "KPB Rambutan", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Mandiri", populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: "low", mapX: 212, mapY: 231 },
-    { id: "k3", nama: "SKP Towuti", provinsi: "Sulawesi Tengah", tipe: "SKP", tahap: "Tumbuh", populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: "high", mapX: 498, mapY: 199 },
-    { id: "k4", nama: "KPB Malinau", provinsi: "Kalimantan Utara", tipe: "KPB", tahap: "Berkembang", populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: "med", mapX: 423, mapY: 102 },
-    { id: "k5", nama: "SKP Tobadak", provinsi: "Sulawesi Barat", tipe: "SKP", tahap: "Rintisan", populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: "high", mapX: 460, mapY: 225 },
-    { id: "k6", nama: "KPB Bathin III", provinsi: "Jambi", tipe: "KPB", tahap: "Mandiri", populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: "low", mapX: 181, mapY: 202 },
-    { id: "k7", nama: "SKP Bina Buay", provinsi: "Bengkulu", tipe: "SKP", tahap: "Tumbuh", populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: "med", mapX: 169, mapY: 248 },
-    { id: "k8", nama: "KPB Pulau Rimau", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Berkembang", populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: "low", mapX: 235, mapY: 210 },
-    { id: "k9", nama: "SKP Kobisonta", provinsi: "Maluku Utara", tipe: "SKP", tahap: "Rintisan", populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: "high", mapX: 618, mapY: 136 },
-    { id: "k10", nama: "KPB Air Terang", provinsi: "Kalimantan Tengah", tipe: "KPB", tahap: "Tumbuh", populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: "med", mapX: 369, mapY: 199 }
+    { id: "k1", nama: "SKP Salor", provinsi: "Papua Selatan", tipe: "SKP", tahap: "Berkembang", populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: "med", mapX: 840, mapY: 320, lat: -8.40, lon: 140.40 },
+    { id: "k2", nama: "KPB Rambutan", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Mandiri", populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: "low", mapX: 212, mapY: 231, lat: -3.05, lon: 104.75 },
+    { id: "k3", nama: "SKP Towuti", provinsi: "Sulawesi Tengah", tipe: "SKP", tahap: "Tumbuh", populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: "high", mapX: 498, mapY: 199, lat: -1.50, lon: 120.70 },
+    { id: "k4", nama: "KPB Malinau", provinsi: "Kalimantan Utara", tipe: "KPB", tahap: "Berkembang", populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: "med", mapX: 423, mapY: 102, lat: 3.58, lon: 116.63 },
+    { id: "k5", nama: "SKP Tobadak", provinsi: "Sulawesi Barat", tipe: "SKP", tahap: "Rintisan", populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: "high", mapX: 460, mapY: 225, lat: -2.32, lon: 119.15 },
+    { id: "k6", nama: "KPB Bathin III", provinsi: "Jambi", tipe: "KPB", tahap: "Mandiri", populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: "low", mapX: 181, mapY: 202, lat: -1.60, lon: 102.10 },
+    { id: "k7", nama: "SKP Bina Buay", provinsi: "Bengkulu", tipe: "SKP", tahap: "Tumbuh", populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: "med", mapX: 169, mapY: 248, lat: -3.80, lon: 102.30 },
+    { id: "k8", nama: "KPB Pulau Rimau", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Berkembang", populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: "low", mapX: 235, mapY: 210, lat: -2.85, lon: 104.55 },
+    { id: "k9", nama: "SKP Kobisonta", provinsi: "Maluku Utara", tipe: "SKP", tahap: "Rintisan", populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: "high", mapX: 618, mapY: 136, lat: -0.35, lon: 127.95 },
+    { id: "k10", nama: "KPB Air Terang", provinsi: "Kalimantan Tengah", tipe: "KPB", tahap: "Tumbuh", populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: "med", mapX: 369, mapY: 199, lat: -1.50, lon: 113.50 }
   ];
 
   var provinces = [];
@@ -594,7 +635,7 @@
     var x2 = cx - r * Math.cos(angle), y2 = cy - r * Math.sin(angle);
     var svg = el("svg", { viewBox: "0 0 " + w + " " + h, width: "100%", height: h });
     el("path", { d: "M " + (cx - r) + " " + cy + " A " + r + " " + r + " 0 0 1 " + (cx + r) + " " + cy, fill: "none", stroke: "var(--panel-3)", "stroke-width": 10, "stroke-linecap": "round" }, svg);
-    el("path", { d: "M " + (cx - r) + " " + cy + " A " + r + " " + r + " 0 " + (frac > 0.5 ? 1 : 0) + " 1 " + x2 + " " + y2, fill: "none", stroke: opts.color || "var(--gold)", "stroke-width": 10, "stroke-linecap": "round" }, svg);
+    el("path", { d: "M " + (cx - r) + " " + cy + " A " + r + " " + r + " 0 0 1 " + x2 + " " + y2, fill: "none", stroke: opts.color || "var(--gold)", "stroke-width": 10, "stroke-linecap": "round" }, svg);
     el("text", { x: cx, y: cy - 10, "text-anchor": "middle", fill: "var(--text)", "font-size": "20", "font-weight": "700" }, svg).textContent = value;
     el("text", { x: cx, y: cy + 6, "text-anchor": "middle", fill: "var(--text-faint)", "font-size": "8.5" }, svg).textContent = opts.label || "";
     return svg;
@@ -679,6 +720,7 @@
       c.classList.toggle("active", c.dataset.tab === id);
     });
     document.getElementById("rail").classList.remove("open");
+    if (activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
     render();
   }
 
@@ -769,7 +811,8 @@
       var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
       var d = qs(wrap, "#profilDrawer");
       if (!k) { d.innerHTML = '<p class="empty">Pilih kawasan pada tabel.</p>'; return; }
-      d.innerHTML = '<h3>' + k.nama + '</h3>' +
+      d.innerHTML = photoCard(k) +
+        '<h3>' + k.nama + '</h3>' +
         row("Provinsi", k.provinsi) + row("Tipe", k.tipe) +
         row("Tahap", '<span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span>') +
         row("Populasi", k.populasi.toLocaleString("id-ID") + " jiwa") +
@@ -800,7 +843,7 @@
   function renderGeospasial() {
     var wrap = h(
       pageHead("Geospasial, HPL, SHM & Legalitas Lahan", "Tumpang susun peta digital Hak Pengelolaan Lahan (HPL) dan Sertifikat Hak Milik (SHM) transmigran untuk mendukung Trans Tuntas.",
-        '<button class="btn small" id="viewPeta">Peta</button><button class="btn small" id="viewGrid">Grid Provinsi</button>') +
+        '<button class="btn small" id="viewDasar">Peta Dasar</button><button class="btn small" id="viewPeta">Peta Skematik</button><button class="btn small" id="viewGrid">Grid Provinsi</button>') +
       '<div class="grid-2">' +
         '<div class="panel"><div class="panel-header"><h2 id="sebaranTitle">Peta Kawasan</h2><span class="hint" id="sebaranHint">klik titik untuk detail kawasan</span></div>' +
         '<div id="sebaranBody"></div></div>' +
@@ -907,7 +950,8 @@
         var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
         var infoEl = qs(wrap, "#petaInfo");
         if (!k) { infoEl.innerHTML = '<p class="empty">Klik titik pada peta untuk melihat detail kawasan.</p>'; return; }
-        infoEl.innerHTML = '<h3>' + k.nama + '</h3>' +
+        infoEl.innerHTML = photoCard(k) +
+          '<h3>' + k.nama + '</h3>' +
           '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
           '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
           '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>' +
@@ -930,6 +974,61 @@
       renderInfo();
     }
 
+    /* ---- real-world basemap view (Leaflet + OpenStreetMap) ---- */
+    function renderDasar() {
+      qs(wrap, "#sebaranTitle").textContent = "Peta Dasar (OpenStreetMap)";
+      qs(wrap, "#sebaranHint").textContent = "geser & perbesar peta, klik penanda untuk detail";
+      var body = qs(wrap, "#sebaranBody");
+
+      if (activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
+
+      if (typeof L === "undefined") {
+        body.innerHTML = '<div class="basemap-fallback">Peta dasar (OpenStreetMap) tidak dapat dimuat pada pratinjau ini — kemungkinan diblokir oleh kebijakan keamanan konten. Gunakan "Peta Skematik", atau buka versi yang di-deploy di GitHub Pages.</div>';
+        return;
+      }
+
+      body.innerHTML = '<div class="basemap-wrap"><div class="basemap-el" id="basemapEl"></div></div>' +
+        '<p class="peta-caption">Lokasi indikatif berdasarkan provinsi kawasan — bukan koordinat resmi kementerian.</p>' +
+        '<div class="drawer" id="dasarInfo" style="margin-top:0.7rem"></div>';
+
+      var map = L.map(qs(wrap, "#basemapEl"), { scrollWheelZoom: false }).setView([-2.2, 118], 5);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      var maxPop = Math.max.apply(null, kawasan.map(function (k) { return k.populasi; }));
+
+      function renderDasarInfo() {
+        var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
+        var infoEl = qs(wrap, "#dasarInfo");
+        if (!infoEl) return;
+        if (!k) { infoEl.innerHTML = '<p class="empty">Klik penanda pada peta untuk melihat detail kawasan.</p>'; return; }
+        infoEl.innerHTML = photoCard(k) + '<h3>' + k.nama + '</h3>' +
+          '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
+          '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
+          '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>';
+      }
+
+      kawasan.forEach(function (k) {
+        var radius = 6 + (k.populasi / maxPop) * 10;
+        var marker = L.circleMarker([k.lat, k.lon], {
+          radius: radius, color: "#0a0f1c", weight: 1.4,
+          fillColor: STAGE_COLOR_HEX[k.tahap], fillOpacity: 0.9
+        }).addTo(map);
+        marker.bindPopup(photoCard(k) + '<b>' + k.nama + '</b><br/>' + k.provinsi + '<br/>Tahap: ' + k.tahap +
+          '<br/>Populasi: ' + k.populasi.toLocaleString("id-ID") + ' jiwa');
+        marker.on("click", function () {
+          state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
+          renderDasarInfo(); renderConflict();
+        });
+      });
+
+      activeLeafletMap = map;
+      renderDasarInfo();
+      setTimeout(function () { map.invalidateSize(); }, 60);
+    }
+
     function renderConflict() {
       var rows = kawasan.filter(function (k) { return !state.selectedProv || k.provinsi === state.selectedProv; })
         .map(function (k) { return { k: k, gap: k.hplHa - k.shmHa }; })
@@ -944,11 +1043,16 @@
     }
 
     function renderSebaran() {
+      qs(wrap, "#viewDasar").setAttribute("aria-pressed", state.geoView === "dasar");
       qs(wrap, "#viewPeta").setAttribute("aria-pressed", state.geoView === "peta");
       qs(wrap, "#viewGrid").setAttribute("aria-pressed", state.geoView === "grid");
-      if (state.geoView === "peta") renderPeta(); else renderProvGrid();
+      if (state.geoView !== "dasar" && activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
+      if (state.geoView === "dasar") renderDasar();
+      else if (state.geoView === "peta") renderPeta();
+      else renderProvGrid();
     }
 
+    qs(wrap, "#viewDasar").addEventListener("click", function () { state.geoView = "dasar"; renderSebaran(); });
     qs(wrap, "#viewPeta").addEventListener("click", function () { state.geoView = "peta"; renderSebaran(); });
     qs(wrap, "#viewGrid").addEventListener("click", function () { state.geoView = "grid"; renderSebaran(); });
 
