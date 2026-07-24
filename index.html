@@ -294,20 +294,8 @@
   .prov-tile .layer.shm { background: var(--gold); bottom: 0; }
   .prov-tile.selected { outline: 2px solid var(--gold); }
 
-  /* ---------- peta (map) view ---------- */
-  .peta-wrap { position: relative; border-radius: 8px; overflow: hidden; background: var(--panel-2); border: 1px solid var(--border-soft); }
-  .peta-svg { display: block; width: 100%; height: auto; cursor: default; }
-  .peta-pin { cursor: pointer; }
-  .peta-pin circle.core { transition: r 0.12s ease, stroke-width 0.12s ease; }
-  .peta-pin:hover circle.core, .peta-pin.selected circle.core { stroke: var(--gold); stroke-width: 2.4; }
-  .peta-caption { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.5rem; text-align: center; }
-  .peta-legend { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.7rem; }
-  .peta-legend .grp { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; font-size: 0.7rem; color: var(--text-dim); }
-  .peta-legend .sw { display: inline-flex; align-items: center; gap: 0.35rem; }
-  .peta-legend .chip { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-  .peta-legend .size-dot { border-radius: 50%; background: var(--text-faint); display: inline-block; }
-
   /* ---------- basemap (Leaflet) view ---------- */
+  .peta-caption { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.5rem; text-align: center; }
   .basemap-wrap { border-radius: 8px; overflow: hidden; border: 1px solid var(--border-soft); }
   .basemap-el { width: 100%; height: 360px; background: var(--panel-2); }
   .basemap-fallback {
@@ -317,7 +305,6 @@
   }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel-2); color: var(--text); }
   .leaflet-popup-content { font-size: 0.78rem; }
-  .leaflet-popup-content .area-photo { margin-bottom: 0.4rem; }
 
   /* static snapshot fallback (baked-in OSM image, used when live tiles can't load) */
   .basemap-static { position: relative; }
@@ -369,23 +356,12 @@
 
   .photo-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.55rem; }
   .photo-thumb { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; background: var(--panel-3); }
-  .photo-thumb img { display: block; width: 100%; height: 78px; object-fit: cover; }
+  .photo-thumb svg { display: block; width: 100%; height: 78px; }
   .photo-thumb .pt-label {
     position: absolute; left: 0; right: 0; bottom: 0; padding: 0.25rem 0.4rem; font-size: 0.62rem;
     background: linear-gradient(180deg, transparent, rgba(10, 15, 28, 0.88)); color: var(--text);
   }
   .photo-thumb.selected { outline: 2px solid var(--gold); }
-
-  /* ---------- area photo card ---------- */
-  .area-photo {
-    border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
-    background: var(--panel-3); margin-bottom: 0.8rem;
-  }
-  .area-photo img { display: block; width: 100%; height: 140px; object-fit: cover; }
-  .area-photo .cap {
-    display: block; font-size: 0.62rem; color: var(--text-faint);
-    padding: 0.3rem 0.55rem; text-align: center; letter-spacing: 0.02em;
-  }
 
   /* ---------- chat / AI assistant ---------- */
   .chat-log { display: flex; flex-direction: column; gap: 0.55rem; max-height: 320px; overflow-y: auto; padding-right: 0.2rem; }
@@ -503,13 +479,51 @@
     };
   }
 
-  /* placeholder imagery — deterministic per kawasan id, clearly captioned as illustrative
-     (not a real photo of the named location, since the location itself is illustrative data) */
-  function photoCard(k) {
-    var url = "https://picsum.photos/seed/" + k.id + "/480/280";
-    return '<div class="area-photo"><img src="' + url + '" alt="Foto ilustratif ' + k.nama + '" loading="lazy" ' +
-      'onerror="this.closest(\'.area-photo\').style.display=\'none\'" />' +
-      '<span class="cap">Foto ilustratif — bukan foto lokasi aktual</span></div>';
+  /* generated cityscape illustration — deterministic per kawasan id. Used instead of stock
+     photos: a random photo service can't be trusted to stay on-theme (tropical kawasan, not
+     snow) or to avoid depicting real identifiable people in a fabricated dashboard, so this
+     draws its own silhouette skyline instead. No network request, no real photos. */
+  function seededRandom(seed) {
+    var s = 0;
+    for (var i = 0; i < seed.length; i++) s = (s * 31 + seed.charCodeAt(i)) >>> 0;
+    return function () {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  }
+
+  function cityIllustration(k, w, h) {
+    w = w || 300; h = h || 180;
+    var rnd = seededRandom(k.id);
+    var groundY = h * 0.92;
+    var n = 8 + Math.floor(rnd() * 4);
+    var bw = w / n;
+    var buildings = "", lights = "", x = 0;
+    for (var i = 0; i < n; i++) {
+      var bh = h * (0.28 + rnd() * 0.55);
+      var by = groundY - bh;
+      var shade = i % 2 === 0 ? "#141e30" : "#1c2a47";
+      buildings += '<rect x="' + (x + 1) + '" y="' + by.toFixed(1) + '" width="' + (bw - 2).toFixed(1) + '" height="' + bh.toFixed(1) + '" fill="' + shade + '"/>';
+      var rows = Math.max(1, Math.floor(bh / 14));
+      var cols = Math.max(1, Math.floor((bw - 4) / 10));
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          if (rnd() > 0.55) {
+            lights += '<rect x="' + (x + 4 + c * 10) + '" y="' + (by + 6 + r * 14).toFixed(1) + '" width="4" height="5" fill="#e3c667" opacity="' + (0.5 + rnd() * 0.5).toFixed(2) + '"/>';
+          }
+        }
+      }
+      x += bw;
+    }
+    var gid = "sky" + k.id;
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustrasi kota ' + k.nama + '">' +
+      '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="#16213a"/><stop offset="55%" stop-color="#2c3f63"/><stop offset="100%" stop-color="#c9a13b" stop-opacity="0.35"/>' +
+      '</linearGradient></defs>' +
+      '<rect x="0" y="0" width="' + w + '" height="' + h + '" fill="url(#' + gid + ')"/>' +
+      buildings + lights +
+      '<rect x="0" y="' + groundY.toFixed(1) + '" width="' + w + '" height="' + (h - groundY).toFixed(1) + '" fill="#0a0f1c"/>' +
+    '</svg>';
   }
 
   var kawasan = [
@@ -781,7 +795,7 @@
     showHPL: true,
     showSHM: true,
     selectedProv: null,
-    geoView: "peta"
+    geoView: "dasar"
   };
 
   var railItemsEl = document.getElementById("railItems");
@@ -891,8 +905,7 @@
       var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
       var d = qs(wrap, "#profilDrawer");
       if (!k) { d.innerHTML = '<p class="empty">Pilih kawasan pada tabel.</p>'; return; }
-      d.innerHTML = photoCard(k) +
-        '<h3>' + k.nama + '</h3>' +
+      d.innerHTML = '<h3>' + k.nama + '</h3>' +
         row("Provinsi", k.provinsi) + row("Tipe", k.tipe) +
         row("Tahap", '<span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span>') +
         row("Populasi", k.populasi.toLocaleString("id-ID") + " jiwa") +
@@ -923,7 +936,6 @@
   function miniIconSvg(kind) {
     var paths = {
       dasar: ICON_PATHS.geospasial,
-      peta: ICON_PATHS.profil,
       grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
     };
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + paths[kind] + '</svg>';
@@ -938,7 +950,6 @@
             '<div id="sebaranBody"></div>' +
             '<div class="map-style-switch" id="styleSwitch">' +
               '<button class="ms-btn" data-view="dasar" title="Peta Dasar">' + miniIconSvg("dasar") + '<span>Dasar</span></button>' +
-              '<button class="ms-btn" data-view="peta" title="Peta Skematik">' + miniIconSvg("peta") + '<span>Skematik</span></button>' +
               '<button class="ms-btn" data-view="grid" title="Grid Provinsi">' + miniIconSvg("grid") + '<span>Grid</span></button>' +
             '</div>' +
             '<div class="map-locator"><svg viewBox="0 0 900 420" id="locatorSvg"></svg><span class="loc-label">Indonesia</span></div>' +
@@ -998,84 +1009,6 @@
       draw();
     }
 
-    /* ---- schematic map view (new) ---- */
-    function renderPeta() {
-      qs(wrap, "#sebaranTitle").textContent = "Peta Kawasan";
-      qs(wrap, "#sebaranHint").textContent = "klik titik untuk detail kawasan";
-      var body = qs(wrap, "#sebaranBody");
-      var maxPop = Math.max.apply(null, kawasan.map(function (k) { return k.populasi; }));
-
-      body.innerHTML = '<div class="peta-wrap"><svg class="peta-svg" viewBox="0 0 900 420" role="img" aria-label="Peta sebaran kawasan transmigrasi"></svg></div>' +
-        '<div class="peta-legend">' +
-          '<span class="grp">' + STAGES.map(function (s) {
-            return '<span class="sw"><span class="chip" style="background:' + STAGE_COLOR[s] + '"></span>' + s + '</span>';
-          }).join("") + '</span>' +
-          '<span class="grp">Populasi:' +
-            '<span class="sw"><span class="size-dot" style="width:7px;height:7px"></span>kecil</span>' +
-            '<span class="sw"><span class="size-dot" style="width:11px;height:11px"></span>sedang</span>' +
-            '<span class="sw"><span class="size-dot" style="width:15px;height:15px"></span>besar</span>' +
-          '</span>' +
-        '</div>' +
-        '<p class="peta-caption">Peta skematik — posisi relatif per provinsi, bukan peta geospasial presisi.</p>' +
-        '<div class="drawer" id="petaInfo" style="margin-top:0.7rem"></div>';
-
-      var svg = qs(wrap, ".peta-svg");
-
-      // faint graticule
-      for (var gx = 0; gx <= 900; gx += 90) el("line", { x1: gx, y1: 0, x2: gx, y2: 420, stroke: "var(--border-soft)", "stroke-width": 1 }, svg);
-      for (var gy = 0; gy <= 420; gy += 70) el("line", { x1: 0, y1: gy, x2: 900, y2: gy, stroke: "var(--border-soft)", "stroke-width": 1 }, svg);
-
-      // islands
-      ISLANDS.forEach(function (isl) {
-        var path = el("path", {
-          d: smoothClosedPath(isl.points),
-          fill: "var(--panel-3)", stroke: "var(--border)", "stroke-width": 1,
-          opacity: isl.muted ? 0.35 : 0.85
-        }, svg);
-        if (isl.name) {
-          el("text", {
-            x: isl.labelX, y: isl.labelY, fill: "var(--text-faint)", "font-size": "10",
-            "letter-spacing": "1.5", "font-weight": "600"
-          }, svg).textContent = isl.name;
-        }
-      });
-
-      // pins
-      kawasan.forEach(function (k) {
-        var r = 4 + (k.populasi / maxPop) * 10;
-        var g = el("g", { class: "peta-pin" + (state.selectedKawasan === k.id ? " selected" : ""), "data-id": k.id }, svg);
-        el("circle", { class: "core", cx: k.mapX, cy: k.mapY, r: r, fill: STAGE_COLOR[k.tahap], stroke: "var(--bg)", "stroke-width": 1.4, opacity: 0.92 }, g);
-        el("title", {}, g).textContent = k.nama + " · " + k.provinsi + " · " + k.populasi.toLocaleString("id-ID") + " jiwa";
-      });
-
-      function renderInfo() {
-        var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
-        var infoEl = qs(wrap, "#petaInfo");
-        if (!k) { infoEl.innerHTML = '<p class="empty">Klik titik pada peta untuk melihat detail kawasan.</p>'; return; }
-        infoEl.innerHTML = photoCard(k) +
-          '<h3>' + k.nama + '</h3>' +
-          '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
-          '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
-          '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>' +
-          '<div class="row"><span>Indeks 5T</span><span>' + k.indeks5t + ' / 100</span></div>' +
-          '<div class="row"><span>HPL vs SHM</span><span>' + k.hplHa.toLocaleString("id-ID") + ' Ha / ' + k.shmHa.toLocaleString("id-ID") + ' Ha</span></div>';
-      }
-
-      qsa(svg, ".peta-pin").forEach(function (pin) {
-        pin.addEventListener("click", function () {
-          var id = pin.getAttribute("data-id");
-          var k = kawasan.find(function (x) { return x.id === id; });
-          state.selectedKawasan = id;
-          state.selectedProv = k.provinsi;
-          qsa(svg, ".peta-pin").forEach(function (p2) { p2.classList.toggle("selected", p2 === pin); });
-          renderInfo();
-          renderReview(); renderGallery(); renderLocator();
-        });
-      });
-
-      renderInfo();
-    }
-
     /* ---- real-world basemap view (Leaflet + OpenStreetMap) ---- */
     function renderDasar() {
       qs(wrap, "#sebaranTitle").textContent = "Peta Dasar (OpenStreetMap)";
@@ -1107,7 +1040,7 @@
         var infoEl = qs(wrap, "#dasarInfo");
         if (!infoEl) return;
         if (!k) { infoEl.innerHTML = '<p class="empty">Klik penanda pada peta untuk melihat detail kawasan.</p>'; return; }
-        infoEl.innerHTML = photoCard(k) + '<h3>' + k.nama + '</h3>' +
+        infoEl.innerHTML = '<h3>' + k.nama + '</h3>' +
           '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
           '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
           '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>';
@@ -1119,7 +1052,7 @@
           radius: radius, color: "#0a0f1c", weight: 1.4,
           fillColor: STAGE_COLOR_HEX[k.tahap], fillOpacity: 0.9
         }).addTo(map);
-        marker.bindPopup(photoCard(k) + '<b>' + k.nama + '</b><br/>' + k.provinsi + '<br/>Tahap: ' + k.tahap +
+        marker.bindPopup('<b>' + k.nama + '</b><br/>' + k.provinsi + '<br/>Tahap: ' + k.tahap +
           '<br/>Populasi: ' + k.populasi.toLocaleString("id-ID") + ' jiwa');
         marker.on("click", function () {
           state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
@@ -1153,7 +1086,7 @@
         var infoEl = qs(wrap, "#dasarInfo");
         if (!infoEl) return;
         if (!k) { infoEl.innerHTML = '<p class="empty">Klik penanda pada peta untuk melihat detail kawasan.</p>'; return; }
-        infoEl.innerHTML = photoCard(k) + '<h3>' + k.nama + '</h3>' +
+        infoEl.innerHTML = '<h3>' + k.nama + '</h3>' +
           '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
           '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
           '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>';
@@ -1201,15 +1134,14 @@
       qs(wrap, "#geoAiReview").innerHTML = '<p class="desc" style="margin:0 0 0.8rem">' + narrative + '</p>' + listHtml;
     }
 
-    /* gallery of illustrative area photos, scoped to the selected province if any */
+    /* gallery of generated cityscape illustrations, scoped to the selected province if any */
     function renderGallery() {
       var scopeList = kawasan.filter(function (k) { return !state.selectedProv || k.provinsi === state.selectedProv; });
       if (scopeList.length === 0) scopeList = kawasan;
       qs(wrap, "#photosHint").textContent = state.selectedProv || (scopeList.length + " kawasan");
       qs(wrap, "#photoGallery").innerHTML = scopeList.slice(0, 6).map(function (k) {
         return '<div class="photo-thumb' + (state.selectedKawasan === k.id ? " selected" : "") + '" data-id="' + k.id + '">' +
-          '<img src="https://picsum.photos/seed/' + k.id + '/300/200" alt="Foto ilustratif ' + k.nama + '" loading="lazy" ' +
-          'onerror="this.closest(\'.photo-thumb\').style.display=\'none\'" />' +
+          cityIllustration(k, 300, 160) +
           '<span class="pt-label">' + k.nama + '</span></div>';
       }).join("");
       qsa(wrap, ".photo-thumb").forEach(function (t) {
@@ -1241,7 +1173,6 @@
       qsa(wrap, ".ms-btn").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.view === state.geoView); });
       if (state.geoView !== "dasar" && activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
       if (state.geoView === "dasar") renderDasar();
-      else if (state.geoView === "peta") renderPeta();
       else renderProvGrid();
     }
 
