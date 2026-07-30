@@ -7,37 +7,37 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
-    --bg: #0a0f1c;
-    --bg-2: #0d1526;
-    --panel: #111a2e;
-    --panel-2: #16213a;
-    --panel-3: #1c2a47;
-    --border: rgba(255, 255, 255, 0.08);
-    --border-soft: rgba(255, 255, 255, 0.05);
-    --text: #eef1f7;
-    --text-dim: #8fa0bd;
-    --text-faint: #5b6885;
-    --gold: #e8384a;
-    --gold-soft: rgba(232, 56, 74, 0.14);
-    --gold-line: rgba(232, 56, 74, 0.4);
-    --series-2: #4f9dff;
-    --good: #2ee6a0;
-    --good-soft: rgba(46, 230, 160, 0.14);
-    --warn: #ffc73c;
-    --warn-soft: rgba(255, 199, 60, 0.14);
-    --critical: #ff6b4a;
-    --critical-soft: rgba(255, 107, 74, 0.14);
+    --bg: #f3f7f3;
+    --bg-2: #eaf1ea;
+    --panel: #ffffff;
+    --panel-2: #f2f6f2;
+    --panel-3: #e6efe4;
+    --border: rgba(20, 40, 30, 0.10);
+    --border-soft: rgba(20, 40, 30, 0.06);
+    --text: #16241c;
+    --text-dim: #5b6b60;
+    --text-faint: #8fa097;
+    --gold: #1e7a4c;
+    --gold-soft: rgba(30, 122, 76, 0.12);
+    --gold-line: rgba(30, 122, 76, 0.35);
+    --series-2: #3b82f6;
+    --good: #16a34a;
+    --good-soft: rgba(22, 163, 74, 0.14);
+    --warn: #c2790f;
+    --warn-soft: rgba(194, 121, 15, 0.14);
+    --critical: #dc2626;
+    --critical-soft: rgba(220, 38, 38, 0.12);
     --radius: 10px;
   }
-  /* --gold is the app's one accent color (merah/red, per "merah putih" theme) — name kept as-is since it's threaded through ~25 rules below */
+  /* --gold is the app's one accent color (green, per the reference light/mint palette) — name kept as-is since it's threaded through ~25 rules below */
 
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
 
   body {
     background:
-      radial-gradient(1200px 600px at 15% -10%, rgba(232, 56, 74, 0.06), transparent 60%),
-      radial-gradient(1000px 700px at 100% 0%, rgba(79, 157, 255, 0.08), transparent 55%),
+      radial-gradient(1200px 600px at 15% -10%, rgba(30, 122, 76, 0.05), transparent 60%),
+      radial-gradient(1000px 700px at 100% 0%, rgba(59, 130, 246, 0.05), transparent 55%),
       var(--bg);
     color: var(--text);
     font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
@@ -66,7 +66,7 @@
     gap: 1rem;
     padding: 0 1.1rem;
     border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    background: linear-gradient(180deg, rgba(20,40,30,0.02), transparent);
     position: sticky;
     top: 0;
     z-index: 20;
@@ -76,9 +76,9 @@
 
   .brand-mark {
     width: 30px; height: 30px; border-radius: 7px;
-    background: linear-gradient(155deg, var(--gold), #8a1620);
+    background: linear-gradient(155deg, var(--gold), #0f4a2e);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 0.72rem; color: #1a1305;
+    font-weight: 800; font-size: 0.72rem; color: #eafbf0;
     flex: 0 0 auto;
   }
 
@@ -103,7 +103,7 @@
     font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--good);
     background: var(--good-soft);
-    border: 1px solid rgba(46,230,160,0.3);
+    border: 1px solid rgba(22,163,74,0.3);
     padding: 0.3rem 0.6rem; border-radius: 999px;
   }
 
@@ -113,8 +113,8 @@
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(62,207,142,0.5); }
-    50% { opacity: 0.55; box-shadow: 0 0 0 4px rgba(62,207,142,0); }
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(22,163,74,0.5); }
+    50% { opacity: 0.55; box-shadow: 0 0 0 4px rgba(22,163,74,0); }
   }
 
   .clock { font-size: 0.78rem; }
@@ -132,7 +132,7 @@
     border-right: 1px solid var(--border);
     padding: 0.9rem 0.6rem;
     overflow-y: auto;
-    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+    background: linear-gradient(180deg, rgba(20,40,30,0.015), transparent);
   }
 
   .rail-group-label {
@@ -236,7 +236,7 @@
     white-space: nowrap;
   }
   .badge.mandiri { background: var(--good-soft); color: var(--good); }
-  .badge.berkembang { background: rgba(79,157,255,0.18); color: #a9cdff; }
+  .badge.berkembang { background: rgba(29,78,216,0.10); color: #1d4ed8; }
   .badge.tumbuh { background: var(--warn-soft); color: var(--warn); }
   .badge.rintisan { background: var(--critical-soft); color: var(--critical); }
   .badge.dot::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
@@ -244,7 +244,7 @@
   .sev { font-size: 0.66rem; padding: 0.14rem 0.45rem; border-radius: 5px; font-weight: 700; letter-spacing: 0.04em; }
   .sev.high { background: var(--critical-soft); color: var(--critical); }
   .sev.med { background: var(--warn-soft); color: var(--warn); }
-  .sev.low { background: rgba(79,157,255,0.18); color: #a9cdff; }
+  .sev.low { background: rgba(29,78,216,0.10); color: #1d4ed8; }
 
   /* ---------- table ---------- */
   .table-wrap { overflow-x: auto; }
@@ -323,9 +323,11 @@
   .basemap-static-note { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.5rem; text-align: center; }
 
   /* ---------- geospasial layout: map stage + photo gallery + AI review ---------- */
-  .geo-grid-top { display: grid; grid-template-columns: 2.1fr 1fr; gap: 0.9rem; align-items: start; margin-bottom: 0.9rem; }
+  .geo-grid-top { display: grid; grid-template-columns: 2.1fr 1fr; gap: 0.9rem; align-items: stretch; margin-bottom: 0.9rem; }
   .geo-grid-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; align-items: start; }
   @media (max-width: 980px) { .geo-grid-top, .geo-grid-bottom { grid-template-columns: 1fr; } }
+
+  .geo-photos-panel { display: flex; flex-direction: column; }
 
   .geo-map-stage { position: relative; }
 
@@ -342,12 +344,12 @@
   .ms-btn:hover { color: var(--text); background: var(--panel-3); }
   .ms-btn[aria-pressed="true"] { color: var(--gold); background: var(--gold-soft); border-color: var(--gold-line); }
 
-  .photo-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.55rem; }
+  .photo-gallery { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; gap: 0.55rem; flex: 1 1 auto; min-height: 156px; }
   .photo-thumb { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; background: var(--panel-3); }
-  .photo-thumb svg { display: block; width: 100%; height: 78px; }
+  .photo-thumb svg, .photo-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .photo-thumb .pt-label {
     position: absolute; left: 0; right: 0; bottom: 0; padding: 0.25rem 0.4rem; font-size: 0.62rem;
-    background: linear-gradient(180deg, transparent, rgba(10, 15, 28, 0.88)); color: var(--text);
+    background: linear-gradient(180deg, transparent, rgba(10, 15, 28, 0.88)); color: #f3f7f3;
   }
   .photo-thumb.selected { outline: 2px solid var(--gold); }
 
@@ -441,7 +443,7 @@
   var STAGE_COLOR = { "Rintisan": "var(--critical)", "Tumbuh": "var(--warn)", "Berkembang": "var(--series-2)", "Mandiri": "var(--good)" };
   /* plain hex twins of STAGE_COLOR — Leaflet's SVG renderer sets fill as a raw attribute,
      which cannot resolve CSS custom properties, so var(--x) strings won't render there */
-  var STAGE_COLOR_HEX = { "Rintisan": "#ff6b4a", "Tumbuh": "#ffc73c", "Berkembang": "#4f9dff", "Mandiri": "#2ee6a0" };
+  var STAGE_COLOR_HEX = { "Rintisan": "#dc2626", "Tumbuh": "#c2790f", "Berkembang": "#3b82f6", "Mandiri": "#16a34a" };
   var activeLeafletMap = null;
 
   /* Baked-in static snapshot of real OpenStreetMap tiles (zoom 5) covering Indonesia, used only
@@ -506,7 +508,7 @@
     var gid = "sky" + k.id;
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustrasi kota ' + k.nama + '">' +
       '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0%" stop-color="#16213a"/><stop offset="55%" stop-color="#2c3f63"/><stop offset="100%" stop-color="#e8384a" stop-opacity="0.35"/>' +
+        '<stop offset="0%" stop-color="#16213a"/><stop offset="55%" stop-color="#2c3f63"/><stop offset="100%" stop-color="#1e7a4c" stop-opacity="0.35"/>' +
       '</linearGradient></defs>' +
       '<rect x="0" y="0" width="' + w + '" height="' + h + '" fill="url(#' + gid + ')"/>' +
       buildings + lights +
@@ -515,16 +517,16 @@
   }
 
   var kawasan = [
-    { id: "k1", nama: "SKP Salor", provinsi: "Papua Selatan", tipe: "SKP", tahap: "Berkembang", populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: "med", mapX: 840, mapY: 320, lat: -8.40, lon: 140.40 },
-    { id: "k2", nama: "KPB Rambutan", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Mandiri", populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: "low", mapX: 212, mapY: 231, lat: -3.05, lon: 104.75 },
-    { id: "k3", nama: "SKP Towuti", provinsi: "Sulawesi Tengah", tipe: "SKP", tahap: "Tumbuh", populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: "high", mapX: 498, mapY: 199, lat: -1.50, lon: 120.70 },
-    { id: "k4", nama: "KPB Malinau", provinsi: "Kalimantan Utara", tipe: "KPB", tahap: "Berkembang", populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: "med", mapX: 423, mapY: 102, lat: 3.58, lon: 116.63 },
-    { id: "k5", nama: "SKP Tobadak", provinsi: "Sulawesi Barat", tipe: "SKP", tahap: "Rintisan", populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: "high", mapX: 460, mapY: 225, lat: -2.32, lon: 119.15 },
-    { id: "k6", nama: "KPB Bathin III", provinsi: "Jambi", tipe: "KPB", tahap: "Mandiri", populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: "low", mapX: 181, mapY: 202, lat: -1.60, lon: 102.10 },
-    { id: "k7", nama: "SKP Bina Buay", provinsi: "Bengkulu", tipe: "SKP", tahap: "Tumbuh", populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: "med", mapX: 169, mapY: 248, lat: -3.80, lon: 102.30 },
-    { id: "k8", nama: "KPB Pulau Rimau", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Berkembang", populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: "low", mapX: 235, mapY: 210, lat: -2.85, lon: 104.55 },
-    { id: "k9", nama: "SKP Kobisonta", provinsi: "Maluku Utara", tipe: "SKP", tahap: "Rintisan", populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: "high", mapX: 618, mapY: 136, lat: -0.35, lon: 127.95 },
-    { id: "k10", nama: "KPB Air Terang", provinsi: "Kalimantan Tengah", tipe: "KPB", tahap: "Tumbuh", populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: "med", mapX: 369, mapY: 199, lat: -1.50, lon: 113.50 }
+    { id: "k1", nama: "SKP Salor", provinsi: "Papua Selatan", tipe: "SKP", tahap: "Berkembang", populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: "med", mapX: 840, mapY: 320, lat: -8.40, lon: 140.40, foto: "assets/kawasan/skp-salor/Lahan-Transmigran.jpg" },
+    { id: "k2", nama: "KPB Rambutan", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Mandiri", populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: "low", mapX: 212, mapY: 231, lat: -3.05, lon: 104.75, foto: "assets/kawasan/kpb-rambutan/623840349e326.jpg" },
+    { id: "k3", nama: "SKP Towuti", provinsi: "Sulawesi Tengah", tipe: "SKP", tahap: "Tumbuh", populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: "high", mapX: 498, mapY: 199, lat: -1.50, lon: 120.70, foto: "assets/kawasan/skp-towuti/transmigrasi-ant-basri-marzuki-msl.webp" },
+    { id: "k4", nama: "KPB Malinau", provinsi: "Kalimantan Utara", tipe: "KPB", tahap: "Berkembang", populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: "med", mapX: 423, mapY: 102, lat: 3.58, lon: 116.63, foto: "assets/kawasan/kpb-malinau/50_infrastruktur-sebagai-kunci-keberhasilan-program-transmigrasi_2026-06-28-23-08-26.jpg" },
+    { id: "k5", nama: "SKP Tobadak", provinsi: "Sulawesi Barat", tipe: "SKP", tahap: "Rintisan", populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: "high", mapX: 460, mapY: 225, lat: -2.32, lon: 119.15, foto: "assets/kawasan/skp-tobadak/transmigrasi-mutiara.jpg" },
+    { id: "k6", nama: "KPB Bathin III", provinsi: "Jambi", tipe: "KPB", tahap: "Mandiri", populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: "low", mapX: 181, mapY: 202, lat: -1.60, lon: 102.10, foto: "assets/kawasan/kpb-bathin-iii/2024-08-01-110703-kecamatan-bathin-solapan1.jpg" },
+    { id: "k7", nama: "SKP Bina Buay", provinsi: "Bengkulu", tipe: "SKP", tahap: "Tumbuh", populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: "med", mapX: 169, mapY: 248, lat: -3.80, lon: 102.30, foto: "assets/kawasan/skp-bina-buay/21c90dc1-9cb4-4fa6-a9d9-df1a8470433d_w1080_h608_s.avif" },
+    { id: "k8", nama: "KPB Pulau Rimau", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Berkembang", populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: "low", mapX: 235, mapY: 210, lat: -2.85, lon: 104.55, foto: "assets/kawasan/kpb-pulau-rimau/Picsart_25-08-05_09-20-34-780-1024x575.webp" },
+    { id: "k9", nama: "SKP Kobisonta", provinsi: "Maluku Utara", tipe: "SKP", tahap: "Rintisan", populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: "high", mapX: 618, mapY: 136, lat: -0.35, lon: 127.95, foto: "assets/kawasan/skp-kobisonta/WhatsApp-Image-2022-10-03-at-07.10.40.jpeg" },
+    { id: "k10", nama: "KPB Air Terang", provinsi: "Kalimantan Tengah", tipe: "KPB", tahap: "Tumbuh", populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: "med", mapX: 369, mapY: 199, lat: -1.50, lon: 113.50, foto: "assets/kawasan/kpb-air-terang/Sigulai_Simeulue.jpg" }
   ];
 
   var provinces = [];
@@ -1088,14 +1090,17 @@
       qs(wrap, "#geoAiReview").innerHTML = '<p class="desc" style="margin:0 0 0.8rem">' + narrative + '</p>' + listHtml;
     }
 
-    /* gallery of generated cityscape illustrations, scoped to the selected province if any */
+    /* gallery of kawasan photos (falls back to a generated cityscape illustration when a kawasan has no `foto`), scoped to the selected province if any */
     function renderGallery() {
       var scopeList = kawasan.filter(function (k) { return !state.selectedProv || k.provinsi === state.selectedProv; });
       if (scopeList.length === 0) scopeList = kawasan;
       qs(wrap, "#photosHint").textContent = state.selectedProv || (scopeList.length + " kawasan");
       qs(wrap, "#photoGallery").innerHTML = scopeList.slice(0, 6).map(function (k) {
+        var media = k.foto
+          ? '<img src="' + k.foto + '" alt="Foto ' + k.nama + '" loading="lazy" />'
+          : cityIllustration(k, 300, 160);
         return '<div class="photo-thumb' + (state.selectedKawasan === k.id ? " selected" : "") + '" data-id="' + k.id + '">' +
-          cityIllustration(k, 300, 160) +
+          media +
           '<span class="pt-label">' + k.nama + '</span></div>';
       }).join("");
       qsa(wrap, ".photo-thumb").forEach(function (t) {
