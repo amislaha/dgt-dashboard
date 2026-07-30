@@ -17,26 +17,27 @@
     --text: #eef1f7;
     --text-dim: #8fa0bd;
     --text-faint: #5b6885;
-    --gold: #c9a13b;
-    --gold-soft: rgba(201, 161, 59, 0.14);
-    --gold-line: rgba(201, 161, 59, 0.4);
-    --series-2: #5b7fae;
-    --good: #3ecf8e;
-    --good-soft: rgba(62, 207, 142, 0.14);
-    --warn: #f0b429;
-    --warn-soft: rgba(240, 180, 41, 0.14);
-    --critical: #ef5a6f;
-    --critical-soft: rgba(239, 90, 111, 0.14);
+    --gold: #e8384a;
+    --gold-soft: rgba(232, 56, 74, 0.14);
+    --gold-line: rgba(232, 56, 74, 0.4);
+    --series-2: #4f9dff;
+    --good: #2ee6a0;
+    --good-soft: rgba(46, 230, 160, 0.14);
+    --warn: #ffc73c;
+    --warn-soft: rgba(255, 199, 60, 0.14);
+    --critical: #ff6b4a;
+    --critical-soft: rgba(255, 107, 74, 0.14);
     --radius: 10px;
   }
+  /* --gold is the app's one accent color (merah/red, per "merah putih" theme) — name kept as-is since it's threaded through ~25 rules below */
 
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
 
   body {
     background:
-      radial-gradient(1200px 600px at 15% -10%, rgba(201, 161, 59, 0.06), transparent 60%),
-      radial-gradient(1000px 700px at 100% 0%, rgba(91, 127, 174, 0.08), transparent 55%),
+      radial-gradient(1200px 600px at 15% -10%, rgba(232, 56, 74, 0.06), transparent 60%),
+      radial-gradient(1000px 700px at 100% 0%, rgba(79, 157, 255, 0.08), transparent 55%),
       var(--bg);
     color: var(--text);
     font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
@@ -75,7 +76,7 @@
 
   .brand-mark {
     width: 30px; height: 30px; border-radius: 7px;
-    background: linear-gradient(155deg, var(--gold), #8a6d21);
+    background: linear-gradient(155deg, var(--gold), #8a1620);
     display: flex; align-items: center; justify-content: center;
     font-weight: 800; font-size: 0.72rem; color: #1a1305;
     flex: 0 0 auto;
@@ -102,7 +103,7 @@
     font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--good);
     background: var(--good-soft);
-    border: 1px solid rgba(62,207,142,0.3);
+    border: 1px solid rgba(46,230,160,0.3);
     padding: 0.3rem 0.6rem; border-radius: 999px;
   }
 
@@ -235,7 +236,7 @@
     white-space: nowrap;
   }
   .badge.mandiri { background: var(--good-soft); color: var(--good); }
-  .badge.berkembang { background: rgba(91,127,174,0.18); color: #8fb3e0; }
+  .badge.berkembang { background: rgba(79,157,255,0.18); color: #a9cdff; }
   .badge.tumbuh { background: var(--warn-soft); color: var(--warn); }
   .badge.rintisan { background: var(--critical-soft); color: var(--critical); }
   .badge.dot::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
@@ -243,7 +244,7 @@
   .sev { font-size: 0.66rem; padding: 0.14rem 0.45rem; border-radius: 5px; font-weight: 700; letter-spacing: 0.04em; }
   .sev.high { background: var(--critical-soft); color: var(--critical); }
   .sev.med { background: var(--warn-soft); color: var(--warn); }
-  .sev.low { background: rgba(91,127,174,0.18); color: #8fb3e0; }
+  .sev.low { background: rgba(79,157,255,0.18); color: #a9cdff; }
 
   /* ---------- table ---------- */
   .table-wrap { overflow-x: auto; }
@@ -453,7 +454,7 @@
   var STAGE_COLOR = { "Rintisan": "var(--critical)", "Tumbuh": "var(--warn)", "Berkembang": "var(--series-2)", "Mandiri": "var(--good)" };
   /* plain hex twins of STAGE_COLOR — Leaflet's SVG renderer sets fill as a raw attribute,
      which cannot resolve CSS custom properties, so var(--x) strings won't render there */
-  var STAGE_COLOR_HEX = { "Rintisan": "#ef5a6f", "Tumbuh": "#f0b429", "Berkembang": "#5b7fae", "Mandiri": "#3ecf8e" };
+  var STAGE_COLOR_HEX = { "Rintisan": "#ff6b4a", "Tumbuh": "#ffc73c", "Berkembang": "#4f9dff", "Mandiri": "#2ee6a0" };
   var activeLeafletMap = null;
 
   /* Baked-in static snapshot of real OpenStreetMap tiles (zoom 5) covering Indonesia, used only
@@ -518,7 +519,7 @@
     var gid = "sky" + k.id;
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustrasi kota ' + k.nama + '">' +
       '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0%" stop-color="#16213a"/><stop offset="55%" stop-color="#2c3f63"/><stop offset="100%" stop-color="#c9a13b" stop-opacity="0.35"/>' +
+        '<stop offset="0%" stop-color="#16213a"/><stop offset="55%" stop-color="#2c3f63"/><stop offset="100%" stop-color="#e8384a" stop-opacity="0.35"/>' +
       '</linearGradient></defs>' +
       '<rect x="0" y="0" width="' + w + '" height="' + h + '" fill="url(#' + gid + ')"/>' +
       buildings + lights +
@@ -956,6 +957,7 @@
           '</div>' +
         '</div>' +
         '<div class="panel geo-photos-panel"><div class="panel-header"><h2>Foto-foto</h2><span class="hint" id="photosHint">kawasan</span></div>' +
+          '<div class="drawer" id="dasarInfo" style="margin-bottom:0.7rem"></div>' +
           '<div class="photo-gallery" id="photoGallery"></div></div>' +
       '</div>' +
       '<div class="geo-grid-bottom">' +
@@ -965,6 +967,18 @@
           '<div id="geoAiReview"></div></div>' +
       '</div>'
     );
+
+    /* kawasan detail card, shown above the photo gallery — kept in sync with whichever control (map pin, gallery thumbnail, province tile) last changed the selection */
+    function renderKawasanInfo() {
+      var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
+      var infoEl = qs(wrap, "#dasarInfo");
+      if (!infoEl) return;
+      if (!k) { infoEl.innerHTML = '<p class="empty">Klik penanda pada peta atau foto untuk melihat detail kawasan.</p>'; return; }
+      infoEl.innerHTML = '<h3>' + k.nama + '</h3>' +
+        '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
+        '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
+        '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>';
+    }
 
     /* ---- grid-of-provinces view (original) ---- */
     function renderProvGrid() {
@@ -996,7 +1010,8 @@
         qsa(grid, ".prov-tile").forEach(function (t) {
           t.addEventListener("click", function () {
             state.selectedProv = state.selectedProv === t.dataset.p ? null : t.dataset.p;
-            draw(); renderReview(); renderGallery();
+            state.selectedKawasan = null;
+            draw(); renderReview(); renderGallery(); renderKawasanInfo();
           });
         });
       }
@@ -1023,8 +1038,7 @@
       }
 
       body.innerHTML = '<div class="basemap-wrap"><div class="basemap-el" id="basemapEl"></div></div>' +
-        '<p class="peta-caption">Lokasi indikatif berdasarkan provinsi kawasan — bukan koordinat resmi kementerian.</p>' +
-        '<div class="drawer" id="dasarInfo" style="margin-top:0.7rem"></div>';
+        '<p class="peta-caption">Lokasi indikatif berdasarkan provinsi kawasan — bukan koordinat resmi kementerian.</p>';
 
       var map = L.map(qs(wrap, "#basemapEl"), { scrollWheelZoom: false, attributionControl: false }).setView([-2.2, 118], 5);
       L.control.attribution({ position: "topright" }).addTo(map);
@@ -1034,17 +1048,6 @@
       }).addTo(map);
 
       var maxPop = Math.max.apply(null, kawasan.map(function (k) { return k.populasi; }));
-
-      function renderDasarInfo() {
-        var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
-        var infoEl = qs(wrap, "#dasarInfo");
-        if (!infoEl) return;
-        if (!k) { infoEl.innerHTML = '<p class="empty">Klik penanda pada peta untuk melihat detail kawasan.</p>'; return; }
-        infoEl.innerHTML = '<h3>' + k.nama + '</h3>' +
-          '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
-          '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
-          '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>';
-      }
 
       kawasan.forEach(function (k) {
         var radius = 6 + (k.populasi / maxPop) * 10;
@@ -1056,12 +1059,12 @@
           '<br/>Populasi: ' + k.populasi.toLocaleString("id-ID") + ' jiwa');
         marker.on("click", function () {
           state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
-          renderDasarInfo(); renderReview(); renderGallery(); renderLocator();
+          renderKawasanInfo(); renderReview(); renderGallery(); renderLocator();
         });
       });
 
       activeLeafletMap = map;
-      renderDasarInfo();
+      renderKawasanInfo();
       setTimeout(function () { map.invalidateSize(); }, 60);
     }
 
@@ -1078,19 +1081,7 @@
           }).join("") +
           '<span class="bm-attrib">&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></span>' +
         '</div>' +
-        '<p class="basemap-static-note">Cuplikan statis (tanpa geser/perbesar) — pratinjau ini memblokir peta interaktif langsung. Lokasi indikatif berdasarkan provinsi kawasan.</p>' +
-        '<div class="drawer" id="dasarInfo" style="margin-top:0.7rem"></div>';
-
-      function renderDasarInfo() {
-        var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
-        var infoEl = qs(wrap, "#dasarInfo");
-        if (!infoEl) return;
-        if (!k) { infoEl.innerHTML = '<p class="empty">Klik penanda pada peta untuk melihat detail kawasan.</p>'; return; }
-        infoEl.innerHTML = '<h3>' + k.nama + '</h3>' +
-          '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
-          '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
-          '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>';
-      }
+        '<p class="basemap-static-note">Cuplikan statis (tanpa geser/perbesar) — pratinjau ini memblokir peta interaktif langsung. Lokasi indikatif berdasarkan provinsi kawasan.</p>';
 
       qsa(wrap, ".bm-pin").forEach(function (pin) {
         pin.addEventListener("click", function () {
@@ -1098,12 +1089,12 @@
           var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
           state.selectedProv = k.provinsi;
           qsa(wrap, ".bm-pin").forEach(function (p2) { p2.classList.toggle("selected", p2 === pin); });
-          renderDasarInfo();
+          renderKawasanInfo();
           renderReview(); renderGallery(); renderLocator();
         });
       });
 
-      renderDasarInfo();
+      renderKawasanInfo();
     }
 
     /* AI-style narrative review + top HPL–SHM gap ranking, scoped to state.selectedProv */
@@ -1148,7 +1139,7 @@
         t.addEventListener("click", function () {
           var k = kawasan.find(function (x) { return x.id === t.dataset.id; });
           state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
-          renderSebaran(); renderGallery(); renderLocator(); renderReview();
+          renderSebaran(); renderGallery(); renderLocator(); renderReview(); renderKawasanInfo();
         });
       });
     }
@@ -1187,6 +1178,7 @@
     renderReview();
     renderGallery();
     renderLocator();
+    renderKawasanInfo();
     return wrap;
   }
 
