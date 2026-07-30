@@ -328,12 +328,10 @@
   @media (max-width: 980px) { .geo-grid-top, .geo-grid-bottom { grid-template-columns: 1fr; } }
 
   .geo-map-stage { position: relative; }
-  #sebaranBody { padding-bottom: 3.2rem; }
 
   .map-style-switch {
-    position: absolute; left: 0.6rem; bottom: 0.6rem; z-index: 5;
-    display: flex; gap: 0.25rem; background: rgba(10, 15, 28, 0.72); border: 1px solid var(--border);
-    border-radius: 9px; padding: 0.3rem;
+    display: flex; gap: 0.25rem; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 0.3rem; margin-bottom: 0.7rem; width: fit-content;
   }
   .ms-btn {
     display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
@@ -341,19 +339,8 @@
     color: var(--text-dim); padding: 0.3rem 0.55rem; cursor: pointer; font-size: 0.6rem;
   }
   .ms-btn svg { width: 16px; height: 16px; }
-  .ms-btn:hover { color: var(--text); background: var(--panel-2); }
+  .ms-btn:hover { color: var(--text); background: var(--panel-3); }
   .ms-btn[aria-pressed="true"] { color: var(--gold); background: var(--gold-soft); border-color: var(--gold-line); }
-
-  .map-locator {
-    position: absolute; right: 0.6rem; bottom: 0.6rem; z-index: 5; width: 118px;
-    background: rgba(10, 15, 28, 0.72); border: 1px solid var(--border); border-radius: 9px;
-    padding: 0.35rem; text-align: center;
-  }
-  .map-locator svg { width: 100%; height: auto; display: block; }
-  .map-locator .loc-label {
-    font-size: 0.6rem; color: var(--text-faint); display: block; margin-top: 0.15rem;
-    letter-spacing: 0.05em; text-transform: uppercase;
-  }
 
   .photo-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.55rem; }
   .photo-thumb { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; background: var(--panel-3); }
@@ -736,29 +723,6 @@
     return svg;
   }
 
-  /* smooth closed curve through a small set of anchor points (Catmull-Rom -> cubic Bezier) */
-  function smoothClosedPath(points) {
-    var n = points.length, d = "";
-    for (var i = 0; i < n; i++) {
-      var p0 = points[(i - 1 + n) % n], p1 = points[i], p2 = points[(i + 1) % n], p3 = points[(i + 2) % n];
-      if (i === 0) d += "M " + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + " ";
-      var c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
-      var c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
-      d += "C " + c1x.toFixed(1) + " " + c1y.toFixed(1) + ", " + c2x.toFixed(1) + " " + c2y.toFixed(1) + ", " + p2[0].toFixed(1) + " " + p2[1].toFixed(1) + " ";
-    }
-    return d + "Z";
-  }
-
-  /* schematic island silhouettes, positioned by rough longitude/latitude — illustrative, not survey-accurate */
-  var ISLANDS = [
-    { name: "", muted: true, points: [[150,300],[250,285],[350,295],[420,305],[400,325],[300,330],[200,325],[150,315]] },
-    { name: "SUMATERA", labelX: 105, labelY: 60, points: [[150,25],[235,85],[268,180],[248,275],[160,345],[95,305],[65,205],[85,95]] },
-    { name: "KALIMANTAN", labelX: 415, labelY: 45, points: [[340,80],[430,50],[500,90],[520,170],[480,250],[400,270],[330,230],[310,150]] },
-    { name: "SULAWESI", labelX: 505, labelY: 300, points: [[460,150],[500,110],[560,80],[600,110],[575,155],[590,220],[545,275],[480,270],[445,215],[440,170]] },
-    { name: "MALUKU", labelX: 635, labelY: 70, points: [[590,100],[630,90],[655,120],[645,160],[610,170],[585,140]] },
-    { name: "PAPUA", labelX: 775, labelY: 45, points: [[700,70],[800,60],[870,110],[880,220],[850,330],[780,390],[720,370],[680,280],[670,180],[680,110]] }
-  ];
-
   /* ============ app state / router ============ */
 
   var ICON_PATHS = {
@@ -947,13 +911,12 @@
       pageHead("Geospasial, HPL, SHM & Legalitas Lahan", "Tumpang susun peta digital Hak Pengelolaan Lahan (HPL) dan Sertifikat Hak Milik (SHM) transmigran untuk mendukung Trans Tuntas.") +
       '<div class="geo-grid-top">' +
         '<div class="panel geo-map-panel"><div class="panel-header"><h2 id="sebaranTitle">Peta Kawasan</h2><span class="hint" id="sebaranHint">klik titik untuk detail kawasan</span></div>' +
+          '<div class="map-style-switch" id="styleSwitch">' +
+            '<button class="ms-btn" data-view="dasar" title="Peta Dasar">' + miniIconSvg("dasar") + '<span>Dasar</span></button>' +
+            '<button class="ms-btn" data-view="grid" title="Grid Provinsi">' + miniIconSvg("grid") + '<span>Grid</span></button>' +
+          '</div>' +
           '<div class="geo-map-stage">' +
             '<div id="sebaranBody"></div>' +
-            '<div class="map-style-switch" id="styleSwitch">' +
-              '<button class="ms-btn" data-view="dasar" title="Peta Dasar">' + miniIconSvg("dasar") + '<span>Dasar</span></button>' +
-              '<button class="ms-btn" data-view="grid" title="Grid Provinsi">' + miniIconSvg("grid") + '<span>Grid</span></button>' +
-            '</div>' +
-            '<div class="map-locator"><svg viewBox="0 0 900 420" id="locatorSvg"></svg><span class="loc-label">Indonesia</span></div>' +
           '</div>' +
         '</div>' +
         '<div class="panel geo-photos-panel"><div class="panel-header"><h2>Foto-foto</h2><span class="hint" id="photosHint">kawasan</span></div>' +
@@ -1059,7 +1022,7 @@
           '<br/>Populasi: ' + k.populasi.toLocaleString("id-ID") + ' jiwa');
         marker.on("click", function () {
           state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
-          renderKawasanInfo(); renderReview(); renderGallery(); renderLocator();
+          renderKawasanInfo(); renderReview(); renderGallery();
         });
       });
 
@@ -1090,7 +1053,7 @@
           state.selectedProv = k.provinsi;
           qsa(wrap, ".bm-pin").forEach(function (p2) { p2.classList.toggle("selected", p2 === pin); });
           renderKawasanInfo();
-          renderReview(); renderGallery(); renderLocator();
+          renderReview(); renderGallery();
         });
       });
 
@@ -1139,25 +1102,9 @@
         t.addEventListener("click", function () {
           var k = kawasan.find(function (x) { return x.id === t.dataset.id; });
           state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
-          renderSebaran(); renderGallery(); renderLocator(); renderReview(); renderKawasanInfo();
+          renderSebaran(); renderGallery(); renderReview(); renderKawasanInfo();
         });
       });
-    }
-
-    /* small "you are here" locator inset — reuses the schematic ISLANDS geometry at a tiny scale */
-    function renderLocator() {
-      var svg = qs(wrap, "#locatorSvg");
-      svg.innerHTML = "";
-      ISLANDS.forEach(function (isl) {
-        el("path", {
-          d: smoothClosedPath(isl.points), fill: "var(--panel-3)", stroke: "var(--border)",
-          "stroke-width": 2, opacity: isl.muted ? 0.3 : 0.8
-        }, svg);
-      });
-      var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
-      var dotX = k ? k.mapX : 450, dotY = k ? k.mapY : 210;
-      el("circle", { cx: dotX, cy: dotY, r: 16, fill: "var(--gold)", opacity: 0.3 }, svg);
-      el("circle", { cx: dotX, cy: dotY, r: 6, fill: "var(--gold)", stroke: "var(--bg)", "stroke-width": 2 }, svg);
     }
 
     function renderSebaran() {
@@ -1177,7 +1124,6 @@
     renderSebaran();
     renderReview();
     renderGallery();
-    renderLocator();
     renderKawasanInfo();
     return wrap;
   }
