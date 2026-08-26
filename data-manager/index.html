@@ -1,9 +1,9 @@
-<title>SVKE Data Manager — Kawasan Transmigrasi</title>
+<title>DGT Data Manager — Kawasan Transmigrasi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<!-- Standalone CRUD admin tool for the SVKE dashboard's master data (dgt-dashboard-repo). Not
-     connected to that repo at runtime — it's a separate, self-contained HTML file (no build step,
-     no server) that edits data in this browser's localStorage and lets you copy the result out as
-     ready-to-paste JS array literals (or plain JSON) for index.html's data layer. See README.md. -->
+<!-- Standalone CRUD admin tool for the DGT dashboard's master data (sibling folder ../dashboard/ in
+     this repo). Not connected to it at runtime — it's a separate, self-contained HTML file (no
+     build step, no server) that edits data in this browser's localStorage and lets you copy the
+     result out as ready-to-paste JS array literals (or plain JSON). See README.md. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -59,7 +59,7 @@
     width: 30px; height: 30px; border-radius: var(--radius-sm); flex: 0 0 auto;
     background: linear-gradient(155deg, var(--primary), #081826);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 0.72rem; color: #f4f8fa;
+    font-weight: 800; font-size: 0.6rem; letter-spacing: -0.02em; color: #f4f8fa;
   }
   .brand-text { line-height: 1.2; }
   .brand-text .name { font-weight: 700; font-size: 0.86rem; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -187,9 +187,9 @@
 </style>
 
 <div class="topbar">
-  <div class="brand-mark">DT</div>
+  <div class="brand-mark">DGT</div>
   <div class="brand-text">
-    <div class="name">SVKE Data Manager</div>
+    <div class="name">DGT Data Manager</div>
     <div class="sub">Master data wilayah, organisasi &amp; kinerja transmigrasi — mengikuti ERD DTG 2026</div>
   </div>
 </div>
@@ -356,7 +356,7 @@
     ]
   };
 
-  var STORAGE_PREFIX = "svke-crud:";
+  var STORAGE_PREFIX = "dgt-data-manager:";
 
   /* ============ entity definitions ============
      `titleField` names the field shown in delete-confirm dialogs and used as the display value

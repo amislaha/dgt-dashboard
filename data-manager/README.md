@@ -1,6 +1,6 @@
-# SVKE Data Manager
+# DGT Data Manager
 
-A standalone CRUD admin tool for master data used by the SVKE ecosystem (the [dashboard](../dashboard) situation-room tool and related apps in this same repo — see the [repo home page](../index.html) for the full list). It's a single self-contained `index.html` — no build step, no server, no dependencies beyond a Google Fonts request for typeface parity with the dashboard.
+A standalone CRUD admin tool for master data used by the DGT (Digital Governance Transmigration) ecosystem (the [dashboard](../dashboard) situation-room tool and related apps in this same repo — see the [repo home page](../index.html) for the full list). It's a single self-contained `index.html` — no build step, no server, no dependencies beyond a Google Fonts request for typeface parity with the dashboard.
 
 ## Data model
 

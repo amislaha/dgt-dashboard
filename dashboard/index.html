@@ -1,4 +1,4 @@
-<title>SVKE — Executive Decision Support · Kawasan Transmigrasi</title>
+<title>DGT — Digital Governance Transmigration</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <!-- Leaflet powers the real-world basemap in the Geospasial module. Loaded from a CDN, so it
      only works where external requests are allowed (GitHub Pages) — the schematic map and
@@ -133,11 +133,6 @@
 
   .clock { font-size: 0.78rem; }
 
-  .data-note {
-    font-size: 0.68rem; color: var(--text-faint);
-    border: 1px solid var(--border); padding: 0.25rem 0.55rem; border-radius: 6px;
-  }
-
   /* ---------- shell ---------- */
   .shell { display: flex; flex: 1 1 auto; min-height: 0; }
 
@@ -208,6 +203,8 @@
   .btn.primary { background: var(--primary-soft); border-color: var(--primary-line); color: var(--primary); }
   .btn.small { padding: 0.3rem 0.55rem; font-size: 0.7rem; }
   .btn[aria-pressed="true"] { background: var(--primary-soft); border-color: var(--primary-line); color: var(--primary); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn:disabled:hover { border-color: var(--border); }
 
   /* ---------- kpi grid ---------- */
   .kpi-grid {
@@ -310,7 +307,6 @@
   .prov-tile.selected { outline: 2px solid var(--primary); }
 
   /* ---------- basemap (Leaflet) view ---------- */
-  .peta-caption { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.5rem; text-align: center; }
   .basemap-wrap { border-radius: 8px; overflow: hidden; border: 1px solid var(--border-soft); }
   .basemap-el { width: 100%; height: 360px; background: var(--panel-2); }
   .basemap-fallback {
@@ -408,8 +404,6 @@
   .ews-body .d { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.1rem; }
   .ews-meta { font-size: 0.66rem; color: var(--text-faint); margin-top: 0.25rem; }
 
-  .footnote { color: var(--text-faint); font-size: 0.7rem; margin-top: 1.5rem; padding-top: 0.9rem; border-top: 1px dashed var(--border); }
-
   @media (max-width: 760px) {
     .rail { position: fixed; left: -240px; top: 56px; bottom: 0; z-index: 30; transition: left 0.2s ease; background: var(--bg-2); }
     .rail.open { left: 0; }
@@ -427,12 +421,11 @@
   <div class="brand">
     <div class="brand-mark">5T</div>
     <div class="brand-text">
-      <div class="name">SVKE · Situation Room</div>
-      <div class="sub">Sistem Visualisasi Keputusan Eksekutif — Kawasan Transmigrasi</div>
+      <div class="name">DGT · Situation Room</div>
+      <div class="sub">Digital Governance Transmigration — Kawasan Transmigrasi</div>
     </div>
   </div>
   <div class="topbar-right">
-    <span class="data-note">Data ilustratif — prototipe tampilan</span>
     <span class="clock mono" id="clock">--:--:--</span>
     <span class="live-pill"><span class="live-dot"></span>Live</span>
   </div>
@@ -1016,8 +1009,7 @@
         return;
       }
 
-      body.innerHTML = '<div class="basemap-wrap"><div class="basemap-el" id="basemapEl"></div></div>' +
-        '<p class="peta-caption">Lokasi indikatif berdasarkan provinsi kawasan — bukan koordinat resmi kementerian.</p>';
+      body.innerHTML = '<div class="basemap-wrap"><div class="basemap-el" id="basemapEl"></div></div>';
 
       var map = L.map(qs(wrap, "#basemapEl"), { scrollWheelZoom: false, attributionControl: false }).setView([-2.2, 118], 5);
       L.control.attribution({ position: "topright" }).addTo(map);
@@ -1060,7 +1052,7 @@
           }).join("") +
           '<span class="bm-attrib">&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></span>' +
         '</div>' +
-        '<p class="basemap-static-note">Cuplikan statis (tanpa geser/perbesar) — pratinjau ini memblokir peta interaktif langsung. Lokasi indikatif berdasarkan provinsi kawasan.</p>';
+        '<p class="basemap-static-note">Cuplikan statis (tanpa geser/perbesar).</p>';
 
       qsa(wrap, ".bm-pin").forEach(function (pin) {
         pin.addEventListener("click", function () {
@@ -1305,10 +1297,9 @@
         '<div class="panel"><div class="panel-header"><h2>Laporan Strategis</h2></div>' +
         '<p class="desc">Ringkasan otomatis kondisi seluruh kawasan untuk bahan rapat pimpinan, disusun dari data 8 modul di atas.</p>' +
         '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.6rem">' +
-          '<button class="btn primary small">Unduh Ringkasan PDF</button>' +
-          '<button class="btn small">Jadwalkan Laporan Mingguan</button>' +
+          '<button class="btn primary small" disabled>Unduh Ringkasan PDF</button>' +
+          '<button class="btn small" disabled>Jadwalkan Laporan Mingguan</button>' +
         '</div>' +
-        '<p class="footnote" style="margin-top:1rem">Tindakan di atas dinonaktifkan pada prototipe ini — memerlukan integrasi backend pelaporan.</p>' +
         '</div>' +
         '<div class="panel"><div class="panel-header"><h2>AI Assistant</h2><span class="hint">tanya cepat seputar data kawasan</span></div>' +
         '<div class="chat-log" id="chatLog"></div>' +
@@ -1348,7 +1339,7 @@
       if (s.indexOf("indeks") > -1 || s.indexOf("5t") > -1) {
         return "Rata-rata Indeks 5T nasional adalah <b>" + nationalKPI.avgIndeks + " / 100</b>, dengan kawasan tertinggi " + kawasan.slice().sort(function (a, b) { return b.indeks5t - a.indeks5t; })[0].nama + ".";
       }
-      return "Saya belum memiliki jawaban spesifik untuk itu pada data prototipe ini. Coba tanyakan tentang: kawasan mandiri, risiko tinggi, realisasi anggaran, atau indeks 5T.";
+      return "Saya belum memiliki jawaban spesifik untuk itu. Coba tanyakan tentang: kawasan mandiri, risiko tinggi, realisasi anggaran, atau indeks 5T.";
     }
 
     function send(text) {
@@ -1381,10 +1372,6 @@
   function render() {
     mainEl.innerHTML = "";
     mainEl.appendChild(RENDERERS[state.tab]());
-    var footnote = document.createElement("div");
-    footnote.className = "footnote";
-    footnote.textContent = "SVKE — Prototipe visualisasi. Seluruh angka pada dasbor ini bersifat ilustratif untuk keperluan demonstrasi antarmuka, bukan data resmi kementerian.";
-    mainEl.appendChild(footnote);
   }
 
   /* ---------- clock ---------- */

@@ -1,4 +1,4 @@
-<title>SVKE — Sistem Visualisasi Keputusan Eksekutif</title>
+<title>DGT — Digital Governance Transmigration</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <!-- Repo home / launcher page. Sits at the GitHub Pages root and links out to the tools that live
      in this same repo as sibling subfolders (dashboard/, data-manager/). Self-contained, same
@@ -30,7 +30,6 @@
     --primary-line: rgba(22, 59, 84, 0.35);
     --series-2: #33809c;
     --sidebar: #081826;
-    --warn: #c09546;
     --radius: 10px;
     --radius-sm: 8px;
   }
@@ -101,8 +100,7 @@
     background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
     width: 100%; max-width: 360px; padding: 1.8rem 1.7rem 1.6rem;
   }
-  .login-card h1 { font-size: 1.15rem; margin: 0 0 0.3rem; text-align: left; letter-spacing: normal; }
-  .login-card > p { margin: 0 0 1.4rem; color: var(--text-dim); font-size: 0.82rem; line-height: 1.55; }
+  .login-card h1 { font-size: 1.15rem; margin: 0 0 1.3rem; text-align: left; letter-spacing: normal; }
   .field { margin-bottom: 0.9rem; }
   .field label { display: block; font-size: 0.72rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-dim); }
   .field input {
@@ -117,11 +115,6 @@
     border-radius: var(--radius-sm); padding: 0.65rem 0.8rem; cursor: pointer;
   }
   .login-submit:hover { background: #102c40; }
-  .login-note {
-    display: flex; gap: 0.5rem; align-items: flex-start; margin-top: 1.1rem;
-    font-size: 0.68rem; color: var(--text-faint); line-height: 1.55;
-  }
-  .login-note svg { width: 14px; height: 14px; flex: 0 0 auto; margin-top: 0.1rem; color: var(--warn); }
 
   .logout-link {
     margin-top: 2rem; font-size: 0.72rem; color: var(--text-faint);
@@ -133,12 +126,11 @@
 
 <div id="loginView" class="view">
   <div class="header">
-    <div class="mark">DT</div>
+    <div class="mark">DGT</div>
     <div class="eyebrow">Kementerian Transmigrasi</div>
   </div>
   <form class="login-card" id="loginForm" autocomplete="off">
-    <h1>Masuk ke SVKE</h1>
-    <p>Sistem Visualisasi Keputusan Eksekutif — kawasan transmigrasi.</p>
+    <h1>Masuk ke DGT</h1>
     <div class="field">
       <label for="loginUser">Nama pengguna</label>
       <input type="text" id="loginUser" name="username" required placeholder="cth. admin" />
@@ -148,10 +140,6 @@
       <input type="password" id="loginPass" name="password" required placeholder="••••••••" />
     </div>
     <button type="submit" class="login-submit">Masuk</button>
-    <div class="login-note">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
-      <span>Halaman demo — bukan autentikasi sungguhan. Kredensial apa pun akan diterima; ini bukan alat kontrol akses.</span>
-    </div>
   </form>
 </div>
 
@@ -159,8 +147,8 @@
 <div class="header">
   <div class="mark">DT</div>
   <div class="eyebrow">Kementerian Transmigrasi</div>
-  <h1>SVKE — Sistem Visualisasi Keputusan Eksekutif</h1>
-  <p>Prototipe situation-room untuk kepemimpinan kawasan transmigrasi. Pilih salah satu alat di bawah untuk melanjutkan.</p>
+  <h1>DGT — Digital Governance Transmigration</h1>
+  <p>Pilih salah satu alat di bawah untuk melanjutkan.</p>
 </div>
 
 <div class="cards">
@@ -168,7 +156,7 @@
     <div class="card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
     </div>
-    <h2>Dashboard SVKE</h2>
+    <h2>Dashboard DGT</h2>
     <p>War-room 8 modul: profil kawasan, geospasial, demografi, infrastruktur, monitoring anggaran, ekonomi, analitik prioritas, dan asisten AI.</p>
     <span class="go">Buka dashboard
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
@@ -180,7 +168,7 @@
     <div class="card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>
     </div>
-    <h2>SVKE Data Manager</h2>
+    <h2>DGT Data Manager</h2>
     <p>Alat CRUD untuk master data mengikuti ERD DTG 2026 — WPT/SKP/SP, komoditi, program, satker, personel, dan IKU.</p>
     <span class="go">Buka data manager
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
@@ -190,8 +178,7 @@
 </div>
 
 <footer>
-  Data pada kedua alat ini bersifat ilustratif, bukan data resmi kementerian.
-  Sumber &amp; dokumentasi ada di <a href="https://github.com/amislaha/dgt-dashboard" target="_blank" rel="noopener">repo GitHub</a>.
+  <a href="https://github.com/amislaha/dgt-dashboard" target="_blank" rel="noopener">Repo GitHub</a>
   <br />
   <button type="button" class="logout-link" id="logoutBtn">Keluar</button>
 </footer>
@@ -200,7 +187,7 @@
 <script>
   (function () {
     "use strict";
-    var KEY = "svke-auth";
+    var KEY = "dgt-auth";
     var loginView = document.getElementById("loginView");
     var launcherView = document.getElementById("launcherView");
 
