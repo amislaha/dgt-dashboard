@@ -453,6 +453,13 @@
   .hud .bar-track { background: rgba(255,255,255,0.12); }
   .hud .bar-fill { background: #6fc7de; }
 
+  .hud-ews-list { max-height: 200px; overflow-y: auto; }
+  .hud .ews-item { border-bottom-color: rgba(255,255,255,0.1); }
+  .hud .ews-body .d { color: rgba(234,242,246,0.6); }
+  .hud .ews-meta { color: rgba(234,242,246,0.4); }
+  .hud .ews-item .btn { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.14); color: #eaf2f6; }
+  .hud .ews-item .btn:hover { border-color: rgba(255,255,255,0.3); }
+
   /* ---- right-side "Detail Kawasan" panel — top-anchored (not full-height) so the chat FAB has room in the bottom-right corner ---- */
   .hud-sidebar-right {
     position: absolute; z-index: 20; top: 16px; right: 16px; width: 300px;
@@ -1109,7 +1116,7 @@
           '<div class="hud-status">' +
             '<div class="hud-status-row"><span><span class="dot"></span>Sistem</span><b>Online</b></div>' +
             '<div class="hud-status-row"><span>Kawasan terpantau</span><b>' + kawasan.length + '</b></div>' +
-            '<div class="hud-status-row"><span>Peringatan aktif</span><b>' + ewsAlerts.filter(function (a) { return !a.ack; }).length + '</b></div>' +
+            '<div class="hud-status-row"><span>Peringatan aktif</span><b id="geoAlertCount">' + ewsAlerts.filter(function (a) { return !a.ack; }).length + '</b></div>' +
           '</div>' +
           hudSection("basemap", "Peta Dasar",
             '<div class="hud-radio-list" id="styleSwitch">' +
@@ -1117,6 +1124,7 @@
               '<button class="hud-radio" data-view="grid">' + miniIconSvg("grid") + '<span>Grid Provinsi</span></button>' +
             '</div>'
           ) +
+          hudSection("ews", "Peringatan Dini (EWS)", '<div class="hud-ews-list" id="ewsHudList"></div>') +
           hudSection("list", "Daftar Kawasan", '<div class="hud-kawasan-list" id="kawasanList"></div>', true) +
         '</aside>' +
 
@@ -1189,6 +1197,30 @@
     renderChatLog();
 
     /* ---- "Daftar Kawasan" list — click selects a kawasan, kept in sync with map pin / province tile clicks ---- */
+    /* ---- "Peringatan Dini (EWS)" — same ewsAlerts data + ack toggle as the Analitik module's list ---- */
+    function renderEwsHud() {
+      var listEl = qs(wrap, "#ewsHudList");
+      var sevLabel = { high: "Tinggi", med: "Sedang", low: "Rendah" };
+      listEl.innerHTML = ewsAlerts.length
+        ? ewsAlerts.map(function (a) {
+            return '<div class="ews-item' + (a.ack ? " ack" : "") + '">' +
+              '<span class="sev ' + a.sev + '">' + sevLabel[a.sev] + '</span>' +
+              '<div class="ews-body"><div class="t">' + a.title + '</div><div class="d">' + a.detail + '</div>' +
+              '<div class="ews-meta">' + a.when + '</div></div>' +
+              '<button class="btn small" data-ack="' + a.id + '">' + (a.ack ? "Dibuka" : "Tandai") + '</button>' +
+            '</div>';
+          }).join("")
+        : '<p class="hud-empty">Tidak ada peringatan aktif.</p>';
+      qsa(listEl, "[data-ack]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var a = ewsAlerts.find(function (x) { return x.id === btn.dataset.ack; });
+          a.ack = !a.ack;
+          renderEwsHud();
+          qs(wrap, "#geoAlertCount").textContent = ewsAlerts.filter(function (x) { return !x.ack; }).length;
+        });
+      });
+    }
+
     function renderKawasanList() {
       var listEl = qs(wrap, "#kawasanList");
       listEl.innerHTML = kawasan.map(function (k) {
@@ -1358,6 +1390,7 @@
       btn.addEventListener("click", function () { state.geoView = btn.dataset.view; renderSebaran(); });
     });
 
+    renderEwsHud();
     renderKawasanList();
     renderDetail();
     renderSebaran();
