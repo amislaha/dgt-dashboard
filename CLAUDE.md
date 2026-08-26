@@ -4,16 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-A prototype build of **SVKE** (Sistem Visualisasi Keputusan Eksekutif — Executive Decision Support Visualization System), a situation-room dashboard for Indonesia's transmigration-area (kawasan transmigrasi) leadership. There is no build system, package manager, or test suite — everything is static, dependency-free HTML/CSS/vanilla JS.
+A prototype build of **SVKE** (Sistem Visualisasi Keputusan Eksekutif — Executive Decision Support Visualization System) for Indonesia's transmigration-area (kawasan transmigrasi) leadership, plus a companion CRUD tool for its master data. There is no build system, package manager, or test suite anywhere in this repo — everything is static, dependency-free HTML/CSS/vanilla JS, one self-contained `index.html` per tool.
 
-- `DGT.md` — the original spec (in Indonesian). Describes the system as an 8-module "war room" control panel meant for large-format displays (LED video wall / 4K), covering: area profiles (5T indicators), land legality (HPL/SHM geospatial overlay), demographics, infrastructure & cross-ministry collaboration, program/budget monitoring, economic/investment potential, priority scoring & early warning, and executive intelligence/AI assistant. Treat this file as the source of truth for what each module is supposed to do.
-- `index.html` — the single-file implementation of the dashboard described above, and the file GitHub Pages serves directly from the repo root. This is the file to edit — it is the only copy; there is no separate source file to keep in sync.
+## Repository layout
 
-This directory **is** the git repository (`git init`'d here, remote `origin` → `amislaha/dgt-dashboard` on GitHub). Work directly in this folder.
+This directory **is** the git repository (`git init`'d here, remote `origin` → `amislaha/dgt-dashboard` on GitHub) and also the GitHub Pages site root — every push to `master` redeploys https://amislaha.github.io/dgt-dashboard/ within a minute or two. It holds three independent static sites as sibling folders, each a single self-contained `index.html` (own inline `<style>`/`<script>`, own copy of the shared design tokens — there is no shared build step to keep them in sync, so a token change made in one does not propagate to the others automatically):
+
+- **`index.html`** (repo root) — the **home/launcher page**: https://amislaha.github.io/dgt-dashboard/. Just static cards linking to the two tools below; no data, no `<script>`. Add a new card here if a new tool is added as another sibling folder.
+- **`dashboard/`** — the SVKE situation-room dashboard itself: https://amislaha.github.io/dgt-dashboard/dashboard/. `dashboard/index.html` is described in full under "Architecture of dashboard/index.html" below — it's the file to edit for anything dashboard-related, the only copy, no separate source file to keep in sync. `dashboard/assets/kawasan/` holds real per-kawasan photos (see that section).
+- **`data-manager/`** — "SVKE Data Manager": https://amislaha.github.io/dgt-dashboard/data-manager/. A standalone CRUD admin tool (add/edit/delete, browser-localStorage-backed, no server) for master data modeled on `ERD DTG 2026 (1).xlsx` (WPT/SKP/SP territorial hierarchy, komoditi, program, satker, personel, IKU) — **not** the same data model as the dashboard's illustrative `kawasan` array, and not connected to the dashboard at runtime. See `data-manager/README.md` for its entity list, data-quality caveats inherited from the source spreadsheet, and how to move data out of it (export JSON / copy-as-JS).
+- `DGT.md` — the original spec (in Indonesian) for the dashboard. Describes it as an 8-module "war room" control panel meant for large-format displays (LED video wall / 4K), covering: area profiles (5T indicators), land legality (HPL/SHM geospatial overlay), demographics, infrastructure & cross-ministry collaboration, program/budget monitoring, economic/investment potential, priority scoring & early warning, and executive intelligence/AI assistant. Treat this file as the source of truth for what each dashboard module is supposed to do.
 
 ## Common commands
 
-There is nothing to install or build. To preview, just open `index.html` in a browser.
+There is nothing to install or build. To preview a tool, just open its `index.html` in a browser (the root launcher's relative links between folders only resolve over `http(s)://`, e.g. via GitHub Pages or a local static server — opening the root `index.html` directly as `file://` still works for the links themselves, since browsers follow relative `file://` paths too).
 
 To save and publish a change:
 
@@ -23,11 +27,11 @@ git commit -m "..."
 git push
 ```
 
-Commits should be small and describe the user-visible change (e.g. "Add schematic map view to Geospasial module"), since the main reason this repo exists is to make it easy to look back at `git log` or revert (`git revert`/`git checkout <hash> -- index.html`) to a prior working state.
+Commits should be small and describe the user-visible change (e.g. "Add schematic map view to Geospasial module"), since the main reason this repo exists is to make it easy to look back at `git log` or revert (`git revert`/`git checkout <hash> -- dashboard/index.html`) to a prior working state.
 
-The GitHub repo is `amislaha/dgt-dashboard` (public, required for free GitHub Pages). Pages is configured to serve `index.html` from the `master` branch root — every push to `master` redeploys the live site at https://amislaha.github.io/dgt-dashboard/ within a minute or two.
+The GitHub repo is `amislaha/dgt-dashboard` (public, required for free GitHub Pages).
 
-## Architecture of index.html
+## Architecture of dashboard/index.html
 
 Everything lives in one file: inline `<style>`, inline `<script>`. The only external requests are the Leaflet CDN (`<link>`/`<script>` in `<head>`) and OpenStreetMap tiles used by the real basemap — everything else, including all imagery, is self-contained. This matters if the file is ever hosted as a Claude Artifact, which has a strict CSP blocking any external CDN/tile request: the live basemap degrades gracefully there (see below), but only actually works on GitHub Pages.
 

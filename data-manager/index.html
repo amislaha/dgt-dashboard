@@ -1,0 +1,858 @@
+<title>SVKE Data Manager — Kawasan Transmigrasi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- Standalone CRUD admin tool for the SVKE dashboard's master data (dgt-dashboard-repo). Not
+     connected to that repo at runtime — it's a separate, self-contained HTML file (no build step,
+     no server) that edits data in this browser's localStorage and lets you copy the result out as
+     ready-to-paste JS array literals (or plain JSON) for index.html's data layer. See README.md. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* Same token set as dgt-dashboard-repo/index.html's :root (synced from the DGT Transmigrasi 2026
+     Figma file), duplicated here since this is an intentionally separate, standalone project. */
+  :root {
+    --bg: #f7f9fa;
+    --bg-2: #eff3f5;
+    --panel: #ffffff;
+    --panel-2: #eff3f5;
+    --panel-3: #eef2f6;
+    --border: #dfe6ea;
+    --border-soft: rgba(15, 25, 34, 0.06);
+    --text: #0f1922;
+    --text-dim: #5b6b76;
+    --text-faint: #97a7b2;
+    --primary: #163b54;
+    --primary-soft: rgba(22, 59, 84, 0.12);
+    --primary-line: rgba(22, 59, 84, 0.35);
+    --series-2: #33809c;
+    --series-2-soft: rgba(51, 128, 156, 0.14);
+    --good: #1f5d47;
+    --good-soft: rgba(31, 93, 71, 0.14);
+    --warn: #c09546;
+    --warn-soft: rgba(192, 149, 70, 0.14);
+    --critical: #ce1126;
+    --critical-soft: rgba(206, 17, 38, 0.12);
+    --radius: 10px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: "Plus Jakarta Sans", -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px; -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column; min-height: 100vh;
+  }
+  .mono { font-family: "JetBrains Mono", "Cascadia Code", "Consolas", ui-monospace, SFMono-Regular, monospace; font-variant-numeric: tabular-nums; }
+  a { color: inherit; }
+  button, input, select, textarea { font-family: inherit; }
+  :focus-visible { outline: 2px dashed var(--primary); outline-offset: 2px; }
+
+  /* ---------- topbar ---------- */
+  .topbar {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 1rem;
+    padding: 0.8rem 1.3rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: var(--radius-sm); flex: 0 0 auto;
+    background: linear-gradient(155deg, var(--primary), #081826);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.72rem; color: #f4f8fa;
+  }
+  .brand-text { line-height: 1.2; }
+  .brand-text .name { font-weight: 700; font-size: 0.86rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .brand-text .sub { font-size: 0.72rem; color: var(--text-dim); }
+
+  /* ---------- layout ---------- */
+  .shell { display: flex; flex: 1 1 auto; min-height: 0; }
+  .rail {
+    width: 220px; flex: 0 0 auto; border-right: 1px solid var(--border);
+    padding: 0.9rem 0.6rem; background: var(--panel); overflow-y: auto;
+  }
+  .rail-item {
+    display: block; width: 100%; text-align: left; background: transparent;
+    border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer;
+    color: var(--text-dim); padding: 0.6rem 0.7rem; margin-bottom: 0.2rem; font-size: 0.82rem;
+  }
+  .rail-item .rc { display: block; font-size: 0.68rem; color: var(--text-faint); margin-top: 0.1rem; }
+  .rail-item:hover { background: var(--panel-2); color: var(--text); }
+  .rail-item.active { background: var(--primary-soft); border-color: var(--primary-line); color: var(--text); font-weight: 600; }
+
+  .main { flex: 1 1 auto; min-width: 0; overflow-y: auto; padding: 1.2rem 1.4rem 3rem; }
+
+  .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .page-head h1 { margin: 0; font-size: 1.15rem; font-weight: 700; }
+  .page-head .desc { margin: 0.2rem 0 0; color: var(--text-dim); font-size: 0.8rem; max-width: 60ch; }
+  .toolbar { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+  .btn {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 0.45rem 0.8rem; font-size: 0.78rem; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--primary-line); }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: #f4f8fa; font-weight: 600; }
+  .btn.primary:hover { background: #102c40; }
+  .btn.danger { color: var(--critical); }
+  .btn.danger:hover { border-color: var(--critical); }
+  .btn.small { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
+
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%; background: var(--panel); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 0.5rem 0.65rem; font-size: 0.82rem;
+  }
+  input:invalid { border-color: var(--critical); }
+  textarea { min-height: 76px; resize: vertical; font-family: inherit; }
+
+  .search-box { position: relative; }
+  .search-box input { width: 220px; padding-left: 2rem; }
+  .search-box svg { position: absolute; left: 0.55rem; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-faint); }
+
+  /* ---------- table ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th {
+    text-align: left; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-faint); font-weight: 600; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--border);
+    white-space: nowrap; background: var(--panel-2);
+  }
+  td {
+    padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--border-soft); vertical-align: middle;
+    white-space: nowrap; max-width: 340px; overflow: hidden; text-overflow: ellipsis;
+  }
+  tbody tr:hover { background: var(--panel-2); }
+  tbody tr:last-child td { border-bottom: none; }
+  .row-actions { display: flex; gap: 0.35rem; }
+  .empty-row td { text-align: center; color: var(--text-faint); padding: 2rem; font-style: italic; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.66rem;
+    padding: 0.14rem 0.5rem; border-radius: 999px; text-transform: uppercase;
+    letter-spacing: 0.03em; font-weight: 600; white-space: nowrap;
+    background: var(--panel-3); color: var(--text-dim);
+  }
+
+  /* ---------- slide-over form panel ---------- */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(15, 25, 34, 0.4);
+    opacity: 0; pointer-events: none; transition: opacity 0.15s ease; z-index: 30;
+  }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 400px; max-width: 92vw;
+    background: var(--panel); border-left: 1px solid var(--border);
+    transform: translateX(100%); transition: transform 0.18s ease;
+    display: flex; flex-direction: column; z-index: 31;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head { padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .drawer-head h2 { margin: 0; font-size: 1rem; }
+  .drawer-close { background: transparent; border: none; cursor: pointer; color: var(--text-faint); font-size: 1.1rem; padding: 0.2rem 0.5rem; }
+  .drawer-body { padding: 1.1rem 1.2rem; overflow-y: auto; flex: 1 1 auto; }
+  .field { margin-bottom: 0.9rem; }
+  .field label { display: block; font-size: 0.72rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-dim); }
+  .field .hint { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.25rem; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+  .drawer-foot { padding: 0.9rem 1.2rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+  /* ---------- export modal ---------- */
+  .modal-scrim {
+    position: fixed; inset: 0; background: rgba(15, 25, 34, 0.5);
+    display: none; align-items: center; justify-content: center; z-index: 40; padding: 2rem;
+  }
+  .modal-scrim.open { display: flex; }
+  .modal {
+    background: var(--panel); border-radius: var(--radius); width: 640px; max-width: 100%;
+    max-height: 84vh; display: flex; flex-direction: column; border: 1px solid var(--border);
+  }
+  .modal-head { padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-head h2 { margin: 0; font-size: 1rem; }
+  .modal-body { padding: 1rem 1.2rem; overflow-y: auto; }
+  .modal-body textarea {
+    width: 100%; min-height: 320px; resize: vertical; font-size: 0.74rem; line-height: 1.5;
+    font-family: "JetBrains Mono", monospace; white-space: pre; background: var(--panel-2);
+  }
+  .modal-foot { padding: 0.9rem 1.2rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+  .toast {
+    position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%) translateY(10px);
+    background: var(--text); color: #fff; padding: 0.55rem 1rem; border-radius: 999px;
+    font-size: 0.78rem; opacity: 0; pointer-events: none; transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+
+<div class="topbar">
+  <div class="brand-mark">DT</div>
+  <div class="brand-text">
+    <div class="name">SVKE Data Manager</div>
+    <div class="sub">Master data wilayah, organisasi &amp; kinerja transmigrasi — mengikuti ERD DTG 2026</div>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="rail" id="rail"></div>
+  <div class="main" id="main"></div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2 id="drawerTitle">Tambah data</h2>
+    <button class="drawer-close" id="drawerClose" aria-label="Tutup">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot">
+    <button class="btn" id="drawerCancel">Batal</button>
+    <button class="btn primary" id="drawerSave">Simpan</button>
+  </div>
+</div>
+
+<div class="modal-scrim" id="exportScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="exportTitle">Ekspor data</h2>
+      <button class="drawer-close" id="exportClose" aria-label="Tutup">✕</button>
+    </div>
+    <div class="modal-body">
+      <textarea id="exportText" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="exportCopy">Salin ke clipboard</button>
+      <button class="btn primary" id="exportDownload">Unduh file</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============ seed data — transcribed from "ERD DTG 2026 (1).xlsx" (Dimension, Indikator Kerja
+     Utama, Personel, Master Program Utama, Satuan Wilayah WPT/SKP/SP, Komoditi sheets). A few sheets
+     in that workbook (Master Satker Relasi, Struktur Wilayah, Fact Table) were left out — they were
+     either placeholder/"dst" sample rows or, for Fact Table, had no columns defined at all. Some
+     source rows are themselves incomplete or inconsistent (e.g. SP "SKP A Timika" has no matching
+     SKP record) — transcribed as-is rather than silently fixed. ============ */
+  var SEED = {
+    wpt: [
+      { id: "wpt1", nama: "WPT Lunang Silaut", provinsi: "Sumatera Barat", kabupaten: "Pesisir Selatan" },
+      { id: "wpt2", nama: "WPT Mesuji", provinsi: "Lampung", kabupaten: "Mesuji" },
+      { id: "wpt3", nama: "WPT Rasau Jaya", provinsi: "Kalimantan Barat", kabupaten: "Kubu Raya" },
+      { id: "wpt4", nama: "WPT Teluk Dalam", provinsi: "Kalimantan Timur", kabupaten: "Kutai Kartanegara" },
+      { id: "wpt5", nama: "WPT Batulicin", provinsi: "Kalimantan Selatan", kabupaten: "Tanah Bumbu" },
+      { id: "wpt6", nama: "WPT Maluku Tengah", provinsi: "Maluku", kabupaten: "Maluku Tengah" },
+      { id: "wpt7", nama: "WPT Tobadak", provinsi: "Sulawesi Barat", kabupaten: "Mamuju Tengah" },
+      { id: "wpt8", nama: "WPT Salor / Merauke", provinsi: "Papua Selatan", kabupaten: "Merauke" },
+      { id: "wpt9", nama: "WPT Timika / SP-Jagamin", provinsi: "Papua Tengah", kabupaten: "Mimika" },
+      { id: "wpt10", nama: "WPT Labuan Uki", provinsi: "Sulawesi Utara", kabupaten: "Bolaang Mongondow" }
+    ],
+    skp: [
+      { id: "skp1", nama: "SKP A Lunang", provinsi: "Sumatera Barat", kabupaten: "Pesisir Selatan", indukWpt: "WPT Lunang Silaut", cakupanSp: "SP 1 Lunang, SP 2 Lunang, SP 3 Lunang" },
+      { id: "skp2", nama: "SKP B Silaut", provinsi: "Sumatera Barat", kabupaten: "Pesisir Selatan", indukWpt: "WPT Lunang Silaut", cakupanSp: "SP 1 Silaut, SP 2 Silaut, SP 3 Silaut" },
+      { id: "skp3", nama: "SKP C Mesuji Pusat", provinsi: "Lampung", kabupaten: "Mesuji", indukWpt: "WPT Mesuji", cakupanSp: "SP 1 Mesuji, SP 2 Mesuji, SP Kota Terpadu Mandiri" },
+      { id: "skp4", nama: "SKP A Rasau", provinsi: "Kalimantan Barat", kabupaten: "Kubu Raya", indukWpt: "WPT Rasau Jaya", cakupanSp: "SP 1 Rasau Jaya I, SP 2 Rasau Jaya II" },
+      { id: "skp5", nama: "SKP B Sungai Raya", provinsi: "Kalimantan Barat", kabupaten: "Kubu Raya", indukWpt: "WPT Rasau Jaya", cakupanSp: "SP 3 Rasau Jaya III, SP 4 Sungai Raya" },
+      { id: "skp6", nama: "SKP A Tenggarong", provinsi: "Kalimantan Timur", kabupaten: "Kutai Kartanegara", indukWpt: "WPT Teluk Dalam", cakupanSp: "SP 1 Tenggarong Seberang, SP 2 Tenggarong Seberang" },
+      { id: "skp7", nama: "SKP B Sebulu", provinsi: "Kalimantan Timur", kabupaten: "Kutai Kartanegara", indukWpt: "WPT Teluk Dalam", cakupanSp: "SP 1 Sebulu, SP 2 Sebulu" },
+      { id: "skp8", nama: "SKP A Tobadak", provinsi: "Sulawesi Barat", kabupaten: "Mamuju Tengah", indukWpt: "WPT Tobadak", cakupanSp: "SP 1 Tobadak, SP 2 Tobadak, SP 3 Tobadak" },
+      { id: "skp9", nama: "SKP A Salor", provinsi: "Papua Selatan", kabupaten: "Merauke", indukWpt: "WPT Salor / Merauke", cakupanSp: "SP 1 Salor, SP 2 Salor" },
+      { id: "skp10", nama: "SKP B Kurik", provinsi: "Papua Selatan", kabupaten: "Merauke", indukWpt: "WPT Salor / Merauke", cakupanSp: "SP 3 Kurik, SP 4 Kurik" }
+    ],
+    sp: [
+      { id: "sp1", nama: "SP 1 Lunang", jenisStatus: "SP Bina / PUG", provinsi: "Sumatera Barat", kabupaten: "Pesisir Selatan", indukSkp: "SKP A Lunang", indukWpt: "WPT Lunang Silaut", kk: 500 },
+      { id: "sp2", nama: "SP 2 Silaut", jenisStatus: "SP Mandiri", provinsi: "Sumatera Barat", kabupaten: "Pesisir Selatan", indukSkp: "SKP B Silaut", indukWpt: "WPT Lunang Silaut" },
+      { id: "sp3", nama: "SP 1 Mesuji", jenisStatus: "SP Bina", provinsi: "Lampung", kabupaten: "Mesuji", indukSkp: "SKP C Mesuji Pusat", indukWpt: "WPT Mesuji" },
+      { id: "sp4", nama: "SP KTM Mesuji", jenisStatus: "SP Kota Terpadu", provinsi: "Lampung", kabupaten: "Mesuji", indukSkp: "SKP C Mesuji Pusat", indukWpt: "WPT Mesuji" },
+      { id: "sp5", nama: "SP 1 Rasau Jaya I", jenisStatus: "SP Swakarsa", provinsi: "Kalimantan Barat", kabupaten: "Kubu Raya", indukSkp: "SKP A Rasau", indukWpt: "WPT Rasau Jaya" },
+      { id: "sp6", nama: "SP 2 Rasau Jaya II", jenisStatus: "SP Mandiri", provinsi: "Kalimantan Barat", kabupaten: "Kubu Raya", indukSkp: "SKP A Rasau", indukWpt: "WPT Rasau Jaya" },
+      { id: "sp7", nama: "SP 1 Tenggarong Seberang", jenisStatus: "SP Mandiri", provinsi: "Kalimantan Timur", kabupaten: "Kutai Kartanegara", indukSkp: "SKP A Tenggarong", indukWpt: "WPT Teluk Dalam" },
+      { id: "sp8", nama: "SP 2 Sebulu", jenisStatus: "SP Bina", provinsi: "Kalimantan Timur", kabupaten: "Kutai Kartanegara", indukSkp: "SKP B Sebulu", indukWpt: "WPT Teluk Dalam" },
+      { id: "sp9", nama: "SP 1 Tobadak", jenisStatus: "SP Bina", provinsi: "Sulawesi Barat", kabupaten: "Mamuju Tengah", indukSkp: "SKP A Tobadak", indukWpt: "WPT Tobadak" },
+      { id: "sp10", nama: "SP 1 Salor", jenisStatus: "SP Mandiri", provinsi: "Papua Selatan", kabupaten: "Merauke", indukSkp: "SKP A Salor", indukWpt: "WPT Salor / Merauke" },
+      { id: "sp11", nama: "SP 3 Kurik", jenisStatus: "SP Bina", provinsi: "Papua Selatan", kabupaten: "Merauke", indukSkp: "SKP B Kurik", indukWpt: "WPT Salor / Merauke" },
+      { id: "sp12", nama: "SP 1 Timika", jenisStatus: "SP Bina", provinsi: "Papua Tengah", kabupaten: "Mimika", indukSkp: "SKP A Timika", indukWpt: "WPT Timika" }
+    ],
+    komoditi: [
+      { id: "kom1", nama: "Padi" }, { id: "kom2", nama: "Perkebunan" }, { id: "kom3", nama: "Industri" }
+    ],
+    produkUnggulan: [],
+    program: [
+      { id: "prog1", jenisTransmigrasi: "TRANSMIGRASI TUNTAS", singkatan: "T2", keterangan: "Trans Tuntas (kepastian hukum lahan): Fokus menyelesaikan sengketa, pendataan ulang, dan penerbitan sertifikat tanah agar status lahan di kawasan transmigrasi benar-benar jelas (clean and clear)." },
+      { id: "prog2", jenisTransmigrasi: "TRANSMIGRASI LOKAL", singkatan: "Lokal", keterangan: "Trans Lokal (warga lokal sebagai pelaku utama): Menjadikan penduduk lokal di sekitar kawasan sebagai pelaku utama agar ikut merasakan manfaat pemerataan pembangunan." },
+      { id: "prog3", jenisTransmigrasi: "TRANSMIGRASI PATRIOT", singkatan: "Patriot", keterangan: "Trans Patriot (agen perubahan dari anak muda): Melibatkan generasi muda dan kaum terpelajar untuk membawa teknologi serta inovasi ke daerah transmigrasi." },
+      { id: "prog4", jenisTransmigrasi: "TRANSMIGRASI KARYA NUSA", singkatan: "Karya Nusa", keterangan: "Trans Karya Nusa (pertumbuhan ekonomi kawasan): Bertujuan menumbuhkan pusat-pusat ekonomi baru dan membuka lapangan kerja di wilayah transmigrasi." },
+      { id: "prog5", jenisTransmigrasi: "TRANSMIGRASI GOTONG ROYONG", singkatan: "Gotorng Royong", keterangan: "Trans Gotong Royong (kolaborasi lintas sektor): Membangun kerja sama yang kuat antara pemerintah pusat, daerah, masyarakat, dan dunia usaha atau swasta." }
+    ],
+    satker: [
+      { id: "sat1", nama: "Menteri Transmigrasi", level: 1, eselon: "Non-Eselon", keterangan: "Pejabat Negara (Muhammad Iftitah Sulaiman Suryanagara)" },
+      { id: "sat2", nama: "Wakil Menteri Transmigrasi", level: 2, eselon: "Non-Eselon", keterangan: "Pejabat Negara (Viva Yoga Mauladi)" },
+      { id: "sat3", nama: "Sekretariat Jenderal", level: 3, eselon: "Eselon I.a", keterangan: "Unsur Pembina / Pendukung Administrasi" },
+      { id: "sat4", nama: "Biro Perencanaan, Kerja Sama, dan Humas", level: 5, eselon: "Eselon II.a", keterangan: "Unsur Pelaksana Admin / Program" },
+      { id: "sat5", nama: "Biro Keuangan dan BMN", level: 5, eselon: "Eselon II.a", keterangan: "Unsur Pengelolaan Keuangan & Aset" },
+      { id: "sat6", nama: "Biro Organisasi, SDM, dan RB", level: 5, eselon: "Eselon II.a", keterangan: "Unsur Pengelolaan Kelembagaan & ASN" },
+      { id: "sat7", nama: "Biro Hukum", level: 5, eselon: "Eselon II.a", keterangan: "Unsur Layanan Perundang-undangan" },
+      { id: "sat8", nama: "Biro Umum dan Layanan Pengadaan", level: 5, eselon: "Eselon II.a", keterangan: "Unsur Rumah Tangga & Pengadaan" },
+      { id: "sat9", nama: "Inspektorat Jenderal", level: 3, eselon: "Eselon I.a", keterangan: "Unsur Pengawas Internal" },
+      { id: "sat10", nama: "Sekretariat Inspektorat Jenderal", level: 5, eselon: "Eselon II.a", keterangan: "Support Pengawasan" },
+      { id: "sat11", nama: "Inspektorat I", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Audit & Pengawasan" },
+      { id: "sat12", nama: "Inspektorat II", level: 6, eselon: "Eselon II.a", keterangan: "Pelaksana Audit & Pengawasan" },
+      { id: "sat13", nama: "Ditjen Pembangunan & Pengembangan Kawasan Transmigrasi (PPK Transmigrasi)", level: 3, eselon: "Eselon I.a", keterangan: "Unsur Pelaksana Teknis Kawasan" },
+      { id: "sat14", nama: "Sekretariat Direktorat Jenderal", level: 5, eselon: "Eselon II.a", keterangan: "Support Administrasi Ditjen" },
+      { id: "sat15", nama: "Direktorat Perencanaan Perwujudan Kawasan Transmigrasi", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Teknis Perencanaan" },
+      { id: "sat16", nama: "Direktorat Pembangunan Kawasan Transmigrasi", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Teknis Pembangunan" },
+      { id: "sat17", nama: "Direktorat Fasilitas Penataan Persebaran Penduduk", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Teknis Sebaran Penduduk" },
+      { id: "sat18", nama: "Direktorat Pengembangan Satuan Permukiman", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Teknis Permukiman" },
+      { id: "sat19", nama: "Direktorat Pengembangan Kawasan Permukiman", level: 6, eselon: "Eselon II.a", keterangan: "Pelaksana Teknis Permukiman" },
+      { id: "sat20", nama: "Ditjen Pengembangan Ekonomi & Pemberdayaan Masyarakat Transmigrasi (PEM Transmigrasi)", level: 3, eselon: "Eselon I.a", keterangan: "Unsur Pelaksana Teknis Pemberdayaan" },
+      { id: "sat21", nama: "Sekretariat Direktorat Jenderal (PEM)", level: 5, eselon: "Eselon II.a", keterangan: "Support Administrasi Ditjen" },
+      { id: "sat22", nama: "Direktorat Perencanaan Teknis Pengembangan Ekonomi dan Pemberdayaan", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Teknis Pengembangan" },
+      { id: "sat23", nama: "Direktorat Pengembangan Kelembagaan & Ekonomi", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Teknis Pengembangan" },
+      { id: "sat24", nama: "Direktorat Pengembangan Produk Unggulan", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Teknis Pengembangan" },
+      { id: "sat25", nama: "Direktorat Promosi & Pemasaran", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Produk & Pemasaran" },
+      { id: "sat26", nama: "Direktorat Pemberdayaan Masyarakat Transmigrasi", level: 5, eselon: "Eselon II.a", keterangan: "Pelaksana Teknis Pemberdayaan" },
+      { id: "sat27", nama: "Staf Ahli Menteri", level: 4, eselon: "Eselon I.b", keterangan: "Unsur Pembantu Pimpinan (Bidang Teknis)" },
+      { id: "sat28", nama: "Pusat Setrategi Kebijakan Transmigrasi", level: 3, eselon: "Eselon II.a" },
+      { id: "sat29", nama: "Pusat Pengembangan SDM", level: 3, eselon: "Eselon II.a" },
+      { id: "sat30", nama: "Pusat Data dan Informasi", level: 3, eselon: "Eselon II.a" },
+      { id: "sat31", nama: "Balai Besar Pelatihan", level: 6, eselon: "Eselon I.b" },
+      { id: "sat32", nama: "Balai Pelatihan", level: 6, eselon: "Eselon III.a" }
+    ],
+    personel: [
+      { id: "per1", nama: "Suherman", nip: "123456789012", golongan: "IV-a", jabatan: "Kepala", satker: "Sekretariat Direktorat Jenderal" },
+      { id: "per2", nama: "Suherman", nip: "123456789012", golongan: "IV-a", jabatan: "Wakil Kepala", satker: "Sekretariat Direktorat Jenderal" },
+      { id: "per3", nama: "Suherman", nip: "123456789012", golongan: "IV-a", jabatan: "Kepala", satker: "Sekretariat Direktorat Jenderal" }
+    ],
+    iku: [
+      { id: "iku1", kode: "1-CP", satker: "Direktorat Pengembangan Kawasan Transmigrasi", satuan: "Indeks", jenisProgram: "TRANSMIGRASI TUNTAS", indikator: "Nilai rata-rata Indeks Transformasi 45 Kawasan Transmigrasi", pic: "Elis Sampe Andi, S.E, M.M", sasaranStrategis: "SS.1 Terwujudnya transformasi Kawasan transmigrasi menjadi pusat pertumbuhan lokal" },
+      { id: "iku2", kode: "2a-CP", satker: "Direktur Fasilitas Penataan Persebaran Penduduk di Kawasan Transmigrasi (FP3KT)", satuan: "Persen", jenisProgram: "TRANSMIGRASI TUNTAS", indikator: "Persentase kepastian hukum status lahan yang terselesaikan", pic: "La Ode Muhajirin, S.IP, M.Si", sasaranStrategis: "SS.2 Meningkatnya persentase lahan transmigrasi yang tersertifikasi dan dimanfaatkan secara produktif" },
+      { id: "iku3", kode: "2b-CP", satker: "Direktur Fasilitas Penataan Persebaran Penduduk di Kawasan Transmigrasi (FP3KT)", satuan: "Persen", indikator: "Persentase dukungan fasilitasi legalisasi tanah Transmigrasi", pic: "La Ode Muhajirin, S.IP, M.Si", sasaranStrategis: "SS.2 Meningkatnya persentase lahan transmigrasi yang tersertifikasi dan dimanfaatkan secara produktif" },
+      { id: "iku4", kode: "3a-CP", satker: "Direktur Pembangunan Kawasan Transmigrasi (PKT)", satuan: "Persen", indikator: "Persentase pembangunan prasarana, sarana, dan utilitas untuk transmigran lokal", pic: "Robi Suherman Ponglabba, ST, MT", sasaranStrategis: "SS.3 Terciptanya ekosistem dalam pengembangan kawasan yang berbasis potensi lokal dan penguatan kapasitas masyarakat transmigran" },
+      { id: "iku5", kode: "3b-CP", satker: "Direktur Pembangunan Kawasan Transmigrasi (PKT)", satuan: "Persen", indikator: "Persentase transmigran lokal yang ditempatkan", pic: "Ria Fajarianti, S.E., M.M", sasaranStrategis: "SS.3 Terciptanya ekosistem dalam pengembangan kawasan yang berbasis potensi lokal dan penguatan kapasitas masyarakat transmigran" },
+      { id: "iku6", kode: "4-CP", satker: "Direktur Pembangunan Kawasan Transmigrasi (PKT)", satuan: "Persen", indikator: "Persentase pembangunan prasarana, sarana, dan utilitas umum untuk transmigran patriot", pic: "Robi Suherman Ponglabba, ST, MT", sasaranStrategis: "SS.4 Terwujudnya SDM yang unggul melalui pendampingan dan transfer pengetahuan untuk mendukung kemandirian kawasan transmigrasi" },
+      { id: "iku7", kode: "5a-CP", satker: "Direktur Pembangunan Kawasan Transmigrasi (PKT)", satuan: "Persen", indikator: "Persentase pembangunan prasarana, sarana, dan utilitas umum untuk transmigran Karya Nusantara", pic: "Robi Suherman Ponglabba, ST, MT", sasaranStrategis: "SS.5 Terwujudnya pemerataan perekonomian di Indonesia melalui pengembangan kawasan ekonomi transmigrasi terintegrasi yang berdaya saing" },
+      { id: "iku8", kode: "5b-CP", satker: "Direktur Pembangunan Kawasan Transmigrasi (PKT)", satuan: "Persen", indikator: "Persentase transmigran yang ditempatkan melalui program Trans Karya Nusantara", pic: "Ria Fajarianti, S.E., M.M", sasaranStrategis: "SS.5 Terwujudnya pemerataan perekonomian di Indonesia melalui pengembangan kawasan ekonomi transmigrasi terintegrasi yang berdaya saing" },
+      { id: "iku9", kode: "6-CP", satker: "Direktur Pengembangan Kawasan Transmigrasi", satuan: "Indeks", indikator: "Nilai rata-rata indeks transformasi Kawasan Transmigrasi Prioritas Kementerian", pic: "Elis Sampe Andi, S.E, M.M", sasaranStrategis: "SS.6 Terwujudnya kawasan transmigrasi yang mandiri dan berdaya saing melalui percepatan pembangunan infrastruktur dasar, penguatan ekonomi berbasis potensi daerah, serta integrasi sosial yang harmonis" },
+      { id: "iku10", kode: "7a-N", satker: "Direktur Fasilitas Penataan Persebaran Penduduk di Kawasan Transmigrasi (FP3KT)", satuan: "Persen", indikator: "Persentase lahan transmigrasi yang telah terbit SK dan Sertipikat HPL Transmigrasi", pic: "La Ode Muhajirin, S.IP, M.Si", sasaranStrategis: "SS.7 Terselenggaranya legalisasi dan pemanfaatan lahan transmigrasi secara optimal guna menjamin kepastian hukum dan mendukung produktivitas kawasan transmigrasi" },
+      { id: "iku11", kode: "7b-N", satker: "Direktur Fasilitas Penataan Persebaran Penduduk di Kawasan Transmigrasi (FP3KT)", satuan: "Persen", indikator: "Persentase tanah transmigrasi yang telah terbit sertipikat hak milik (SHM)", pic: "Edy Wibowo, S.T., M.M", sasaranStrategis: "SS.7 Terselenggaranya legalisasi dan pemanfaatan lahan transmigrasi secara optimal guna menjamin kepastian hukum dan mendukung produktivitas kawasan transmigrasi" },
+      { id: "iku12", kode: "8-N", satker: "Direktur Pembangunan Kawasan Transmigrasi (PKT)", satuan: "Persen", indikator: "Persentase Satuan Permukiman/Pusat Satuan Pengembangan/Kawasan Perkotaan Baru yang dibangun prasarana, sarana, dan utilitas umum untuk transmigrasi lokal", pic: "Robi Suherman Ponglabba, ST, MT", sasaranStrategis: "SS.8 Terwujudnya pembangunan Sarana, Prasarana dan Utilitas Umum dalam rangka penguatan pengembangan potensi lokal" },
+      { id: "iku13", kode: "9-N", satuan: "Persen", indikator: "Persentase Kepala Keluarga (KK) transmigran lokal yang ditempatkan di SP transmigrasi", pic: "Ria Fajarianti, S.E., M.M", sasaranStrategis: "SS.9 Terselenggaranya migrasi buatan dalam rangka penguatan pengembangan potensi lokal" },
+      { id: "iku14", kode: "10-N", satker: "Direktur Pembangunan Kawasan Transmigrasi (PKT)", satuan: "Persen", indikator: "Persentase Satuan Permukiman/Pusat Satuan Pengembangan/Kawasan Perkotaan Baru transmigrasi patriot yang dibangun prasarana, sarana, dan utilitas umum", pic: "Robi Suherman Ponglabba, ST, MT", sasaranStrategis: "SS.10 Terwujudnya pembangunan Sarana, Prasarana dan Utilitas Umum dalam rangka meningkatkan kualitas SDM di kawasan transmigrasi yang unggul, terampil, dan berdaya saing serta mampu mempercepat pembangunan dan kemandirian kawasan transmigrasi" },
+      { id: "iku15", kode: "11-N", satker: "Direktur Pembangunan Kawasan Transmigrasi (PKT)", satuan: "Persen", indikator: "Persentase Satuan Permukiman/Pusat Satuan Pengembangan/Kawasan Perkotaan Baru transmigrasi Karya Nusantara yang dibangun prasarana, sarana, dan utilitas umum", pic: "Robi Suherman Ponglabba, ST, MT", sasaranStrategis: "SS.11 Terwujudnya pembangunan Sarana, Prasarana dan Utilitas Umum dalam rangka penguatan pengembangan kawasan ekonomi transmigrasi terintegrasi" },
+      { id: "iku16", kode: "12-N", satuan: "Persen", indikator: "Persentase jumlah Kepala Keluarga (KK) transmigran Karya Nusantara yang difasilitasi penempatannya", pic: "Ria Fajarianti, S.E., M.M", sasaranStrategis: "SS.12 Terselenggaranya migrasi buatan dalam rangka penguatan pengembangan kawasan ekonomi transmigrasi terintegrasi" },
+      { id: "iku17", kode: "13a-N", satker: "Direktur Pengembangan Kawasan Transmigrasi", satuan: "Persen", indikator: "Persentase meningkatnya jumlah kawasan yang berdaya saing dan mandiri di 45 kawasan transmigrasi", pic: "Elis Sampe Andi, S.E, M.M", sasaranStrategis: "SS.13 Terwujudnya Kawasan transmigrasi yang mandiri melalui SDM yang berkualitas unggul" },
+      { id: "iku18", kode: "13b-N", satker: "Direktur Pengembangan Kawasan Transmigrasi", satuan: "Persen", indikator: "Persentase meningkatnya jumlah kawasan yang berdaya saing dan mandiri di kawasan transmigrasi prioritas kementerian", pic: "Elis Sampe Andi, S.E, M.M" },
+      { id: "iku19", kode: "14-N", satuan: "Persen", indikator: "Persentase realisasi implementasi Rencana Aksi Reformasi Birokrasi General, Tematik dan Transformasi Digital Direktorat Jenderal Pembangunan dan Pengembangan Kawasan Transmigrasi", pic: "Ir. Rajumber Prihatin, M.Si", sasaranStrategis: "SS.14 Meningkatnya kualitas reformasi birokrasi dan kapasitas organisasi Direktorat Jenderal Pembangunan dan Pengembangan Kawasan Transmigrasi" },
+      { id: "iku20", kode: "15-N", satuan: "Nilai", indikator: "Nilai Pengawasan Kearsipan Direktorat Jenderal Pembangunan dan Pengembangan Kawasan Transmigrasi", pic: "Ir. Rajumber Prihatin, M.Si", sasaranStrategis: "SS.15 Meningkatnya layanan kearsipan Direktorat Jenderal Pembangunan dan Pengembangan Kawasan Transmigrasi" },
+      { id: "iku21", kode: "16-N", satuan: "Nilai", indikator: "Tingkat penerapan pengendalian intern Direktorat Jenderal Pembangunan dan Pengembangan Kawasan Transmigrasi", pic: "Ir. Rajumber Prihatin, M.Si", sasaranStrategis: "SS.16 Meningkatnya Penerapan Pengendalian Internal Direktorat Jenderal Pembangunan dan Pengembangan Kawasan Transmigrasi" },
+      { id: "iku22", kode: "17-N", satuan: "Nilai", indikator: "Nilai SAKIP Direktorat Jenderal Pembangunan dan Pengembangan Kawasan Transmigrasi", pic: "Ir. Rajumber Prihatin, M.Si", sasaranStrategis: "SS.17 Meningkatnya Akuntabilitas Kinerja Direktorat Jenderal Pembangunan dan Pengembangan Kawasan Transmigrasi" },
+      { id: "iku23", pic: "Ir. Rajumber Prihatin, M.Si", sasaranStrategis: "Persentase pemenuhan program pembangunan dan pengembangan kawasan transmigrasi", indikator: "(belum diberi kode/satker di sumber ERD — lengkapi saat diverifikasi)" }
+    ]
+  };
+
+  var STORAGE_PREFIX = "svke-crud:";
+
+  /* ============ entity definitions ============
+     `titleField` names the field shown in delete-confirm dialogs and used as the display value
+     when another entity references this one via `fk`. A text field with `fk: "otherEntityKey"`
+     gets an autocomplete <datalist> of that entity's current titleField values — free text, not an
+     enforced foreign key (this is a flat localStorage tool, not a real relational DB). */
+  var ENTITIES = {
+    wpt: {
+      label: "WPT", sub: "Wilayah Pengembangan Transmigrasi — kawasan induk tingkat tertinggi",
+      idPrefix: "wpt", titleField: "nama",
+      columns: [
+        { key: "nama", label: "Nama WPT" },
+        { key: "provinsi", label: "Provinsi" },
+        { key: "kabupaten", label: "Kabupaten/Kota" }
+      ],
+      fields: [
+        { name: "nama", label: "Nama WPT", type: "text", required: true, placeholder: "cth. WPT Lunang Silaut" },
+        { name: "provinsi", label: "Provinsi", type: "text", required: true },
+        { name: "kabupaten", label: "Kabupaten/Kota", type: "text", required: true },
+        { name: "geo", label: "Koordinat/Geo (opsional)", type: "text", required: false, hint: "Kolom ini ada di ERD sumber tapi belum berisi data pada baris manapun." }
+      ]
+    },
+    skp: {
+      label: "SKP", sub: "Satuan Kawasan Pengembangan — sub-kawasan di bawah satu WPT",
+      idPrefix: "skp", titleField: "nama",
+      columns: [
+        { key: "nama", label: "Nama SKP" },
+        { key: "provinsi", label: "Provinsi" },
+        { key: "kabupaten", label: "Kabupaten" },
+        { key: "indukWpt", label: "Induk WPT" }
+      ],
+      fields: [
+        { name: "nama", label: "Nama SKP", type: "text", required: true, placeholder: "cth. SKP A Lunang" },
+        { name: "provinsi", label: "Provinsi", type: "text", required: true },
+        { name: "kabupaten", label: "Kabupaten", type: "text", required: true },
+        { name: "indukWpt", label: "Induk WPT", type: "text", required: true, fk: "wpt" },
+        { name: "cakupanSp", label: "Cakupan SP (ringkasan)", type: "textarea", required: false, hint: "Ringkasan bebas teks dari ERD sumber. Keterkaitan sebenarnya ada di field “Induk SKP” pada setiap entri SP." }
+      ]
+    },
+    sp: {
+      label: "SP", sub: "Satuan Permukiman — unit permukiman di bawah satu SKP",
+      idPrefix: "sp", titleField: "nama",
+      columns: [
+        { key: "nama", label: "Nama SP" },
+        { key: "jenisStatus", label: "Jenis/Status" },
+        { key: "kabupaten", label: "Kabupaten" },
+        { key: "indukSkp", label: "Induk SKP" },
+        { key: "kk", label: "KK" }
+      ],
+      fields: [
+        { name: "nama", label: "Nama SP", type: "text", required: true, placeholder: "cth. SP 1 Lunang" },
+        { name: "jenisStatus", label: "Jenis/Status SP", type: "select", required: true, options: ["SP Bina", "SP Bina / PUG", "SP Mandiri", "SP Swakarsa", "SP Kota Terpadu"] },
+        { name: "provinsi", label: "Provinsi", type: "text", required: true },
+        { name: "kabupaten", label: "Kabupaten", type: "text", required: true },
+        { name: "indukSkp", label: "Induk SKP", type: "text", required: true, fk: "skp" },
+        { name: "indukWpt", label: "Induk WPT", type: "text", required: true, fk: "wpt" },
+        { name: "kk", label: "Jumlah KK (opsional)", type: "number", required: false, min: 0 }
+      ]
+    },
+    komoditi: {
+      label: "Komoditi", sub: "Kategori komoditi unggulan kawasan",
+      idPrefix: "kom", titleField: "nama",
+      columns: [{ key: "nama", label: "Komoditi" }],
+      fields: [{ name: "nama", label: "Nama komoditi", type: "text", required: true, placeholder: "cth. Padi" }]
+    },
+    produkUnggulan: {
+      label: "Produk Unggulan", sub: "Daftar produk unggulan (kolom ada di ERD sumber, belum ada data terisi)",
+      idPrefix: "pu", titleField: "nama",
+      columns: [{ key: "nama", label: "Produk Unggulan" }],
+      fields: [{ name: "nama", label: "Nama produk unggulan", type: "text", required: true, placeholder: "cth. Kopi Arabika" }]
+    },
+    program: {
+      label: "Program", sub: "5 program utama transmigrasi (Tuntas, Lokal, Patriot, Karya Nusa, Gotong Royong)",
+      idPrefix: "prog", titleField: "jenisTransmigrasi",
+      columns: [
+        { key: "jenisTransmigrasi", label: "Jenis Transmigrasi" },
+        { key: "singkatan", label: "Singkatan" }
+      ],
+      fields: [
+        { name: "jenisTransmigrasi", label: "Jenis Transmigrasi", type: "text", required: true, placeholder: "cth. TRANSMIGRASI TUNTAS" },
+        { name: "singkatan", label: "Singkatan", type: "text", required: true },
+        { name: "keterangan", label: "Keterangan", type: "textarea", required: true }
+      ]
+    },
+    satker: {
+      label: "Satker", sub: "Struktur unit kerja / jabatan Kementerian Transmigrasi",
+      idPrefix: "sat", titleField: "nama",
+      columns: [
+        { key: "nama", label: "Unit Kerja / Jabatan" },
+        { key: "level", label: "Level" },
+        { key: "eselon", label: "Eselon" }
+      ],
+      fields: [
+        { name: "nama", label: "Unit Kerja / Jabatan", type: "text", required: true },
+        { name: "level", label: "Level", type: "number", required: true, min: 1, row: "a" },
+        { name: "eselon", label: "Eselon", type: "text", required: true, placeholder: "cth. Eselon II.a", row: "a" },
+        { name: "keterangan", label: "Keterangan / Fungsi (opsional)", type: "textarea", required: false }
+      ]
+    },
+    personel: {
+      label: "Personel", sub: "Data personel dan penempatan satker",
+      idPrefix: "per", titleField: "nama",
+      columns: [
+        { key: "nama", label: "Nama" },
+        { key: "nip", label: "NIP" },
+        { key: "jabatan", label: "Jabatan" },
+        { key: "satker", label: "Satker" }
+      ],
+      fields: [
+        { name: "nama", label: "Nama", type: "text", required: true },
+        { name: "nip", label: "NIP", type: "text", required: true, row: "a" },
+        { name: "golongan", label: "Golongan", type: "text", required: true, placeholder: "cth. IV-a", row: "a" },
+        { name: "jabatan", label: "Jabatan", type: "text", required: true },
+        { name: "satker", label: "Satker", type: "text", required: true, fk: "satker" }
+      ]
+    },
+    iku: {
+      label: "IKU", sub: "Indikator Kinerja Utama per satker/direktorat",
+      idPrefix: "iku", titleField: "indikator",
+      columns: [
+        { key: "kode", label: "Kode" },
+        { key: "satker", label: "Satker" },
+        { key: "satuan", label: "Satuan" },
+        { key: "indikator", label: "Indikator" },
+        { key: "pic", label: "PIC" }
+      ],
+      fields: [
+        { name: "kode", label: "Kode (opsional)", type: "text", required: false, placeholder: "cth. 1-CP", row: "a" },
+        { name: "satuan", label: "Satuan", type: "select", required: true, options: ["Indeks", "Persen", "Nilai"], row: "a" },
+        { name: "satker", label: "Satker (unit penanggung jawab)", type: "text", required: true, fk: "satker" },
+        { name: "jenisProgram", label: "Jenis Program Transmigrasi (opsional)", type: "text", required: false, fk: "program" },
+        { name: "indikator", label: "Indikator Kinerja Utama", type: "textarea", required: true },
+        { name: "pic", label: "PIC", type: "text", required: true },
+        { name: "sasaranStrategis", label: "Sasaran Strategis (opsional)", type: "textarea", required: false }
+      ]
+    }
+  };
+  var ENTITY_ORDER = ["wpt", "skp", "sp", "komoditi", "produkUnggulan", "program", "satker", "personel", "iku"];
+
+  /* ============ storage ============ */
+  function loadEntity(key) {
+    try {
+      var raw = localStorage.getItem(STORAGE_PREFIX + key);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { /* fall through to seed */ }
+    var seeded = JSON.parse(JSON.stringify(SEED[key]));
+    saveEntity(key, seeded);
+    return seeded;
+  }
+  function saveEntity(key, arr) {
+    try { localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(arr)); }
+    catch (e) { showToast("Gagal menyimpan ke localStorage: " + e.message); }
+  }
+
+  var DATA = {};
+  ENTITY_ORDER.forEach(function (key) { DATA[key] = loadEntity(key); });
+
+  /* ============ state ============ */
+  var state = { tab: "wpt", query: "", editing: null /* { key, id } or null = new */ };
+
+  /* ============ dom helpers ============ */
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function nextId(key) {
+    var prefix = ENTITIES[key].idPrefix;
+    var max = 0;
+    DATA[key].forEach(function (r) {
+      var m = /^\D*(\d+)$/.exec(r.id);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    return prefix + (max + 1);
+  }
+
+  var toastTimer;
+  function showToast(msg) {
+    var t = qs("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2200);
+  }
+
+  /* ============ rail ============ */
+  function renderRail() {
+    var rail = qs("#rail");
+    rail.innerHTML = ENTITY_ORDER.map(function (key) {
+      var ent = ENTITIES[key];
+      var active = key === state.tab ? " active" : "";
+      return (
+        '<button class="rail-item' + active + '" data-tab="' + key + '">' +
+          esc(ent.label) +
+          '<span class="rc">' + DATA[key].length + " data</span>" +
+        "</button>"
+      );
+    }).join("");
+    qsa(".rail-item", rail).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        state.tab = btn.getAttribute("data-tab");
+        state.query = "";
+        render();
+      });
+    });
+  }
+
+  /* ============ main / table ============ */
+  function filteredRows(key) {
+    var q = state.query.trim().toLowerCase();
+    if (!q) return DATA[key];
+    return DATA[key].filter(function (r) {
+      return Object.keys(r).some(function (k) { return String(r[k]).toLowerCase().indexOf(q) !== -1; });
+    });
+  }
+
+  function render() {
+    renderRail();
+    var key = state.tab;
+    var ent = ENTITIES[key];
+    var rows = filteredRows(key);
+
+    var head =
+      '<div class="page-head">' +
+        "<div>" +
+          "<h1>" + esc(ent.label) + "</h1>" +
+          '<p class="desc">' + esc(ent.sub) + "</p>" +
+        "</div>" +
+        '<div class="toolbar">' +
+          '<div class="search-box">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>' +
+            '<input type="text" id="searchInput" placeholder="Cari ' + esc(ent.label.toLowerCase()) + '..." value="' + esc(state.query) + '" />' +
+          "</div>" +
+          '<button class="btn" id="btnExportJson">Ekspor JSON</button>' +
+          '<button class="btn" id="btnExportJs">Salin sebagai JS</button>' +
+          '<button class="btn" id="btnImportJson">Impor JSON</button>' +
+          '<button class="btn primary" id="btnAdd">+ Tambah</button>' +
+        "</div>" +
+      "</div>";
+
+    var thead = "<tr>" + ent.columns.map(function (c) { return "<th>" + esc(c.label) + "</th>"; }).join("") + "<th></th></tr>";
+
+    var tbody;
+    if (rows.length === 0) {
+      tbody = '<tr class="empty-row"><td colspan="' + (ent.columns.length + 1) + '">' +
+        (state.query ? "Tidak ada data yang cocok." : "Belum ada data. Klik “Tambah” untuk membuat entri pertama.") +
+        "</td></tr>";
+    } else {
+      tbody = rows.map(function (r) {
+        var cells = ent.columns.map(function (c) {
+          var v = r[c.key];
+          var titleAttr = v != null && v !== "" ? ' title="' + esc(String(v)) + '"' : "";
+          return "<td" + titleAttr + ">" + (c.render ? c.render(v) : esc(v)) + "</td>";
+        }).join("");
+        return (
+          "<tr>" + cells +
+            '<td><div class="row-actions">' +
+              '<button class="btn small" data-edit="' + esc(r.id) + '">Ubah</button>' +
+              '<button class="btn small danger" data-del="' + esc(r.id) + '">Hapus</button>' +
+            "</div></td>" +
+          "</tr>"
+        );
+      }).join("");
+    }
+
+    qs("#main").innerHTML =
+      head +
+      '<div class="panel"><div class="table-wrap"><table><thead>' + thead + "</thead><tbody>" + tbody + "</tbody></table></div></div>";
+
+    qs("#searchInput").addEventListener("input", function (e) { state.query = e.target.value; render(); qs("#searchInput").focus(); qs("#searchInput").setSelectionRange(state.query.length, state.query.length); });
+    qs("#btnAdd").addEventListener("click", function () { openForm(key, null); });
+    qs("#btnExportJson").addEventListener("click", function () { openExport(key, "json"); });
+    qs("#btnExportJs").addEventListener("click", function () { openExport(key, "js"); });
+    qs("#btnImportJson").addEventListener("click", function () { importJson(key); });
+    qsa("[data-edit]", qs("#main")).forEach(function (btn) {
+      btn.addEventListener("click", function () { openForm(key, btn.getAttribute("data-edit")); });
+    });
+    qsa("[data-del]", qs("#main")).forEach(function (btn) {
+      btn.addEventListener("click", function () { deleteRow(key, btn.getAttribute("data-del")); });
+    });
+  }
+
+  function deleteRow(key, id) {
+    var row = DATA[key].find(function (r) { return r.id === id; });
+    if (!row) return;
+    var label = String(row[ENTITIES[key].titleField] || "(tanpa nama)");
+    if (label.length > 70) label = label.slice(0, 70) + "…";
+    if (!confirm('Hapus "' + label + '"? Tindakan ini tidak bisa dibatalkan.')) return;
+    DATA[key] = DATA[key].filter(function (r) { return r.id !== id; });
+    saveEntity(key, DATA[key]);
+    showToast("Data dihapus.");
+    render();
+  }
+
+  /* ============ drawer form ============ */
+  function openForm(key, id) {
+    state.editing = { key: key, id: id };
+    var ent = ENTITIES[key];
+    var record = id ? DATA[key].find(function (r) { return r.id === id; }) : {};
+    qs("#drawerTitle").textContent = (id ? "Ubah " : "Tambah ") + ent.label.toLowerCase();
+
+    // Foreign-key fields (f.fk = another entity's key) get an autocomplete <datalist> built from
+    // that entity's current titleField values — free-text autocomplete, not an enforced FK.
+    var datalistsHtml = "";
+    ent.fields.forEach(function (f) {
+      if (!f.fk) return;
+      var srcEnt = ENTITIES[f.fk];
+      var vals = Array.from(new Set(DATA[f.fk].map(function (r) { return r[srcEnt.titleField]; }))).filter(Boolean).sort();
+      datalistsHtml += '<datalist id="dl_' + f.fk + '_' + f.name + '">' + vals.map(function (v) { return '<option value="' + esc(v) + '">'; }).join("") + "</datalist>";
+    });
+
+    var rowsHtml = {};
+    ent.fields.forEach(function (f) {
+      var val = record[f.name] != null ? record[f.name] : "";
+      var html;
+      if (f.type === "select") {
+        var placeholderOpt = val === "" ? '<option value="" selected disabled>— pilih —</option>' : "";
+        html =
+          '<div class="field"><label for="f_' + f.name + '">' + esc(f.label) + (f.required ? " *" : "") + "</label>" +
+          '<select id="f_' + f.name + '" name="' + f.name + '"' + (f.required ? " required" : "") + ">" +
+          placeholderOpt +
+          f.options.map(function (o) { return '<option value="' + esc(o) + '"' + (o === val ? " selected" : "") + ">" + esc(o) + "</option>"; }).join("") +
+          "</select></div>";
+      } else if (f.type === "textarea") {
+        html =
+          '<div class="field"><label for="f_' + f.name + '">' + esc(f.label) + (f.required ? " *" : "") + "</label>" +
+          '<textarea id="f_' + f.name + '" name="' + f.name + '"' + (f.required ? " required" : "") + (f.placeholder ? ' placeholder="' + esc(f.placeholder) + '"' : "") + ">" + esc(val) + "</textarea>" +
+          (f.hint ? '<div class="hint">' + esc(f.hint) + "</div>" : "") +
+          "</div>";
+      } else {
+        var attrs = "";
+        if (f.min !== undefined) attrs += ' min="' + f.min + '"';
+        if (f.max !== undefined) attrs += ' max="' + f.max + '"';
+        if (f.step) attrs += ' step="' + f.step + '"';
+        if (f.placeholder) attrs += ' placeholder="' + esc(f.placeholder) + '"';
+        if (f.fk) attrs += ' list="dl_' + f.fk + '_' + f.name + '"';
+        html =
+          '<div class="field"><label for="f_' + f.name + '">' + esc(f.label) + (f.required ? " *" : "") + "</label>" +
+          '<input type="' + f.type + '" id="f_' + f.name + '" name="' + f.name + '" value="' + esc(val) + '"' + (f.required ? " required" : "") + attrs + " />" +
+          (f.hint ? '<div class="hint">' + esc(f.hint) + "</div>" : "") +
+          "</div>";
+      }
+      var bucket = f.row || "_" + f.name;
+      (rowsHtml[bucket] = rowsHtml[bucket] || []).push(html);
+    });
+
+    var body = datalistsHtml;
+    Object.keys(rowsHtml).forEach(function (bucket) {
+      var group = rowsHtml[bucket];
+      body += group.length > 1 ? '<div class="field-row">' + group.join("") + "</div>" : group[0];
+    });
+    qs("#drawerBody").innerHTML = body;
+
+    qs("#scrim").classList.add("open");
+    qs("#drawer").classList.add("open");
+    var firstInput = qs("#drawerBody input, #drawerBody select");
+    if (firstInput) firstInput.focus();
+  }
+
+  function closeForm() {
+    qs("#scrim").classList.remove("open");
+    qs("#drawer").classList.remove("open");
+    state.editing = null;
+  }
+
+  function saveForm() {
+    var editing = state.editing;
+    if (!editing) return;
+    var key = editing.key;
+    var ent = ENTITIES[key];
+    var record = editing.id ? Object.assign({}, DATA[key].find(function (r) { return r.id === editing.id; })) : { id: nextId(key) };
+
+    for (var i = 0; i < ent.fields.length; i++) {
+      var f = ent.fields[i];
+      var input = qs("#f_" + f.name);
+      if (f.required && !input.value.trim() && input.value !== "0") {
+        input.focus();
+        showToast('Kolom "' + f.label + '" wajib diisi.');
+        return;
+      }
+      if (f.type === "number") {
+        var num = input.value === "" ? null : parseFloat(input.value);
+        if (num !== null && (f.min !== undefined && num < f.min || f.max !== undefined && num > f.max)) {
+          input.focus();
+          showToast('"' + f.label + '" harus antara ' + f.min + " dan " + f.max + ".");
+          return;
+        }
+        record[f.name] = num;
+      } else {
+        record[f.name] = input.value.trim();
+      }
+    }
+
+    if (editing.id) {
+      var idx = DATA[key].findIndex(function (r) { return r.id === editing.id; });
+      DATA[key][idx] = record;
+    } else {
+      DATA[key].push(record);
+    }
+    saveEntity(key, DATA[key]);
+    closeForm();
+    showToast("Data disimpan.");
+    render();
+  }
+
+  qs("#scrim").addEventListener("click", closeForm);
+  qs("#drawerClose").addEventListener("click", closeForm);
+  qs("#drawerCancel").addEventListener("click", closeForm);
+  qs("#drawerSave").addEventListener("click", saveForm);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { closeForm(); closeExport(); }
+  });
+
+  /* ============ export / import ============ */
+  function toJsLiteral(key) {
+    var ent = ENTITIES[key];
+    var fieldOrder = ["id"].concat(ent.fields.map(function (f) { return f.name; }));
+    var lines = DATA[key].map(function (r) {
+      var parts = fieldOrder.map(function (k) {
+        var v = r[k];
+        if (v === "" || v == null) return null;
+        return k + ": " + (typeof v === "number" ? v : JSON.stringify(v));
+      }).filter(Boolean);
+      return "  { " + parts.join(", ") + " }";
+    });
+    return "var " + key + " = [\n" + lines.join(",\n") + "\n];";
+  }
+
+  function openExport(key, format) {
+    var ent = ENTITIES[key];
+    qs("#exportTitle").textContent = (format === "js" ? "Salin sebagai JS — " : "Ekspor JSON — ") + ent.label;
+    qs("#exportText").value = format === "js" ? toJsLiteral(key) : JSON.stringify(DATA[key], null, 2);
+    qs("#exportScrim").dataset.key = key;
+    qs("#exportScrim").dataset.format = format;
+    qs("#exportScrim").classList.add("open");
+    qs("#exportText").focus();
+    qs("#exportText").select();
+  }
+  function closeExport() { qs("#exportScrim").classList.remove("open"); }
+
+  qs("#exportClose").addEventListener("click", closeExport);
+  qs("#exportScrim").addEventListener("click", function (e) { if (e.target.id === "exportScrim") closeExport(); });
+  qs("#exportCopy").addEventListener("click", function () {
+    var text = qs("#exportText");
+    text.select();
+    var copied = false;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text.value).then(function () { showToast("Disalin ke clipboard."); }).catch(function () {
+        try { copied = document.execCommand("copy"); } catch (e) {}
+        showToast(copied ? "Disalin ke clipboard." : "Gagal menyalin — salin manual dari kotak teks.");
+      });
+    } else {
+      try { copied = document.execCommand("copy"); } catch (e) {}
+      showToast(copied ? "Disalin ke clipboard." : "Gagal menyalin — salin manual dari kotak teks.");
+    }
+  });
+  qs("#exportDownload").addEventListener("click", function () {
+    var key = qs("#exportScrim").dataset.key;
+    var format = qs("#exportScrim").dataset.format;
+    var text = qs("#exportText").value;
+    var ext = format === "js" ? "js" : "json";
+    var blob = new Blob([text], { type: format === "js" ? "text/javascript" : "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "svke-" + key + "." + ext;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  function importJson(key) {
+    var input = document.createElement("input");
+    input.type = "file"; input.accept = "application/json,.json";
+    input.addEventListener("change", function () {
+      var file = input.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var parsed = JSON.parse(reader.result);
+          if (!Array.isArray(parsed)) throw new Error("File harus berisi array JSON.");
+          if (!confirm("Impor akan MENGGANTI seluruh data " + ENTITIES[key].label + " saat ini (" + DATA[key].length + " entri) dengan " + parsed.length + " entri dari file. Lanjutkan?")) return;
+          DATA[key] = parsed;
+          saveEntity(key, DATA[key]);
+          showToast("Impor berhasil: " + parsed.length + " entri.");
+          render();
+        } catch (e) {
+          alert("Gagal mengimpor: " + e.message);
+        }
+      };
+      reader.readAsText(file);
+    });
+    input.click();
+  }
+
+  render();
+})();
+</script>
