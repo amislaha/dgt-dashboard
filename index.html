@@ -1,15 +1,16 @@
 <title>DGT — Digital Governance Transmigration</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <!-- Repo home / launcher page. Sits at the GitHub Pages root and links out to the tools that live
-     in this same repo as sibling subfolders (dashboard/, data-manager/). Self-contained, same
-     design tokens as those tools (synced from the DGT Transmigrasi 2026 Figma file) — see their
-     own files for the canonical copy and provenance notes.
+     in this same repo as sibling subfolders (dashboard/, data-manager/, gis-dgt/). Self-contained,
+     same design tokens as those tools (synced from the DGT Transmigrasi 2026 Figma file) — see
+     their own files for the canonical copy and provenance notes. gis-dgt/ is currently just a
+     "coming soon" placeholder page — replace it once the real tool exists, no changes needed here.
 
      Fronted by a COSMETIC login gate — see the #loginView section below. This is a static site
      with no backend, so there is no real credential verification: any non-empty username/password
-     is accepted, and dashboard/ and data-manager/ remain directly reachable by URL regardless of
-     this gate's state. It exists for demo/presentation flow only. Do not build real access control
-     on top of it without adding an actual backend. -->
+     is accepted, and dashboard/, data-manager/, and gis-dgt/ remain directly reachable by URL
+     regardless of this gate's state. It exists for demo/presentation flow only. Do not build real
+     access control on top of it without adding an actual backend. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -49,10 +50,8 @@
 
   .header { text-align: center; max-width: 640px; margin-bottom: 2.6rem; }
   .mark {
-    width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 1.1rem;
-    background: linear-gradient(155deg, var(--primary), var(--sidebar));
-    display: flex; align-items: center; justify-content: center;
-    color: #f4f8fa; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.02em;
+    width: 52px; height: 52px; margin: 0 auto 1.1rem;
+    display: block; object-fit: contain;
   }
   .eyebrow {
     font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
@@ -126,7 +125,7 @@
 
 <div id="loginView" class="view">
   <div class="header">
-    <div class="mark">DGT</div>
+    <img class="mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
     <div class="eyebrow">Kementerian Transmigrasi</div>
   </div>
   <form class="login-card" id="loginForm" autocomplete="off">
@@ -145,7 +144,7 @@
 
 <div id="launcherView" class="view" hidden>
 <div class="header">
-  <div class="mark">DT</div>
+  <img class="mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
   <div class="eyebrow">Kementerian Transmigrasi</div>
   <h1>DGT — Digital Governance Transmigration</h1>
   <p>Pilih salah satu alat di bawah untuk melanjutkan.</p>
@@ -174,6 +173,18 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
     </span>
     <span class="path mono">/data-manager/</span>
+  </a>
+
+  <a class="card" href="gis-dgt/">
+    <div class="card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/></svg>
+    </div>
+    <h2>GIS DGT</h2>
+    <p>Manajemen data geospasial untuk kawasan transmigrasi — bidang tanah, batas wilayah, dan geografi kawasan.</p>
+    <span class="go">Buka GIS DGT
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+    </span>
+    <span class="path mono">/gis-dgt/</span>
   </a>
 </div>
 

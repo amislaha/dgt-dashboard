@@ -1,0 +1,88 @@
+<title>GIS DGT — Digital Governance Transmigration</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- Placeholder landing page for the GIS DGT tool — a planned sibling app (geospatial data
+     management for transmigration areas: land parcels, boundaries, kawasan geography), distinct
+     from the illustrative map view inside dashboard/'s Geospasial module. Linked from the root
+     launcher's #launcherView. Same design tokens as dashboard/ and data-manager/ (synced from the
+     "DGT Transmigrasi 2026" Figma file) — see dashboard/index.html for the canonical copy and
+     provenance notes. No functionality yet: replace this file's body once the real tool exists,
+     keep the "Kembali ke DGT" link back to the launcher. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f7f9fa;
+    --bg-2: #eff3f5;
+    --panel: #ffffff;
+    --panel-2: #eff3f5;
+    --panel-3: #eef2f6;
+    --border: #dfe6ea;
+    --border-soft: rgba(15, 25, 34, 0.06);
+    --text: #0f1922;
+    --text-dim: #5b6b76;
+    --text-faint: #97a7b2;
+    --primary: #163b54;
+    --primary-soft: rgba(22, 59, 84, 0.12);
+    --primary-line: rgba(22, 59, 84, 0.35);
+    --series-2: #33809c;
+    --sidebar: #081826;
+    --radius: 10px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: "Plus Jakarta Sans", -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 3.5rem 1.5rem 3rem;
+  }
+  .mono { font-family: "JetBrains Mono", "Cascadia Code", "Consolas", ui-monospace, SFMono-Regular, monospace; }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 2px dashed var(--primary); outline-offset: 2px; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    width: 100%; max-width: 460px; padding: 2.2rem 2rem 2rem; text-align: center;
+  }
+  .mark {
+    width: 52px; height: 52px; margin: 0 auto 1.1rem;
+    display: block; object-fit: contain;
+  }
+  .eyebrow {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--series-2); margin-bottom: 0.5rem;
+  }
+  h1 { margin: 0 0 0.7rem; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.01em; }
+  .card p { margin: 0 auto 1.6rem; color: var(--text-dim); font-size: 0.88rem; line-height: 1.6; max-width: 360px; }
+
+  .status {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--primary-soft); color: var(--primary);
+    border-radius: 999px; padding: 0.35rem 0.8rem;
+    font-size: 0.72rem; font-weight: 600; margin-bottom: 1.6rem;
+  }
+  .status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+
+  .back {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.8rem; font-weight: 600; color: var(--primary);
+    border-top: 1px solid var(--border); padding-top: 1.3rem; width: 100%; justify-content: center;
+  }
+  .back svg { width: 14px; height: 14px; transform: rotate(180deg); }
+</style>
+
+<div class="card">
+  <img class="mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
+  <div class="eyebrow">Kementerian Transmigrasi</div>
+  <h1>GIS DGT</h1>
+  <p>Manajemen data geospasial untuk kawasan transmigrasi — bidang tanah, batas wilayah, dan geografi kawasan. Alat ini belum tersedia.</p>
+  <div class="status"><span class="dot"></span>Segera hadir</div>
+  <a class="back" href="../">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+    Kembali ke DGT
+  </a>
+</div>

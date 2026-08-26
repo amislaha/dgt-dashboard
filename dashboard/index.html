@@ -89,11 +89,7 @@
   .brand { display: flex; align-items: center; gap: 0.65rem; min-width: 0; }
 
   .brand-mark {
-    width: 30px; height: 30px; border-radius: var(--radius-sm);
-    background: linear-gradient(155deg, var(--primary), var(--sidebar));
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 0.72rem; color: #f4f8fa;
-    flex: 0 0 auto;
+    width: 30px; height: 30px; flex: 0 0 auto; object-fit: contain;
   }
 
   .brand-text { line-height: 1.15; min-width: 0; }
@@ -583,7 +579,7 @@
   <button class="btn small" id="railToggle" style="display:none" aria-label="Toggle menu">☰</button>
   <button class="btn small" id="railCollapseToggle" aria-label="Ciutkan menu">☰</button>
   <div class="brand">
-    <div class="brand-mark">5T</div>
+    <img class="brand-mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
     <div class="brand-text">
       <div class="name">DGT · Situation Room</div>
       <div class="sub">Digital Governance Transmigration — Kawasan Transmigrasi</div>
