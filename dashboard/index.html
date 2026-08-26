@@ -332,27 +332,125 @@
   .basemap-static .bm-attrib a { color: inherit; }
   .basemap-static-note { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.5rem; text-align: center; }
 
-  /* ---------- geospasial layout: map stage + photo gallery + AI review ---------- */
-  .geo-grid-top { display: grid; grid-template-columns: 2.1fr 1fr; gap: 0.9rem; align-items: stretch; margin-bottom: 0.9rem; }
-  .geo-grid-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; align-items: start; }
-  @media (max-width: 980px) { .geo-grid-top, .geo-grid-bottom { grid-template-columns: 1fr; } }
-
-  .geo-photos-panel { display: flex; flex-direction: column; }
-
-  .geo-map-stage { position: relative; }
-
-  .map-style-switch {
-    display: flex; gap: 0.25rem; background: var(--panel-2); border: 1px solid var(--border);
-    border-radius: 9px; padding: 0.3rem; margin-bottom: 0.7rem; width: fit-content;
+  /* ---------- geospasial: immersive full-bleed map with a collapsible dark HUD sidebar ---------- */
+  .main.no-pad { padding: 0; }
+  .geo-immersive { position: relative; height: 100%; overflow: hidden; background: #0c1620; }
+  /* z-index establishes its own stacking context so Leaflet's internal panes (popup/marker panes
+     go up to z-index 700) stay contained here and never escape above the HUD sidebar below */
+  .geo-map-full { position: absolute; inset: 0; z-index: 1; }
+  .geo-map-full .basemap-wrap { height: 100%; border-radius: 0; border: none; }
+  .geo-map-full .basemap-el { height: 100%; }
+  .geo-map-full .basemap-static { height: 100%; }
+  .geo-map-full .basemap-static img { width: 100%; height: 100%; object-fit: cover; }
+  .geo-map-full .basemap-static-note {
+    position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); margin: 0;
+    background: rgba(10,15,28,0.6); color: #fff; padding: 0.2rem 0.6rem; border-radius: 999px;
   }
-  .ms-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
-    background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm);
-    color: var(--text-dim); padding: 0.3rem 0.55rem; cursor: pointer; font-size: 0.6rem;
+  .geo-grid-pad { height: 100%; overflow-y: auto; box-sizing: border-box; padding: 1.3rem 1.5rem 3rem; background: var(--bg); }
+
+  .hud {
+    background: rgba(8, 20, 30, 0.74); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; color: #eaf2f6;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
   }
-  .ms-btn svg { width: 16px; height: 16px; }
-  .ms-btn:hover { color: var(--text); background: var(--panel-3); }
-  .ms-btn[aria-pressed="true"] { color: var(--primary); background: var(--primary-soft); border-color: var(--primary-line); }
+
+  .hud-sidebar {
+    position: absolute; z-index: 20; top: 16px; left: 16px; bottom: 16px; width: 300px;
+    display: flex; flex-direction: column; overflow: hidden;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .hud-sidebar.collapsed-panel { transform: translateX(calc(-100% - 24px)); opacity: 0; pointer-events: none; }
+
+  .hud-sidebar-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;
+    padding: 0.9rem 1rem 0.7rem; border-bottom: 1px solid rgba(255,255,255,0.08); flex: 0 0 auto;
+  }
+  .hud-title { font-size: 0.86rem; font-weight: 700; }
+  .hud-sub { font-size: 0.68rem; color: rgba(234,242,246,0.55); margin-top: 0.15rem; }
+  .hud-collapse, .hud-edge-tab {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #eaf2f6;
+    border-radius: 7px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex: 0 0 auto;
+  }
+  .hud-collapse:hover, .hud-edge-tab:hover { background: rgba(255,255,255,0.16); }
+  .hud-collapse svg, .hud-edge-tab svg { width: 14px; height: 14px; }
+
+  .hud-edge-tab { position: absolute; z-index: 20; top: 16px; left: 16px; }
+
+  .hud-status { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); flex: 0 0 auto; }
+  .hud-status-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    font-size: 0.72rem; color: rgba(234,242,246,0.68); padding: 0.15rem 0;
+  }
+  .hud-status-row b { color: #eaf2f6; font-weight: 600; }
+  .hud-status-row .dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #3ddc84;
+    margin-right: 0.35rem; box-shadow: 0 0 0 3px rgba(61,220,132,0.18);
+  }
+
+  .hud-section { border-bottom: 1px solid rgba(255,255,255,0.08); flex: 0 0 auto; }
+  .hud-section.grow { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  .hud-section.collapsed .hud-section-body { display: none; }
+  .hud-section.collapsed.grow { flex: 0 0 auto; }
+  .hud-section-head {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    background: none; border: none; color: rgba(234,242,246,0.85); cursor: pointer;
+    font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.75rem 1rem; flex: 0 0 auto;
+  }
+  .hud-section-head svg { width: 13px; height: 13px; transition: transform 0.15s ease; }
+  .hud-section.collapsed .hud-section-head svg { transform: rotate(-90deg); }
+  .hud-section.grow .hud-section-body { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+  .hud-section-body { padding: 0 1rem 0.9rem; }
+
+  .hud-radio-list { display: flex; flex-direction: column; gap: 0.35rem; }
+  .hud-radio {
+    display: flex; align-items: center; gap: 0.55rem; width: 100%; text-align: left;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+    color: rgba(234,242,246,0.75); padding: 0.5rem 0.65rem; cursor: pointer; font-size: 0.76rem;
+  }
+  .hud-radio svg { width: 15px; height: 15px; flex: 0 0 auto; }
+  .hud-radio:hover { background: rgba(255,255,255,0.08); }
+  .hud-radio.active { background: rgba(51,128,156,0.28); border-color: rgba(51,128,156,0.55); color: #fff; }
+
+  .hud-kawasan-list { display: flex; flex-direction: column; gap: 0.25rem; }
+  .hud-kawasan-item {
+    display: flex; align-items: center; gap: 0.55rem; width: 100%; text-align: left;
+    background: transparent; border: 1px solid transparent; border-radius: 8px;
+    color: rgba(234,242,246,0.8); padding: 0.45rem 0.55rem; cursor: pointer; font-size: 0.76rem;
+  }
+  .hud-kawasan-item:hover { background: rgba(255,255,255,0.06); }
+  .hud-kawasan-item.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.16); }
+  .hud-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+  .hud-kw-text { display: flex; flex-direction: column; min-width: 0; }
+  .hud-kw-text .nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hud-kw-text .pv { font-size: 0.66rem; color: rgba(234,242,246,0.5); }
+
+  .hud-empty { font-size: 0.74rem; color: rgba(234,242,246,0.5); font-style: italic; margin: 0; }
+  .hud-detail-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .hud-detail-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+    font-size: 0.74rem; color: rgba(234,242,246,0.65); padding: 0.3rem 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.08);
+  }
+  .hud-detail-row b { color: #eaf2f6; font-weight: 600; text-align: right; }
+  .hud-legal { margin-top: 0.7rem; }
+  .hud-legal-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: rgba(234,242,246,0.65); margin-bottom: 0.3rem; }
+  .hud-legal-label b { color: #eaf2f6; }
+  .hud-photo-strip { margin-top: 0.8rem; }
+  .hud-photo-strip .photo-thumb { height: 92px; border-color: rgba(255,255,255,0.12); }
+
+  .hud .badge, .hud .sev { background: rgba(255,255,255,0.14); color: #eaf2f6; }
+  .hud .badge.rintisan, .hud .sev.high { color: #ff9d9d; background: rgba(206,17,38,0.3); }
+  .hud .badge.tumbuh, .hud .sev.med { color: #f2ca8f; background: rgba(192,149,70,0.32); }
+  .hud .badge.berkembang, .hud .sev.low { color: #8ad4ea; background: rgba(51,128,156,0.32); }
+  .hud .badge.mandiri { color: #8be8bf; background: rgba(31,93,71,0.34); }
+  .hud .bar-track { background: rgba(255,255,255,0.12); }
+  .hud .bar-fill { background: #6fc7de; }
+
+  @media (max-width: 760px) {
+    .hud-sidebar { width: calc(100% - 32px); }
+  }
 
   .photo-gallery { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; gap: 0.55rem; flex: 1 1 auto; min-height: 156px; }
   .photo-thumb { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; background: var(--panel-3); }
@@ -761,7 +859,7 @@
   ];
 
   var state = {
-    tab: "profil",
+    tab: "geospasial",
     selectedKawasan: kawasan[0].id,
     provFilter: "Semua",
     sortKey: "indeks5t",
@@ -916,57 +1014,128 @@
   }
 
   function renderGeospasial() {
+    var leafletMarkers = {};
+
+    function hudSection(key, title, bodyHtml, grow) {
+      return '<div class="hud-section' + (grow ? " grow" : "") + '" data-section="' + key + '">' +
+        '<button class="hud-section-head" data-toggle="' + key + '"><span>' + title + '</span>' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>' +
+        '</button>' +
+        '<div class="hud-section-body">' + bodyHtml + '</div>' +
+      '</div>';
+    }
+
     var wrap = h(
-      pageHead("Geospasial, HPL, SHM & Legalitas Lahan", "Tumpang susun peta digital Hak Pengelolaan Lahan (HPL) dan Sertifikat Hak Milik (SHM) transmigran untuk mendukung Trans Tuntas.") +
-      '<div class="geo-grid-top">' +
-        '<div class="panel geo-map-panel"><div class="panel-header"><h2 id="sebaranTitle">Peta Kawasan</h2><span class="hint" id="sebaranHint">klik titik untuk detail kawasan</span></div>' +
-          '<div class="map-style-switch" id="styleSwitch">' +
-            '<button class="ms-btn" data-view="dasar" title="Peta Dasar">' + miniIconSvg("dasar") + '<span>Dasar</span></button>' +
-            '<button class="ms-btn" data-view="grid" title="Grid Provinsi">' + miniIconSvg("grid") + '<span>Grid</span></button>' +
+      '<div class="geo-immersive">' +
+        '<div class="geo-map-full" id="sebaranBody"></div>' +
+        '<button class="hud-edge-tab" id="geoSidebarReveal" hidden aria-label="Tampilkan panel">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>' +
+        '</button>' +
+        '<aside class="hud hud-sidebar" id="geoSidebar">' +
+          '<div class="hud-sidebar-head">' +
+            '<div><div class="hud-title">Geospasial Kawasan</div><div class="hud-sub">HPL · SHM · Trans Tuntas</div></div>' +
+            '<button class="hud-collapse" id="geoSidebarToggle" aria-label="Ciutkan panel">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>' +
+            '</button>' +
           '</div>' +
-          '<div class="geo-map-stage">' +
-            '<div id="sebaranBody"></div>' +
+          '<div class="hud-status">' +
+            '<div class="hud-status-row"><span><span class="dot"></span>Sistem</span><b>Online</b></div>' +
+            '<div class="hud-status-row"><span>Kawasan terpantau</span><b>' + kawasan.length + '</b></div>' +
+            '<div class="hud-status-row"><span>Peringatan aktif</span><b>' + ewsAlerts.filter(function (a) { return !a.ack; }).length + '</b></div>' +
           '</div>' +
-        '</div>' +
-        '<div class="panel geo-photos-panel"><div class="panel-header"><h2>Foto-foto</h2><span class="hint" id="photosHint">kawasan</span></div>' +
-          '<div class="drawer" id="dasarInfo" style="margin-bottom:0.7rem"></div>' +
-          '<div class="photo-gallery" id="photoGallery"></div></div>' +
-      '</div>' +
-      '<div class="geo-grid-bottom">' +
-        '<div class="panel"><div class="panel-header"><h2>Rasio Legalitas Lahan per Kawasan (SHM / HPL)</h2><span class="hint">Trans Tuntas — semakin tinggi rasio, semakin tuntas legalitas</span></div>' +
-          '<div id="legalBar"></div></div>' +
-        '<div class="panel"><div class="panel-header"><h2>Review by AI</h2><span class="hint">ringkasan legalitas &amp; risiko kawasan</span></div>' +
-          '<div id="geoAiReview"></div></div>' +
+          hudSection("basemap", "Peta Dasar",
+            '<div class="hud-radio-list" id="styleSwitch">' +
+              '<button class="hud-radio" data-view="dasar">' + miniIconSvg("dasar") + '<span>Peta OSM</span></button>' +
+              '<button class="hud-radio" data-view="grid">' + miniIconSvg("grid") + '<span>Grid Provinsi</span></button>' +
+            '</div>'
+          ) +
+          hudSection("list", "Daftar Kawasan", '<div class="hud-kawasan-list" id="kawasanList"></div>', true) +
+          hudSection("detail", "Detail Kawasan", '<div id="geoDetail"></div>', true) +
+        '</aside>' +
       '</div>'
     );
 
-    /* kawasan detail card, shown above the photo gallery — kept in sync with whichever control (map pin, gallery thumbnail, province tile) last changed the selection */
-    function renderKawasanInfo() {
-      var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
-      var infoEl = qs(wrap, "#dasarInfo");
-      if (!infoEl) return;
-      if (!k) { infoEl.innerHTML = '<p class="empty">Klik penanda pada peta atau foto untuk melihat detail kawasan.</p>'; return; }
-      infoEl.innerHTML = '<h3>' + k.nama + '</h3>' +
-        '<div class="row"><span>Provinsi</span><span>' + k.provinsi + '</span></div>' +
-        '<div class="row"><span>Tahap</span><span><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></span></div>' +
-        '<div class="row"><span>Populasi</span><span>' + k.populasi.toLocaleString("id-ID") + ' jiwa</span></div>';
+    qsa(wrap, ".hud-section-head").forEach(function (btn) {
+      btn.addEventListener("click", function () { btn.closest(".hud-section").classList.toggle("collapsed"); });
+    });
+    qs(wrap, "#geoSidebarToggle").addEventListener("click", function () {
+      qs(wrap, "#geoSidebar").classList.add("collapsed-panel");
+      qs(wrap, "#geoSidebarReveal").hidden = false;
+    });
+    qs(wrap, "#geoSidebarReveal").addEventListener("click", function () {
+      qs(wrap, "#geoSidebar").classList.remove("collapsed-panel");
+      qs(wrap, "#geoSidebarReveal").hidden = true;
+    });
+
+    /* ---- "Daftar Kawasan" list — click selects a kawasan, kept in sync with map pin / province tile clicks ---- */
+    function renderKawasanList() {
+      var listEl = qs(wrap, "#kawasanList");
+      listEl.innerHTML = kawasan.map(function (k) {
+        return '<button class="hud-kawasan-item' + (state.selectedKawasan === k.id ? " active" : "") + '" data-id="' + k.id + '">' +
+          '<span class="hud-dot" style="background:' + STAGE_COLOR_HEX[k.tahap] + '"></span>' +
+          '<span class="hud-kw-text"><span class="nm">' + k.nama + '</span><span class="pv">' + k.provinsi + '</span></span>' +
+        '</button>';
+      }).join("");
+      qsa(listEl, ".hud-kawasan-item").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          selectKawasan(kawasan.find(function (x) { return x.id === btn.dataset.id; }));
+        });
+      });
     }
 
-    /* ---- grid-of-provinces view (original) ---- */
+    /* ---- "Detail Kawasan" panel — populasi, indeks 5T, legalitas HPL/SHM, risiko, mini photo ---- */
+    function renderDetail() {
+      var el = qs(wrap, "#geoDetail");
+      var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
+      if (!k) { el.innerHTML = '<p class="hud-empty">Pilih kawasan pada daftar atau peta.</p>'; return; }
+      var legalPct = Math.round(k.shmHa / k.hplHa * 100);
+      var riskLabel = { low: "Rendah", med: "Sedang", high: "Tinggi" }[k.risiko];
+      var media = k.foto
+        ? '<img src="' + k.foto + '" alt="Foto ' + k.nama + '" loading="lazy" />'
+        : cityIllustration(k, 260, 110);
+      el.innerHTML =
+        '<div class="hud-detail-title">' + k.nama + '</div>' +
+        '<div class="hud-detail-row"><span>Provinsi</span><b>' + k.provinsi + '</b></div>' +
+        '<div class="hud-detail-row"><span>Tipe</span><b>' + k.tipe + '</b></div>' +
+        '<div class="hud-detail-row"><span>Tahap</span><b><span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span></b></div>' +
+        '<div class="hud-detail-row"><span>Populasi transmigran</span><b>' + k.populasi.toLocaleString("id-ID") + ' jiwa</b></div>' +
+        '<div class="hud-detail-row"><span>Indeks 5T</span><b>' + k.indeks5t + ' / 100</b></div>' +
+        '<div class="hud-detail-row"><span>Realisasi anggaran</span><b>' + k.anggaranPct + '%</b></div>' +
+        '<div class="hud-detail-row"><span>Risiko</span><b><span class="sev ' + k.risiko + '">' + riskLabel + '</span></b></div>' +
+        '<div class="hud-legal">' +
+          '<div class="hud-legal-label"><span>Legalitas lahan (SHM/HPL)</span><b>' + legalPct + '%</b></div>' +
+          '<div class="bar-track"><div class="bar-fill" style="width:' + legalPct + '%"></div></div>' +
+        '</div>' +
+        '<div class="hud-photo-strip"><div class="photo-thumb">' + media + '<span class="pt-label">' + k.nama + '</span></div></div>';
+    }
+
+    function selectKawasan(k) {
+      if (!k) return;
+      state.selectedKawasan = k.id;
+      state.selectedProv = k.provinsi;
+      renderKawasanList();
+      renderDetail();
+      if (state.geoView === "dasar" && activeLeafletMap && leafletMarkers[k.id]) {
+        activeLeafletMap.panTo([k.lat, k.lon]);
+        leafletMarkers[k.id].openPopup();
+      }
+    }
+
+    /* ---- grid-of-provinces view (original), fills the canvas with a light padded panel instead of the map ---- */
     function renderProvGrid() {
-      qs(wrap, "#sebaranTitle").textContent = "Sebaran Provinsi";
-      qs(wrap, "#sebaranHint").textContent = "klik provinsi untuk highlight kawasan";
       var body = qs(wrap, "#sebaranBody");
       body.innerHTML =
-        '<div class="toolbar" style="margin-bottom:0.7rem">' +
-          '<button class="btn small" id="toggleHPL" aria-pressed="true">Layer HPL</button>' +
-          '<button class="btn small" id="toggleSHM" aria-pressed="true">Layer SHM</button>' +
-        '</div>' +
-        '<div class="map-legend" style="margin-bottom:0.7rem">' +
-          '<span class="sw"><span class="chip" style="background:var(--series-2)"></span>Luas HPL</span>' +
-          '<span class="sw"><span class="chip" style="background:var(--primary)"></span>Luas SHM Terbit</span>' +
-        '</div>' +
-        '<div class="province-grid" id="provGrid"></div>';
+        '<div class="geo-grid-pad">' +
+          '<div class="toolbar" style="margin-bottom:0.7rem">' +
+            '<button class="btn small" id="toggleHPL" aria-pressed="true">Layer HPL</button>' +
+            '<button class="btn small" id="toggleSHM" aria-pressed="true">Layer SHM</button>' +
+          '</div>' +
+          '<div class="map-legend" style="margin-bottom:0.7rem">' +
+            '<span class="sw"><span class="chip" style="background:var(--series-2)"></span>Luas HPL</span>' +
+            '<span class="sw"><span class="chip" style="background:var(--primary)"></span>Luas SHM Terbit</span>' +
+          '</div>' +
+          '<div class="province-grid" id="provGrid"></div>' +
+        '</div>';
 
       function draw() {
         var grid = qs(wrap, "#provGrid");
@@ -983,7 +1152,7 @@
           t.addEventListener("click", function () {
             state.selectedProv = state.selectedProv === t.dataset.p ? null : t.dataset.p;
             state.selectedKawasan = null;
-            draw(); renderReview(); renderGallery(); renderKawasanInfo();
+            draw(); renderKawasanList(); renderDetail();
           });
         });
       }
@@ -996,13 +1165,11 @@
       draw();
     }
 
-    /* ---- real-world basemap view (Leaflet + OpenStreetMap) ---- */
+    /* ---- real-world basemap view (Leaflet + OpenStreetMap), full-bleed under the HUD sidebar ---- */
     function renderDasar() {
-      qs(wrap, "#sebaranTitle").textContent = "Peta Dasar (OpenStreetMap)";
-      qs(wrap, "#sebaranHint").textContent = "geser & perbesar peta, klik penanda untuk detail";
       var body = qs(wrap, "#sebaranBody");
-
       if (activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
+      leafletMarkers = {};
 
       if (typeof L === "undefined") {
         renderDasarStatic(body);
@@ -1028,14 +1195,11 @@
         }).addTo(map);
         marker.bindPopup('<b>' + k.nama + '</b><br/>' + k.provinsi + '<br/>Tahap: ' + k.tahap +
           '<br/>Populasi: ' + k.populasi.toLocaleString("id-ID") + ' jiwa');
-        marker.on("click", function () {
-          state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
-          renderKawasanInfo(); renderReview(); renderGallery();
-        });
+        marker.on("click", function () { selectKawasan(k); });
+        leafletMarkers[k.id] = marker;
       });
 
       activeLeafletMap = map;
-      renderKawasanInfo();
       setTimeout(function () { map.invalidateSize(); }, 60);
     }
 
@@ -1056,86 +1220,26 @@
 
       qsa(wrap, ".bm-pin").forEach(function (pin) {
         pin.addEventListener("click", function () {
-          state.selectedKawasan = pin.getAttribute("data-id");
-          var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
-          state.selectedProv = k.provinsi;
+          selectKawasan(kawasan.find(function (x) { return x.id === pin.getAttribute("data-id"); }));
           qsa(wrap, ".bm-pin").forEach(function (p2) { p2.classList.toggle("selected", p2 === pin); });
-          renderKawasanInfo();
-          renderReview(); renderGallery();
-        });
-      });
-
-      renderKawasanInfo();
-    }
-
-    /* AI-style narrative review + top HPL–SHM gap ranking, scoped to state.selectedProv */
-    function renderReview() {
-      var scope = state.selectedProv;
-      var rows = kawasan.filter(function (k) { return !scope || k.provinsi === scope; })
-        .map(function (k) { return { k: k, gap: k.hplHa - k.shmHa, pct: Math.round((k.hplHa - k.shmHa) / k.hplHa * 100) }; })
-        .sort(function (a, b) { return b.gap - a.gap; });
-      var top = rows.slice(0, 3);
-      var scopeLabel = scope || "seluruh kawasan";
-      var narrative;
-      if (rows.length === 0) {
-        narrative = "Tidak ada data untuk cakupan ini.";
-      } else {
-        var avgPct = Math.round(rows.reduce(function (s, r) { return s + (r.k.shmHa / r.k.hplHa * 100); }, 0) / rows.length);
-        var worst = top[0];
-        narrative = "Rata-rata legalitas lahan (SHM/HPL) di <b>" + scopeLabel + "</b> sekitar <b>" + avgPct + "%</b>. " +
-          "Kesenjangan terbesar ada di <b>" + worst.k.nama + "</b>, dengan " + worst.pct + "% area HPL yang belum bersertifikat SHM" +
-          (worst.pct > 50 ? ", masuk kategori risiko tinggi dan perlu percepatan sertifikasi." : ", masih dalam batas terkendali namun tetap perlu dipantau.");
-      }
-      var listHtml = top.map(function (r) {
-        return '<div class="ews-item"><div class="ews-body">' +
-          '<div class="t">' + r.k.nama + ' <span class="hint" style="color:var(--text-faint)">· ' + r.k.provinsi + '</span></div>' +
-          '<div class="d">Selisih HPL–SHM ~' + r.gap.toLocaleString("id-ID") + ' Ha</div></div>' +
-          '<span class="sev ' + (r.pct > 50 ? "high" : r.pct > 30 ? "med" : "low") + '">' + r.pct + '%</span></div>';
-      }).join("") || '<p class="empty" style="color:var(--text-faint)">Tidak ada data.</p>';
-
-      qs(wrap, "#geoAiReview").innerHTML = '<p class="desc" style="margin:0 0 0.8rem">' + narrative + '</p>' + listHtml;
-    }
-
-    /* gallery of kawasan photos (falls back to a generated cityscape illustration when a kawasan has no `foto`), scoped to the selected province if any */
-    function renderGallery() {
-      var scopeList = kawasan.filter(function (k) { return !state.selectedProv || k.provinsi === state.selectedProv; });
-      if (scopeList.length === 0) scopeList = kawasan;
-      qs(wrap, "#photosHint").textContent = state.selectedProv || (scopeList.length + " kawasan");
-      qs(wrap, "#photoGallery").innerHTML = scopeList.slice(0, 6).map(function (k) {
-        var media = k.foto
-          ? '<img src="' + k.foto + '" alt="Foto ' + k.nama + '" loading="lazy" />'
-          : cityIllustration(k, 300, 160);
-        return '<div class="photo-thumb' + (state.selectedKawasan === k.id ? " selected" : "") + '" data-id="' + k.id + '">' +
-          media +
-          '<span class="pt-label">' + k.nama + '</span></div>';
-      }).join("");
-      qsa(wrap, ".photo-thumb").forEach(function (t) {
-        t.addEventListener("click", function () {
-          var k = kawasan.find(function (x) { return x.id === t.dataset.id; });
-          state.selectedKawasan = k.id; state.selectedProv = k.provinsi;
-          renderSebaran(); renderGallery(); renderReview(); renderKawasanInfo();
         });
       });
     }
 
     function renderSebaran() {
-      qsa(wrap, ".ms-btn").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.view === state.geoView); });
+      qsa(wrap, ".hud-radio").forEach(function (b) { b.classList.toggle("active", b.dataset.view === state.geoView); });
       if (state.geoView !== "dasar" && activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
       if (state.geoView === "dasar") renderDasar();
       else renderProvGrid();
     }
 
-    qsa(wrap, ".ms-btn").forEach(function (btn) {
+    qsa(wrap, ".hud-radio").forEach(function (btn) {
       btn.addEventListener("click", function () { state.geoView = btn.dataset.view; renderSebaran(); });
     });
 
-    var legalData = kawasan.map(function (k) { return { label: k.nama.replace(/^SKP |^KPB /, ""), value: Math.round((k.shmHa / k.hplHa) * 100), color: "var(--primary)" }; });
-    qs(wrap, "#legalBar").appendChild(barChart(legalData, { height: 190, suffix: "%", max: 100 }));
-
+    renderKawasanList();
+    renderDetail();
     renderSebaran();
-    renderReview();
-    renderGallery();
-    renderKawasanInfo();
     return wrap;
   }
 
@@ -1371,6 +1475,7 @@
 
   function render() {
     mainEl.innerHTML = "";
+    mainEl.classList.toggle("no-pad", state.tab === "geospasial");
     mainEl.appendChild(RENDERERS[state.tab]());
   }
 
