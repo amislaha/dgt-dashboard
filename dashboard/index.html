@@ -142,26 +142,17 @@
     padding: 0.9rem 0.6rem;
     overflow-y: auto;
     background: linear-gradient(180deg, rgba(15,25,34,0.015), transparent);
-    transition: width 0.15s ease;
+    transition: width 0.15s ease, padding 0.15s ease;
   }
-  .rail.collapsed { width: 60px; }
-
-  .rail-top { display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; padding: 0 0.1rem; }
-  .rail.collapsed .rail-top { justify-content: center; }
-  .rail-collapse-btn {
-    background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-dim);
-    width: 22px; height: 22px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 0.8rem; line-height: 1;
-  }
-  .rail-collapse-btn:hover { background: var(--panel-2); color: var(--text); }
+  /* fully collapsed, not icon-only — width:0 hides it completely so .main gets the space back.
+     The toggle button lives in the topbar (not inside .rail) specifically so it stays reachable
+     once the rail itself has zero width. */
+  .rail.collapsed { width: 0; padding: 0; border-right: none; overflow: hidden; }
 
   .rail-group-label {
     font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--text-faint); padding: 0.4rem 0.6rem 0.5rem;
   }
-  .rail.collapsed .rail-group-label { display: none; }
-  .rail.collapsed .rail-item { justify-content: center; padding: 0.55rem 0.35rem; }
-  .rail.collapsed .rail-item .rail-label { display: none; }
 
   .rail-item {
     display: flex; align-items: center; gap: 0.65rem;
@@ -482,8 +473,12 @@
 
   .hud-chat-panel {
     position: absolute; z-index: 25; right: 16px; bottom: 82px; width: 320px; max-height: 60%;
-    display: flex; flex-direction: column; overflow: hidden;
+    overflow: hidden;
   }
+  /* [hidden] is equal specificity to a bare class selector, so an unconditional "display: flex"
+     here would beat the browser's [hidden]{display:none} and the panel could never actually close
+     — :not([hidden]) makes this rule more specific than [hidden], so it only wins while visible */
+  .hud-chat-panel:not([hidden]) { display: flex; flex-direction: column; }
   .hud-chat-panel .chat-log { flex: 1 1 auto; padding: 0.9rem 1rem 0; max-height: none; }
   .hud-chat-panel .chat-input-row { padding: 0.7rem 1rem 1rem; margin-top: 0; }
   .hud .chat-input-row input {
@@ -564,6 +559,7 @@
 
 <div class="topbar">
   <button class="btn small" id="railToggle" style="display:none" aria-label="Toggle menu">☰</button>
+  <button class="btn small" id="railCollapseToggle" aria-label="Ciutkan menu">☰</button>
   <div class="brand">
     <div class="brand-mark">5T</div>
     <div class="brand-text">
@@ -579,10 +575,7 @@
 
 <div class="shell">
   <nav class="rail" id="rail">
-    <div class="rail-top">
-      <div class="rail-group-label">Modul Eksekutif</div>
-      <button class="rail-collapse-btn" id="railCollapseToggle" aria-label="Ciutkan menu">‹</button>
-    </div>
+    <div class="rail-group-label">Modul Eksekutif</div>
     <div id="railItems"></div>
   </nav>
   <main class="main" id="main"></main>
@@ -930,13 +923,6 @@
     b.innerHTML = '<span class="rail-icon">' + railIcon(m.id) + '</span><span class="rail-label">' + m.label + '<span class="rail-sub">' + m.sub + '</span></span>';
     b.addEventListener("click", function () { setTab(m.id); });
     railItemsEl.appendChild(b);
-  });
-
-  var railCollapseToggle = document.getElementById("railCollapseToggle");
-  railCollapseToggle.addEventListener("click", function () {
-    var collapsed = document.getElementById("rail").classList.toggle("collapsed");
-    railCollapseToggle.textContent = collapsed ? "›" : "‹";
-    railCollapseToggle.setAttribute("aria-label", collapsed ? "Perluas menu" : "Ciutkan menu");
   });
 
   function setTab(id) {
@@ -1603,16 +1589,22 @@
   tickClock();
   setInterval(tickClock, 1000);
 
-  /* ---------- responsive rail toggle ---------- */
+  /* ---------- rail toggles: mobile off-canvas open/close (≤760px) vs. desktop full collapse ---------- */
   var railToggle = document.getElementById("railToggle");
+  var railCollapseToggle = document.getElementById("railCollapseToggle");
   function checkWidth() {
     var narrow = window.innerWidth <= 760;
     railToggle.style.display = narrow ? "inline-flex" : "none";
+    railCollapseToggle.style.display = narrow ? "none" : "inline-flex";
   }
   window.addEventListener("resize", checkWidth);
   checkWidth();
   railToggle.addEventListener("click", function () {
     document.getElementById("rail").classList.toggle("open");
+  });
+  railCollapseToggle.addEventListener("click", function () {
+    var collapsed = document.getElementById("rail").classList.toggle("collapsed");
+    railCollapseToggle.setAttribute("aria-label", collapsed ? "Perluas menu" : "Ciutkan menu");
   });
 
   render();
