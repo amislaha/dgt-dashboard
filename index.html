@@ -3,7 +3,13 @@
 <!-- Repo home / launcher page. Sits at the GitHub Pages root and links out to the tools that live
      in this same repo as sibling subfolders (dashboard/, data-manager/). Self-contained, same
      design tokens as those tools (synced from the DGT Transmigrasi 2026 Figma file) — see their
-     own files for the canonical copy and provenance notes. -->
+     own files for the canonical copy and provenance notes.
+
+     Fronted by a COSMETIC login gate — see the #loginView section below. This is a static site
+     with no backend, so there is no real credential verification: any non-empty username/password
+     is accepted, and dashboard/ and data-manager/ remain directly reachable by URL regardless of
+     this gate's state. It exists for demo/presentation flow only. Do not build real access control
+     on top of it without adding an actual backend. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -24,6 +30,7 @@
     --primary-line: rgba(22, 59, 84, 0.35);
     --series-2: #33809c;
     --sidebar: #081826;
+    --warn: #c09546;
     --radius: 10px;
     --radius-sm: 8px;
   }
@@ -86,8 +93,69 @@
     max-width: 640px; line-height: 1.6;
   }
   footer a { color: var(--series-2); border-bottom: 1px dotted currentColor; }
+
+  .view[hidden] { display: none; }
+
+  /* ---------- login ---------- */
+  .login-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    width: 100%; max-width: 360px; padding: 1.8rem 1.7rem 1.6rem;
+  }
+  .login-card h1 { font-size: 1.15rem; margin: 0 0 0.3rem; text-align: left; letter-spacing: normal; }
+  .login-card > p { margin: 0 0 1.4rem; color: var(--text-dim); font-size: 0.82rem; line-height: 1.55; }
+  .field { margin-bottom: 0.9rem; }
+  .field label { display: block; font-size: 0.72rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-dim); }
+  .field input {
+    width: 100%; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 0.55rem 0.7rem; font-size: 0.86rem; font-family: inherit;
+  }
+  .field input:focus-visible { outline: 2px dashed var(--primary); outline-offset: 1px; }
+  .login-submit {
+    width: 100%; margin-top: 0.3rem; background: var(--primary); border: 1px solid var(--primary);
+    color: #f4f8fa; font-weight: 600; font-size: 0.86rem; font-family: inherit;
+    border-radius: var(--radius-sm); padding: 0.65rem 0.8rem; cursor: pointer;
+  }
+  .login-submit:hover { background: #102c40; }
+  .login-note {
+    display: flex; gap: 0.5rem; align-items: flex-start; margin-top: 1.1rem;
+    font-size: 0.68rem; color: var(--text-faint); line-height: 1.55;
+  }
+  .login-note svg { width: 14px; height: 14px; flex: 0 0 auto; margin-top: 0.1rem; color: var(--warn); }
+
+  .logout-link {
+    margin-top: 2rem; font-size: 0.72rem; color: var(--text-faint);
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+  .logout-link:hover { color: var(--text-dim); }
 </style>
 
+<div id="loginView" class="view">
+  <div class="header">
+    <div class="mark">DT</div>
+    <div class="eyebrow">Kementerian Transmigrasi</div>
+  </div>
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <h1>Masuk ke SVKE</h1>
+    <p>Sistem Visualisasi Keputusan Eksekutif — kawasan transmigrasi.</p>
+    <div class="field">
+      <label for="loginUser">Nama pengguna</label>
+      <input type="text" id="loginUser" name="username" required placeholder="cth. admin" />
+    </div>
+    <div class="field">
+      <label for="loginPass">Kata sandi</label>
+      <input type="password" id="loginPass" name="password" required placeholder="••••••••" />
+    </div>
+    <button type="submit" class="login-submit">Masuk</button>
+    <div class="login-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+      <span>Halaman demo — bukan autentikasi sungguhan. Kredensial apa pun akan diterima; ini bukan alat kontrol akses.</span>
+    </div>
+  </form>
+</div>
+
+<div id="launcherView" class="view" hidden>
 <div class="header">
   <div class="mark">DT</div>
   <div class="eyebrow">Kementerian Transmigrasi</div>
@@ -124,4 +192,35 @@
 <footer>
   Data pada kedua alat ini bersifat ilustratif, bukan data resmi kementerian.
   Sumber &amp; dokumentasi ada di <a href="https://github.com/amislaha/dgt-dashboard" target="_blank" rel="noopener">repo GitHub</a>.
+  <br />
+  <button type="button" class="logout-link" id="logoutBtn">Keluar</button>
 </footer>
+</div>
+
+<script>
+  (function () {
+    "use strict";
+    var KEY = "svke-auth";
+    var loginView = document.getElementById("loginView");
+    var launcherView = document.getElementById("launcherView");
+
+    function showLauncher() { loginView.hidden = true; launcherView.hidden = false; }
+    function showLogin() { launcherView.hidden = true; loginView.hidden = false; }
+
+    if (sessionStorage.getItem(KEY) === "1") showLauncher();
+
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      // Cosmetic gate — see the top-of-file comment. No real credential check: any non-empty
+      // username/password (already enforced by the `required` attributes) is accepted.
+      try { sessionStorage.setItem(KEY, "1"); } catch (err) { /* private browsing, etc. — proceed anyway */ }
+      showLauncher();
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", function () {
+      try { sessionStorage.removeItem(KEY); } catch (err) {}
+      document.getElementById("loginForm").reset();
+      showLogin();
+    });
+  })();
+</script>
