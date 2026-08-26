@@ -1,0 +1,113 @@
+<!-- @dsCard group="SIMTRANS (aplikasi internal)" viewport="1360x820" name="SIMTRANS — dasbor" subtitle="Aplikasi verifikasi kawasan: login, dasbor, registri, telaah permohonan" -->
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>SIMTRANS — Kementerian Transmigrasi RI</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+body{margin:0;background:var(--abu-50)}
+.sim-app{display:flex;min-height:100vh}
+.sim-side{width:var(--sidebar-w);flex:none;background:var(--sidebar);color:var(--sidebar-foreground);display:flex;flex-direction:column;padding:16px 12px;gap:14px;position:sticky;top:0;height:100vh}
+.sim-side__brand{display:flex;gap:10px;align-items:center;padding:4px 6px 12px;border-bottom:1px solid var(--sidebar-border)}
+.sim-side__plate{display:grid;place-items:center;width:36px;height:36px;flex:none;border-radius:50%;background:#fff}
+.sim-side__plate img{width:32px;height:32px}
+.sim-side__name{font:var(--weight-extrabold) 16px/1 var(--font-sans);letter-spacing:.02em;color:#fff}
+.sim-side__sub{font:var(--type-caption);font-size:10.5px;color:rgb(255 255 255/.6);margin-top:3px}
+.sim-side__nav{display:flex;flex-direction:column;gap:2px}
+.sim-nav{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;border-radius:var(--radius-md);background:transparent;color:rgb(255 255 255/.72);font:var(--type-label);cursor:pointer;text-align:left;transition:var(--transition-colors)}
+.sim-nav:hover{background:var(--sidebar-accent);color:#fff}
+.sim-nav--on{background:var(--sidebar-accent);color:#fff;box-shadow:inset 2px 0 0 var(--sidebar-primary)}
+.sim-nav__c{margin-left:auto;background:var(--emas-300);color:var(--biru-950);border-radius:var(--radius-full);padding:0 6px;font-size:10px;font-weight:700}
+.sim-side__spacer{flex:1}
+.sim-side__foot{display:flex;gap:10px;align-items:center;padding-top:12px;border-top:1px solid var(--sidebar-border)}
+.sim-side__u{font-size:12.5px;font-weight:600;color:#fff}
+.sim-side__r{font-size:10.5px;color:rgb(255 255 255/.55);margin-top:2px}
+.sim-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.sim-top{height:var(--topbar-h);flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 24px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.sim-top__t{font:var(--weight-bold) 14px/1 var(--font-sans);letter-spacing:var(--tracking-tight)}
+.sim-top__r{display:flex;align-items:center;gap:8px}
+.sim-top__search{width:300px}
+.sim-page{display:flex;flex-direction:column;gap:20px;padding:24px 24px 48px;max-width:var(--container-wide);width:100%}
+.sim-ph{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.sim-ph__e{font:var(--type-eyebrow);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--muted-foreground);margin-bottom:6px}
+.sim-ph__t{font:var(--type-h1);letter-spacing:var(--tracking-tight)}
+.sim-ph__d{margin-top:6px;font:var(--type-body);color:var(--muted-foreground);max-width:72ch}
+.sim-ph__a{display:flex;gap:8px}
+.sim-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.sim-stat{display:flex;flex-direction:column;gap:8px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-xs)}
+.sim-stat__top{display:flex;align-items:center;justify-content:space-between;font:var(--type-label);color:var(--muted-foreground)}
+.sim-stat__v{font:var(--weight-extrabold) var(--text-4xl)/1 var(--font-display);letter-spacing:var(--tracking-tighter);font-variant-numeric:tabular-nums}
+.sim-grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:16px}
+.sim-bars{display:flex;align-items:flex-end;gap:10px;height:150px;padding-top:4px}
+.sim-bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:6px}
+.sim-bar__fill{width:100%;background:var(--chart-1);border-radius:6px 6px 0 0}
+.sim-bar span{font:var(--type-caption);color:var(--muted-foreground)}
+.sim-prov{display:flex;flex-direction:column;gap:12px}
+.sim-prov__row{display:grid;grid-template-columns:1.1fr 1fr auto;gap:12px;align-items:center}
+.sim-prov__n{display:flex;align-items:center;gap:6px;font-size:var(--text-sm);color:var(--foreground)}
+.sim-prov__v{font:var(--type-mono);font-size:11px;color:var(--muted-foreground);text-align:right;min-width:72px}
+.sim-mono{font:var(--type-mono);font-size:11.5px;color:var(--abu-700)}
+.sim-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sim-toolbar > span:first-child{width:280px}
+.sim-detail{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start}
+.sim-detail__main,.sim-detail__side{display:flex;flex-direction:column;gap:16px}
+.sim-kv{display:flex;flex-direction:column;gap:0}
+.sim-kv__row{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid var(--border);font-size:var(--text-sm)}
+.sim-kv__row:last-child{border-bottom:0}
+.sim-kv__row span{color:var(--muted-foreground)}
+.sim-kv__row strong{font-weight:600;text-align:right}
+.sim-time{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.sim-time li{display:flex;gap:10px}
+.sim-time__t{font-size:var(--text-sm);line-height:1.4}
+.sim-time__m{font:var(--type-caption);color:var(--muted-foreground);margin-top:2px}
+.sim-map{display:flex;flex-direction:column;align-items:center;gap:8px;padding:26px;border:1px dashed var(--border);border-radius:var(--radius-lg);background:var(--abu-50);color:var(--muted-foreground);text-align:center;font:var(--type-caption)}
+.sim-dlgform{display:flex;flex-direction:column;gap:16px}
+.sim-dlgform__f{display:flex;flex-direction:column;gap:6px}
+.sim-login{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;width:100%}
+.sim-login__panel{background:linear-gradient(160deg,var(--biru-700),var(--biru-950));color:#fff;padding:48px 56px;display:flex;flex-direction:column;gap:24px}
+.sim-login__brand{display:flex;gap:14px;align-items:center}
+.sim-login__plate{display:grid;place-items:center;width:60px;height:60px;flex:none;border-radius:50%;background:#fff}
+.sim-login__plate img{width:54px;height:54px}
+.sim-login__wm{font:var(--weight-extrabold) 16px/1.15 var(--font-sans);letter-spacing:var(--tracking-tight)}
+.sim-login__wm2{font:var(--type-caption);color:var(--emas-300);text-transform:uppercase;letter-spacing:var(--tracking-caps);margin-top:3px}
+.sim-login__quote{margin-top:auto;font:italic 400 var(--text-2xl)/1.5 var(--font-serif);max-width:34ch}
+.sim-login__meta{font:var(--type-caption);color:rgb(255 255 255/.55)}
+.sim-login__form{display:grid;place-items:center;padding:40px;background:var(--background)}
+.sim-login__box{width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px}
+.sim-login__h{font:var(--type-h2)}
+.sim-login__p{font:var(--type-body);color:var(--muted-foreground)}
+.sim-login__field{display:flex;flex-direction:column;gap:6px}
+.sim-login__row{display:flex;align-items:center;justify-content:space-between;font-size:var(--text-sm)}
+</style>
+</head><body><div id="root"></div>
+<script type="text/babel" src="app-shell.jsx"></script>
+<script type="text/babel" src="screen-login.jsx"></script>
+<script type="text/babel" src="screen-dashboard.jsx"></script>
+<script type="text/babel" src="screen-registri.jsx"></script>
+<script type="text/babel" src="screen-detail.jsx"></script>
+<script type="text/babel">
+const TITLES = { dashboard: "Dasbor", registri: "Registri Kawasan", detail: "Telaah Permohonan", permohonan: "Permohonan", penempatan: "Penempatan KK", anggaran: "Anggaran", peta: "Peta Kawasan", audit: "Log Audit", pengaturan: "Pengaturan" };
+function App() {
+  const [auth, setAuth] = React.useState(false);
+  const [screen, setScreen] = React.useState("dashboard");
+  if (!auth) return <LoginScreen onSignIn={() => setAuth(true)} />;
+  const nav = (id) => setScreen(id);
+  let body;
+  if (screen === "registri" || screen === "permohonan") body = <RegistriScreen onOpen={nav} />;
+  else if (screen === "detail") body = <DetailScreen />;
+  else if (screen === "dashboard") body = <DashboardScreen onOpen={nav} />;
+  else body = <div className="sim-page"><PageHead title={TITLES[screen]} desc="Modul ini tidak termasuk dalam UI kit — sengaja dibiarkan kosong." /></div>;
+  return (
+    <div className="sim-app">
+      <Sidebar active={screen === "detail" ? "permohonan" : screen} onNavigate={nav} />
+      <div className="sim-main">
+        <Topbar title={TITLES[screen] || "SIMTRANS"} actions={<NSAvatar />} />
+        {body}
+      </div>
+    </div>
+  );
+}
+function NSAvatar() { const { Avatar } = window.TransmigrasiDigitalDesignSystem_7b839d; return <Avatar name="Siti Rahayu" size="sm" ring />; }
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script></body></html>

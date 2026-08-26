@@ -1,0 +1,16 @@
+/* Minimal resets + document defaults. Components carry their own styling. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:var(--type-body);color:var(--foreground);background:var(--background);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3,h4,p,figure,blockquote{margin:0}
+h1{font:var(--type-h1);letter-spacing:var(--tracking-tight)}
+h2{font:var(--type-h2);letter-spacing:var(--tracking-tight)}
+h3{font:var(--type-h3)}
+a{color:var(--primary);text-decoration:none;text-underline-offset:3px;transition:var(--transition-colors)}
+a:hover{color:var(--biru-700);text-decoration:underline}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:var(--focus-ring-width) solid var(--focus-ring-color);outline-offset:2px;border-radius:var(--radius-sm)}
+::selection{background:var(--biru-100);color:var(--biru-900)}
+img,svg{display:block;max-width:100%}
+button,input,select,textarea{font:inherit}
+code,kbd,pre,samp{font-family:var(--font-mono)}
+:where(hr){border:0;border-top:var(--border-width) solid var(--border)}

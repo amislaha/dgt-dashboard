@@ -1,0 +1,34 @@
+<!-- @dsCard group="Components" viewport="700x380" name="Display" subtitle="Card, Badge, Table, Avatar, Separator, Progress" -->
+<!doctype html><html lang="id"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;padding:20px;background:var(--background)}.row{display:flex;flex-wrap:wrap;align-items:center;gap:12px}.col{display:flex;flex-direction:column;gap:14px}.cap{font:var(--type-eyebrow);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--muted-foreground)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}</style>
+</head><body><div id="root"></div><script type="text/babel">
+const NS = window.TransmigrasiDigitalDesignSystem_7b839d;
+const { Card, Badge, Table, Avatar, Separator, Progress, Button, Icon } = NS;
+function Demo(){
+  const rows=[{id:1,kode:"KTM-01",kawasan:"KTM Lamunti",kk:1200,status:"Terverifikasi",tone:"success"},
+              {id:2,kode:"KTM-02",kawasan:"KTM Tinanggea",kk:840,status:"Menunggu",tone:"warning"},
+              {id:3,kode:"KTM-03",kawasan:"KTM Salor",kk:615,status:"Ditolak",tone:"danger"}];
+  return <div className="col">
+    <div className="row" style={{gap:16,alignItems:"stretch"}}>
+      <Card title="Permohonan masuk" description="30 hari terakhir" action={<Badge tone="primary" dot>Live</Badge>} style={{flex:1}}>
+        <div style={{font:"var(--weight-extrabold) var(--text-4xl)/1 var(--font-display)",letterSpacing:"var(--tracking-tighter)"}}>1.284</div>
+        <Progress label="Realisasi anggaran" value={68}/>
+      </Card>
+      <Card variant="flat" title="Verifikator" description="Unit Layanan Kawasan" style={{flex:1}} footer={<Button size="sm" variant="outline">Kelola</Button>} footerBordered>
+        <div className="row"><Avatar name="Siti Rahayu"/><Avatar name="Budi Hartono"/><Avatar name="Agus Pranata" ring/></div>
+      </Card>
+    </div>
+    <div className="row">
+      <Badge tone="success" dot>Terverifikasi</Badge><Badge tone="warning" dot>Menunggu</Badge><Badge tone="danger" dot>Ditolak</Badge>
+      <Badge tone="info" dot>Baru</Badge><Badge tone="neutral">Arsip</Badge><Badge tone="solid">12</Badge><Badge tone="outline" shape="square">SK-2026</Badge>
+    </div>
+    <Separator label="Registri kawasan" />
+    <Table density="compact" columns={[{key:"kode",label:"Kode",width:"90px"},{key:"kawasan",label:"Kawasan"},{key:"kk",label:"Jumlah KK",numeric:true},{key:"status",label:"Status",render:r=><Badge tone={r.tone} dot>{r.status}</Badge>}]} rows={rows}/>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script></body></html>

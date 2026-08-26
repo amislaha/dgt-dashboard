@@ -1,0 +1,26 @@
+<!-- @dsCard group="Components" viewport="700x180" name="Core / Icon" subtitle="Lucide glyphs via CSS mask, sizes 14-24px" -->
+<!doctype html><html lang="id"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;padding:20px;background:var(--background)}.row{display:flex;flex-wrap:wrap;align-items:center;gap:12px}.col{display:flex;flex-direction:column;gap:14px}.cap{font:var(--type-eyebrow);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--muted-foreground)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}</style>
+</head><body><div id="root"></div><script type="text/babel">
+const NS = window.TransmigrasiDigitalDesignSystem_7b839d;
+const { Icon } = NS;
+const names=["landmark","map-pin","layers","users","file-check-2","sprout","tractor","chart-column","bell","search","download","shield-check","building-2","route","clipboard-list","circle-check"];
+function Demo(){
+  return <div className="col" style={{gap:18}}>
+    <div className="row" style={{gap:18,color:"var(--foreground)"}}>{names.map(n=><Icon key={n} name={n} size="lg"/>)}</div>
+    <div className="row" style={{gap:18}}>
+      <Icon name="map-pin" size="sm"/><Icon name="map-pin"/><Icon name="map-pin" size="lg"/><Icon name="map-pin" size="xl"/>
+      <span style={{color:"var(--primary)"}}><Icon name="sprout" size="xl"/></span>
+      <span style={{color:"var(--destructive)"}}><Icon name="circle-alert" size="xl"/></span>
+      <span style={{color:"var(--warning)"}}><Icon name="triangle-alert" size="xl"/></span>
+      <span style={{color:"var(--info)"}}><Icon name="info" size="xl"/></span>
+      <span className="cap">14 / 16 / 20 / 24 px · currentColor</span>
+    </div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script></body></html>

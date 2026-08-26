@@ -1,0 +1,25 @@
+:root{
+  --font-sans:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;
+  --font-serif:"Lora",Georgia,"Times New Roman",serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,monospace;
+  --font-display:var(--font-sans);
+
+  --text-2xs:.6875rem;--text-xs:.75rem;--text-sm:.8125rem;--text-base:.875rem;--text-md:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--text-5xl:3rem;--text-6xl:3.75rem;
+
+  --leading-tight:1.1;--leading-snug:1.25;--leading-normal:1.45;--leading-relaxed:1.65;
+  --tracking-tighter:-.03em;--tracking-tight:-.015em;--tracking-normal:0;--tracking-wide:.02em;--tracking-caps:.08em;
+  --weight-light:300;--weight-regular:400;--weight-medium:500;--weight-semibold:600;--weight-bold:700;--weight-extrabold:800;
+
+  /* Semantic type roles */
+  --type-display:var(--weight-extrabold) var(--text-5xl)/var(--leading-tight) var(--font-display);
+  --type-h1:var(--weight-bold) var(--text-3xl)/var(--leading-snug) var(--font-display);
+  --type-h2:var(--weight-bold) var(--text-2xl)/var(--leading-snug) var(--font-display);
+  --type-h3:var(--weight-semibold) var(--text-lg)/var(--leading-snug) var(--font-sans);
+  --type-body:var(--weight-regular) var(--text-base)/var(--leading-normal) var(--font-sans);
+  --type-body-lg:var(--weight-regular) var(--text-md)/var(--leading-relaxed) var(--font-sans);
+  --type-label:var(--weight-medium) var(--text-sm)/1.2 var(--font-sans);
+  --type-caption:var(--weight-regular) var(--text-xs)/1.35 var(--font-sans);
+  --type-mono:var(--weight-medium) var(--text-xs)/1.4 var(--font-mono);
+  --type-quote:italic var(--weight-regular) var(--text-xl)/var(--leading-relaxed) var(--font-serif);
+  --type-eyebrow:var(--weight-semibold) var(--text-xs)/1.2 var(--font-sans);
+}

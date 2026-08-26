@@ -1,0 +1,6 @@
+/* Webfonts. SUBSTITUTION NOTE: no font binaries were supplied with the brand
+   assets. Plus Jakarta Sans (designed in Jakarta, used widely across Indonesian
+   government digital services), Lora (editorial serif) and JetBrains Mono
+   (data/code) are the nearest Google Fonts matches. Swap for licensed binaries
+   when available — replace the @import below with local @font-face rules. */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap");

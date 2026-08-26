@@ -1,0 +1,84 @@
+/* Colour system — shadcn/ui token architecture, palette sampled from the official
+   2024 Kementerian Transmigrasi emblem and horizontal lockup.
+   Brand values as measured: navy #163b54, teal #33809c, gold #dfb87e / #c09546. */
+:root{
+  /* Biru Nusantara — brand navy. #163b54 is the emblem ring, seal type and lockup type. */
+  --biru-50:#eef2f6;--biru-100:#d7e1ea;--biru-200:#aec2d2;--biru-300:#7e9db6;--biru-400:#4b7695;--biru-500:#2a5a78;--biru-600:#163b54;--biru-700:#102c40;--biru-800:#0c2233;--biru-900:#081826;--biru-950:#050f19;
+  /* Teal Laut — the emblem's water quadrant and the lockup tagline. */
+  --teal-50:#eef5f8;--teal-100:#d5e7ee;--teal-200:#a9cedb;--teal-300:#75b0c4;--teal-400:#4b95ad;--teal-500:#33809c;--teal-600:#2a6b83;--teal-700:#205468;
+  /* Emas Tanah — the emblem's land quadrants. */
+  --emas-50:#fbf6ec;--emas-100:#f6ead3;--emas-200:#eed7ae;--emas-300:#dfb87e;--emas-400:#cfa460;--emas-500:#c09546;--emas-600:#9d7936;--emas-700:#765a28;
+  /* Merah — functional only (destructive, "Ditolak"). Not a brand colour. */
+  --merah-50:#fdeef0;--merah-100:#fad7db;--merah-200:#f3aeb6;--merah-300:#e97e8b;--merah-400:#dd4b5d;--merah-500:#ce1126;--merah-600:#af0e20;--merah-700:#8c0b1a;--merah-800:#6a0813;--merah-900:#4a060d;
+  /* Hijau — functional only (success / "Terverifikasi"), tuned to sit under the navy. */
+  --hijau-50:#edf6f1;--hijau-100:#d3e9dd;--hijau-200:#a6d2bc;--hijau-300:#6fb195;--hijau-400:#438f72;--hijau-500:#2c755b;--hijau-600:#1f5d47;--hijau-700:#174838;
+  /* Neutral ramp — slightly blue-cast greys so they sit under Biru */
+  --abu-0:#ffffff;--abu-50:#f7f9fa;--abu-100:#eff3f5;--abu-200:#dfe6ea;--abu-300:#c4d0d8;--abu-400:#97a7b2;--abu-500:#71818c;--abu-600:#5b6b76;--abu-700:#42505a;--abu-800:#2a3740;--abu-900:#1a2530;--abu-950:#0f1922;
+
+  /* Semantic — light (default) */
+  --background:var(--abu-0);
+  --foreground:var(--abu-950);
+  --card:var(--abu-0);
+  --card-foreground:var(--abu-950);
+  --popover:var(--abu-0);
+  --popover-foreground:var(--abu-950);
+  --primary:var(--biru-600);
+  --primary-foreground:#f4f8fa;
+  --secondary:var(--abu-100);
+  --secondary-foreground:var(--biru-800);
+  --muted:var(--abu-100);
+  --muted-foreground:var(--abu-600);
+  --accent:var(--biru-50);
+  --accent-foreground:var(--biru-700);
+  --destructive:var(--merah-500);
+  --destructive-foreground:#fff;
+  --success:var(--hijau-600);
+  --success-foreground:#fff;
+  --warning:var(--emas-500);
+  --warning-foreground:#2a1d02;
+  --info:var(--teal-500);
+  --info-foreground:#fff;
+  --border:var(--abu-200);
+  --input:var(--abu-200);
+  --ring:var(--teal-500);
+  --overlay:rgb(5 15 25 / .58);
+  /* Charts — brand order: navy, teal, gold, deep gold, red */
+  --chart-1:var(--biru-600);--chart-2:var(--teal-500);--chart-3:var(--emas-300);--chart-4:var(--emas-500);--chart-5:var(--merah-400);
+  /* Sidebar / app shell */
+  --sidebar:var(--biru-900);
+  --sidebar-foreground:#d5e1ea;
+  --sidebar-primary:var(--emas-300);
+  --sidebar-primary-foreground:var(--biru-950);
+  --sidebar-accent:rgb(255 255 255 / .08);
+  --sidebar-accent-foreground:#ffffff;
+  --sidebar-border:rgb(255 255 255 / .10);
+  --sidebar-ring:var(--emas-300);
+}
+.dark{
+  --background:#081420;
+  --foreground:#e8eef3;
+  --card:#0e1f2e;
+  --card-foreground:#e8eef3;
+  --popover:#0e1f2e;
+  --popover-foreground:#e8eef3;
+  --primary:var(--teal-300);
+  --primary-foreground:#04121a;
+  --secondary:#182c3c;
+  --secondary-foreground:#e8eef3;
+  --muted:#182c3c;
+  --muted-foreground:#97a7b2;
+  --accent:#12293a;
+  --accent-foreground:var(--teal-200);
+  --destructive:#e4566a;
+  --destructive-foreground:#1a0206;
+  --success:#4d9d7e;
+  --warning:var(--emas-300);
+  --info:var(--teal-300);
+  --border:rgb(255 255 255 / .12);
+  --input:rgb(255 255 255 / .16);
+  --ring:var(--teal-300);
+  --overlay:rgb(0 0 0 / .68);
+  --sidebar:#050f19;
+  --sidebar-foreground:#c2d3de;
+  --sidebar-border:rgb(255 255 255 / .08);
+}

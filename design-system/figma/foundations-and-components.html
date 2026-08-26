@@ -1,0 +1,245 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Transmigrasi Digital — Figma import sheet</title>
+<template id="__bundler_thumbnail"><svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="120" fill="#163b54"/><text x="60" y="72" font-family="sans-serif" font-size="34" font-weight="800" fill="#dfb87e" text-anchor="middle">TD</text></svg></template>
+<link rel="stylesheet" href="../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>
+body{margin:0;background:var(--abu-50);width:1440px}
+.sheet{display:flex;flex-direction:column;gap:0}
+.sec{padding:40px 56px;background:var(--background);border-bottom:1px solid var(--border)}
+.sec--tint{background:var(--abu-50)}
+.sec > h2{font:var(--type-h2);margin-bottom:4px}
+.sec > p{font:var(--type-caption);color:var(--muted-foreground);margin-bottom:24px}
+.grp{margin-bottom:26px}
+.grp > h3{font:var(--type-eyebrow);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--muted-foreground);margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.col{display:flex;flex-direction:column;gap:14px;max-width:420px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.swatch{border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;background:var(--card)}
+.swatch i{display:block;height:64px}
+.swatch b{display:block;padding:8px 10px;font:var(--type-mono);font-size:10.5px;color:var(--muted-foreground);font-style:normal;font-weight:400}
+.ramp{display:flex;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border)}
+.ramp > div{flex:1}
+.ramp i{display:block;height:52px}
+.ramp b{display:block;padding:6px 2px;text-align:center;font:var(--type-mono);font-size:9.5px;color:var(--muted-foreground);font-weight:400}
+.typerow{display:flex;align-items:baseline;gap:18px;padding:10px 0;border-bottom:1px solid var(--border)}
+.typerow span{font:var(--type-mono);font-size:10px;color:var(--muted-foreground);width:130px;flex:none}
+.lockup{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.lockup__l{padding:20px 24px;border:1px solid var(--border);border-radius:var(--radius-lg);background:#fff}
+.lockup__d{padding:20px 24px;border-radius:var(--radius-lg);background:var(--biru-900);display:flex;align-items:center;gap:16px}
+.plate{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:#fff;flex:none}
+.plate img{width:58px;height:58px}
+.wm{font:var(--weight-extrabold) 16px/1.15 var(--font-sans);letter-spacing:var(--tracking-tight);color:#fff}
+.wm2{font:var(--type-caption);color:var(--emas-300);text-transform:uppercase;letter-spacing:var(--tracking-caps);margin-top:4px}
+</style>
+</head><body><div id="root"></div>
+<script type="text/babel">
+const NS = window.TransmigrasiDigitalDesignSystem_7b839d;
+const { Button, Input, Label, Textarea, Select, Checkbox, RadioGroup, Switch, Card, Badge, Table, Avatar, Separator, Progress, Alert, Dialog, Tabs, Breadcrumb, Pagination, Icon } = NS;
+
+const Ramp = ({ name, steps }) => (
+  <div className="grp"><h3>{name}</h3><div className="ramp">{steps.map(s => <div key={s}><i style={{ background: `var(--${s})` }} /><b>{s.replace(/^[a-z]+-/, "")}</b></div>)}</div></div>
+);
+const Sw = ({ t }) => <div className="swatch"><i style={{ background: `var(--${t})` }} /><b>--{t}</b></div>;
+const TypeRow = ({ token, label, children }) => <div className="typerow"><span>{label}</span><div style={{ font: `var(--${token})` }}>{children}</div></div>;
+
+const ROWS = [
+  { id: 1, kode: "KTM-01", kawasan: "KTM Lamunti", daerah: "Kapuas, Kalimantan Tengah", kk: 1200, status: "Terverifikasi", tone: "success" },
+  { id: 2, kode: "KTM-02", kawasan: "KTM Tinanggea", daerah: "Konawe Selatan, Sulawesi Tenggara", kk: 840, status: "Menunggu", tone: "warning" },
+  { id: 3, kode: "KTM-03", kawasan: "KTM Salor", daerah: "Merauke, Papua Selatan", kk: 615, status: "Perbaikan", tone: "info" },
+  { id: 4, kode: "KTM-05", kawasan: "KTM Kobisonta", daerah: "Maluku Tengah, Maluku", kk: 430, status: "Ditolak", tone: "danger" },
+];
+
+function Sheet() {
+  return (
+    <div className="sheet">
+      <section className="sec">
+        <h2>Brand</h2><p>Emblem, lockup and tagline — Kementerian Transmigrasi Republik Indonesia</p>
+        <div className="lockup">
+          <div className="lockup__l"><img src="../assets/logo-lockup.png" alt="" style={{ height: 64, width: "auto" }} /></div>
+          <div className="lockup__l"><img src="../assets/logo-emblem.png" alt="" style={{ height: 96, width: 96 }} /></div>
+          <div className="lockup__d">
+            <span className="plate"><img src="../assets/logo-emblem.png" alt="" /></span>
+            <span><span className="wm">KEMENTERIAN TRANSMIGRASI</span><span className="wm2">Kesejahteraan untuk semua</span></span>
+          </div>
+        </div>
+      </section>
+
+      <section className="sec sec--tint">
+        <h2>Colour</h2><p>Brand ramps sampled from the emblem, then the semantic aliases every component is styled against</p>
+        <Ramp name="Biru Nusantara — primary #163b54" steps={["biru-50","biru-100","biru-200","biru-300","biru-400","biru-500","biru-600","biru-700","biru-800","biru-900","biru-950"]} />
+        <Ramp name="Teal Laut — #33809c" steps={["teal-50","teal-100","teal-200","teal-300","teal-400","teal-500","teal-600","teal-700"]} />
+        <Ramp name="Emas Tanah — #dfb87e / #c09546" steps={["emas-50","emas-100","emas-200","emas-300","emas-400","emas-500","emas-600","emas-700"]} />
+        <Ramp name="Hijau — functional, success only" steps={["hijau-50","hijau-100","hijau-200","hijau-300","hijau-400","hijau-500","hijau-600","hijau-700"]} />
+        <Ramp name="Merah — functional, destructive only" steps={["merah-50","merah-100","merah-200","merah-300","merah-400","merah-500","merah-600","merah-700"]} />
+        <Ramp name="Abu — neutrals" steps={["abu-0","abu-50","abu-100","abu-200","abu-300","abu-400","abu-500","abu-600","abu-700","abu-800","abu-900","abu-950"]} />
+        <div className="grp"><h3>Semantic</h3><div className="grid4">
+          {["background","foreground","card","primary","primary-foreground","secondary","muted","muted-foreground","accent","accent-foreground","border","input","ring","destructive","success","warning","info","overlay","chart-1","chart-2","chart-3","chart-4","chart-5","sidebar"].map(t => <Sw key={t} t={t} />)}
+        </div></div>
+      </section>
+
+      <section className="sec">
+        <h2>Type</h2><p>Plus Jakarta Sans · Lora (editorial) · JetBrains Mono (identifiers)</p>
+        <TypeRow token="type-display" label="--type-display 48/800">Transmigrasi Digital</TypeRow>
+        <TypeRow token="type-h1" label="--type-h1 30/700">Tata kelola kawasan, satu pintu</TypeRow>
+        <TypeRow token="type-h2" label="--type-h2 24/700">Permohonan &amp; verifikasi</TypeRow>
+        <TypeRow token="type-h3" label="--type-h3 18/600">Ringkasan kawasan</TypeRow>
+        <TypeRow token="type-body-lg" label="--type-body-lg 16/400">Permohonan penetapan kawasan diajukan melalui satu formulir daring.</TypeRow>
+        <TypeRow token="type-body" label="--type-body 14/400">Body — the workhorse size for forms, tables and app text.</TypeRow>
+        <TypeRow token="type-label" label="--type-label 13/500">Label — form labels and controls</TypeRow>
+        <TypeRow token="type-caption" label="--type-caption 12/400">Caption — hints, timestamps, metadata</TypeRow>
+        <TypeRow token="type-mono" label="--type-mono 12/500">TRM-2026-004182 · −2,1932 · 114,7291</TypeRow>
+        <TypeRow token="type-quote" label="--type-quote 20 Lora">Satu data kawasan transmigrasi, dari usulan daerah sampai penempatan keluarga.</TypeRow>
+        <TypeRow token="type-eyebrow" label="--type-eyebrow 12/600">LAYANAN PUBLIK</TypeRow>
+      </section>
+
+      <section className="sec sec--tint">
+        <h2>Surfaces</h2><p>Radii, elevation and the scrim used over imagery</p>
+        <div className="grp"><h3>Radii</h3><div className="row">
+          {[["sm","6px"],["md","8px"],["lg","10px"],["xl","14px"],["2xl","20px"],["full","pill"]].map(([n,l]) => (
+            <div key={n} style={{ textAlign: "center" }}>
+              <div style={{ width: 92, height: 60, background: "var(--biru-50)", border: "1.5px solid var(--biru-300)", borderRadius: `var(--radius-${n})` }} />
+              <div style={{ marginTop: 6, font: "var(--type-mono)", fontSize: 10, color: "var(--muted-foreground)" }}>{n} · {l}</div>
+            </div>
+          ))}
+        </div></div>
+        <div className="grp"><h3>Elevation</h3><div className="row" style={{ gap: 20, padding: 8 }}>
+          {["2xs","xs","sm","md","lg","xl"].map(n => (
+            <div key={n} style={{ textAlign: "center" }}>
+              <div style={{ width: 108, height: 64, background: "var(--card)", borderRadius: "var(--radius-lg)", boxShadow: `var(--shadow-${n})` }} />
+              <div style={{ marginTop: 8, font: "var(--type-mono)", fontSize: 10, color: "var(--muted-foreground)" }}>{n}</div>
+            </div>
+          ))}
+        </div></div>
+        <div className="grp"><h3>Scrim over imagery</h3>
+          <div style={{ width: 420, height: 150, borderRadius: "var(--radius-lg)", position: "relative", overflow: "hidden", background: "linear-gradient(155deg,var(--biru-900),var(--teal-600))" }}>
+            <div style={{ position: "absolute", inset: 0, background: "var(--scrim-bottom)" }} />
+            <div style={{ position: "absolute", left: 16, bottom: 14, color: "#fff" }}>
+              <div style={{ font: "var(--type-eyebrow)", letterSpacing: "var(--tracking-caps)", textTransform: "uppercase", opacity: .85 }}>Kawasan</div>
+              <div style={{ font: "var(--weight-bold) 20px/1.2 var(--font-sans)" }}>KTM Lamunti, Kalteng</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="sec">
+        <h2>Buttons</h2><p>Variants, sizes and states</p>
+        <div className="grp"><h3>Variants</h3><div className="row">
+          <Button>Ajukan permohonan</Button><Button variant="secondary">Simpan draf</Button>
+          <Button variant="outline" iconLeft={<Icon name="download" />}>Unduh laporan</Button>
+          <Button variant="ghost">Batal</Button><Button variant="destructive">Tolak</Button><Button variant="link">Selengkapnya</Button>
+        </div></div>
+        <div className="grp"><h3>Sizes &amp; states</h3><div className="row">
+          <Button size="sm">Small 32</Button><Button>Default 36</Button><Button size="lg">Large 40</Button>
+          <Button size="icon" variant="outline" aria-label="Cari"><Icon name="search" /></Button>
+          <Button loading>Memproses</Button><Button disabled>Nonaktif</Button>
+          <Button iconRight={<Icon name="arrow-right" />}>Lanjut</Button>
+        </div></div>
+      </section>
+
+      <section className="sec sec--tint">
+        <h2>Forms</h2><p>Input, Label, Select, Textarea, Checkbox, RadioGroup, Switch</p>
+        <div className="row" style={{ alignItems: "flex-start", gap: 40 }}>
+          <div className="col">
+            <div><Label htmlFor="a" required>NIK</Label><Input id="a" defaultValue="3204120708900001" /></div>
+            <div><Label htmlFor="b">Cari</Label><Input id="b" icon={<Icon name="search" />} placeholder="Cari kawasan…" /></div>
+            <div><Label htmlFor="c">Small</Label><Input id="c" size="sm" placeholder="Small 32px" /></div>
+            <div><Label htmlFor="d">Dengan hint</Label><Input id="d" hint="Sesuai KTP elektronik." /></div>
+            <div><Label htmlFor="e">Invalid</Label><Input id="e" error="Format email tidak valid" defaultValue="siti@" /></div>
+            <div><Label htmlFor="f" disabled>Nonaktif</Label><Input id="f" disabled defaultValue="Terkunci" /></div>
+          </div>
+          <div className="col">
+            <div><Label htmlFor="g">Provinsi</Label><Select id="g" placeholder="Pilih provinsi" options={["Kalimantan Tengah","Sulawesi Tenggara","Papua Selatan"]} /></div>
+            <div><Label htmlFor="h">Catatan</Label><Textarea id="h" rows={3} placeholder="Catatan verifikator" /></div>
+            <Checkbox defaultChecked label="Saya menyatakan data benar" description="Mengikat secara hukum." />
+            <Checkbox label="Belum dicentang" />
+            <Switch defaultChecked label="Notifikasi email" />
+            <Switch label="Mode kontras tinggi" />
+          </div>
+          <div className="col">
+            <RadioGroup name="j" value="baru" options={[
+              { value: "baru", label: "Penetapan kawasan baru", description: "Belum pernah ditetapkan." },
+              { value: "perluasan", label: "Perluasan kawasan" },
+              { value: "revisi", label: "Revisi batas kawasan" }]} />
+          </div>
+        </div>
+      </section>
+
+      <section className="sec">
+        <h2>Display</h2><p>Card, Badge, Avatar, Progress, Separator, Table</p>
+        <div className="grid3" style={{ marginBottom: 26 }}>
+          <Card title="Permohonan masuk" description="30 hari terakhir" action={<Badge tone="primary" dot>Live</Badge>}>
+            <div style={{ font: "var(--weight-extrabold) var(--text-4xl)/1 var(--font-display)", letterSpacing: "var(--tracking-tighter)" }}>1.284</div>
+            <Progress label="Realisasi anggaran" value={68} />
+          </Card>
+          <Card variant="flat" title="Verifikator" description="Unit Layanan Kawasan" footer={<Button size="sm" variant="outline">Kelola</Button>} footerBordered>
+            <div className="row"><Avatar name="Siti Rahayu" /><Avatar name="Budi Hartono" /><Avatar name="Agus Pranata" ring /><Avatar name="Rina Wulandari" shape="square" /></div>
+          </Card>
+          <Card variant="raised" interactive title="Peta kawasan" description="52 kawasan · 27 provinsi" action={<span style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "var(--radius-md)", background: "var(--biru-50)", color: "var(--biru-600)" }}><Icon name="map-pin" size="lg" /></span>}>
+            <Progress label="Penempatan KK" value={812} max={1200} valueLabel="812 / 1.200 KK" tone="info" />
+          </Card>
+        </div>
+        <div className="grp"><h3>Badges</h3><div className="row">
+          <Badge tone="success" dot>Terverifikasi</Badge><Badge tone="warning" dot>Menunggu</Badge><Badge tone="danger" dot>Ditolak</Badge>
+          <Badge tone="info" dot>Baru</Badge><Badge tone="neutral">Arsip</Badge><Badge tone="primary">Live</Badge>
+          <Badge tone="solid">12</Badge><Badge tone="outline" shape="square">SK-2026</Badge>
+        </div></div>
+        <Separator label="Registri kawasan" />
+        <Table columns={[
+          { key: "kode", label: "Kode", width: "90px", render: r => <span style={{ font: "var(--type-mono)", fontSize: 11.5 }}>{r.kode}</span> },
+          { key: "kawasan", label: "Nama kawasan" },
+          { key: "daerah", label: "Kabupaten / provinsi" },
+          { key: "kk", label: "Daya tampung (KK)", numeric: true, render: r => r.kk.toLocaleString("id-ID") },
+          { key: "status", label: "Status", render: r => <Badge tone={r.tone} dot>{r.status}</Badge> }]} rows={ROWS} zebra />
+      </section>
+
+      <section className="sec sec--tint">
+        <h2>Feedback &amp; navigation</h2><p>Alert, Dialog, Tabs, Breadcrumb, Pagination</p>
+        <div className="col" style={{ maxWidth: 760, marginBottom: 26 }}>
+          <Alert tone="info" title="Jadwal verifikasi">Berkas Anda dijadwalkan diverifikasi pada 2 September 2026.</Alert>
+          <Alert tone="success" title="Permohonan terkirim">Nomor registrasi TRM-2026-004182.</Alert>
+          <Alert tone="warning" title="Dokumen belum lengkap" action={<Button size="sm" variant="outline">Unggah dokumen</Button>}>Unggah SK Bupati sebelum 30 September 2026.</Alert>
+          <Alert tone="danger" title="Permohonan ditolak">Data luas lahan tidak sesuai dengan SK penetapan.</Alert>
+          <Alert tone="neutral" title="Arsip">Permohonan ini telah diarsipkan pada 2 Januari 2026.</Alert>
+        </div>
+        <div className="grp"><h3>Tabs</h3>
+          <Tabs value="menunggu" items={[{ value: "semua", label: "Semua", count: 128 }, { value: "menunggu", label: "Menunggu verifikasi", count: 24 }, { value: "selesai", label: "Selesai", count: 104 }]} />
+          <div style={{ marginTop: 16 }}><Tabs variant="pill" value="bulan" items={[{ value: "pekan", label: "7 hari" }, { value: "bulan", label: "30 hari" }, { value: "tahun", label: "1 tahun" }]} /></div>
+        </div>
+        <div className="grp"><h3>Breadcrumb &amp; pagination</h3>
+          <Breadcrumb items={[{ label: "Beranda", href: "#" }, { label: "Kawasan", href: "#" }, { label: "Kalimantan Tengah", href: "#" }, { label: "KTM Lamunti" }]} />
+          <div style={{ marginTop: 16 }}><Pagination page={3} totalPages={14} totalItems={1284} /></div>
+        </div>
+        <div className="grp"><h3>Dialog</h3>
+          <div style={{ position: "relative", height: 300, borderRadius: "var(--radius-lg)", border: "1px solid var(--border)", overflow: "hidden", background: "var(--card)" }}>
+            <div style={{ position: "absolute", inset: 0, background: "var(--overlay)" }} />
+            <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>
+              <div style={{ width: 480, background: "var(--popover)", border: "1px solid var(--border)", borderRadius: "var(--radius-2xl)", boxShadow: "var(--shadow-xl)" }}>
+                <div style={{ padding: "20px 20px 0" }}>
+                  <div style={{ font: "var(--type-h3)", fontSize: "var(--text-lg)" }}>Setujui permohonan?</div>
+                  <div style={{ marginTop: 4, fontSize: "var(--text-sm)", color: "var(--muted-foreground)" }}>Tindakan ini tercatat dalam log audit.</div>
+                </div>
+                <div style={{ padding: "16px 20px" }}><Textarea rows={3} placeholder="Catatan verifikator (opsional)" /></div>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "16px 20px", borderTop: "1px solid var(--border)" }}>
+                  <Button variant="outline">Batal</Button><Button>Setujui</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="sec">
+        <h2>Iconography</h2><p>Lucide 0.436.0, painted as a CSS mask over currentColor</p>
+        <div className="row" style={{ gap: 22, color: "var(--biru-600)" }}>
+          {["landmark","map-pin","layers","users","file-check-2","sprout","tractor","chart-column","bell","search","download","upload","shield-check","building-2","route","clipboard-list","circle-check","triangle-alert","circle-alert","info","printer","eye","filter","map","phone","send","book-open","external-link","clock","database"].map(n => <Icon key={n} name={n} size="xl" />)}
+        </div>
+      </section>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Sheet />);
+</script></body></html>

@@ -1,0 +1,13 @@
+:root{
+  --radius:0.625rem; /* shadcn base */
+  --radius-sm:calc(var(--radius) - 4px);
+  --radius-md:calc(var(--radius) - 2px);
+  --radius-lg:var(--radius);
+  --radius-xl:calc(var(--radius) + 4px);
+  --radius-2xl:1.25rem;
+  --radius-full:9999px;
+  --border-width:1px;
+  --border-width-strong:1.5px;
+  --focus-ring-width:3px;
+  --focus-ring-color:color-mix(in oklab,var(--ring) 45%,transparent);
+}

@@ -1,0 +1,43 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Forms" subtitle="Button, Input, Label, Textarea, Select, Checkbox, RadioGroup, Switch" -->
+<!doctype html><html lang="id"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;padding:20px;background:var(--background)}.row{display:flex;flex-wrap:wrap;align-items:center;gap:12px}.col{display:flex;flex-direction:column;gap:14px}.cap{font:var(--type-eyebrow);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--muted-foreground)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}</style>
+</head><body><div id="root"></div><script type="text/babel">
+const NS = window.TransmigrasiDigitalDesignSystem_7b839d;
+const { Button, Input, Label, Select, Checkbox, RadioGroup, Switch, Textarea, Icon } = NS;
+function Demo(){
+  const [on,setOn]=React.useState(true);const [jenis,setJenis]=React.useState("baru");
+  return <div className="col">
+    <div className="row">
+      <Button>Ajukan</Button>
+      <Button variant="secondary">Simpan draf</Button>
+      <Button variant="outline" iconLeft={<Icon name="download"/>}>Unduh</Button>
+      <Button variant="ghost">Batal</Button>
+      <Button variant="destructive">Tolak</Button>
+      <Button variant="link">Selengkapnya</Button>
+      <Button size="icon" variant="outline" aria-label="Cari"><Icon name="search"/></Button>
+      <Button size="sm" loading>Memproses</Button>
+      <Button disabled>Nonaktif</Button>
+    </div>
+    <div className="grid2">
+      <div className="col" style={{gap:6}}>
+        <Label htmlFor="a" required>NIK</Label>
+        <Input id="a" placeholder="16 digit NIK" defaultValue="3204120708900001"/>
+        <Input icon={<Icon name="search"/>} size="sm" placeholder="Cari kawasan..."/>
+        <Input error="Format email tidak valid" defaultValue="siti@" />
+        <Select placeholder="Pilih provinsi" options={["Kalimantan Tengah","Sulawesi Tengah","Papua Selatan"]}/>
+      </div>
+      <div className="col" style={{gap:10}}>
+        <RadioGroup name="j" value={jenis} onChange={setJenis} options={[{value:"baru",label:"Permohonan baru",description:"Belum pernah terdaftar."},{value:"lanjut",label:"Perpanjangan"}]}/>
+        <Checkbox defaultChecked label="Saya menyatakan data benar" description="Mengikat secara hukum."/>
+        <Switch label="Notifikasi email" checked={on} onChange={e=>setOn(e.target.checked)}/>
+        <Textarea rows={2} placeholder="Catatan verifikator"/>
+      </div>
+    </div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script></body></html>

@@ -1,0 +1,14 @@
+:root{
+  /* 4px base, shadcn-compatible steps */
+  --space-0:0;--space-px:1px;--space-0-5:.125rem;--space-1:.25rem;--space-1-5:.375rem;--space-2:.5rem;--space-2-5:.625rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--space-24:6rem;
+
+  /* Control geometry */
+  --control-h-sm:2rem;--control-h:2.25rem;--control-h-lg:2.5rem;
+  --control-px-sm:.75rem;--control-px:1rem;--control-px-lg:1.5rem;
+  --gap-inline:.5rem;--gap-stack:1rem;--gap-section:3rem;
+
+  /* Layout */
+  --container-max:1200px;--container-wide:1440px;--prose-max:68ch;
+  --sidebar-w:16rem;--sidebar-w-collapsed:3.5rem;--topbar-h:3.5rem;
+  --page-px:1.5rem;
+}
