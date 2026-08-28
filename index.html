@@ -30,6 +30,9 @@
     --primary-soft: rgba(22, 59, 84, 0.12);
     --primary-line: rgba(22, 59, 84, 0.35);
     --series-2: #33809c;
+    --series-2-soft: rgba(51, 128, 156, 0.14);
+    --gold: #c9974a;
+    --gold-soft: rgba(201, 151, 74, 0.16);
     --sidebar: #081826;
     --radius: 10px;
     --radius-sm: 8px;
@@ -41,17 +44,39 @@
     background: var(--bg); color: var(--text);
     font-family: "Plus Jakarta Sans", -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
-    display: flex; flex-direction: column; align-items: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     min-height: 100vh; padding: 3.5rem 1.5rem 3rem;
+    overflow-x: hidden;
   }
   .mono { font-family: "JetBrains Mono", "Cascadia Code", "Consolas", ui-monospace, SFMono-Regular, monospace; }
   a { color: inherit; text-decoration: none; }
   :focus-visible { outline: 2px dashed var(--primary); outline-offset: 2px; }
 
-  .header { text-align: center; max-width: 640px; margin-bottom: 2.6rem; }
+  .header { position: relative; text-align: center; max-width: 640px; margin: 0 auto 2.6rem; z-index: 1; }
+  .header-glow {
+    position: absolute; inset: -60px -40px auto -40px; height: 220px; z-index: -1;
+    background:
+      radial-gradient(closest-side, rgba(22, 59, 84, 0.16), transparent),
+      radial-gradient(closest-side, rgba(51, 128, 156, 0.14), transparent);
+    background-repeat: no-repeat;
+    background-position: 20% 30%, 80% 60%;
+    background-size: 55% 100%, 55% 100%;
+    filter: blur(10px);
+    animation: driftGlow 14s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes driftGlow {
+    from { transform: translate(-6%, 0) scale(1); }
+    to { transform: translate(6%, 4%) scale(1.08); }
+  }
   .mark {
     width: 52px; height: 52px; margin: 0 auto 1.1rem;
     display: block; object-fit: contain;
+    animation: markIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  @keyframes markIn {
+    from { opacity: 0; transform: scale(0.7) translateY(-8px); }
+    to { opacity: 1; transform: none; }
   }
   .eyebrow {
     font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
@@ -65,55 +90,148 @@
     gap: 1rem; width: 100%; max-width: 900px;
   }
   .card {
+    position: relative; overflow: hidden;
     background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 1.5rem 1.5rem 1.4rem; display: flex; flex-direction: column;
-    transition: border-color 0.15s ease, transform 0.15s ease;
+    padding: 1.7rem 1.5rem 1.5rem; display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    opacity: 0; transform: translateY(14px);
+    animation: cardIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: calc(var(--i, 0) * 90ms + 150ms);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   }
-  .card:hover { border-color: var(--primary-line); transform: translateY(-2px); }
+  @keyframes cardIn { to { opacity: 1; transform: none; } }
+  .card::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+    background: var(--accent, var(--primary));
+    transform: scaleX(0); transform-origin: center;
+    transition: transform 0.25s ease;
+  }
+  .card:hover {
+    border-color: var(--primary-line); transform: translateY(-3px);
+    box-shadow: 0 12px 28px -18px rgba(15, 25, 34, 0.35);
+  }
+  .card:hover::before { transform: scaleX(1); }
   .card-icon {
-    width: 40px; height: 40px; border-radius: var(--radius-sm); margin-bottom: 1rem;
-    background: var(--primary-soft); color: var(--primary);
+    width: 46px; height: 46px; border-radius: var(--radius-sm); flex: 0 0 auto;
+    margin-bottom: 0.9rem;
+    background: var(--accent-soft, var(--primary-soft)); color: var(--accent, var(--primary));
     display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s ease;
   }
+  .card:hover .card-icon { transform: scale(1.08) rotate(-4deg); }
   .card-icon svg { width: 22px; height: 22px; }
-  .card h2 { margin: 0 0 0.4rem; font-size: 1.02rem; font-weight: 700; }
-  .card p { margin: 0 0 1.1rem; color: var(--text-dim); font-size: 0.82rem; line-height: 1.55; flex: 1 1 auto; }
+  .card-body { min-width: 0; }
+  .card h2 { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; }
   .card .go {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    font-size: 0.78rem; font-weight: 600; color: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+    font-size: 0.78rem; font-weight: 600; color: var(--accent, var(--primary));
   }
   .card .go svg { width: 14px; height: 14px; transition: transform 0.15s ease; }
   .card:hover .go svg { transform: translateX(3px); }
-  .card .path { display: block; margin-top: 0.6rem; font-size: 0.68rem; color: var(--text-faint); }
+  .card .num {
+    position: absolute; top: 0.7rem; right: 0.9rem;
+    font-size: 0.65rem; font-weight: 700; color: var(--text-faint);
+  }
 
   footer {
-    margin-top: 2.8rem; text-align: center; font-size: 0.72rem; color: var(--text-faint);
+    margin: 2.8rem auto 0; text-align: center; font-size: 0.72rem; color: var(--text-faint);
     max-width: 640px; line-height: 1.6;
   }
-  footer a { color: var(--series-2); border-bottom: 1px dotted currentColor; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header-glow, .login-visual-glow, .mark, .card { animation: none !important; }
+    .card { opacity: 1; transform: none; }
+    * { transition: none !important; }
+  }
 
   .view[hidden] { display: none; }
 
   /* ---------- login ---------- */
-  .login-card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
-    width: 100%; max-width: 360px; padding: 1.8rem 1.7rem 1.6rem;
+  .login-shell {
+    display: flex; align-items: stretch; width: 100%; max-width: 900px; min-height: 500px;
+    margin: 0 auto; border-radius: calc(var(--radius) + 6px); overflow: hidden;
+    border: 1px solid var(--border); box-shadow: 0 28px 64px -32px rgba(15, 25, 34, 0.4);
+    background: var(--panel);
   }
-  .login-card h1 { font-size: 1.15rem; margin: 0 0 1.3rem; text-align: left; letter-spacing: normal; }
-  .field { margin-bottom: 0.9rem; }
+  .login-visual {
+    position: relative; flex: 0 0 44%; padding: 2.6rem 2.4rem;
+    background: linear-gradient(160deg, var(--primary) 0%, #0f2c40 55%, var(--sidebar) 100%);
+    color: #eaf1f5; display: flex; flex-direction: column; justify-content: space-between;
+    overflow: hidden;
+  }
+  .login-visual-glow {
+    position: absolute; inset: -30% -20% auto -20%; height: 70%;
+    background:
+      radial-gradient(closest-side, rgba(51, 128, 156, 0.45), transparent),
+      radial-gradient(closest-side, rgba(201, 151, 74, 0.28), transparent);
+    background-repeat: no-repeat;
+    background-position: 15% 20%, 85% 55%;
+    background-size: 60% 100%, 55% 100%;
+    filter: blur(20px);
+    animation: driftGlow 16s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  .login-visual-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+    -webkit-mask-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.9) 40%, transparent 90%);
+    mask-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.9) 40%, transparent 90%);
+    pointer-events: none;
+  }
+  .login-visual-top, .login-visual-body { position: relative; z-index: 1; }
+  .mark-visual { margin: 0 0 1rem; }
+  .eyebrow-visual { color: rgba(234, 241, 245, 0.75); }
+  .login-visual-body h2 { margin: 0 0 0.8rem; font-size: 1.5rem; line-height: 1.3; font-weight: 800; letter-spacing: -0.01em; }
+  .login-visual-body p { margin: 0 0 1.3rem; font-size: 0.85rem; line-height: 1.6; color: rgba(234, 241, 245, 0.78); max-width: 30ch; }
+  .login-visual-points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; }
+  .login-visual-points li { font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 0.55rem; }
+  .login-visual-points li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex: 0 0 auto; }
+
+  .login-form-panel {
+    flex: 1 1 auto; min-width: 0; padding: 2.8rem 3rem;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .login-form-panel h1 { font-size: 1.3rem; margin: 0 0 0.4rem; text-align: left; letter-spacing: normal; }
+  .login-sub { margin: 0 0 1.6rem; font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
+  .field { margin-bottom: 1rem; text-align: left; }
   .field label { display: block; font-size: 0.72rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-dim); }
+  .field-row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+  .field-row label { margin-bottom: 0.3rem; }
   .field input {
     width: 100%; background: var(--panel-2); color: var(--text);
     border: 1px solid var(--border); border-radius: var(--radius-sm);
     padding: 0.55rem 0.7rem; font-size: 0.86rem; font-family: inherit;
+    text-align: left;
   }
   .field input:focus-visible { outline: 2px dashed var(--primary); outline-offset: 1px; }
+  .forgot-link {
+    background: none; border: none; padding: 0; margin-bottom: 0.3rem; cursor: pointer;
+    font-family: inherit; font-size: 0.72rem; font-weight: 600; color: var(--series-2);
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+  .forgot-link:hover { color: var(--primary); }
+  .forgot-hint {
+    margin: -0.4rem 0 1rem; font-size: 0.74rem; color: var(--text-dim); line-height: 1.5;
+    background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
+    padding: 0.55rem 0.7rem;
+  }
+  .forgot-hint[hidden] { display: none; }
   .login-submit {
     width: 100%; margin-top: 0.3rem; background: var(--primary); border: 1px solid var(--primary);
     color: #f4f8fa; font-weight: 600; font-size: 0.86rem; font-family: inherit;
     border-radius: var(--radius-sm); padding: 0.65rem 0.8rem; cursor: pointer;
   }
   .login-submit:hover { background: #102c40; }
+
+  @media (max-width: 720px) {
+    .login-shell { flex-direction: column; max-width: 420px; min-height: 0; }
+    .login-visual { flex: 0 0 auto; padding: 2rem 1.7rem; }
+    .login-visual-points { display: none; }
+    .login-form-panel { padding: 2rem 1.7rem; }
+  }
 
   .logout-link {
     margin-top: 2rem; font-size: 0.72rem; color: var(--text-faint);
@@ -124,26 +242,47 @@
 </style>
 
 <div id="loginView" class="view">
-  <div class="header">
-    <img class="mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
-    <div class="eyebrow">Kementerian Transmigrasi</div>
+  <div class="login-shell">
+    <div class="login-visual">
+      <div class="login-visual-glow" aria-hidden="true"></div>
+      <div class="login-visual-grid" aria-hidden="true"></div>
+      <div class="login-visual-top">
+        <img class="mark mark-visual" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
+        <div class="eyebrow eyebrow-visual">Kementerian Transmigrasi</div>
+      </div>
+      <div class="login-visual-body">
+        <h2>Digital Governance Transmigration</h2>
+        <p>Satu ruang kendali untuk memantau kawasan transmigrasi — legalitas lahan, demografi, hingga peringatan dini — lintas kementerian, dalam satu layar.</p>
+        <ul class="login-visual-points">
+          <li>Pemantauan 8 modul strategis</li>
+          <li>Peta sebaran kawasan real-time</li>
+          <li>Peringatan dini terintegrasi</li>
+        </ul>
+      </div>
+    </div>
+    <form class="login-form-panel" id="loginForm" autocomplete="off">
+      <h1>Masuk ke DGT</h1>
+      <p class="login-sub">Gunakan akun yang terdaftar untuk mengakses dashboard.</p>
+      <div class="field">
+        <label for="loginUser">Nama pengguna</label>
+        <input type="text" id="loginUser" name="username" required placeholder="cth. admin" />
+      </div>
+      <div class="field">
+        <div class="field-row">
+          <label for="loginPass">Kata sandi</label>
+          <button type="button" class="forgot-link" id="forgotBtn">Lupa kata sandi?</button>
+        </div>
+        <input type="password" id="loginPass" name="password" required placeholder="••••••••" />
+      </div>
+      <p class="forgot-hint" id="forgotHint" hidden>Hubungi administrator sistem untuk mengatur ulang kata sandi Anda.</p>
+      <button type="submit" class="login-submit">Masuk</button>
+    </form>
   </div>
-  <form class="login-card" id="loginForm" autocomplete="off">
-    <h1>Masuk ke DGT</h1>
-    <div class="field">
-      <label for="loginUser">Nama pengguna</label>
-      <input type="text" id="loginUser" name="username" required placeholder="cth. admin" />
-    </div>
-    <div class="field">
-      <label for="loginPass">Kata sandi</label>
-      <input type="password" id="loginPass" name="password" required placeholder="••••••••" />
-    </div>
-    <button type="submit" class="login-submit">Masuk</button>
-  </form>
 </div>
 
 <div id="launcherView" class="view" hidden>
 <div class="header">
+  <div class="header-glow" aria-hidden="true"></div>
   <img class="mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
   <div class="eyebrow">Kementerian Transmigrasi</div>
   <h1>DGT — Digital Governance Transmigration</h1>
@@ -151,46 +290,47 @@
 </div>
 
 <div class="cards">
-  <a class="card" href="dashboard/">
+  <a class="card" href="dashboard/" style="--i:0; --accent: var(--primary); --accent-soft: var(--primary-soft)">
     <div class="card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
     </div>
-    <h2>Dashboard DGT</h2>
-    <p>War-room 8 modul: profil kawasan, geospasial, demografi, infrastruktur, monitoring anggaran, ekonomi, analitik prioritas, dan asisten AI.</p>
-    <span class="go">Buka dashboard
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-    </span>
-    <span class="path mono">/dashboard/</span>
+    <div class="card-body">
+      <h2>Dashboard DGT</h2>
+      <span class="go">Buka dashboard
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </span>
+    </div>
+    <span class="num">01</span>
   </a>
 
-  <a class="card" href="data-manager/">
+  <a class="card" href="data-manager/" style="--i:1; --accent: var(--series-2); --accent-soft: var(--series-2-soft)">
     <div class="card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>
     </div>
-    <h2>DGT Data Manager</h2>
-    <p>Alat CRUD untuk master data mengikuti ERD DTG 2026 — WPT/SKP/SP, komoditi, program, satker, personel, dan IKU.</p>
-    <span class="go">Buka data manager
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-    </span>
-    <span class="path mono">/data-manager/</span>
+    <div class="card-body">
+      <h2>DGT Data Manager</h2>
+      <span class="go">Buka data manager
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </span>
+    </div>
+    <span class="num">02</span>
   </a>
 
-  <a class="card" href="gis-dgt/">
+  <a class="card" href="gis-dgt/" style="--i:2; --accent: var(--gold); --accent-soft: var(--gold-soft)">
     <div class="card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/></svg>
     </div>
-    <h2>GIS DGT</h2>
-    <p>Manajemen data geospasial untuk kawasan transmigrasi — bidang tanah, batas wilayah, dan geografi kawasan.</p>
-    <span class="go">Buka GIS DGT
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-    </span>
-    <span class="path mono">/gis-dgt/</span>
+    <div class="card-body">
+      <h2>GIS DGT</h2>
+      <span class="go">Buka GIS DGT
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </span>
+    </div>
+    <span class="num">03</span>
   </a>
 </div>
 
 <footer>
-  <a href="https://github.com/amislaha/dgt-dashboard" target="_blank" rel="noopener">Repo GitHub</a>
-  <br />
   <button type="button" class="logout-link" id="logoutBtn">Keluar</button>
 </footer>
 </div>
@@ -218,7 +358,14 @@
     document.getElementById("logoutBtn").addEventListener("click", function () {
       try { sessionStorage.removeItem(KEY); } catch (err) {}
       document.getElementById("loginForm").reset();
+      document.getElementById("forgotHint").hidden = true;
       showLogin();
+    });
+
+    // Cosmetic only — no backend to send a reset link to, so this just surfaces a static hint.
+    document.getElementById("forgotBtn").addEventListener("click", function () {
+      var hint = document.getElementById("forgotHint");
+      hint.hidden = !hint.hidden;
     });
   })();
 </script>

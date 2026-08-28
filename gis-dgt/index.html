@@ -48,9 +48,13 @@
     background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
     width: 100%; max-width: 460px; padding: 2.2rem 2rem 2rem; text-align: center;
   }
+  .mark-link {
+    display: block; width: 52px; height: 52px; margin: 0 auto 1.1rem;
+    border-radius: var(--radius-sm); transition: opacity 0.15s ease;
+  }
+  .mark-link:hover { opacity: 0.75; }
   .mark {
-    width: 52px; height: 52px; margin: 0 auto 1.1rem;
-    display: block; object-fit: contain;
+    width: 52px; height: 52px; display: block; object-fit: contain;
   }
   .eyebrow {
     font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
@@ -76,7 +80,9 @@
 </style>
 
 <div class="card">
-  <img class="mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
+  <a class="mark-link" href="../" title="Kembali ke DGT" aria-label="Kembali ke halaman utama DGT">
+    <img class="mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
+  </a>
   <div class="eyebrow">Kementerian Transmigrasi</div>
   <h1>GIS DGT</h1>
   <p>Manajemen data geospasial untuk kawasan transmigrasi — bidang tanah, batas wilayah, dan geografi kawasan. Alat ini belum tersedia.</p>

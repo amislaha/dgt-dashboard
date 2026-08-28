@@ -53,14 +53,30 @@
   .topbar {
     flex: 0 0 auto; display: flex; align-items: center; gap: 1rem;
     padding: 0.8rem 1.3rem; border-bottom: 1px solid var(--border);
-    background: var(--panel);
+    background: var(--panel); position: relative;
   }
+  .topbar::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--series-2), var(--good));
+  }
+  .brand-mark-link {
+    display: block; flex: 0 0 auto; border-radius: var(--radius-sm);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .brand-mark-link:hover { opacity: 0.75; transform: rotate(-4deg); }
   .brand-mark {
-    width: 30px; height: 30px; flex: 0 0 auto; object-fit: contain;
+    width: 30px; height: 30px; flex: 0 0 auto; object-fit: contain; display: block;
   }
   .brand-text { line-height: 1.2; }
   .brand-text .name { font-weight: 700; font-size: 0.86rem; letter-spacing: 0.04em; text-transform: uppercase; }
   .brand-text .sub { font-size: 0.72rem; color: var(--text-dim); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; }
+  .topbar-stat {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px;
+    padding: 0.3rem 0.75rem; font-size: 0.72rem; color: var(--text-dim); font-weight: 600;
+  }
+  .topbar-stat .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--good); flex: 0 0 auto; }
 
   /* ---------- layout ---------- */
   .shell { display: flex; flex: 1 1 auto; min-height: 0; }
@@ -68,32 +84,70 @@
     width: 220px; flex: 0 0 auto; border-right: 1px solid var(--border);
     padding: 0.9rem 0.6rem; background: var(--panel); overflow-y: auto;
   }
-  .rail-item {
-    display: block; width: 100%; text-align: left; background: transparent;
-    border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer;
-    color: var(--text-dim); padding: 0.6rem 0.7rem; margin-bottom: 0.2rem; font-size: 0.82rem;
+  .rail-heading {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.3rem 0.7rem 0.7rem; font-size: 0.66rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint);
   }
-  .rail-item .rc { display: block; font-size: 0.68rem; color: var(--text-faint); margin-top: 0.1rem; }
-  .rail-item:hover { background: var(--panel-2); color: var(--text); }
+  .rail-heading-total { font-weight: 600; color: var(--text-dim); text-transform: none; letter-spacing: normal; }
+  .rail-item {
+    position: relative; display: flex; align-items: center; gap: 0.55rem;
+    width: 100%; text-align: left; background: transparent;
+    border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer;
+    color: var(--text-dim); padding: 0.5rem 0.65rem; margin-bottom: 0.2rem; font-size: 0.82rem;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+  .rail-item:hover { background: var(--panel-2); color: var(--text); transform: translateX(2px); }
   .rail-item.active { background: var(--primary-soft); border-color: var(--primary-line); color: var(--text); font-weight: 600; }
+  .rail-item.active::before {
+    content: ""; position: absolute; left: 0; top: 0.3rem; bottom: 0.3rem; width: 3px;
+    border-radius: 0 2px 2px 0; background: var(--primary);
+  }
+  .ri-icon {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--panel-2); color: var(--text-faint);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .rail-item:hover .ri-icon, .rail-item.active .ri-icon { background: var(--panel-3); color: var(--primary); }
+  .ri-icon svg { width: 15px; height: 15px; }
+  .ri-text { flex: 1 1 auto; min-width: 0; }
+  .ri-label { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rail-item .rc {
+    flex: 0 0 auto; font-size: 0.66rem; font-weight: 600; color: var(--text-faint);
+    background: var(--panel-2); border-radius: 999px; padding: 0.1rem 0.45rem;
+  }
+  .rail-item.active .rc { background: var(--panel); color: var(--primary); }
 
   .main { flex: 1 1 auto; min-width: 0; overflow-y: auto; padding: 1.2rem 1.4rem 3rem; }
 
-  .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
-  .page-head h1 { margin: 0; font-size: 1.15rem; font-weight: 700; }
+  .page-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;
+    animation: fadeInUp 0.35s ease both;
+  }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .page-head h1 { margin: 0; font-size: 1.15rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem; }
+  .page-head .count-pill {
+    display: inline-flex; align-items: center; font-size: 0.66rem; font-weight: 700;
+    color: var(--primary); background: var(--primary-soft); border-radius: 999px; padding: 0.14rem 0.55rem;
+  }
   .page-head .desc { margin: 0.2rem 0 0; color: var(--text-dim); font-size: 0.8rem; max-width: 60ch; }
   .toolbar { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 
   .btn {
     background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
     border-radius: var(--radius-sm); padding: 0.45rem 0.8rem; font-size: 0.78rem; cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .btn:hover { border-color: var(--primary-line); }
+  .btn:hover { border-color: var(--primary-line); transform: translateY(-1px); box-shadow: 0 4px 10px -6px rgba(15, 25, 34, 0.25); }
+  .btn:active { transform: translateY(0); box-shadow: none; }
   .btn.primary { background: var(--primary); border-color: var(--primary); color: #f4f8fa; font-weight: 600; }
   .btn.primary:hover { background: #102c40; }
   .btn.danger { color: var(--critical); }
   .btn.danger:hover { border-color: var(--critical); }
   .btn.small { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
+  .btn.icon { padding: 0.32rem; display: inline-flex; align-items: center; justify-content: center; }
+  .btn.icon svg { width: 14px; height: 14px; }
 
   input[type="text"], input[type="number"], select, textarea {
     width: 100%; background: var(--panel); color: var(--text);
@@ -108,7 +162,10 @@
   .search-box svg { position: absolute; left: 0.55rem; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-faint); }
 
   /* ---------- table ---------- */
-  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+    animation: fadeInUp 0.4s ease both; animation-delay: 0.05s;
+  }
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
   th {
@@ -123,7 +180,11 @@
   tbody tr:hover { background: var(--panel-2); }
   tbody tr:last-child td { border-bottom: none; }
   .row-actions { display: flex; gap: 0.35rem; }
-  .empty-row td { text-align: center; color: var(--text-faint); padding: 2rem; font-style: italic; }
+  .empty-row td { text-align: center; padding: 2.4rem 1rem; }
+  .empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--text-faint); }
+  .empty-state svg { width: 34px; height: 34px; opacity: 0.6; }
+  .empty-state p { margin: 0; font-style: italic; color: var(--text-dim); }
+  .empty-state .hint { font-size: 0.72rem; }
 
   .badge {
     display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.66rem;
@@ -136,11 +197,13 @@
   .scrim {
     position: fixed; inset: 0; background: rgba(15, 25, 34, 0.4);
     opacity: 0; pointer-events: none; transition: opacity 0.15s ease; z-index: 30;
+    backdrop-filter: blur(2px);
   }
   .scrim.open { opacity: 1; pointer-events: auto; }
   .drawer {
     position: fixed; top: 0; right: 0; bottom: 0; width: 400px; max-width: 92vw;
     background: var(--panel); border-left: 1px solid var(--border);
+    box-shadow: -16px 0 40px -20px rgba(15, 25, 34, 0.35);
     transform: translateX(100%); transition: transform 0.18s ease;
     display: flex; flex-direction: column; z-index: 31;
   }
@@ -164,7 +227,9 @@
   .modal {
     background: var(--panel); border-radius: var(--radius); width: 640px; max-width: 100%;
     max-height: 84vh; display: flex; flex-direction: column; border: 1px solid var(--border);
+    animation: modalIn 0.18s ease both;
   }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(6px); } to { opacity: 1; transform: none; } }
   .modal-head { padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
   .modal-head h2 { margin: 0; font-size: 1rem; }
   .modal-body { padding: 1rem 1.2rem; overflow-y: auto; }
@@ -181,13 +246,23 @@
     z-index: 50;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-head, .panel, .modal { animation: none !important; }
+    * { transition: none !important; }
+  }
 </style>
 
 <div class="topbar">
-  <img class="brand-mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
+  <a class="brand-mark-link" href="../" title="Kembali ke DGT" aria-label="Kembali ke halaman utama DGT">
+    <img class="brand-mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
+  </a>
   <div class="brand-text">
     <div class="name">DGT Data Manager</div>
     <div class="sub">Master data wilayah, organisasi &amp; kinerja transmigrasi — mengikuti ERD DTG 2026</div>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-stat"><span class="dot"></span><span id="topbarStatText">0 entri tersimpan</span></span>
   </div>
 </div>
 
@@ -493,6 +568,23 @@
   };
   var ENTITY_ORDER = ["wpt", "skp", "sp", "komoditi", "produkUnggulan", "program", "satker", "personel", "iku"];
 
+  /* Small line-icon set for the rail, one per entity — purely decorative/wayfinding, no bearing on
+     the data model above. Same viewBox/stroke conventions as dashboard/index.html's ICON_PATHS. */
+  var ENTITY_ICONS = {
+    wpt: '<path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/>',
+    skp: '<path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
+    sp: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1V9"/>',
+    komoditi: '<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
+    produkUnggulan: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"/>',
+    program: '<path d="M4 22V4"/><path d="M4 4h14l-3 5 3 5H4"/>',
+    satker: '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 21v-4h6v4"/><path d="M9 7h1"/><path d="M14 7h1"/><path d="M9 11h1"/><path d="M14 11h1"/><path d="M9 15h1"/><path d="M14 15h1"/>',
+    personel: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+    iku: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'
+  };
+  function railIcon(key) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ENTITY_ICONS[key] + "</svg>";
+  }
+
   /* ============ storage ============ */
   function loadEntity(key) {
     try {
@@ -544,16 +636,20 @@
   /* ============ rail ============ */
   function renderRail() {
     var rail = qs("#rail");
-    rail.innerHTML = ENTITY_ORDER.map(function (key) {
-      var ent = ENTITIES[key];
-      var active = key === state.tab ? " active" : "";
-      return (
-        '<button class="rail-item' + active + '" data-tab="' + key + '">' +
-          esc(ent.label) +
-          '<span class="rc">' + DATA[key].length + " data</span>" +
-        "</button>"
-      );
-    }).join("");
+    var totalAll = ENTITY_ORDER.reduce(function (sum, k) { return sum + DATA[k].length; }, 0);
+    rail.innerHTML =
+      '<div class="rail-heading">Master Data<span class="rail-heading-total">' + totalAll + " entri</span></div>" +
+      ENTITY_ORDER.map(function (key) {
+        var ent = ENTITIES[key];
+        var active = key === state.tab ? " active" : "";
+        return (
+          '<button class="rail-item' + active + '" data-tab="' + key + '">' +
+            '<span class="ri-icon">' + railIcon(key) + "</span>" +
+            '<span class="ri-text"><span class="ri-label">' + esc(ent.label) + "</span></span>" +
+            '<span class="rc">' + DATA[key].length + "</span>" +
+          "</button>"
+        );
+      }).join("");
     qsa(".rail-item", rail).forEach(function (btn) {
       btn.addEventListener("click", function () {
         state.tab = btn.getAttribute("data-tab");
@@ -561,6 +657,8 @@
         render();
       });
     });
+    var stat = qs("#topbarStatText");
+    if (stat) stat.textContent = totalAll + " entri tersimpan (lokal)";
   }
 
   /* ============ main / table ============ */
@@ -581,7 +679,7 @@
     var head =
       '<div class="page-head">' +
         "<div>" +
-          "<h1>" + esc(ent.label) + "</h1>" +
+          "<h1>" + esc(ent.label) + '<span class="count-pill">' + DATA[key].length + " entri</span></h1>" +
           '<p class="desc">' + esc(ent.sub) + "</p>" +
         "</div>" +
         '<div class="toolbar">' +
@@ -601,7 +699,11 @@
     var tbody;
     if (rows.length === 0) {
       tbody = '<tr class="empty-row"><td colspan="' + (ent.columns.length + 1) + '">' +
-        (state.query ? "Tidak ada data yang cocok." : "Belum ada data. Klik “Tambah” untuk membuat entri pertama.") +
+        '<div class="empty-state">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 7l2.5-4h13L21 7"/><path d="M9 12h6"/></svg>' +
+          "<p>" + (state.query ? "Tidak ada data yang cocok." : "Belum ada data.") + "</p>" +
+          (state.query ? "" : '<span class="hint">Klik “+ Tambah” untuk membuat entri pertama.</span>') +
+        "</div>" +
         "</td></tr>";
     } else {
       tbody = rows.map(function (r) {
@@ -613,8 +715,12 @@
         return (
           "<tr>" + cells +
             '<td><div class="row-actions">' +
-              '<button class="btn small" data-edit="' + esc(r.id) + '">Ubah</button>' +
-              '<button class="btn small danger" data-del="' + esc(r.id) + '">Hapus</button>' +
+              '<button class="btn small icon" data-edit="' + esc(r.id) + '" title="Ubah" aria-label="Ubah">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>' +
+              "</button>" +
+              '<button class="btn small icon danger" data-del="' + esc(r.id) + '" title="Hapus" aria-label="Hapus">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>' +
+              "</button>" +
             "</div></td>" +
           "</tr>"
         );
