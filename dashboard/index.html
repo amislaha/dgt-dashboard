@@ -348,16 +348,82 @@
   .basemap-static { position: relative; }
   .basemap-static img { display: block; width: 100%; height: auto; }
   .basemap-static .bm-pin {
-    position: absolute; transform: translate(-50%, -50%); border-radius: 50%;
-    border: 1.5px solid var(--bg); cursor: pointer; opacity: 0.92;
+    /* an irregular blob (clip-path set per-kawasan by blobClipPath(), a 2D screen-space stand-in
+       for the real geographic polygon the live map draws) rather than a plain round point */
+    position: absolute; transform: translate(-50%, -50%);
+    border: 1.5px solid var(--bg); cursor: pointer; opacity: 0.82;
   }
-  .basemap-static .bm-pin:hover, .basemap-static .bm-pin.selected { outline: 2px solid var(--primary); }
+  .basemap-static .bm-pin:hover, .basemap-static .bm-pin.selected { outline: 2px solid var(--primary); opacity: 1; }
   .basemap-static .bm-attrib {
     position: absolute; right: 4px; bottom: 3px; font-size: 0.6rem; color: rgba(255,255,255,0.85);
     background: rgba(10,15,28,0.55); padding: 0.05rem 0.4rem; border-radius: 4px;
   }
   .basemap-static .bm-attrib a { color: inherit; }
   .basemap-static-note { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.5rem; text-align: center; }
+
+  /* ---- left-side layer catalogue overlaid on the map (live Leaflet view + static fallback share
+     this markup, see layerCatalogHtml()/wireLayerCatalog()). Needs z-index > 700, not just > 0:
+     .leaflet-container is "position: relative" but carries no z-index of its own, so it does NOT
+     establish a stacking context — Leaflet's internal panes (which climb to z-index 700) aren't
+     contained by it and instead compete directly against this catalogue within #sebaranBody's own
+     stacking context (the ancestor that actually sets position+z-index together). A low z-index here
+     loses to those panes and silently renders behind the map — invisible, but still hit-testable and
+     interactive, which is what makes this particular bug easy to miss in anything but a screenshot. */
+  .map-layer-catalog {
+    position: absolute; top: 10px; left: 10px; z-index: 750;
+    width: 210px; max-width: calc(100% - 20px); max-height: calc(100% - 20px);
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
+    display: flex; flex-direction: column; overflow: hidden; font-size: 0.78rem;
+  }
+  /* Per request: Layer Kawasan stays on the LEFT (it's a map control, like Detail Kawasan next to
+     it) — Summary/EWS/AI live in the right column, so this shouldn't drift over to their side. With
+     all 4 panels visible by default, though, the left column's only free rectangle is the toolbar
+     row itself (Detail Kawasan fills the rest) — same reasoning as the old top-right spot, mirrored:
+     anchored past the Site/Area/Periode/Alert chip cluster (which measures ~533px wide; 560px clears
+     it with a small margin) rather than at the true left edge, which those chips already occupy.
+     This needs "position: fixed" (not the usual "absolute" relative to #sebaranBody): the map panel's
+     OWN header takes up the map panel's first ~55px, so #sebaranBody — and anything positioned
+     relative to it — never starts any higher than that, well below where the *overlay's* toolbar row
+     sits (a separate element, floating at the true viewport's top edge). No "top" value inside
+     #sebaranBody can ever reach it. Fixed positioning escapes that and anchors to the real viewport
+     instead, same fix as the map panel's own fullscreen positioning earlier.
+     It also opens collapsed by default on entering fullscreen (see the expand-toggle handler), so its
+     resting footprint is just this header pill; expanding it to see the list is a deliberate,
+     momentary action that's allowed to overlap the KPI strip/Detail Kawasan below the same way any
+     dropdown would — it stays legible doing so (opaque background, shadow, z-index 750), which is a
+     materially better failure mode than the earlier bottom-left spot's list silently sitting
+     full-time behind Detail Kawasan's content. */
+  .geo-fullscreen .geo-map-panel .map-layer-catalog {
+    position: fixed; top: 16px; left: 560px; right: auto; bottom: auto; max-height: calc(100vh - 96px);
+  }
+  /* the collapsed pill needs to fit inside the toolbar row's own ~27px height (KPI/IKU strip starts
+     right below it, full-width and left with no gap to spare) — tighter than the default header
+     padding allows, so this trims it specifically for the fullscreen-collapsed case. */
+  .geo-fullscreen .geo-map-panel .map-layer-catalog.collapsed .map-layer-catalog-head { padding: 0.2rem 0.5rem; }
+  .map-layer-catalog-head {
+    display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.55rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .map-layer-catalog-head .map-layer-all { flex: 1 1 auto; padding: 0; }
+  .map-layer-catalog-head .nm { font-weight: 700; text-transform: uppercase; font-size: 0.66rem; letter-spacing: 0.03em; color: var(--text-dim); }
+  .map-layer-collapse {
+    flex: 0 0 auto; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-dim); cursor: pointer;
+  }
+  .map-layer-collapse:hover { border-color: var(--primary-line); color: var(--primary); }
+  .map-layer-collapse svg { width: 12px; height: 12px; }
+  .map-layer-catalog-list { overflow-y: auto; padding: 0.3rem; display: flex; flex-direction: column; gap: 0.1rem; }
+  .map-layer-catalog.collapsed .map-layer-catalog-list { display: none; }
+  .map-layer-item {
+    display: flex; align-items: center; gap: 0.4rem; padding: 0.28rem 0.4rem;
+    border-radius: 6px; cursor: pointer; user-select: none;
+  }
+  .map-layer-item:hover { background: var(--panel-2); }
+  .map-layer-item input { accent-color: var(--primary); flex: 0 0 auto; }
+  .map-layer-item .map-layer-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; border: 1px solid rgba(0,0,0,0.15); }
+  .map-layer-item .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 500; }
+  .map-layer-item .ct { flex: 0 0 auto; font-size: 0.64rem; color: var(--text-faint); max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* ---------- geospasial: boxed "Executive DSS" layout (light panels, no full-bleed immersive HUD) ----------
      Replaced the earlier full-bleed map + dark glass HUD sidebars per a wireframe request ("Executive DSS
@@ -452,22 +518,57 @@
   .geo-fullscreen .geo-map-panel {
     position: fixed; inset: 0; z-index: 50; margin: 0; border-radius: 0; border: none;
     pointer-events: auto;
+    /* .panel's own padding (1rem 1.05rem) was left in place, so #sebaranBody below never actually
+       reached the left/right viewport edges — a ~17px strip of bare panel background showed on each
+       side. Zero it here and switch to a flex column so the header keeps its own inset (re-added
+       below) while the map body just takes 100% of whatever's left, instead of the old flat
+       "height: 100vh" that both ignored the header's height (overflowing past the bottom by however
+       tall it is) and did nothing for the side gaps. */
+    padding: 0; display: flex; flex-direction: column;
   }
-  .geo-fullscreen .geo-map-panel .panel-header { border-radius: 0; }
-  .geo-fullscreen .geo-map-panel #sebaranBody { height: 100vh; }
+  /* Both the module wrapper (#main > div's mainFadeIn) and .panel itself (fadeUp) carry an
+     entrance animation with fill-mode "both" — even long after it finishes playing, that leaves a
+     filling animation effect on "transform" in place, which Chrome treats as an active transform and
+     therefore promotes the element into a containing block for its fixed-position descendants. That
+     silently shrank the map's "inset: 0" down to whatever tiny box its animated ancestor/self
+     occupied instead of the real viewport. Cutting the animation on both once fullscreen is active
+     removes that containing block so the map panel actually resolves against the viewport. Needs
+     "#main >" on the wrapper rule to out-specificity #main > div's own mainFadeIn rule (its ID
+     component beats a plain class no matter the source order) — a bare ".geo-fullscreen" here
+     silently loses to it and leaves the animation (and the bug) in place. */
+  #main > div.geo-fullscreen, .geo-fullscreen .geo-map-panel { animation: none; }
+  .geo-fullscreen .geo-map-panel .panel-header { border-radius: 0; padding: 0.85rem 1.05rem 0; flex: 0 0 auto; }
+  .geo-fullscreen .geo-map-panel .map-search-row { padding: 0 1.05rem; flex: 0 0 auto; }
+  .geo-fullscreen .geo-map-panel #sebaranBody { height: auto; flex: 1 1 auto; min-height: 0; }
 
   .geo-overlay-panels { display: flex; flex-direction: column; min-height: 0; }
   .geo-fullscreen .geo-overlay-panels {
     position: fixed; inset: 0; z-index: 55; padding: 1rem; overflow: hidden; pointer-events: none;
   }
   /* the map panel is a descendant of #geo-overlay-panels too, but position:fixed lifts it out of
-     this flex flow regardless of nesting — everything else here still floats on top of it */
+     this flex flow regardless of nesting — everything else here still floats on top of it. That
+     needs an explicit z-index of its own, though: .geo-map-panel's z-index:50 is scoped to this
+     same .geo-overlay-panels stacking context (its ancestor here, since fixed positioning only
+     changes layout geometry, not which stacking context a descendant paints in), so without a
+     higher z-index these z-index:auto siblings would still render BEHIND the map despite this
+     whole container sitting at z-index:55 one level up. */
   .geo-fullscreen .geo-overlay-panels > .geo-toolbar,
   .geo-fullscreen .geo-overlay-panels > .stg-strip-row,
   .geo-fullscreen .geo-overlay-panels > .iku-detail,
-  .geo-fullscreen .geo-overlay-panels > .ticker-bar { flex: 0 0 auto; pointer-events: auto; }
+  .geo-fullscreen .geo-overlay-panels > .hidden-panels-strip,
+  .geo-fullscreen .geo-overlay-panels > .ticker-bar { flex: 0 0 auto; pointer-events: none; position: relative; z-index: 51; }
+  /* ...but these flex children stretch to the full width of the (fixed, full-viewport) overlay
+     column by default, well past their own visible content — including over the map panel's OWN
+     header in the same top strip, which is where its "Kecilkan panel peta" (unexpand) button lives.
+     pointer-events:none above lets clicks fall through that empty space to the map underneath; only
+     re-enable it on the actual interactive controls inside, not the row as a whole, or the empty
+     space blocks those clicks same as before. */
+  .geo-fullscreen .geo-toolbar > *,
+  .geo-fullscreen .stg-strip-row > *,
+  .geo-fullscreen .hidden-panels-strip > * { pointer-events: auto; }
   .geo-fullscreen .geo-overlay-panels > .grid-2 { flex: 1 1 auto; min-height: 0; overflow-y: auto; pointer-events: none; }
   .geo-fullscreen .geo-overlay-panels > .grid-2 .panel { pointer-events: auto; }
+  .geo-fullscreen .geo-overlay-panels > .grid-2 .panel:not(.geo-map-panel) { position: relative; z-index: 51; }
 
   /* hides everything except the map panel itself — .geo-map-panel is a descendant of .grid-2, so
      it's excluded explicitly rather than hiding .grid-2 wholesale, which would also hide the map
@@ -475,8 +576,44 @@
   .geo-panels-hidden .geo-overlay-panels > .geo-toolbar,
   .geo-panels-hidden .geo-overlay-panels > .stg-strip-row,
   .geo-panels-hidden .geo-overlay-panels > .iku-detail,
+  .geo-panels-hidden .geo-overlay-panels > .hidden-panels-strip,
   .geo-panels-hidden .geo-overlay-panels > .ticker-bar { display: none; }
   .geo-panels-hidden .grid-2 .panel:not(.geo-map-panel) { display: none; }
+
+  /* ---- per-panel hide (only meaningful in fullscreen, where Detail Kawasan/Summary/EWS/AI float
+     over the map): a small close button in each panel's own header, and a strip of chips to bring
+     an individually-hidden panel back one at a time rather than only via the master "show all" eye
+     toggle. The close button only renders active in fullscreen — outside it, hiding one of these
+     panels from the normal page flow isn't a feature this offers, so keep it out of the way. ---- */
+  .panel-close-btn { display: none; }
+  .geo-fullscreen .panel-close-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; flex: 0 0 auto; margin-left: 0.3rem;
+    background: transparent; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text-faint); cursor: pointer;
+  }
+  .geo-fullscreen .panel-close-btn:hover { border-color: var(--critical); color: var(--critical); }
+  .panel-close-btn svg { width: 12px; height: 12px; }
+  .geo-fullscreen .panel-solo-hidden { display: none !important; }
+  .hidden-panels-strip:not([hidden]) { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
+  .hidden-panel-chip {
+    display: flex; align-items: center; gap: 0.35rem;
+    background: var(--panel); border: 1px dashed var(--border); border-radius: 999px;
+    padding: 0.3rem 0.7rem 0.3rem 0.55rem; font-size: 0.74rem; color: var(--text-dim); cursor: pointer;
+  }
+  .hidden-panel-chip:hover { border-color: var(--primary-line); color: var(--primary); border-style: solid; }
+  .hidden-panel-chip svg { width: 12px; height: 12px; }
+  /* Per request: since the panels these chips restore (Summary/EWS/AI) all live in the right
+     column, dismissed-panel chips move there too — a vertical stack on the right edge, roughly
+     where those panels themselves start, instead of a horizontal row wrapping under the KPI strip.
+     Fixed positioning for the same reason as the layer catalogue above: this strip is a flex child
+     of #geoOverlayPanels, and only "position: fixed" reliably escapes that flow to sit at a specific
+     screen corner regardless of how tall the toolbar/KPI strip above it happens to render. */
+  .geo-fullscreen .geo-overlay-panels > .hidden-panels-strip:not([hidden]) {
+    position: fixed; top: 150px; right: 16px; left: auto; bottom: auto; z-index: 52;
+    flex-direction: column; flex-wrap: nowrap; align-items: flex-end;
+    width: auto; max-width: min(240px, calc(100vw - 32px)); margin-bottom: 0;
+  }
 
   /* ---- 17 IKU chips — share the STG strip's row/scroll-snap mechanics, "no need 2 row" ---- */
   .iku-chip {
@@ -659,6 +796,47 @@
      which cannot resolve CSS custom properties, so var(--x) strings won't render there */
   var STAGE_COLOR_HEX = { "Rintisan": "#ce1126", "Tumbuh": "#c09546", "Berkembang": "#33809c", "Mandiri": "#1f5d47" };
   var activeLeafletMap = null;
+
+  /* fabricated per-kawasan boundary "blob" — no real cadastral/HPL polygon data exists (the whole
+     kawasan dataset is illustrative, see the file-level note above), so each area outline is an
+     irregular ring generated deterministically from the kawasan's own id (via seededRandom, defined
+     below — function declarations hoist, so the forward reference is fine), roughly sized by its HPL
+     extent (hplHa) rather than every kawasan drawing as one identical fixed-radius circle. Longitude
+     is corrected by cos(latitude) so the ring isn't visibly stretched east-west. Used to replace the
+     single-point circle markers on the live map with an actual area per kawasan. Sized well past
+     what hplHa would give geographically (a real ~5,000–12,500 ha extent is only a ~4–6km radius,
+     which renders as a few px at the country-wide zoom this map opens at) — deliberately exaggerated,
+     the same way the old circle markers used a fixed screen-space radius, so the shape actually reads
+     as an area on load instead of only becoming visible once zoomed in close. */
+  function kawasanAreaLatLngs(k) {
+    var rnd = seededRandom(k.id + "-area");
+    var points = 10;
+    var baseDeg = 0.5 + Math.sqrt(k.hplHa) / 350;
+    var lonScale = 1 / Math.max(0.15, Math.cos(k.lat * Math.PI / 180));
+    var ring = [];
+    for (var i = 0; i < points; i++) {
+      var angle = (i / points) * Math.PI * 2;
+      var r = baseDeg * (0.65 + rnd() * 0.7);
+      ring.push([k.lat + Math.sin(angle) * r, k.lon + Math.cos(angle) * r * lonScale]);
+    }
+    return ring;
+  }
+
+  /* same "area, not a point" treatment for the static basemap fallback, which has no live Leaflet
+     polygon layer to draw on — instead this clips a small <span> into an irregular blob via a
+     deterministic CSS clip-path (a 2D screen-space approximation, not a real geographic projection
+     of kawasanAreaLatLngs() above; good enough for a static, non-interactive snapshot). */
+  function blobClipPath(k) {
+    var rnd = seededRandom(k.id + "-blob");
+    var pts = 9;
+    var out = [];
+    for (var i = 0; i < pts; i++) {
+      var angle = (i / pts) * Math.PI * 2;
+      var r = 32 + rnd() * 18;
+      out.push((50 + Math.cos(angle) * r).toFixed(1) + "% " + (50 + Math.sin(angle) * r).toFixed(1) + "%");
+    }
+    return "polygon(" + out.join(",") + ")";
+  }
 
   /* Baked-in static snapshot of real OpenStreetMap tiles (zoom 5) covering Indonesia, used only
      as a fallback when Leaflet/live tiles can't load (e.g. a CSP-restricted preview). No pan/zoom,
@@ -1211,6 +1389,16 @@
     var ICON_CHEV_L = '<path d="m15 18-6-6 6-6"/>';
     var ICON_CHEV_R = '<path d="m9 18 6-6-6-6"/>';
     var ICON_INFO = '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>';
+    var ICON_CLOSE = '<path d="M18 6L6 18"/><path d="M6 6l12 12"/>';
+
+    /* per-panel "hide this one panel" button — only meaningful (and only shown, via CSS scoped to
+       .geo-fullscreen) in fullscreen map mode, where Detail Kawasan/Summary/EWS/AI float over the
+       map and an operator may want to dismiss just one rather than the master eye toggle's all-or-
+       nothing show/hide. Hiding a specific panel this way leaves a small chip in #geoHiddenStrip to
+       bring it back individually — see wirePanelVisibility(). */
+    function panelCloseBtn(id) {
+      return '<button class="panel-close-btn" data-panel="' + id + '" title="Sembunyikan panel">' + svgIcon(ICON_CLOSE, 2.2) + '</button>';
+    }
 
     function stgTile(label, value, dir) {
       var arrow = dir ? svgIcon(dir === "up" ? ICON_UP : ICON_DOWN, 2.6) : "";
@@ -1275,6 +1463,7 @@
     var wrap = h(
       '<div class="geo-overlay-panels" id="geoOverlayPanels">' +
         topBarHtml + kpiStripHtml +
+        '<div class="hidden-panels-strip" id="geoHiddenStrip" hidden></div>' +
         '<div class="grid-2">' +
           '<div>' +
             '<div class="panel geo-map-panel" id="geoMapPanel">' +
@@ -1294,7 +1483,7 @@
               '<div id="sebaranBody"></div>' +
               '<div class="map-locator" id="geoLocator"><img src="' + BASEMAP_STATIC_SRC + '" alt="Peta lokasi Indonesia" /><span class="loc-dot" id="geoLocatorDot"></span></div>' +
             '</div>' +
-            '<div class="panel">' +
+            '<div class="panel" data-panel-id="detail" data-panel-label="Detail Kawasan">' +
               '<div class="panel-header"><h2>Detail Kawasan</h2>' +
                 '<div class="tab-row" id="geoDetailTabs">' +
                   '<button class="tab-btn" data-tab="profil" title="Profil">' + svgIcon(ICON_PATHS.profil, 1.8) + '</button>' +
@@ -1302,14 +1491,15 @@
                   '<button class="tab-btn" data-tab="grafik" title="Grafik">' + svgIcon(ICON_CHART) + '</button>' +
                   '<button class="tab-btn" data-tab="foto" title="Foto">' + svgIcon(ICON_PHOTO) + '</button>' +
                 '</div>' +
+                panelCloseBtn("detail") +
               '</div>' +
               '<div id="geoDetail"></div>' +
             '</div>' +
           '</div>' +
           '<div>' +
-            '<div class="panel"><div class="panel-header"><h2>Kawasan Teratas &amp; Terendah</h2><span class="hint">indeks 5T</span></div><div id="geoSummary"></div></div>' +
-            '<div class="panel" id="geoEwsPanel"><div class="panel-header"><h2>Peringatan Dini (EWS)</h2><span class="hint" id="geoEwsHint"></span></div><div id="ewsHudList"></div></div>' +
-            '<div class="panel"><div class="panel-header"><h2>Asisten AI</h2><span class="hint">tanya cepat</span></div>' +
+            '<div class="panel" data-panel-id="summary" data-panel-label="Kawasan Teratas &amp; Terendah"><div class="panel-header"><h2>Kawasan Teratas &amp; Terendah</h2><span class="hint">indeks 5T</span>' + panelCloseBtn("summary") + '</div><div id="geoSummary"></div></div>' +
+            '<div class="panel" id="geoEwsPanel" data-panel-id="ews" data-panel-label="Peringatan Dini (EWS)"><div class="panel-header"><h2>Peringatan Dini (EWS)</h2><span class="hint" id="geoEwsHint"></span>' + panelCloseBtn("ews") + '</div><div id="ewsHudList"></div></div>' +
+            '<div class="panel" data-panel-id="ai" data-panel-label="Asisten AI"><div class="panel-header"><h2>Asisten AI</h2><span class="hint">tanya cepat</span>' + panelCloseBtn("ai") + '</div>' +
               '<div class="chat-log" id="geoChatLog"></div>' +
               '<div class="chat-input-row"><input id="geoChatInput" type="text" placeholder="Contoh: kawasan mana yang paling berisiko?" />' +
               '<button class="btn primary" id="geoChatSend">Kirim</button></div>' +
@@ -1378,25 +1568,79 @@
     qs(wrap, "#geoSearchGo").addEventListener("click", doSearch);
     qs(wrap, "#geoSearchInput").addEventListener("keydown", function (e) { if (e.key === "Enter") doSearch(); });
 
-    /* "Perbesar panel peta" now takes the map full-viewport instead of just growing the panel's
-       height — everything else (toolbar, KPI strip, Detail/Summary/EWS/Komoditas/AI, ticker) floats
-       on top of it via #geoOverlayPanels rather than being hidden, with its own show/hide toggle. */
+    /* "Perbesar panel peta" takes the map full-viewport; everything else (toolbar, KPI strip,
+       Detail/Summary/EWS/AI, ticker) floats on top of it via #geoOverlayPanels rather than being
+       hidden, and — per request — starts fully VISIBLE every time you expand, not hidden by default.
+       The eye toggle is a master "hide everything but the map at once" escape hatch when you do want
+       just the map; individual panels can also be dismissed one at a time via panelCloseBtn(), with
+       #geoHiddenStrip's chips as the way to bring one back without resetting all of them. */
+    function setPanelsHidden(hidden) {
+      wrap.classList.toggle("geo-panels-hidden", hidden);
+      var btn = qs(wrap, "#geoPanelsToggle");
+      btn.innerHTML = svgIcon(hidden ? ICON_EYE_OFF : ICON_EYE);
+      btn.classList.toggle("active", hidden);
+      btn.title = hidden ? "Tampilkan panel" : "Sembunyikan panel";
+    }
+
+    /* renders the chip strip from whichever panels currently carry .panel-solo-hidden; each chip
+       restores just that one panel and re-renders itself out of the strip. */
+    function renderHiddenStrip() {
+      var hidden = qsa(wrap, "[data-panel-id].panel-solo-hidden");
+      var strip = qs(wrap, "#geoHiddenStrip");
+      strip.hidden = hidden.length === 0;
+      if (!hidden.length) { strip.innerHTML = ""; return; }
+      strip.innerHTML = hidden.map(function (p) {
+        return '<button class="hidden-panel-chip" data-restore="' + p.dataset.panelId + '">' +
+          svgIcon(ICON_EYE, 2) + '<span>' + p.dataset.panelLabel + '</span></button>';
+      }).join("");
+      qsa(strip, ".hidden-panel-chip").forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          var panel = qs(wrap, '[data-panel-id="' + chip.dataset.restore + '"]');
+          if (panel) panel.classList.remove("panel-solo-hidden");
+          renderHiddenStrip();
+        });
+      });
+    }
+    qsa(wrap, ".panel-close-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var panel = btn.closest("[data-panel-id]");
+        if (panel) panel.classList.add("panel-solo-hidden");
+        renderHiddenStrip();
+      });
+    });
+
+    /* collapses the layer catalogue down to just its header pill — guarded, since it only exists in
+       the DOM while the live/static map view is what's rendered into #sebaranBody (not e.g. "grid"). */
+    function collapseLayerCatalog() {
+      var root = qs(wrap, "#geoLayerCatalog");
+      if (!root) return;
+      root.classList.add("collapsed");
+      var btn = qs(wrap, "#geoLayerCollapse");
+      if (btn) { btn.innerHTML = svgIcon(ICON_CHEV_R, 2.2); btn.title = "Perluas daftar layer"; }
+    }
+
     qs(wrap, "#geoExpandToggle").addEventListener("click", function () {
       var fs = wrap.classList.toggle("geo-fullscreen");
       var btn = qs(wrap, "#geoExpandToggle");
       btn.innerHTML = svgIcon(fs ? ICON_COLLAPSE : ICON_EXPAND);
       btn.title = fs ? "Kecilkan panel peta" : "Perbesar panel peta";
       qs(wrap, "#geoPanelsToggle").hidden = !fs;
-      if (!fs) wrap.classList.remove("geo-panels-hidden");
+      setPanelsHidden(false);
+      if (fs) {
+        /* starts collapsed every time you expand — the full kawasan list floating open by default
+           would immediately overlap the KPI strip/panels in the same crowded top-right corner */
+        collapseLayerCatalog();
+      } else {
+        /* leaving fullscreen resets any panels dismissed one at a time, so the next time you expand
+           everything is visible again rather than remembering last session's hidden set */
+        qsa(wrap, ".panel-solo-hidden").forEach(function (p) { p.classList.remove("panel-solo-hidden"); });
+        renderHiddenStrip();
+      }
       if (activeLeafletMap) setTimeout(function () { activeLeafletMap.invalidateSize(); }, 210);
     });
 
     qs(wrap, "#geoPanelsToggle").addEventListener("click", function () {
-      var hidden = wrap.classList.toggle("geo-panels-hidden");
-      var btn = qs(wrap, "#geoPanelsToggle");
-      btn.innerHTML = svgIcon(hidden ? ICON_EYE_OFF : ICON_EYE);
-      btn.classList.toggle("active", hidden);
-      btn.title = hidden ? "Tampilkan panel" : "Sembunyikan panel";
+      setPanelsHidden(!wrap.classList.contains("geo-panels-hidden"));
     });
 
     qsa(wrap, "#geoDetailTabs .tab-btn").forEach(function (btn) {
@@ -1619,6 +1863,51 @@
     }
 
     /* ---- real-world basemap view (Leaflet + OpenStreetMap), filling the boxed map panel ---- */
+    /* ---- left-side "layer catalogue" overlaid on the map: one row per kawasan (stage-color dot +
+       name + provinsi) so an operator can switch individual kawasan areas on/off instead of always
+       seeing all of them at once. Markup is shared between the live Leaflet view and the static
+       fallback; wireLayerCatalog()'s onToggle callback is where the two views actually differ
+       (Leaflet layer add/remove vs. showing/hiding a positioned pin element). ---- */
+    function layerCatalogHtml() {
+      return '<div class="map-layer-catalog" id="geoLayerCatalog">' +
+          '<div class="map-layer-catalog-head">' +
+            '<label class="map-layer-item map-layer-all"><input type="checkbox" id="geoLayerAll" checked />' +
+              '<span class="nm">Layer Kawasan</span><span class="ct">' + kawasan.length + '</span></label>' +
+            '<button class="map-layer-collapse" id="geoLayerCollapse" title="Ciutkan daftar layer">' + svgIcon(ICON_CHEV_L, 2.2) + '</button>' +
+          '</div>' +
+          '<div class="map-layer-catalog-list" id="geoLayerList">' +
+            kawasan.map(function (k) {
+              return '<label class="map-layer-item" data-id="' + k.id + '">' +
+                '<input type="checkbox" class="geo-layer-chk" data-id="' + k.id + '" checked />' +
+                '<span class="map-layer-dot" style="background:' + STAGE_COLOR_HEX[k.tahap] + '"></span>' +
+                '<span class="nm">' + k.nama + '</span>' +
+                '<span class="ct">' + k.provinsi + '</span>' +
+              '</label>';
+            }).join("") +
+          '</div>' +
+        '</div>';
+    }
+    function wireLayerCatalog(container, onToggle) {
+      var root = qs(container, "#geoLayerCatalog");
+      var master = qs(container, "#geoLayerAll");
+      var boxes = qsa(container, ".geo-layer-chk");
+      master.addEventListener("change", function () {
+        boxes.forEach(function (b) { b.checked = master.checked; onToggle(b.dataset.id, master.checked); });
+      });
+      boxes.forEach(function (b) {
+        b.addEventListener("change", function () {
+          onToggle(b.dataset.id, b.checked);
+          master.checked = boxes.every(function (x) { return x.checked; });
+          master.indeterminate = !master.checked && boxes.some(function (x) { return x.checked; });
+        });
+      });
+      qs(container, "#geoLayerCollapse").addEventListener("click", function (e) {
+        var collapsed = root.classList.toggle("collapsed");
+        e.currentTarget.innerHTML = svgIcon(collapsed ? ICON_CHEV_R : ICON_CHEV_L, 2.2);
+        e.currentTarget.title = collapsed ? "Perluas daftar layer" : "Ciutkan daftar layer";
+      });
+    }
+
     function renderDasar() {
       var body = qs(wrap, "#sebaranBody");
       if (activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
@@ -1629,31 +1918,55 @@
         return;
       }
 
-      body.innerHTML = '<div class="basemap-wrap"><div class="basemap-el" id="basemapEl"></div></div>';
+      body.innerHTML = '<div class="basemap-wrap"><div class="basemap-el" id="basemapEl"></div></div>' + layerCatalogHtml();
 
-      var map = L.map(qs(wrap, "#basemapEl"), { scrollWheelZoom: false, attributionControl: false }).setView([-2.2, 118], 5);
-      L.control.attribution({ position: "topright" }).addTo(map);
+      /* zoomControl moved to topright (alongside attribution) to free up the top-left corner for
+         the layer catalogue above, rather than the two overlapping. */
+      var map = L.map(qs(wrap, "#basemapEl"), { scrollWheelZoom: false, attributionControl: false, zoomControl: false }).setView([-2.2, 118], 5);
+      L.control.zoom({ position: "topright" }).addTo(map);
+      L.control.attribution({ position: "bottomright" }).addTo(map);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
       }).addTo(map);
 
-      var maxPop = Math.max.apply(null, kawasan.map(function (k) { return k.populasi; }));
-
+      /* each kawasan is drawn as an actual area (an irregular polygon, see kawasanAreaLatLngs()
+         above) rather than a single-point marker. */
       kawasan.forEach(function (k) {
-        var radius = 6 + (k.populasi / maxPop) * 10;
-        var marker = L.circleMarker([k.lat, k.lon], {
-          radius: radius, color: "#0a0f1c", weight: 1.4,
-          fillColor: STAGE_COLOR_HEX[k.tahap], fillOpacity: 0.9
+        var area = L.polygon(kawasanAreaLatLngs(k), {
+          color: "#0a0f1c", weight: 1.3, opacity: 0.85,
+          fillColor: STAGE_COLOR_HEX[k.tahap], fillOpacity: 0.42
         }).addTo(map);
-        marker.bindPopup('<b>' + k.nama + '</b><br/>' + k.provinsi + '<br/>Tahap: ' + k.tahap +
-          '<br/>Populasi: ' + k.populasi.toLocaleString("id-ID") + ' jiwa');
-        marker.on("click", function () { selectKawasan(k); });
-        leafletMarkers[k.id] = marker;
+        area.bindPopup('<b>' + k.nama + '</b><br/>' + k.provinsi + '<br/>Tahap: ' + k.tahap +
+          '<br/>Populasi: ' + k.populasi.toLocaleString("id-ID") + ' jiwa' +
+          '<br/>Luas HPL: ' + k.hplHa.toLocaleString("id-ID") + ' ha');
+        area.on("click", function () { selectKawasan(k); });
+        leafletMarkers[k.id] = area;
+      });
+
+      wireLayerCatalog(body, function (id, visible) {
+        var area = leafletMarkers[id];
+        if (!area) return;
+        if (visible) { if (!map.hasLayer(area)) area.addTo(map); }
+        else if (map.hasLayer(area)) { map.removeLayer(area); }
       });
 
       activeLeafletMap = map;
-      setTimeout(function () { map.invalidateSize(); }, 60);
+      setTimeout(function () {
+        map.invalidateSize();
+        /* The old fixed setView([-2.2, 118], 5) was centered/zoomed to roughly Kalimantan–Sulawesi
+           and never actually reached far enough east to show Papua at all — SKP Salor (lon 140.4°)
+           sat permanently off-screen even as a plain point marker before, just unremarkably so. A
+           layer catalogue that can toggle a kawasan you can never see is pointless, so fit the view
+           to every kawasan's own coordinates instead of a hand-picked center/zoom. Done here (not
+           right after map creation) so the container has a real, laid-out size to fit against. */
+        var allBounds = L.latLngBounds(kawasan.map(function (k) { return [k.lat, k.lon]; }));
+        map.fitBounds(allBounds, { padding: [22, 22] });
+        /* fitBounds' own reprojection is enough to fix any path that mis-rendered when it was added
+           before the container had a measured size, but redraw explicitly anyway in case a future
+           edit changes this to skip fitBounds on some path. */
+        kawasan.forEach(function (k) { if (leafletMarkers[k.id]) leafletMarkers[k.id].redraw(); });
+      }, 60);
     }
 
     /* ---- static snapshot fallback: real OSM imagery baked in, no live tiles required ---- */
@@ -1663,12 +1976,14 @@
           '<img src="' + BASEMAP_STATIC_SRC + '" alt="Peta dasar OpenStreetMap wilayah Indonesia" />' +
           kawasan.map(function (k) {
             var pos = basemapPct(k.lon, k.lat);
-            var size = 8 + (k.populasi / maxPop) * 10;
+            var size = 22 + (k.populasi / maxPop) * 20;
             return '<span class="bm-pin' + (state.selectedKawasan === k.id ? " selected" : "") + '" data-id="' + k.id + '" ' +
-              'style="left:' + pos.xPct.toFixed(2) + '%;top:' + pos.yPct.toFixed(2) + '%;width:' + size + 'px;height:' + size + 'px;background:' + STAGE_COLOR_HEX[k.tahap] + ';"></span>';
+              'style="left:' + pos.xPct.toFixed(2) + '%;top:' + pos.yPct.toFixed(2) + '%;width:' + size + 'px;height:' + size + 'px;' +
+              'background:' + STAGE_COLOR_HEX[k.tahap] + ';clip-path:' + blobClipPath(k) + ';"></span>';
           }).join("") +
           '<span class="bm-attrib">&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></span>' +
         '</div>' +
+        layerCatalogHtml() +
         '<p class="basemap-static-note">Cuplikan statis (tanpa geser/perbesar).</p>';
 
       qsa(wrap, ".bm-pin").forEach(function (pin) {
@@ -1676,6 +1991,12 @@
           selectKawasan(kawasan.find(function (x) { return x.id === pin.getAttribute("data-id"); }));
           qsa(wrap, ".bm-pin").forEach(function (p2) { p2.classList.toggle("selected", p2 === pin); });
         });
+      });
+
+      /* no real Leaflet layer to add/remove here, so "toggling" a kawasan just hides its pin */
+      wireLayerCatalog(body, function (id, visible) {
+        var pin = qs(body, '.bm-pin[data-id="' + id + '"]');
+        if (pin) pin.hidden = !visible;
       });
     }
 
