@@ -1,3 +1,4 @@
+<meta charset="UTF-8" />
 <title>DGT — Digital Governance Transmigration</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <!-- Leaflet powers the real-world basemap in the Geospasial module. Loaded from a CDN, so it
@@ -19,28 +20,31 @@
     --panel: #ffffff;
     --panel-2: #eff3f5;
     --panel-3: #eef2f6;
-    --border: #dfe6ea;
-    --border-soft: rgba(15, 25, 34, 0.06);
+    /* Bolder pass: structure and accents stepped up within the design-system ramps
+       (design-system/tokens/colors.css) — no colors outside the documented Abu/Biru/Teal/
+       Hijau/Emas/Merah scales, still one light theme, --primary still the single accent. */
+    --border: #c4d0d8;                        /* was abu-200 #dfe6ea → abu-300, crisper edges */
+    --border-soft: rgba(15, 25, 34, 0.09);    /* was 0.06 */
     --text: #0f1922;
-    --text-dim: #5b6b76;
-    --text-faint: #97a7b2;
+    --text-dim: #42505a;                      /* was abu-600 #5b6b76 → abu-700 */
+    --text-faint: #71818c;                    /* was abu-400 #97a7b2 → abu-500 */
     /* Brand — "Biru Nusantara" (primary navy) is the app's one accent color, used throughout */
-    --primary: #163b54;
-    --primary-soft: rgba(22, 59, 84, 0.12);
-    --primary-line: rgba(22, 59, 84, 0.35);
+    --primary: #163b54;                       /* biru-600, brand anchor — unchanged */
+    --primary-soft: rgba(22, 59, 84, 0.16);   /* was 0.12 → stronger fills */
+    --primary-line: rgba(22, 59, 84, 0.45);   /* was 0.35 */
     --sidebar: #081826;
     /* "Teal Laut" — secondary/info accent, chart series 2 */
-    --series-2: #33809c;
-    --series-2-soft: rgba(51, 128, 156, 0.14);
+    --series-2: #33809c;                      /* teal-500 — unchanged */
+    --series-2-soft: rgba(51, 128, 156, 0.18);/* was 0.14 */
     /* "Hijau" — functional, success only */
-    --good: #1f5d47;
-    --good-soft: rgba(31, 93, 71, 0.14);
+    --good: #2c755b;                          /* was hijau-600 #1f5d47 → hijau-500, bolder green */
+    --good-soft: rgba(44, 117, 91, 0.18);     /* was 0.14, matched to new hex */
     /* "Emas Tanah" — functional, warning only */
-    --warn: #c09546;
-    --warn-soft: rgba(192, 149, 70, 0.14);
+    --warn: #c09546;                          /* emas-500 — unchanged */
+    --warn-soft: rgba(192, 149, 70, 0.18);    /* was 0.14 */
     /* "Merah" — functional, destructive only */
-    --critical: #ce1126;
-    --critical-soft: rgba(206, 17, 38, 0.12);
+    --critical: #ce1126;                      /* merah-500 — unchanged */
+    --critical-soft: rgba(206, 17, 38, 0.16); /* was 0.12 */
     --radius: 10px;
     --radius-sm: 8px;
   }
@@ -50,8 +54,8 @@
 
   body {
     background:
-      radial-gradient(1200px 600px at 15% -10%, rgba(22, 59, 84, 0.05), transparent 60%),
-      radial-gradient(1000px 700px at 100% 0%, rgba(51, 128, 156, 0.05), transparent 55%),
+      radial-gradient(1200px 600px at 15% -10%, rgba(22, 59, 84, 0.08), transparent 60%),
+      radial-gradient(1000px 700px at 100% 0%, rgba(51, 128, 156, 0.08), transparent 55%),
       var(--bg);
     color: var(--text);
     font-family: "Plus Jakarta Sans", -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
@@ -105,14 +109,42 @@
     width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
     background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm);
     color: var(--text-dim); cursor: pointer; box-shadow: 0 4px 14px -6px rgba(15, 25, 34, 0.25);
-    transition: left 0.15s ease;
+    transition: left 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
   }
   .rail-fab:hover { border-color: var(--primary-line); color: var(--primary); }
+  /* Per request: while the rail is collapsed (the default state), don't sit permanently on top of
+     the page title/toolbar — reveal only on hover near the top-left corner instead. Once the rail
+     is open (below), the button moves clear of any content to the right of it, so there's nothing
+     left to cover and it stays always visible there. */
+  .rail.collapsed ~ .rail-fab {
+    opacity: 0; transform: translateX(-8px); pointer-events: none;
+  }
+  /* Invisible hover target bigger than the (currently invisible) button itself, anchored to the
+     true top-left corner rather than the button's own 14px-inset box — hovering anywhere in that
+     corner reveals it. Confined to a small fixed corner (not the full edge/viewport height) so it
+     never sits over content further down the page as .main scrolls underneath. */
+  .rail.collapsed ~ .rail-fab::before {
+    content: ""; position: absolute; top: -14px; left: -14px; width: 60px; height: 60px;
+    pointer-events: auto;
+  }
+  .rail.collapsed ~ .rail-fab:hover,
+  .rail.collapsed ~ .rail-fab:focus-visible {
+    opacity: 1; transform: translateX(0); pointer-events: auto;
+  }
   /* nudge the fab clear of the rail's own header once the rail is expanded on desktop — .rail-fab
      must come after .rail in the DOM for this sibling selector to reach it (mobile leaves it put,
      since there the rail overlays as a fixed drawer rather than pushing content over) */
   @media (min-width: 761px) {
     .rail:not(.collapsed) ~ .rail-fab { left: 246px; }
+  }
+  /* touch has no hover to reveal it with, so keep it always visible/tappable on mobile regardless
+     of collapsed state (mobile treats .rail as an off-canvas drawer that keeps the "collapsed"
+     class alongside "open" — see the rail-fab click handler at the bottom of the script — so the
+     hover-hide rules above would otherwise still apply here without this override). */
+  @media (max-width: 760px) {
+    .rail.collapsed ~ .rail-fab {
+      opacity: 1 !important; transform: none !important; pointer-events: auto !important;
+    }
   }
 
   /* ---------- shell ---------- */
@@ -376,31 +408,30 @@
     box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
     display: flex; flex-direction: column; overflow: hidden; font-size: 0.78rem;
   }
-  /* Per request: Layer Kawasan stays on the LEFT (it's a map control, like Detail Kawasan next to
-     it) — Summary/EWS/AI live in the right column, so this shouldn't drift over to their side. With
-     all 4 panels visible by default, though, the left column's only free rectangle is the toolbar
-     row itself (Detail Kawasan fills the rest) — same reasoning as the old top-right spot, mirrored:
-     anchored past the Site/Area/Periode/Alert chip cluster (which measures ~533px wide; 560px clears
-     it with a small margin) rather than at the true left edge, which those chips already occupy.
-     This needs "position: fixed" (not the usual "absolute" relative to #sebaranBody): the map panel's
-     OWN header takes up the map panel's first ~55px, so #sebaranBody — and anything positioned
-     relative to it — never starts any higher than that, well below where the *overlay's* toolbar row
-     sits (a separate element, floating at the true viewport's top edge). No "top" value inside
-     #sebaranBody can ever reach it. Fixed positioning escapes that and anchors to the real viewport
-     instead, same fix as the map panel's own fullscreen positioning earlier.
+  /* Per request: Layer Kawasan floats ON THE MAP itself, not inside the header row and not
+     overlapping the IKU strip below the header — the map panel's own header (~44px) plus the IKU
+     strip (~69px, single scrollable row) plus a small gap puts clear map space at 152px, so this
+     (and the Leaflet zoom control below) start there instead of overlapping either one.
+     This needs "position: fixed" (not the usual "absolute" relative to #sebaranBody): the map
+     panel's OWN header takes up the map panel's first ~44px, so #sebaranBody — and anything
+     positioned relative to it — never starts any higher than that. Fixed positioning escapes that
+     and anchors to the real viewport instead, same fix as the map panel's own fullscreen
+     positioning earlier.
      It also opens collapsed by default on entering fullscreen (see the expand-toggle handler), so its
      resting footprint is just this header pill; expanding it to see the list is a deliberate,
-     momentary action that's allowed to overlap the KPI strip/Detail Kawasan below the same way any
-     dropdown would — it stays legible doing so (opaque background, shadow, z-index 750), which is a
-     materially better failure mode than the earlier bottom-left spot's list silently sitting
-     full-time behind Detail Kawasan's content. */
-  .geo-fullscreen .geo-map-panel .map-layer-catalog {
-    position: fixed; top: 16px; left: 560px; right: auto; bottom: auto; max-height: calc(100vh - 96px);
+     momentary action that's allowed to overlap the map below the same way any dropdown would — it
+     stays legible doing so (opaque background, shadow, z-index 750 — see placeLayerCatalog() for why
+     that 750 needs the catalogue promoted out from under .geo-map-panel to actually apply here).
+     Not scoped to ".geo-map-panel" (unlike the other fullscreen overrides above): placeLayerCatalog()
+     moves this element to be a direct child of #geoOverlayPanels while in fullscreen, so a selector
+     requiring that ancestor would stop matching the moment it's promoted. */
+  .geo-fullscreen .map-layer-catalog {
+    position: fixed; top: 152px; left: 16px; right: auto; bottom: auto; max-height: calc(100vh - 168px);
+    /* #geoOverlayPanels defaults to pointer-events:none in fullscreen (see below) so clicks fall
+       through empty space to the map — once promoted to a direct child of it, this needs its own
+       opt back in or its checkboxes/collapse button would go dead. */
+    pointer-events: auto;
   }
-  /* the collapsed pill needs to fit inside the toolbar row's own ~27px height (KPI/IKU strip starts
-     right below it, full-width and left with no gap to spare) — tighter than the default header
-     padding allows, so this trims it specifically for the fullscreen-collapsed case. */
-  .geo-fullscreen .geo-map-panel .map-layer-catalog.collapsed .map-layer-catalog-head { padding: 0.2rem 0.5rem; }
   .map-layer-catalog-head {
     display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.55rem;
     border-bottom: 1px solid var(--border-soft);
@@ -447,32 +478,18 @@
   .alert-chip.warn { color: var(--critical); background: var(--critical-soft); border-color: transparent; }
   .hint-note { font-size: 0.76rem; color: var(--text-faint); font-style: italic; margin: 0; }
 
-  /* ---- STG executive-summary strip — one metric per other module, horizontally scroll-snapped ---- */
+  /* ---- IKU strip — a single horizontally scrolling row (per request: keep the scroll, just make
+     it small/subtle rather than either a full-size default scrollbar or wrapping onto several
+     rows). The scrollbar itself is thinned/muted via the rules below instead of removed. ---- */
   .stg-strip-row { display: flex; align-items: stretch; gap: 0.4rem; margin-bottom: 1rem; }
-  .stg-nav {
-    flex: 0 0 auto; width: 28px; border: 1px solid var(--border); background: var(--panel);
-    border-radius: var(--radius-sm); cursor: pointer; color: var(--text-dim); display: flex; align-items: center; justify-content: center;
+  .stg-strip {
+    flex: 1 1 auto; display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.35rem;
+    scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--border) transparent;
   }
-  .stg-nav:hover { border-color: var(--primary-line); color: var(--text); }
-  .stg-nav svg { width: 14px; height: 14px; }
-  .stg-strip { flex: 1 1 auto; display: flex; gap: 0.6rem; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 0.2rem; }
-  .stg-tile {
-    scroll-snap-align: start; flex: 0 0 auto; min-width: 148px;
-    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 0.6rem 0.8rem; animation: fadeUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  }
-  .stg-strip .stg-tile:nth-child(1) { animation-delay: 0.02s; }
-  .stg-strip .stg-tile:nth-child(2) { animation-delay: 0.06s; }
-  .stg-strip .stg-tile:nth-child(3) { animation-delay: 0.10s; }
-  .stg-strip .stg-tile:nth-child(4) { animation-delay: 0.14s; }
-  .stg-strip .stg-tile:nth-child(5) { animation-delay: 0.18s; }
-  .stg-strip .stg-tile:nth-child(6) { animation-delay: 0.22s; }
-  .stg-strip .stg-tile:nth-child(7) { animation-delay: 0.26s; }
-  .stg-tile .g-label { font-size: 0.66rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
-  .stg-tile .g-value { display: flex; align-items: baseline; gap: 0.3rem; margin-top: 0.25rem; font-size: 1.05rem; font-weight: 700; }
-  .stg-tile .g-value svg { width: 12px; height: 12px; }
-  .stg-tile .g-value.up svg { color: var(--good); }
-  .stg-tile .g-value.down svg { color: var(--critical); }
+  .stg-strip::-webkit-scrollbar { height: 5px; }
+  .stg-strip::-webkit-scrollbar-track { background: transparent; }
+  .stg-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+  .stg-strip::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
   /* ---- map panel ---- */
   .geo-map-panel { position: relative; }
@@ -489,8 +506,18 @@
     background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
     color: var(--text-dim); cursor: pointer;
   }
+  /* the base rule's own "display: flex" otherwise beats the UA stylesheet's "[hidden] { display:
+     none }" on a specificity tie (author styles win ties over user-agent styles regardless of
+     source order) — #geoPanelsToggle's "hidden" attribute (only meant to show it in fullscreen,
+     toggled in the expand-toggle handler) was silently not hiding anything without this. */
+  .map-tool-btn[hidden] { display: none; }
   .map-tool-btn:hover, .map-tool-btn.active { border-color: var(--primary-line); color: var(--primary); background: var(--primary-soft); }
   .map-tool-btn svg { width: 15px; height: 15px; }
+  /* #geoPanelsToggle — the single show/hide-all control for Detail/Summary/EWS/AI in fullscreen —
+     carries a text label alongside its icon (unlike the other icon-only map-tool-btns) so its
+     purpose reads at a glance instead of depending on a hover tooltip: "user friendly" per request. */
+  .map-tool-btn.panel-toggle-btn { width: auto; padding: 0 0.65rem; gap: 0.35rem; font-size: 0.72rem; font-weight: 600; }
+  .map-tool-btn.panel-toggle-btn svg { width: 14px; height: 14px; flex: 0 0 auto; }
   .map-search-row { display: none; gap: 0.4rem; margin-bottom: 0.7rem; }
   .map-search-row.open { display: flex; }
   .map-search-row input {
@@ -540,6 +567,11 @@
   .geo-fullscreen .geo-map-panel .panel-header { border-radius: 0; padding: 0.85rem 1.05rem 0; flex: 0 0 auto; }
   .geo-fullscreen .geo-map-panel .map-search-row { padding: 0 1.05rem; flex: 0 0 auto; }
   .geo-fullscreen .geo-map-panel #sebaranBody { height: auto; flex: 1 1 auto; min-height: 0; }
+  /* Leaflet's own zoom +/- control (L.control.zoom({position:"topright"})) sits inside
+     .leaflet-top.leaflet-right at Leaflet's default top:0 — same "in the header band" collision as
+     the layer catalogue above, so it gets the same 152px clearance (below the map header + IKU
+     strip), just on the opposite corner. */
+  .geo-fullscreen .leaflet-top.leaflet-right { top: 152px; }
 
   .geo-overlay-panels { display: flex; flex-direction: column; min-height: 0; }
   .geo-fullscreen .geo-overlay-panels {
@@ -552,70 +584,42 @@
      changes layout geometry, not which stacking context a descendant paints in), so without a
      higher z-index these z-index:auto siblings would still render BEHIND the map despite this
      whole container sitting at z-index:55 one level up. */
-  .geo-fullscreen .geo-overlay-panels > .geo-toolbar,
   .geo-fullscreen .geo-overlay-panels > .stg-strip-row,
   .geo-fullscreen .geo-overlay-panels > .iku-detail,
-  .geo-fullscreen .geo-overlay-panels > .hidden-panels-strip,
   .geo-fullscreen .geo-overlay-panels > .ticker-bar { flex: 0 0 auto; pointer-events: none; position: relative; z-index: 51; }
   /* ...but these flex children stretch to the full width of the (fixed, full-viewport) overlay
      column by default, well past their own visible content — including over the map panel's OWN
      header in the same top strip, which is where its "Kecilkan panel peta" (unexpand) button lives.
      pointer-events:none above lets clicks fall through that empty space to the map underneath; only
      re-enable it on the actual interactive controls inside, not the row as a whole, or the empty
-     space blocks those clicks same as before. */
-  .geo-fullscreen .geo-toolbar > *,
-  .geo-fullscreen .stg-strip-row > *,
-  .geo-fullscreen .hidden-panels-strip > * { pointer-events: auto; }
+     space blocks those clicks same as before. The filter toolbar (.geo-toolbar) isn't listed here:
+     on entering fullscreen it's moved into the map panel's own header (see the expand-toggle
+     handler), which is already pointer-events:auto as a whole, so it needs no separate carve-out. */
+  .geo-fullscreen .stg-strip-row > * { pointer-events: auto; }
   .geo-fullscreen .geo-overlay-panels > .grid-2 { flex: 1 1 auto; min-height: 0; overflow-y: auto; pointer-events: none; }
   .geo-fullscreen .geo-overlay-panels > .grid-2 .panel { pointer-events: auto; }
   .geo-fullscreen .geo-overlay-panels > .grid-2 .panel:not(.geo-map-panel) { position: relative; z-index: 51; }
 
-  /* hides everything except the map panel itself — .geo-map-panel is a descendant of .grid-2, so
-     it's excluded explicitly rather than hiding .grid-2 wholesale, which would also hide the map
-     panel's own toolbar and strand the user with no way to exit fullscreen or bring panels back */
-  .geo-panels-hidden .geo-overlay-panels > .geo-toolbar,
-  .geo-panels-hidden .geo-overlay-panels > .stg-strip-row,
-  .geo-panels-hidden .geo-overlay-panels > .iku-detail,
-  .geo-panels-hidden .geo-overlay-panels > .hidden-panels-strip,
-  .geo-panels-hidden .geo-overlay-panels > .ticker-bar { display: none; }
-  .geo-panels-hidden .grid-2 .panel:not(.geo-map-panel) { display: none; }
+  /* Filter toolbar relocated into the map panel's own header while in fullscreen (see the
+     expand-toggle handler) — sits right before the OSM/grid/search/panel-toggle/expand buttons,
+     both hugging the header's right side. Drop the standalone toolbar's bottom margin once nested
+     there; the header's own gap/alignment does the spacing instead. */
+  .geo-fullscreen .panel-header .geo-toolbar { margin-bottom: 0; }
+  /* With the filter toolbar gone, the KPI strip becomes #geoOverlayPanels' first child and would
+     otherwise start flush at the top — the exact same band the map panel's own (fixed, separate
+     stacking context) header occupies. Push it down clear of that header's ~44px instead of
+     rendering the two on top of each other. */
+  .geo-fullscreen .geo-overlay-panels > .stg-strip-row { margin-top: 3.2rem; }
 
-  /* ---- per-panel hide (only meaningful in fullscreen, where Detail Kawasan/Summary/EWS/AI float
-     over the map): a small close button in each panel's own header, and a strip of chips to bring
-     an individually-hidden panel back one at a time rather than only via the master "show all" eye
-     toggle. The close button only renders active in fullscreen — outside it, hiding one of these
-     panels from the normal page flow isn't a feature this offers, so keep it out of the way. ---- */
-  .panel-close-btn { display: none; }
-  .geo-fullscreen .panel-close-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 22px; height: 22px; flex: 0 0 auto; margin-left: 0.3rem;
-    background: transparent; border: 1px solid var(--border); border-radius: 6px;
-    color: var(--text-faint); cursor: pointer;
-  }
-  .geo-fullscreen .panel-close-btn:hover { border-color: var(--critical); color: var(--critical); }
-  .panel-close-btn svg { width: 12px; height: 12px; }
-  .geo-fullscreen .panel-solo-hidden { display: none !important; }
-  .hidden-panels-strip:not([hidden]) { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
-  .hidden-panel-chip {
-    display: flex; align-items: center; gap: 0.35rem;
-    background: var(--panel); border: 1px dashed var(--border); border-radius: 999px;
-    padding: 0.3rem 0.7rem 0.3rem 0.55rem; font-size: 0.74rem; color: var(--text-dim); cursor: pointer;
-  }
-  .hidden-panel-chip:hover { border-color: var(--primary-line); color: var(--primary); border-style: solid; }
-  .hidden-panel-chip svg { width: 12px; height: 12px; }
-  /* Per request: since the panels these chips restore (Summary/EWS/AI) all live in the right
-     column, dismissed-panel chips move there too — a vertical stack on the right edge, roughly
-     where those panels themselves start, instead of a horizontal row wrapping under the KPI strip.
-     Fixed positioning for the same reason as the layer catalogue above: this strip is a flex child
-     of #geoOverlayPanels, and only "position: fixed" reliably escapes that flow to sit at a specific
-     screen corner regardless of how tall the toolbar/KPI strip above it happens to render. */
-  .geo-fullscreen .geo-overlay-panels > .hidden-panels-strip:not([hidden]) {
-    position: fixed; top: 150px; right: 16px; left: auto; bottom: auto; z-index: 52;
-    flex-direction: column; flex-wrap: nowrap; align-items: flex-end;
-    width: auto; max-width: min(240px, calc(100vw - 32px)); margin-bottom: 0;
-  }
+  /* Detail Kawasan/Summary/EWS/AI are grouped into #geoRightCol (see the expand-toggle handler,
+     which moves Detail Kawasan there to join Summary/EWS/AI) and default to hidden on entering
+     fullscreen — the map is the point of "Perbesar panel peta", not a wall of panels on top of it.
+     One toggle (the eye button in the map panel's own header, #geoPanelsToggle) brings the whole
+     group back at once rather than dismissing/restoring panels one at a time. */
+  .geo-fullscreen.geo-panels-hidden #geoRightCol { display: none; }
 
-  /* ---- 17 IKU chips — share the STG strip's row/scroll-snap mechanics, "no need 2 row" ---- */
+  /* ---- 17 IKU chips — the only content left in the strip (per request, "remove indicator selain
+     IKU") ---- */
   .iku-chip {
     position: relative; display: flex; flex-direction: column; gap: 0.15rem;
     flex: 0 0 auto; min-width: 150px; scroll-snap-align: start;
@@ -624,7 +628,13 @@
   }
   .iku-chip.active { border-color: var(--primary-line); background: var(--primary-soft); }
   .iku-no { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-faint); }
-  .iku-val { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .iku-val { font-size: 1rem; font-weight: 700; color: var(--text); display: flex; align-items: baseline; gap: 0.4rem; }
+  .iku-trend {
+    font-size: 0.7rem; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap;
+    padding: 0.05rem 0.32rem; border-radius: 999px; align-self: center;
+  }
+  .iku-trend.up { color: var(--good); background: var(--good-soft); }
+  .iku-trend.down { color: var(--critical); background: var(--critical-soft); }
   .iku-info-btn {
     position: absolute; top: 0.4rem; right: 0.4rem; width: 18px; height: 18px; padding: 0;
     display: flex; align-items: center; justify-content: center;
@@ -794,7 +804,7 @@
   var STAGE_COLOR = { "Rintisan": "var(--critical)", "Tumbuh": "var(--warn)", "Berkembang": "var(--series-2)", "Mandiri": "var(--good)" };
   /* plain hex twins of STAGE_COLOR — Leaflet's SVG renderer sets fill as a raw attribute,
      which cannot resolve CSS custom properties, so var(--x) strings won't render there */
-  var STAGE_COLOR_HEX = { "Rintisan": "#ce1126", "Tumbuh": "#c09546", "Berkembang": "#33809c", "Mandiri": "#1f5d47" };
+  var STAGE_COLOR_HEX = { "Rintisan": "#ce1126", "Tumbuh": "#c09546", "Berkembang": "#33809c", "Mandiri": "#2c755b" };
   var activeLeafletMap = null;
 
   /* fabricated per-kawasan boundary "blob" — no real cadastral/HPL polygon data exists (the whole
@@ -981,24 +991,27 @@
      (e.g. "2a-CP"/"2b-CP") — condensed here to the 17 distinct numbered indicators, merging each
      pair's description into one entry. `nilai` (achievement) is fabricated/illustrative like the
      rest of this dataset, not a real capaian figure. */
+  /* `trend` — illustrative quarter-over-quarter change (points/percent), like `nilai` itself; a
+     positive value renders an up arrow (green), a negative value a down arrow (red) on each IKU
+     chip in the Geospasial strip. */
   var ikuList = [
-    { no: 1, satuan: "Indeks", nilai: 72, indikator: "Nilai rata-rata Indeks Transformasi 45 Kawasan Transmigrasi.", pic: "Elis Sampe Andi, S.E, M.M" },
-    { no: 2, satuan: "Persen", nilai: 61, indikator: "Persentase kepastian hukum status lahan yang terselesaikan, termasuk dukungan fasilitasi legalisasi tanah transmigrasi.", pic: "La Ode Muhajirin, S.IP, M.Si" },
-    { no: 3, satuan: "Persen", nilai: 58, indikator: "Persentase pembangunan prasarana, sarana & utilitas serta penempatan transmigran lokal.", pic: "Robi Suherman Ponglabba, ST, MT / Ria Fajarianti, S.E., M.M" },
-    { no: 4, satuan: "Persen", nilai: 64, indikator: "Persentase pembangunan prasarana, sarana & utilitas umum untuk transmigran patriot.", pic: "Robi Suherman Ponglabba, ST, MT" },
-    { no: 5, satuan: "Persen", nilai: 55, indikator: "Persentase pembangunan PSU dan penempatan transmigran Karya Nusantara.", pic: "Robi Suherman Ponglabba, ST, MT / Ria Fajarianti, S.E., M.M" },
-    { no: 6, satuan: "Indeks", nilai: 69, indikator: "Nilai rata-rata indeks transformasi Kawasan Transmigrasi Prioritas Kementerian.", pic: "Elis Sampe Andi, S.E, M.M" },
-    { no: 7, satuan: "Persen", nilai: 47, indikator: "Persentase lahan transmigrasi yang telah terbit SK & Sertipikat HPL, serta SHM.", pic: "La Ode Muhajirin, S.IP, M.Si / Edy Wibowo, S.T., M.M" },
-    { no: 8, satuan: "Persen", nilai: 66, indikator: "Persentase SP/PSP/Kawasan Perkotaan Baru yang dibangun PSU untuk transmigrasi lokal.", pic: "Robi Suherman Ponglabba, ST, MT" },
-    { no: 9, satuan: "Persen", nilai: 52, indikator: "Persentase Kepala Keluarga (KK) transmigran lokal yang ditempatkan di SP transmigrasi.", pic: "Ria Fajarianti, S.E., M.M" },
-    { no: 10, satuan: "Persen", nilai: 60, indikator: "Persentase SP/PSP/Kawasan Perkotaan Baru transmigrasi patriot yang dibangun PSU.", pic: "Robi Suherman Ponglabba, ST, MT" },
-    { no: 11, satuan: "Persen", nilai: 57, indikator: "Persentase SP/PSP/Kawasan Perkotaan Baru transmigrasi Karya Nusantara yang dibangun PSU.", pic: "Robi Suherman Ponglabba, ST, MT" },
-    { no: 12, satuan: "Persen", nilai: 49, indikator: "Persentase KK transmigran Karya Nusantara yang difasilitasi penempatannya.", pic: "Ria Fajarianti, S.E., M.M" },
-    { no: 13, satuan: "Persen", nilai: 63, indikator: "Persentase meningkatnya jumlah kawasan yang berdaya saing dan mandiri (45 kawasan & kawasan prioritas kementerian).", pic: "Elis Sampe Andi, S.E, M.M" },
-    { no: 14, satuan: "Persen", nilai: 71, indikator: "Persentase realisasi implementasi Rencana Aksi Reformasi Birokrasi & Transformasi Digital.", pic: "Ir. Rajumber Prihatin, M.Si" },
-    { no: 15, satuan: "Nilai", nilai: 82, indikator: "Nilai Pengawasan Kearsipan Ditjen PPK Transmigrasi.", pic: "Ir. Rajumber Prihatin, M.Si" },
-    { no: 16, satuan: "Nilai", nilai: 78, indikator: "Tingkat penerapan pengendalian intern Ditjen PPK Transmigrasi.", pic: "Ir. Rajumber Prihatin, M.Si" },
-    { no: 17, satuan: "Nilai", nilai: 85, indikator: "Nilai SAKIP (Sistem Akuntabilitas Kinerja Instansi Pemerintah) Ditjen PPK Transmigrasi.", pic: "Ir. Rajumber Prihatin, M.Si" }
+    { no: 1, satuan: "Indeks", nilai: 72, trend: 2.4, indikator: "Nilai rata-rata Indeks Transformasi 45 Kawasan Transmigrasi.", pic: "Elis Sampe Andi, S.E, M.M" },
+    { no: 2, satuan: "Persen", nilai: 61, trend: 1.8, indikator: "Persentase kepastian hukum status lahan yang terselesaikan, termasuk dukungan fasilitasi legalisasi tanah transmigrasi.", pic: "La Ode Muhajirin, S.IP, M.Si" },
+    { no: 3, satuan: "Persen", nilai: 58, trend: -0.9, indikator: "Persentase pembangunan prasarana, sarana & utilitas serta penempatan transmigran lokal.", pic: "Robi Suherman Ponglabba, ST, MT / Ria Fajarianti, S.E., M.M" },
+    { no: 4, satuan: "Persen", nilai: 64, trend: 3.1, indikator: "Persentase pembangunan prasarana, sarana & utilitas umum untuk transmigran patriot.", pic: "Robi Suherman Ponglabba, ST, MT" },
+    { no: 5, satuan: "Persen", nilai: 55, trend: -1.4, indikator: "Persentase pembangunan PSU dan penempatan transmigran Karya Nusantara.", pic: "Robi Suherman Ponglabba, ST, MT / Ria Fajarianti, S.E., M.M" },
+    { no: 6, satuan: "Indeks", nilai: 69, trend: 1.2, indikator: "Nilai rata-rata indeks transformasi Kawasan Transmigrasi Prioritas Kementerian.", pic: "Elis Sampe Andi, S.E, M.M" },
+    { no: 7, satuan: "Persen", nilai: 47, trend: 2.0, indikator: "Persentase lahan transmigrasi yang telah terbit SK & Sertipikat HPL, serta SHM.", pic: "La Ode Muhajirin, S.IP, M.Si / Edy Wibowo, S.T., M.M" },
+    { no: 8, satuan: "Persen", nilai: 66, trend: -0.6, indikator: "Persentase SP/PSP/Kawasan Perkotaan Baru yang dibangun PSU untuk transmigrasi lokal.", pic: "Robi Suherman Ponglabba, ST, MT" },
+    { no: 9, satuan: "Persen", nilai: 52, trend: 1.5, indikator: "Persentase Kepala Keluarga (KK) transmigran lokal yang ditempatkan di SP transmigrasi.", pic: "Ria Fajarianti, S.E., M.M" },
+    { no: 10, satuan: "Persen", nilai: 60, trend: 2.7, indikator: "Persentase SP/PSP/Kawasan Perkotaan Baru transmigrasi patriot yang dibangun PSU.", pic: "Robi Suherman Ponglabba, ST, MT" },
+    { no: 11, satuan: "Persen", nilai: 57, trend: 0.8, indikator: "Persentase SP/PSP/Kawasan Perkotaan Baru transmigrasi Karya Nusantara yang dibangun PSU.", pic: "Robi Suherman Ponglabba, ST, MT" },
+    { no: 12, satuan: "Persen", nilai: 49, trend: -1.1, indikator: "Persentase KK transmigran Karya Nusantara yang difasilitasi penempatannya.", pic: "Ria Fajarianti, S.E., M.M" },
+    { no: 13, satuan: "Persen", nilai: 63, trend: 1.9, indikator: "Persentase meningkatnya jumlah kawasan yang berdaya saing dan mandiri (45 kawasan & kawasan prioritas kementerian).", pic: "Elis Sampe Andi, S.E, M.M" },
+    { no: 14, satuan: "Persen", nilai: 71, trend: 3.4, indikator: "Persentase realisasi implementasi Rencana Aksi Reformasi Birokrasi & Transformasi Digital.", pic: "Ir. Rajumber Prihatin, M.Si" },
+    { no: 15, satuan: "Nilai", nilai: 82, trend: 0.5, indikator: "Nilai Pengawasan Kearsipan Ditjen PPK Transmigrasi.", pic: "Ir. Rajumber Prihatin, M.Si" },
+    { no: 16, satuan: "Nilai", nilai: 78, trend: -0.7, indikator: "Tingkat penerapan pengendalian intern Ditjen PPK Transmigrasi.", pic: "Ir. Rajumber Prihatin, M.Si" },
+    { no: 17, satuan: "Nilai", nilai: 85, trend: 2.2, indikator: "Nilai SAKIP (Sistem Akuntabilitas Kinerja Instansi Pemerintah) Ditjen PPK Transmigrasi.", pic: "Ir. Rajumber Prihatin, M.Si" }
   ];
 
   var nationalKPI = {
@@ -1384,63 +1397,38 @@
     var ICON_TABLE = '<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18"/><path d="M9 4v16"/>';
     var ICON_CHART = '<path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M2 20h20"/>';
     var ICON_PHOTO = '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>';
-    var ICON_UP = '<path d="M6 15l6-6 6 6"/>';
-    var ICON_DOWN = '<path d="M6 9l6 6 6-6"/>';
     var ICON_CHEV_L = '<path d="m15 18-6-6 6-6"/>';
     var ICON_CHEV_R = '<path d="m9 18 6-6-6-6"/>';
     var ICON_INFO = '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>';
-    var ICON_CLOSE = '<path d="M18 6L6 18"/><path d="M6 6l12 12"/>';
 
-    /* per-panel "hide this one panel" button — only meaningful (and only shown, via CSS scoped to
-       .geo-fullscreen) in fullscreen map mode, where Detail Kawasan/Summary/EWS/AI float over the
-       map and an operator may want to dismiss just one rather than the master eye toggle's all-or-
-       nothing show/hide. Hiding a specific panel this way leaves a small chip in #geoHiddenStrip to
-       bring it back individually — see wirePanelVisibility(). */
-    function panelCloseBtn(id) {
-      return '<button class="panel-close-btn" data-panel="' + id + '" title="Sembunyikan panel">' + svgIcon(ICON_CLOSE, 2.2) + '</button>';
-    }
-
-    function stgTile(label, value, dir) {
-      var arrow = dir ? svgIcon(dir === "up" ? ICON_UP : ICON_DOWN, 2.6) : "";
-      return '<div class="stg-tile"><div class="g-label">' + label + '</div>' +
-        '<div class="g-value' + (dir ? " " + dir : "") + '">' + value + arrow + '</div></div>';
-    }
-
-    /* National executive-summary strip — one metric pulled from each of the other 7 modules, so an
-       executive can read the whole picture here without navigating away (per request: Geospasial as
-       the one screen that "sums up" everything for decision support). Trend deltas are illustrative,
-       matching the ones already shown for the same metrics in Profil/Intelijen. */
-    var mandiriCount = kawasan.filter(function (k) { return k.tahap === "Mandiri"; }).length;
-    var totalPop = kawasan.reduce(function (s, k) { return s + k.populasi; }, 0);
-    var avgAnggaran = Math.round(kawasan.reduce(function (s, k) { return s + k.anggaranPct; }, 0) / kawasan.length);
-    var avgInfra = Math.round(infraKategori.reduce(function (s, c) { return s + c.capaian; }, 0) / infraKategori.length);
     var activeAlertsInit = ewsAlerts.filter(function (a) { return !a.ack; }).length;
 
-    /* All KPI content — the 7 executive metrics and the 17 IKU indicators — share one horizontally
-       scrollable row (was two separate stacked strips; merged into one by request, "no need 2
-       row"). Each IKU chip's own "i" button still expands the shared detail box below the row. */
+    /* Just the 17 IKU indicators — the 7 STG executive-summary tiles (Kawasan Mandiri, Populasi,
+       Indeks 5T, Realisasi Anggaran, Capaian Infrastruktur, Peringatan Aktif) that used to share
+       this row were dropped per request, "remove indicator selain IKU"; those metrics still live on
+       their own modules (Profil/Monitoring/Infrastruktur/etc). A small, subtle horizontal scrollbar
+       replaces the old wrap-to-multiple-rows layout — see .stg-strip's scrollbar-* rules — so the
+       row stays a single compact line instead of either scrolling with a full-size default
+       scrollbar or growing tall across several rows. Each IKU chip's own "i" button still expands
+       the shared detail box below the row. */
     var kpiStripHtml =
       '<div class="stg-strip-row">' +
-        '<button class="stg-nav" id="geoStgPrev" aria-label="Geser kiri">' + svgIcon(ICON_CHEV_L, 2.4) + '</button>' +
         '<div class="stg-strip" id="geoStgStrip">' +
-          stgTile("Kawasan Mandiri", mandiriCount + " / " + kawasan.length, "up") +
-          stgTile("Populasi Transmigran", totalPop.toLocaleString("id-ID"), "up") +
-          stgTile("Indeks 5T Nasional", nationalKPI.avgIndeks + " / 100", "up") +
-          stgTile("Realisasi Anggaran", avgAnggaran + "%", "up") +
-          stgTile("Capaian Infrastruktur", avgInfra + "%", "up") +
-          '<div class="stg-tile" id="geoStgAlertTile"><div class="g-label">Peringatan Aktif</div>' +
-            '<div class="g-value ' + (activeAlertsInit > 0 ? "down" : "up") + '" id="geoStgAlertValue">' + activeAlertsInit +
-              svgIcon(activeAlertsInit > 0 ? ICON_DOWN : ICON_UP, 2.6) +
-            '</div></div>' +
           ikuList.map(function (k, i) {
+            var up = k.trend >= 0;
+            var trendHtml = k.trend == null ? "" :
+              '<span class="iku-trend ' + (up ? "up" : "down") + '" title="Perubahan dari kuartal lalu">' +
+                (up ? "▲" : "▼") + " " + Math.abs(k.trend).toFixed(1) +
+              '</span>';
             return '<div class="iku-chip" data-i="' + i + '">' +
               '<span class="iku-no">IKU ' + k.no + '</span>' +
-              '<span class="iku-val">' + k.nilai + (k.satuan === "Persen" ? "%" : "") + '</span>' +
+              '<span class="iku-val">' + k.nilai + (k.satuan === "Persen" ? "%" : "") +
+                trendHtml +
+              '</span>' +
               '<button class="iku-info-btn" data-i="' + i + '" aria-label="Penjelasan IKU ' + k.no + '" title="Penjelasan">' + svgIcon(ICON_INFO, 2.2) + '</button>' +
             '</div>';
           }).join("") +
         '</div>' +
-        '<button class="stg-nav" id="geoStgNext" aria-label="Geser kanan">' + svgIcon(ICON_CHEV_R, 2.4) + '</button>' +
       '</div>' +
       '<div class="iku-detail" id="geoIkuDetail" hidden></div>';
 
@@ -1463,16 +1451,15 @@
     var wrap = h(
       '<div class="geo-overlay-panels" id="geoOverlayPanels">' +
         topBarHtml + kpiStripHtml +
-        '<div class="hidden-panels-strip" id="geoHiddenStrip" hidden></div>' +
         '<div class="grid-2">' +
-          '<div>' +
+          '<div id="geoLeftCol">' +
             '<div class="panel geo-map-panel" id="geoMapPanel">' +
               '<div class="panel-header"><h2>Peta Sebaran Kawasan</h2>' +
                 '<div class="toolbar">' +
                   '<button class="map-tool-btn" data-view="dasar" title="Peta OSM">' + miniIconSvg("dasar") + '</button>' +
                   '<button class="map-tool-btn" data-view="grid" title="Grid Provinsi">' + miniIconSvg("grid") + '</button>' +
                   '<button class="map-tool-btn" id="geoSearchToggle" title="Cari kawasan">' + svgIcon(ICON_SEARCH) + '</button>' +
-                  '<button class="map-tool-btn" id="geoPanelsToggle" title="Sembunyikan panel" hidden>' + svgIcon(ICON_EYE) + '</button>' +
+                  '<button class="map-tool-btn panel-toggle-btn" id="geoPanelsToggle" title="Tampilkan panel" hidden>' + svgIcon(ICON_EYE) + '<span>Tampilkan</span></button>' +
                   '<button class="map-tool-btn" id="geoExpandToggle" title="Perbesar panel peta">' + svgIcon(ICON_EXPAND) + '</button>' +
                 '</div>' +
               '</div>' +
@@ -1491,15 +1478,14 @@
                   '<button class="tab-btn" data-tab="grafik" title="Grafik">' + svgIcon(ICON_CHART) + '</button>' +
                   '<button class="tab-btn" data-tab="foto" title="Foto">' + svgIcon(ICON_PHOTO) + '</button>' +
                 '</div>' +
-                panelCloseBtn("detail") +
               '</div>' +
               '<div id="geoDetail"></div>' +
             '</div>' +
           '</div>' +
-          '<div>' +
-            '<div class="panel" data-panel-id="summary" data-panel-label="Kawasan Teratas &amp; Terendah"><div class="panel-header"><h2>Kawasan Teratas &amp; Terendah</h2><span class="hint">indeks 5T</span>' + panelCloseBtn("summary") + '</div><div id="geoSummary"></div></div>' +
-            '<div class="panel" id="geoEwsPanel" data-panel-id="ews" data-panel-label="Peringatan Dini (EWS)"><div class="panel-header"><h2>Peringatan Dini (EWS)</h2><span class="hint" id="geoEwsHint"></span>' + panelCloseBtn("ews") + '</div><div id="ewsHudList"></div></div>' +
-            '<div class="panel" data-panel-id="ai" data-panel-label="Asisten AI"><div class="panel-header"><h2>Asisten AI</h2><span class="hint">tanya cepat</span>' + panelCloseBtn("ai") + '</div>' +
+          '<div id="geoRightCol">' +
+            '<div class="panel" data-panel-id="summary" data-panel-label="Kawasan Teratas &amp; Terendah"><div class="panel-header"><h2>Kawasan Teratas &amp; Terendah</h2><span class="hint">indeks 5T</span></div><div id="geoSummary"></div></div>' +
+            '<div class="panel" id="geoEwsPanel" data-panel-id="ews" data-panel-label="Peringatan Dini (EWS)"><div class="panel-header"><h2>Peringatan Dini (EWS)</h2><span class="hint" id="geoEwsHint"></span></div><div id="ewsHudList"></div></div>' +
+            '<div class="panel" data-panel-id="ai" data-panel-label="Asisten AI"><div class="panel-header"><h2>Asisten AI</h2><span class="hint">tanya cepat</span></div>' +
               '<div class="chat-log" id="geoChatLog"></div>' +
               '<div class="chat-input-row"><input id="geoChatInput" type="text" placeholder="Contoh: kawasan mana yang paling berisiko?" />' +
               '<button class="btn primary" id="geoChatSend">Kirim</button></div>' +
@@ -1523,9 +1509,6 @@
     qs(wrap, "#geoAlertChip").addEventListener("click", function () {
       qs(wrap, "#geoEwsPanel").scrollIntoView({ behavior: "smooth", block: "start" });
     });
-    qs(wrap, "#geoStgPrev").addEventListener("click", function () { qs(wrap, "#geoStgStrip").scrollBy({ left: -220, behavior: "smooth" }); });
-    qs(wrap, "#geoStgNext").addEventListener("click", function () { qs(wrap, "#geoStgStrip").scrollBy({ left: 220, behavior: "smooth" }); });
-
     /* toggles a shared detail box under the strip — clicking the same "i" again closes it */
     qsa(wrap, ".iku-info-btn").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -1568,46 +1551,18 @@
     qs(wrap, "#geoSearchGo").addEventListener("click", doSearch);
     qs(wrap, "#geoSearchInput").addEventListener("keydown", function (e) { if (e.key === "Enter") doSearch(); });
 
-    /* "Perbesar panel peta" takes the map full-viewport; everything else (toolbar, KPI strip,
-       Detail/Summary/EWS/AI, ticker) floats on top of it via #geoOverlayPanels rather than being
-       hidden, and — per request — starts fully VISIBLE every time you expand, not hidden by default.
-       The eye toggle is a master "hide everything but the map at once" escape hatch when you do want
-       just the map; individual panels can also be dismissed one at a time via panelCloseBtn(), with
-       #geoHiddenStrip's chips as the way to bring one back without resetting all of them. */
+    /* "Perbesar panel peta" takes the map full-viewport; Detail Kawasan/Summary/EWS/AI (grouped
+       into #geoRightCol, see below) float on top of it on the right, the filter toolbar moves into
+       the map panel's own header, and the KPI strip/ticker stay put above/below. Per request, the
+       right-column panels default to HIDDEN every time you expand — the map itself is the point —
+       with #geoPanelsToggle as the one button to bring all of them back (or hide them again). */
     function setPanelsHidden(hidden) {
       wrap.classList.toggle("geo-panels-hidden", hidden);
       var btn = qs(wrap, "#geoPanelsToggle");
-      btn.innerHTML = svgIcon(hidden ? ICON_EYE_OFF : ICON_EYE);
-      btn.classList.toggle("active", hidden);
+      btn.innerHTML = svgIcon(hidden ? ICON_EYE : ICON_EYE_OFF) + '<span>' + (hidden ? "Tampilkan" : "Sembunyikan") + '</span>';
+      btn.classList.toggle("active", !hidden);
       btn.title = hidden ? "Tampilkan panel" : "Sembunyikan panel";
     }
-
-    /* renders the chip strip from whichever panels currently carry .panel-solo-hidden; each chip
-       restores just that one panel and re-renders itself out of the strip. */
-    function renderHiddenStrip() {
-      var hidden = qsa(wrap, "[data-panel-id].panel-solo-hidden");
-      var strip = qs(wrap, "#geoHiddenStrip");
-      strip.hidden = hidden.length === 0;
-      if (!hidden.length) { strip.innerHTML = ""; return; }
-      strip.innerHTML = hidden.map(function (p) {
-        return '<button class="hidden-panel-chip" data-restore="' + p.dataset.panelId + '">' +
-          svgIcon(ICON_EYE, 2) + '<span>' + p.dataset.panelLabel + '</span></button>';
-      }).join("");
-      qsa(strip, ".hidden-panel-chip").forEach(function (chip) {
-        chip.addEventListener("click", function () {
-          var panel = qs(wrap, '[data-panel-id="' + chip.dataset.restore + '"]');
-          if (panel) panel.classList.remove("panel-solo-hidden");
-          renderHiddenStrip();
-        });
-      });
-    }
-    qsa(wrap, ".panel-close-btn").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var panel = btn.closest("[data-panel-id]");
-        if (panel) panel.classList.add("panel-solo-hidden");
-        renderHiddenStrip();
-      });
-    });
 
     /* collapses the layer catalogue down to just its header pill — guarded, since it only exists in
        the DOM while the live/static map view is what's rendered into #sebaranBody (not e.g. "grid"). */
@@ -1619,22 +1574,57 @@
       if (btn) { btn.innerHTML = svgIcon(ICON_CHEV_R, 2.2); btn.title = "Perluas daftar layer"; }
     }
 
+    /* The catalogue's z-index:750 (see .map-layer-catalog above) only outranks OTHER descendants of
+       its own stacking context — nested inside .geo-map-panel (itself a position:fixed stacking
+       context at z-index:50), it can never actually rise above the KPI strip (z-index:51, a sibling
+       context under #geoOverlayPanels) no matter how tall it gets when expanded, so it would
+       silently render behind the strip once floated below the map's own header (per request, "di
+       map, floating" rather than sitting in the header band). Promoting it to a direct child of
+       #geoOverlayPanels in fullscreen — still fixed-positioned via the CSS above, so this doesn't
+       move it visually — puts its z-index where it's actually compared against the KPI strip's.
+       Reversed outside fullscreen, and re-applied after every renderDasar()/renderDasarStatic()
+       call, since both rebuild #sebaranBody's whole innerHTML (a fresh catalogue node) on every
+       map-style/view switch. */
+    function placeLayerCatalog() {
+      var cat = qs(wrap, ".map-layer-catalog");
+      if (!cat) return;
+      if (wrap.classList.contains("geo-fullscreen")) {
+        if (cat.parentElement !== geoOverlayEl) geoOverlayEl.appendChild(cat);
+      } else {
+        var body = qs(wrap, "#sebaranBody");
+        if (body && cat.parentElement !== body) body.appendChild(cat);
+      }
+    }
+
+    var geoToolbarEl = qs(wrap, ".geo-toolbar");
+    var geoOverlayEl = qs(wrap, "#geoOverlayPanels");
+    var geoLeftCol = qs(wrap, "#geoLeftCol");
+    var geoRightCol = qs(wrap, "#geoRightCol");
+    var geoDetailPanel = qs(wrap, '[data-panel-id="detail"]');
+    var geoMapToolbarEl = qs(wrap, "#geoMapPanel .panel-header .toolbar");
+
     qs(wrap, "#geoExpandToggle").addEventListener("click", function () {
       var fs = wrap.classList.toggle("geo-fullscreen");
       var btn = qs(wrap, "#geoExpandToggle");
       btn.innerHTML = svgIcon(fs ? ICON_COLLAPSE : ICON_EXPAND);
       btn.title = fs ? "Kecilkan panel peta" : "Perbesar panel peta";
       qs(wrap, "#geoPanelsToggle").hidden = !fs;
-      setPanelsHidden(false);
       if (fs) {
+        /* filter chips join the map panel's own toolbar, right before its OSM/grid/search/expand
+           buttons; Detail Kawasan joins Summary/EWS/AI in the right column so all four panels are
+           one group — both moves are reversed on the way back out below. */
+        geoMapToolbarEl.insertBefore(geoToolbarEl, geoMapToolbarEl.firstChild);
+        geoRightCol.insertBefore(geoDetailPanel, geoRightCol.firstChild);
+        setPanelsHidden(true);
         /* starts collapsed every time you expand — the full kawasan list floating open by default
-           would immediately overlap the KPI strip/panels in the same crowded top-right corner */
+           would immediately overlap the map toolbar/panels in the same crowded top corner */
         collapseLayerCatalog();
+        placeLayerCatalog();
       } else {
-        /* leaving fullscreen resets any panels dismissed one at a time, so the next time you expand
-           everything is visible again rather than remembering last session's hidden set */
-        qsa(wrap, ".panel-solo-hidden").forEach(function (p) { p.classList.remove("panel-solo-hidden"); });
-        renderHiddenStrip();
+        geoOverlayEl.insertBefore(geoToolbarEl, geoOverlayEl.firstChild);
+        geoLeftCol.appendChild(geoDetailPanel);
+        setPanelsHidden(false);
+        placeLayerCatalog();
       }
       if (activeLeafletMap) setTimeout(function () { activeLeafletMap.invalidateSize(); }, 210);
     });
@@ -1673,7 +1663,7 @@
     renderChatLog();
 
     /* ---- "Peringatan Dini (EWS)" — same ewsAlerts data + ack toggle as the Analitik module's list,
-       kept in sync with the alert chip, the STG strip's "Peringatan Aktif" tile, and the ticker ---- */
+       kept in sync with the alert chip and the ticker ---- */
     function renderEwsHud() {
       var listEl = qs(wrap, "#ewsHudList");
       var sevLabel = { high: "Tinggi", med: "Sedang", low: "Rendah" };
@@ -1698,8 +1688,6 @@
           var active2 = ewsAlerts.filter(function (x) { return !x.ack; }).length;
           qs(wrap, "#geoAlertChipText").textContent = "Alert (" + active2 + ")";
           qs(wrap, "#geoAlertChip").classList.toggle("warn", active2 > 0);
-          qs(wrap, "#geoStgAlertValue").innerHTML = active2 + svgIcon(active2 > 0 ? ICON_DOWN : ICON_UP, 2.6);
-          qs(wrap, "#geoStgAlertValue").className = "g-value " + (active2 > 0 ? "down" : "up");
         });
       });
     }
@@ -1821,6 +1809,12 @@
     /* ---- grid-of-provinces view (original), fills the canvas with a light padded panel instead of the map ---- */
     function renderProvGrid() {
       var body = qs(wrap, "#sebaranBody");
+      /* the layer catalogue is a "dasar" (map) view control — if fullscreen had promoted it out to
+         #geoOverlayPanels (see placeLayerCatalog()), it'd otherwise survive this innerHTML swap
+         (it's no longer a descendant of #sebaranBody) and float uselessly over the grid view.
+         renderDasar()/renderDasarStatic() rebuild it fresh next time "dasar" is selected. */
+      var promotedCat = qs(wrap, "#geoOverlayPanels > .map-layer-catalog");
+      if (promotedCat) promotedCat.remove();
       body.innerHTML =
         '<div class="geo-grid-pad">' +
           '<div class="toolbar" style="margin-bottom:0.7rem">' +
@@ -1950,6 +1944,7 @@
         if (visible) { if (!map.hasLayer(area)) area.addTo(map); }
         else if (map.hasLayer(area)) { map.removeLayer(area); }
       });
+      placeLayerCatalog();
 
       activeLeafletMap = map;
       setTimeout(function () {
@@ -1998,6 +1993,7 @@
         var pin = qs(body, '.bm-pin[data-id="' + id + '"]');
         if (pin) pin.hidden = !visible;
       });
+      placeLayerCatalog();
     }
 
     function renderSebaran() {
