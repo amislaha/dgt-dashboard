@@ -1,10 +1,11 @@
 <title>DGT — Digital Governance Transmigration</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <!-- Repo home / launcher page. Sits at the GitHub Pages root and links out to the tools that live
-     in this same repo as sibling subfolders (dashboard/, data-manager/, gis-dgt/). Self-contained,
-     same design tokens as those tools (synced from the DGT Transmigrasi 2026 Figma file) — see
-     their own files for the canonical copy and provenance notes. gis-dgt/ is currently just a
-     "coming soon" placeholder page — replace it once the real tool exists, no changes needed here.
+     in this same repo as sibling subfolders (dashboard/, data-manager/, gis-dgt/, geomapping/).
+     Self-contained, same design tokens as those tools (synced from the DGT Transmigrasi 2026 Figma
+     file) — see their own files for the canonical copy and provenance notes. gis-dgt/ is currently
+     just a "coming soon" placeholder page — replace it once the real tool exists, no changes needed
+     here. geomapping/ is a working geospatial data manager (draw/classify/store features).
 
      Fronted by a COSMETIC login gate — see the #loginView section below. This is a static site
      with no backend, so there is no real credential verification: any non-empty username/password
@@ -33,6 +34,8 @@
     --series-2-soft: rgba(51, 128, 156, 0.14);
     --gold: #c9974a;
     --gold-soft: rgba(201, 151, 74, 0.16);
+    --geo: #2c755b;
+    --geo-soft: rgba(44, 117, 91, 0.14);
     --sidebar: #081826;
     --radius: 10px;
     --radius-sm: 8px;
@@ -327,6 +330,19 @@
       </span>
     </div>
     <span class="num">03</span>
+  </a>
+
+  <a class="card" href="geomapping/" style="--i:3; --accent: var(--geo); --accent-soft: var(--geo-soft)">
+    <div class="card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+    </div>
+    <div class="card-body">
+      <h2>GEOMAPPING</h2>
+      <span class="go">Buka GEOMAPPING
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </span>
+    </div>
+    <span class="num">04</span>
   </a>
 </div>
 
