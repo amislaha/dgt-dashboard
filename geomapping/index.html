@@ -299,7 +299,9 @@
   .collection .chev { margin-left: auto; color: var(--text-faint); }
   .collection .chev svg { width: 15px; height: 15px; transition: transform 0.15s ease; }
   .collection[open] .chev svg { transform: rotate(180deg); }
-  .collection .opts { margin-top: 0.6rem; border-top: 1px solid var(--border); padding-top: 0.5rem; display: flex; flex-direction: column; gap: 2px; }
+  .collection .opts { margin-top: 0.6rem; border-top: 1px solid var(--border); padding-top: 0.5rem; display: flex; flex-direction: column; gap: 2px; max-height: 320px; overflow-y: auto; }
+  .collection .opts::-webkit-scrollbar { width: 7px; }
+  .collection .opts::-webkit-scrollbar-thumb { background: var(--border); border-radius: 7px; }
   .collection .opt {
     display: flex; align-items: center; gap: 0.55rem; padding: 0.4rem 0.4rem; border-radius: 7px;
     font-size: 0.8rem; cursor: pointer;
@@ -308,6 +310,16 @@
   .collection .opt .dot { width: 12px; height: 12px; border-radius: 4px; flex: 0 0 auto; }
   .collection .opt.sel { font-weight: 700; }
   .collection .opt.sel::after { content: "✓"; margin-left: auto; color: var(--primary); }
+  .collection .opt-grp {
+    display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.4rem; border-radius: 7px;
+    font-size: 0.8rem; font-weight: 700; cursor: pointer; color: var(--text);
+  }
+  .collection .opt-grp:hover { background: var(--panel-2); }
+  .collection .opt-grp svg { width: 13px; height: 13px; color: var(--text-faint); transition: transform 0.15s ease; flex: 0 0 auto; }
+  .collection .opt-grp.open svg { transform: rotate(90deg); }
+  .collection .opt-grp-items { display: flex; flex-direction: column; gap: 2px; padding-left: 0.9rem; border-left: 2px solid var(--border); margin-left: 0.5rem; }
+  .collection .opt-desc { margin-left: auto; font-size: 0.68rem; color: var(--text-faint); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 46%; }
+  .collection .opt.sel .opt-desc { display: none; }
 
   /* panel body */
   .panel { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
@@ -999,7 +1011,19 @@
     history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/>',
     chevL: '<path d="m15 18-6-6 6-6"/>',
     chevR: '<path d="m9 18 6-6-6-6"/>',
-    calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>'
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>',
+    users: '<circle cx="9" cy="8" r="3"/><path d="M15 11a3 3 0 1 0-2-5"/><path d="M3.5 20c0-3 2.7-5 5.5-5s5.5 2 5.5 5"/><path d="M17 15c2 .4 3.5 2 3.5 5"/>',
+    store: '<path d="M4 9h16l-1.2-4.2A1 1 0 0 0 17.8 4H6.2a1 1 0 0 0-1 .8L4 9Z"/><path d="M5 9v10h14V9"/><path d="M9.5 19v-5h5v5"/>',
+    coins: '<circle cx="8.5" cy="8.5" r="5"/><path d="M13 6.2a5 5 0 1 1-3.8 9.3"/>',
+    bed: '<path d="M3 8v11M3 14h18v5M21 19v-5a3 3 0 0 0-3-3h-7v3"/><circle cx="7" cy="10.5" r="1.6"/>',
+    home: '<path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+    car: '<path d="M5 12l1.6-4.6A2 2 0 0 1 8.5 6h7a2 2 0 0 1 1.9 1.4L19 12"/><path d="M4 12h16v5H4z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>',
+    book: '<path d="M12 6c-1.6-1.2-4-2-7-2v13c3 0 5.4.8 7 2 1.6-1.2 4-2 7-2V4c-3 0-5.4.8-7 2Z"/><path d="M12 6v13"/>',
+    utensils: '<path d="M7 3v8M5 3v6a2 2 0 0 0 4 0V3M7 11v10"/><path d="M17 3c-1.7 0-3 2.2-3 5s1.3 4 3 4v9"/>',
+    heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/>',
+    landmark: '<path d="M4 21h16M5 21v-9M19 21v-9M10 21v-9M14 21v-9M4 10h16L12 4Z"/>',
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>',
+    dome: '<path d="M4 21h16M6 21v-8M18 21v-8M12 4c3 1.2 5 4.2 5 9H7c0-4.8 2-7.8 5-9ZM12 4V2"/>'
   };
   function svg(name, sw) {
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) +
@@ -1007,12 +1031,28 @@
   }
 
   /* ---------------- seed data (all fabricated/illustrative) ---------------- */
+  // Object classification (Klasifikasi) — the taxonomy mirrors the
+  // geomapping.semantis.id category picker: a "Bisnis" group with
+  // Perusahaan / Konsumen children, then a flat set of place categories.
+  // ids/colours/icons are our own; still illustrative, not a real registry.
   var DEFAULT_CLASSIFICATIONS = [
-    { id: "cls-public", name: "Public Mapping", desc: "Pemetaan partisipatif publik", color: "#f5a623", icon: "pin" },
-    { id: "cls-parcel", name: "Bidang Tanah", desc: "Persil & legalitas lahan", color: "#2c755b", icon: "parcel" },
-    { id: "cls-boundary", name: "Batas Kawasan", desc: "Delineasi kawasan transmigrasi", color: "#163b54", icon: "boundary" },
-    { id: "cls-infra", name: "Infrastruktur", desc: "Jaringan jalan, air, dan listrik", color: "#33809c", icon: "road" },
-    { id: "cls-fasum", name: "Fasilitas Umum", desc: "Sekolah, puskesmas, pasar", color: "#c9974a", icon: "building" }
+    { id: "cls-perusahaan", group: "Bisnis", name: "Perusahaan", desc: "Badan usaha, kantor, pabrik", color: "#33809c", icon: "building" },
+    { id: "cls-konsumen", group: "Bisnis", name: "Konsumen", desc: "Customer, agen, distributor", color: "#5b8fb0", icon: "users" },
+    { id: "cls-pasar", name: "Pasar", desc: "Pasar rakyat & grosir", color: "#c9974a", icon: "store" },
+    { id: "cls-ekonomi", name: "Ekonomi", desc: "Bank, keuangan, koperasi", color: "#2c755b", icon: "coins" },
+    { id: "cls-hotel", name: "Hotel", desc: "Penginapan & akomodasi", color: "#8e5aa8", icon: "bed" },
+    { id: "cls-properti", name: "Properti", desc: "Perumahan, kavling, gedung", color: "#163b54", icon: "home" },
+    { id: "cls-otomotif", name: "Otomotif", desc: "Bengkel, dealer, SPBU", color: "#b5563f", icon: "car" },
+    { id: "cls-edukasi", name: "Edukasi", desc: "Sekolah, kampus, kursus", color: "#3f7cac", icon: "book" },
+    { id: "cls-restoran", name: "Restoran dan Cafe", desc: "Rumah makan, kafe, kuliner", color: "#cf7b3a", icon: "utensils" },
+    { id: "cls-pariwisata", name: "Pariwisata dan Hiburan", desc: "Wisata, taman, tempat hiburan", color: "#7a9e3b", icon: "camera" },
+    { id: "cls-kesehatan", name: "Kesehatan dan Kecantikan", desc: "Klinik, apotek, salon", color: "#c65b7c", icon: "heart" },
+    { id: "cls-transportasi", name: "Transportasi dan Kurir", desc: "Terminal, ekspedisi, logistik", color: "#4a7f9e", icon: "route" },
+    { id: "cls-agama", name: "Agama dan Sosial", desc: "Rumah ibadah & lembaga sosial", color: "#6a7fb0", icon: "dome" },
+    { id: "cls-pemerintahan", name: "Kantor Pemerintahan", desc: "Instansi & pelayanan publik", color: "#4a5a6a", icon: "landmark" },
+    { id: "cls-olahraga", name: "Olahraga", desc: "Lapangan, GOR, gym", color: "#2f8f6f", icon: "target" },
+    { id: "cls-utilitas", name: "Utilitas", desc: "Air, listrik, telekomunikasi", color: "#c0803a", icon: "bolt" },
+    { id: "cls-objek-peta", name: "Objek Peta", desc: "Objek pemetaan umum lainnya", color: "#7c8a94", icon: "layers" }
   ];
 
   var DEFAULT_COMPARTMENTS = [
@@ -1023,7 +1063,7 @@
 
   var DEFAULT_FEATURES = [
     {
-      id: "ft-seed-1", classificationId: "cls-public", compartmentId: "wc-seed-1", title: "Blok Permukiman Kemang Selatan",
+      id: "ft-seed-1", classificationId: "cls-properti", compartmentId: "wc-seed-1", title: "Blok Permukiman Kemang Selatan",
       description: "Delineasi indikatif blok hunian hasil pemetaan partisipatif warga.",
       address: "Kemang Selatan, Jakarta Selatan", images: [], privilege: "PUBLIC",
       geometry: { type: "Polygon", coordinates: [[
@@ -1041,7 +1081,7 @@
       }
     },
     {
-      id: "ft-seed-2", classificationId: "cls-infra", compartmentId: "wc-seed-2", title: "Ruas Jalan Poros SP-2",
+      id: "ft-seed-2", classificationId: "cls-transportasi", compartmentId: "wc-seed-2", title: "Ruas Jalan Poros SP-2",
       description: "Segmen jalan penghubung menuju pusat satuan permukiman.",
       address: "Poros SP-2", images: [], privilege: "PUBLIC",
       geometry: { type: "LineString", coordinates: [
@@ -1055,7 +1095,7 @@
       }
     },
     {
-      id: "ft-seed-3", classificationId: "cls-fasum", compartmentId: "wc-seed-1", title: "Puskesmas Kawasan Blok C",
+      id: "ft-seed-3", classificationId: "cls-kesehatan", compartmentId: "wc-seed-1", title: "Puskesmas Kawasan Blok C",
       description: "Titik layanan kesehatan tingkat kawasan.",
       address: "Blok C", images: [], privilege: "RESTRICTED",
       geometry: { type: "Point", coordinates: [106.8281, -6.2921] },
@@ -1128,8 +1168,31 @@
   ];
 
   /* ---------------- persisted collections ---------------- */
+  // Classification taxonomy version. Bump this whenever DEFAULT_CLASSIFICATIONS
+  // changes shape so existing localStorage installs get the new set + a remap
+  // of any feature / hidden-layer / current-selection that referenced an old id.
+  var CLS_VERSION = 2;
+  var CLS_REMAP = {
+    "cls-public": "cls-objek-peta", "cls-parcel": "cls-properti",
+    "cls-boundary": "cls-objek-peta", "cls-infra": "cls-utilitas",
+    "cls-fasum": "cls-kesehatan"
+  };
   var classifications = store.get("classifications", null);
-  if (!classifications || !classifications.length) { classifications = DEFAULT_CLASSIFICATIONS.slice(); store.set("classifications", classifications); }
+  if (!classifications || !classifications.length || (store.get("clsVersion", 1) | 0) < CLS_VERSION) {
+    classifications = DEFAULT_CLASSIFICATIONS.slice();
+    store.set("classifications", classifications);
+    store.set("clsVersion", CLS_VERSION);
+    var _validCls = {};
+    classifications.forEach(function (c) { _validCls[c.id] = true; });
+    var _clsFallback = classifications[0].id;
+    var remapCls = function (id) { return _validCls[id] ? id : (CLS_REMAP[id] || _clsFallback); };
+    var _sf = store.get("features", null);
+    if (_sf && _sf.length) { _sf.forEach(function (f) { f.classificationId = remapCls(f.classificationId); }); store.set("features", _sf); }
+    var _sh = store.get("hidden", null);
+    if (_sh) { var _nh = {}; Object.keys(_sh).forEach(function (k) { if (_sh[k]) _nh[remapCls(k)] = true; }); store.set("hidden", _nh); }
+    var _sc = store.get("collectionId", null);
+    if (_sc) store.set("collectionId", remapCls(_sc));
+  }
   var features = store.get("features", null);
   if (features == null) { features = DEFAULT_FEATURES.slice(); store.set("features", features); }
   // migrate: every feature carries an approval record (PRD open-question #2 workflow)
@@ -1194,6 +1257,22 @@
   }
   function clsById(id) { for (var i = 0; i < classifications.length; i++) if (classifications[i].id === id) return classifications[i]; return classifications[0]; }
   function wcById(id) { for (var i = 0; i < compartments.length; i++) if (compartments[i].id === id) return compartments[i]; return null; }
+  // classification picker hierarchy: walk `classifications` in order, folding
+  // entries that share a `group` into one block; ungrouped entries stand alone.
+  var clsGroupOpen = {};
+  function classOrder() {
+    var out = [], seen = {};
+    classifications.forEach(function (c) {
+      if (c.group) {
+        if (!seen[c.group]) { seen[c.group] = { grp: c.group, items: [] }; out.push(seen[c.group]); }
+        seen[c.group].items.push(c);
+      } else {
+        out.push({ grp: null, items: [c] });
+      }
+    });
+    return out;
+  }
+  function clsLabel(c) { return c.group ? c.group + " · " + c.name : c.name; }
 
   /* ---------------- approval workflow (PRD open question #2) ---------------- */
   var APPROVAL_META = {
@@ -1839,13 +1918,21 @@
         '<details class="card collection" id="collectionCard">' +
           '<summary>' +
             '<span class="swatch" style="background:' + cls.color + '">' + svg(cls.icon) + '</span>' +
-            '<span><span class="c-name">' + esc(cls.name) + '</span><br><span class="c-desc">' + esc(cls.desc) + '</span></span>' +
+            '<span><span class="c-name">' + esc(clsLabel(cls)) + '</span><br><span class="c-desc">' + esc(cls.desc) + '</span></span>' +
             '<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>' +
           '</summary>' +
           '<div class="opts">' +
-            classifications.map(function (c) {
-              return '<div class="opt' + (c.id === state.collectionId ? " sel" : "") + '" data-cls="' + c.id + '">' +
-                '<span class="dot" style="background:' + c.color + '"></span>' + esc(c.name) + '</div>';
+            classOrder().map(function (row) {
+              var optHtml = function (c) {
+                return '<div class="opt' + (c.id === state.collectionId ? " sel" : "") + '" data-cls="' + c.id + '">' +
+                  '<span class="dot" style="background:' + c.color + '"></span>' + esc(c.name) +
+                  (c.desc ? '<span class="opt-desc">' + esc(c.desc) + '</span>' : "") + '</div>';
+              };
+              if (!row.grp) return optHtml(row.items[0]);
+              var open = !!clsGroupOpen[row.grp] || row.items.some(function (c) { return c.id === state.collectionId; });
+              return '<div class="opt-grp' + (open ? " open" : "") + '" data-grp="' + esc(row.grp) + '">' +
+                  svg("chevR") + esc(row.grp) + '</div>' +
+                '<div class="opt-grp-items"' + (open ? "" : " hidden") + '>' + row.items.map(optHtml).join("") + '</div>';
             }).join("") +
           '</div>' +
         '</details>' : "");
@@ -1854,6 +1941,16 @@
     qs(dockTop, "#searchGo").addEventListener("click", runSearch);
     qs(dockTop, "#fsBtn").addEventListener("click", toggleFullscreen);
     if (qs(dockTop, "#collectionCard")) {
+      qsa(dockTop, ".collection .opt-grp").forEach(function (g) {
+        g.addEventListener("click", function (e) {
+          e.preventDefault(); e.stopPropagation();
+          var items = g.nextElementSibling;
+          if (!items || !items.classList.contains("opt-grp-items")) return;
+          items.hidden = !items.hidden;
+          g.classList.toggle("open", !items.hidden);
+          clsGroupOpen[g.getAttribute("data-grp")] = !items.hidden;
+        });
+      });
       qsa(dockTop, ".collection .opt").forEach(function (o) {
         o.addEventListener("click", function () {
           state.collectionId = o.getAttribute("data-cls");
@@ -2413,8 +2510,12 @@
         '<div class="step-head"><span class="step-num">1</span><span class="step-title">Klasifikasi <span class="star">*</span></span></div>' +
         '<div class="field">' +
           '<select id="fClass" class="classif" style="border-left-color:' + cls.color + '">' +
-            classifications.map(function (c) {
-              return '<option value="' + c.id + '"' + (c.id === f.classificationId ? " selected" : "") + '>' + esc(c.name) + '</option>';
+            classOrder().map(function (row) {
+              var opt = function (c) {
+                return '<option value="' + c.id + '"' + (c.id === f.classificationId ? " selected" : "") + '>' + esc(c.name) + '</option>';
+              };
+              if (!row.grp) return opt(row.items[0]);
+              return '<optgroup label="' + esc(row.grp) + '">' + row.items.map(opt).join("") + '</optgroup>';
             }).join("") +
           '</select>' +
           '<div class="classif-preview"><span class="dot" style="background:' + cls.color + '"></span><span>' + esc(cls.desc) + '</span></div>' +
@@ -2808,7 +2909,9 @@
   }
 
   /* classification manager — used inside My Layers (moved from the removed Layers menu) */
-  var ICON_CHOICES = ["pin", "parcel", "boundary", "road", "building", "layers", "tag", "shapes"];
+  var ICON_CHOICES = ["pin", "building", "users", "store", "coins", "bed", "home", "car", "book",
+    "utensils", "camera", "heart", "route", "dome", "landmark", "target", "bolt", "layers",
+    "parcel", "boundary", "road", "tag", "shapes"];
   function classPanelHtml() {
     return '<details class="card" style="margin-top:14px;padding:.65rem .8rem">' +
       '<summary style="cursor:pointer;font-weight:700;font-size:.82rem;list-style:none">Klasifikasi objek</summary>' +
@@ -2817,7 +2920,7 @@
           var cnt = features.filter(function (f) { return f.classificationId === c.id; }).length;
           var on = !state.hidden[c.id];
           return '<div class="toggle-row"><span class="dot" style="background:' + c.color + '"></span>' +
-            '<span class="grow">' + esc(c.name) + ' <span style="color:var(--text-faint)">(' + cnt + ')</span></span>' +
+            '<span class="grow">' + esc(clsLabel(c)) + ' <span style="color:var(--text-faint)">(' + cnt + ')</span></span>' +
             '<label class="switch"><input type="checkbox" data-cls="' + c.id + '"' + (on ? " checked" : "") + '><span class="track"></span></label></div>';
         }).join("") +
         '<div class="sub-label">Tambah klasifikasi</div>' +
