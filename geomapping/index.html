@@ -1,24 +1,59 @@
 <meta charset="utf-8" />
-<title>GEOMAPPING — Digital Governance Transmigration</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<!-- GEOMAPPING — a standalone geospatial data manager for the DGT family of tools. Draw points,
-     lines and polygons on a real Leaflet/OpenStreetMap basemap, classify them, fill an
-     Information + Questionnaire form (auto-computed area / length), and store everything in the
-     browser under the `geomapping:` localStorage key prefix. No server, no build step — one
-     self-contained index.html with its own inline <style>/<script>, its own copy of the DGT
-     design tokens (synced from the "DGT Transmigrasi 2026" Figma file; the other tools each keep
-     their own copy too — there is no shared build step). Linked from the root launcher's
-     #launcherView as a fourth tool card.
+<title>Geomapping — Survei &amp; Pemetaan Lapangan · DGT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#163b54" />
+<meta name="color-scheme" content="light" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Geomapping" />
+<!-- GEOMAPPING — a front-end prototype of the "Aplikasi Geomapping" field-survey platform,
+     restructured to follow PRD_Geomapping.docx v1.0 (9 Sep 2026). The page itself is still one
+     self-contained index.html (own inline <style>/<script>, own copy of the DGT design tokens
+     synced from the "DGT Transmigrasi 2026" Figma file), no server, no build step. Data persists
+     to localStorage under the `geomapping:` key prefix. There is NO login gate — the cosmetic
+     sign-in overlay was removed on request and the app opens straight into the workspace;
+     `userName()` just resolves a fixed default identity ("surveyor01") for approval/activity
+     records. `AUTH_KEY` (`geomapping-auth`) is still read if some other code set it, but nothing
+     writes it now, and there is no "Keluar" action.
 
-     External requests: Leaflet from a CDN + OpenStreetMap / Carto / Esri basemap tiles, plus
-     Google Fonts — the same CDN-dependency exception the dashboard makes. Everything else is
-     inline. The layer/geocoder search is best-effort against the public Nominatim endpoint and
-     degrades to a "lat, lon" jump / saved-feature name match when that request is unavailable.
+     PWA: three sibling files add installability + offline — `manifest.webmanifest`, `sw.js`
+     (cache-first CDN/tiles, stale-while-revalidate for our own files; bump its CACHE constant
+     to force a refresh), and `icon.svg` (SVG-only; fine for Android/desktop Chrome install, iOS
+     add-to-home falls back to a snapshot — swap in PNG icons later if iOS polish matters). Like
+     `assets/`, these only work over http(s) (GitHub Pages / a local static server), not file://,
+     and the service worker no-ops when unavailable. The layout goes to a bottom nav + bottom
+     sheet under 760px (see the `@media (max-width: 760px)` block) with iOS safe-area insets.
 
-     All seeded data (classifications + three example features around Jakarta) is fabricated and
-     illustrative, not real cadastral or ministry data — keep anything added here clearly
-     fictional and internally consistent, same rule as the rest of this repo. There is no auth:
-     the "Ahmad" chip in the topbar is static and the language toggle is cosmetic. -->
+     PRD module -> where it lives here (the rail was trimmed on request to an icon-only
+     Public Mapping / My Layers / Tracking / Task / Activity set; the Layers, Direction,
+     My Location and About menus were removed and their still-needed bits relocated —
+     reset-all-data now lives in the topbar user menu):
+       I  Login / Autentikasi ....... removed on request — no gate, app opens directly
+       II Navigasi Peta ............. Leaflet zoom control + pinch/scroll (F-2.x)
+       III Base Map & Overlay ....... three map-ctrl buttons top-right: #bmBtn (basemap picker,
+                                      7 Klikpeta/MapBox names on KEYLESS stand-in tiles — OSM /
+                                      OpenTopoMap / Esri / CARTO — because the real providers need
+                                      API keys, out of front-end scope, PRD §8), #bndBtn (admin-
+                                      boundary overlay, a fabricated illustrative grid, toggles all
+                                      levels), #poiBtn (POI layer).
+       IV Main Menu ................. Public Mapping (WorkCompartment), My Layers (recorded
+                                      point/line/polygon + a collapsible "Klasifikasi objek"
+                                      manager moved here from the old Layers menu), Activity (log).
+       V  Edit Mode ................. Tracking Point (10s countdown), Tracking Line/Polygon
+                                      (stepwise from the GPS "My Location" balloon, captured via the
+                                      status-line button or the bottom-right locate FAB), manual
+                                      draw, + Task (survey to-do list). Direction (route estimate)
+                                      was dropped.
+
+     External requests: Leaflet CDN + basemap tiles + Google Fonts + best-effort Nominatim
+     geocode / OSRM routing — the same CDN-dependency exception the dashboard makes; everything
+     degrades quietly when blocked. All seeded data (classifications, features, WorkCompartments,
+     POIs, tasks, boundaries) is fabricated/illustrative, not real cadastral or ministry data —
+     keep anything added here clearly fictional and internally consistent. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -95,6 +130,17 @@
     width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: #fff;
     display: grid; place-items: center; font-size: 0.66rem; font-weight: 700;
   }
+  .user-menu {
+    position: absolute; right: 0; top: calc(100% + 6px); background: var(--panel);
+    border: 1px solid var(--border); border-radius: 9px; padding: 0.3rem; min-width: 178px;
+    box-shadow: 0 16px 40px -20px rgba(15, 25, 34, 0.5); z-index: 1300;
+  }
+  .user-menu button {
+    display: block; width: 100%; text-align: left; border: none; background: none;
+    padding: 0.5rem 0.6rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+    color: var(--text); cursor: pointer;
+  }
+  .user-menu button:hover { background: var(--panel-2); }
   .top-icon-btn {
     width: 32px; height: 32px; border-radius: var(--radius-sm); cursor: pointer;
     background: var(--panel-2); border: 1px solid var(--border); color: var(--text-dim);
@@ -102,9 +148,23 @@
   }
   .top-icon-btn:hover { border-color: var(--primary-line); color: var(--text); }
   .top-icon-btn svg { width: 16px; height: 16px; }
+  .top-icon-btn.on { background: var(--primary-soft); color: var(--primary); border-color: var(--primary-line); }
 
-  @media (max-width: 700px) {
-    .topbar .sub, .top-btn .label { display: none; }
+  .wc-chip {
+    display: inline-flex; align-items: center; gap: 0.4rem; background: var(--primary-soft);
+    color: var(--primary); border: 1px solid var(--primary-line); border-radius: 999px;
+    padding: 0.26rem 0.35rem 0.26rem 0.65rem; font-size: 0.73rem; font-weight: 700; white-space: nowrap;
+  }
+  .wc-chip .wc-emoji { font-size: 0.9rem; }
+  .wc-chip button {
+    border: none; background: none; color: inherit; cursor: pointer; display: grid;
+    place-items: center; width: 18px; height: 18px; border-radius: 50%;
+  }
+  .wc-chip button:hover { background: rgba(22, 59, 84, 0.15); }
+  .wc-chip button svg { width: 12px; height: 12px; }
+
+  @media (max-width: 780px) {
+    .topbar .sub, .top-btn .label, .wc-chip { display: none; }
   }
 
   /* ---------------- workspace ---------------- */
@@ -121,48 +181,83 @@
   }
   .vhandle.del { border-color: var(--critical); cursor: pointer; }
   .vhandle.mid { border-style: dashed; border-color: var(--series-2); opacity: 0.85; cursor: copy; }
+  .myloc-balloon { background: transparent; border: none; }
+  .myloc-balloon i {
+    display: block; width: 18px; height: 18px; border-radius: 50% 50% 50% 0;
+    background: #2563eb; border: 2px solid #fff; transform: rotate(-45deg);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
 
   /* ---------------- rail ---------------- */
   .rail {
     position: absolute; left: 0; top: 0; bottom: 0; width: var(--rail-w); z-index: 1000;
     background: var(--panel); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; align-items: center; padding: 0.6rem 0; gap: 0.3rem;
+    display: flex; flex-direction: column; align-items: center; padding: 0.5rem 0; gap: 0.2rem;
+    overflow-y: auto;
   }
+  .rail-sep { width: 26px; height: 1px; background: var(--border); margin: 0.4rem 0; flex: 0 0 auto; }
   .rail-btn {
     width: 40px; height: 40px; border-radius: var(--radius-sm); cursor: pointer;
     background: transparent; border: none; color: var(--text-faint);
-    display: grid; place-items: center; position: relative;
+    display: grid; place-items: center; position: relative; flex: 0 0 auto;
   }
   .rail-btn svg { width: 21px; height: 21px; }
   .rail-btn:hover { color: var(--text-dim); background: var(--panel-2); }
   .rail-btn.active { color: var(--primary); background: var(--primary-soft); }
   .rail-btn.active::before {
-    content: ""; position: absolute; left: -0.6rem; top: 8px; bottom: 8px; width: 3px;
+    content: ""; position: absolute; left: -0.5rem; top: 8px; bottom: 8px; width: 3px;
     border-radius: 0 3px 3px 0; background: var(--primary);
   }
   .rail-btn .tip {
     position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
     background: var(--sidebar); color: #eaf1f5; font-size: 0.7rem; font-weight: 600;
     padding: 0.25rem 0.5rem; border-radius: 6px; white-space: nowrap; opacity: 0;
-    pointer-events: none; transition: opacity 0.12s ease;
+    pointer-events: none; transition: opacity 0.12s ease; z-index: 5;
   }
   .rail-btn:hover .tip { opacity: 1; }
+  .rail-btn .badge {
+    position: absolute; top: 3px; right: 3px; min-width: 14px; height: 14px; padding: 0 3px;
+    border-radius: 999px; background: var(--critical); color: #fff; font-size: 0.58rem;
+    font-weight: 800; display: grid; place-items: center;
+  }
+
+  .xlink {
+    display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.74rem; font-weight: 700;
+    color: var(--series-2); background: none; border: none; padding: 0; cursor: pointer;
+  }
+  .xlink svg { width: 12px; height: 12px; }
+  .xlink:hover { color: var(--primary); }
 
   /* ---------------- dock (floating panel over the map) ---------------- */
   .dock {
     position: absolute; left: calc(var(--rail-w) + 10px); top: 10px; bottom: 10px;
     width: var(--dock-w); z-index: 900; display: flex; flex-direction: column; gap: 10px;
-    transition: transform 0.22s ease;
   }
-  .dock.collapsed { transform: translateX(calc(-1 * (var(--rail-w) + var(--dock-w) + 24px))); }
+  /* Only the dock CONTENT slides away on collapse — the reopen tab stays put
+     and reachable (translating the whole .dock would carry the tab off-screen). */
+  .dock > #dockTop, .dock > .card.panel { transition: transform 0.22s ease, opacity 0.18s ease; }
+  .dock.collapsed { pointer-events: none; }
+  .dock.collapsed > #dockTop,
+  .dock.collapsed > .card.panel {
+    transform: translateX(calc(-1 * (var(--rail-w) + var(--dock-w) + 24px)));
+    opacity: 0;
+  }
   .dock-tab {
     position: absolute; left: 100%; top: 50%; transform: translateY(-50%);
     width: 22px; height: 46px; background: var(--panel); border: 1px solid var(--border);
     border-left: none; border-radius: 0 8px 8px 0; cursor: pointer; color: var(--text-dim);
-    display: grid; place-items: center; z-index: 901;
+    display: grid; place-items: center; z-index: 1300; pointer-events: auto;
+    transition: left 0.22s ease;
   }
   .dock-tab svg { width: 15px; height: 15px; transition: transform 0.2s ease; }
-  .dock.collapsed .dock-tab svg { transform: rotate(180deg); }
+  /* When collapsed the tab is the ONLY way back — make it a big, obvious, primary-coloured handle
+     flush against the rail (plus there is a #panelToggle button in the topbar as a guaranteed fallback). */
+  .dock.collapsed .dock-tab {
+    left: -8px; width: 26px; height: 72px;
+    background: var(--primary); color: #fff; border: 1px solid var(--primary);
+    border-radius: 0 12px 12px 0; box-shadow: 0 12px 30px -12px rgba(15,25,34,0.55);
+  }
+  .dock.collapsed .dock-tab svg { transform: rotate(180deg); width: 17px; height: 17px; }
 
   .card {
     background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
@@ -227,6 +322,13 @@
     background: var(--series-2-soft); border-radius: 999px; padding: 0.1rem 0.5rem;
   }
   .view-head .grow { flex: 1; }
+  .view-head .hbtn {
+    border: 1px solid var(--border); background: var(--panel-2); color: var(--text-dim);
+    border-radius: 999px; padding: 0.22rem 0.6rem; font-size: 0.7rem; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.3rem;
+  }
+  .view-head .hbtn svg { width: 12px; height: 12px; }
+  .view-head .hbtn:hover { color: var(--text); border-color: var(--primary-line); }
 
   .req-note { color: var(--critical); font-size: 0.74rem; font-weight: 700; margin-bottom: 0.7rem; }
 
@@ -257,9 +359,19 @@
   }
   .field textarea { resize: vertical; min-height: 60px; }
   .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--primary-line); }
-  .field select { border-left-width: 4px; }
+  .field select.classif { border-left-width: 4px; }
   .field .hint { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.2rem; }
   .field.invalid input, .field.invalid select { border-color: var(--critical); background: rgba(206, 17, 38, 0.05); }
+  .field-row { display: flex; gap: 6px; align-items: stretch; }
+  .field-row .field { flex: 1; margin-bottom: 0; }
+  .inline-btn {
+    flex: 0 0 auto; border: 1px solid var(--border); background: var(--panel-2); color: var(--text-dim);
+    border-radius: var(--radius-sm); padding: 0 0.7rem; font-size: 0.74rem; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.3rem;
+  }
+  .inline-btn svg { width: 13px; height: 13px; }
+  .inline-btn:hover { color: var(--text); border-color: var(--primary-line); }
+  .inline-btn.on { background: var(--primary-soft); color: var(--primary); border-color: var(--primary-line); }
 
   .classif-preview { display: flex; align-items: center; gap: 0.45rem; margin-top: 0.35rem; font-size: 0.72rem; color: var(--text-dim); }
   .classif-preview .dot { width: 12px; height: 12px; border-radius: 4px; }
@@ -301,11 +413,14 @@
   .btn-cancel:hover { background: #b3853d; }
   .btn-save { background: var(--good); color: #fff; }
   .btn-save:hover { background: #235f49; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #102c40; }
   .btn-ghost { background: var(--panel-2); color: var(--text-dim); border: 1px solid var(--border); }
   .btn-ghost:hover { color: var(--text); }
   .btn-danger { background: rgba(206,17,38,0.1); color: var(--critical); }
   .btn-danger:hover { background: rgba(206,17,38,0.18); }
   .btn.full { width: 100%; justify-content: center; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
   /* empty-state / draw prompt */
   .prompt { text-align: center; padding: 0.5rem 0; }
@@ -319,14 +434,37 @@
   .draw-grid button svg { width: 20px; height: 20px; }
   .draw-grid button:hover { border-color: var(--primary-line); color: var(--primary); background: var(--primary-soft); }
 
-  /* list items (features / classifications / bookmarks) */
+  /* big action cards (edit mode landing) */
+  .big-card {
+    display: flex; gap: 0.7rem; align-items: flex-start; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 0.8rem; cursor: pointer; background: var(--panel);
+    width: 100%; text-align: left; margin-bottom: 0.5rem;
+  }
+  .big-card:hover { border-color: var(--primary-line); background: var(--panel-2); }
+  .big-card:disabled { opacity: 0.5; cursor: not-allowed; }
+  .big-card .bc-ico { width: 34px; height: 34px; border-radius: 9px; background: var(--primary-soft); color: var(--primary); display: grid; place-items: center; flex: 0 0 auto; }
+  .big-card .bc-ico svg { width: 18px; height: 18px; }
+  .big-card .bc-title { font-weight: 700; font-size: 0.84rem; }
+  .big-card .bc-desc { font-size: 0.72rem; color: var(--text-dim); margin-top: 2px; line-height: 1.45; }
+
+  .status-line {
+    display: flex; align-items: center; gap: 0.5rem; font-size: 0.76rem; background: var(--panel-2);
+    border-radius: 8px; padding: 0.5rem 0.65rem; margin-bottom: 0.8rem;
+  }
+  .status-line .sl-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+  .sl-ok { background: var(--good); }
+  .sl-off { background: var(--text-faint); }
+  .sl-live { background: var(--series-2); }
+
+  /* list items (features / classifications) */
   .list { display: flex; flex-direction: column; gap: 0.4rem; }
   .list-item {
     border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.65rem;
     display: flex; align-items: center; gap: 0.55rem; cursor: pointer; background: var(--panel);
   }
   .list-item:hover { border-color: var(--primary-line); background: var(--panel-2); }
-  .list-item .li-ico { width: 26px; height: 26px; border-radius: 7px; flex: 0 0 auto; display: grid; place-items: center; }
+  .list-item.active { border-color: var(--primary); background: var(--primary-soft); }
+  .list-item .li-ico { width: 26px; height: 26px; border-radius: 7px; flex: 0 0 auto; display: grid; place-items: center; font-size: 0.9rem; }
   .list-item .li-ico svg { width: 14px; height: 14px; color: #fff; }
   .list-item .li-body { flex: 1; min-width: 0; }
   .list-item .li-title { display: block; font-size: 0.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -364,9 +502,71 @@
   .radio-row:first-child { border-top: none; }
   .radio-row input { accent-color: var(--primary); }
 
+  .seg { display: flex; gap: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 3px; margin-bottom: 0.7rem; }
+  .seg button {
+    flex: 1; border: none; background: transparent; border-radius: 999px; padding: 0.35rem 0.4rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--text-dim); cursor: pointer;
+  }
+  .seg button.sel { background: var(--panel); color: var(--primary); box-shadow: 0 1px 4px rgba(15,25,34,0.12); }
+
   .sub-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); margin: 1rem 0 0.4rem; }
   .sub-label:first-child { margin-top: 0; }
   .muted { font-size: 0.76rem; color: var(--text-dim); line-height: 1.55; }
+
+  .thumb-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 0.3rem; }
+  .thumb-grid button {
+    aspect-ratio: 1; border-radius: 8px; border: 2px solid var(--border); background: var(--panel-2);
+    font-size: 1.05rem; cursor: pointer; display: grid; place-items: center;
+  }
+  .thumb-grid button.sel { border-color: var(--primary); background: var(--primary-soft); }
+
+  /* activity + task */
+  .act-item { display: flex; gap: 0.6rem; padding: 0.55rem 0; border-top: 1px solid var(--border); font-size: 0.78rem; }
+  .act-item:first-child { border-top: none; }
+  .act-item .act-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--series-2); margin-top: 0.35rem; flex: 0 0 auto; }
+  .act-item .act-when { font-size: 0.66rem; color: var(--text-faint); margin-top: 2px; }
+  .task-item {
+    display: flex; gap: 0.6rem; align-items: flex-start; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 0.6rem 0.65rem; margin-bottom: 0.45rem;
+  }
+  .task-item.done { opacity: 0.6; }
+  .task-item.done .ti-title { text-decoration: line-through; }
+  .task-item input { margin-top: 0.15rem; accent-color: var(--primary); width: 16px; height: 16px; flex: 0 0 auto; }
+  .task-item .ti-title { font-weight: 700; font-size: 0.8rem; }
+  .task-item .ti-desc { font-size: 0.72rem; color: var(--text-dim); margin-top: 2px; line-height: 1.45; }
+
+  /* approval */
+  .appr-chip {
+    display: inline-flex; align-items: center; gap: 0.32rem; flex: 0 0 auto;
+    font-size: 0.66rem; font-weight: 800; padding: 0.12rem 0.5rem 0.12rem 0.4rem;
+    border: 1px solid currentColor; border-radius: 999px; white-space: nowrap;
+  }
+  .appr-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+  .list-item > .appr-dot { margin: 0 0.1rem; }
+  .appr-item { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel); overflow: hidden; }
+  .appr-item.open { border-color: var(--primary-line); }
+  .appr-head { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.65rem; cursor: pointer; }
+  .appr-head:hover { background: var(--panel-2); }
+  .appr-head .li-ico { width: 26px; height: 26px; border-radius: 7px; flex: 0 0 auto; display: grid; place-items: center; }
+  .appr-head .li-ico svg { width: 14px; height: 14px; color: #fff; }
+  .appr-head .li-body { flex: 1; min-width: 0; }
+  .appr-head .li-title { display: block; font-size: 0.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .appr-head .li-meta { display: block; font-size: 0.68rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .appr-caret { color: var(--text-faint); display: grid; place-items: center; transition: transform 0.15s ease; }
+  .appr-caret svg { width: 14px; height: 14px; }
+  .appr-item.open .appr-caret { transform: rotate(90deg); }
+  .appr-body { padding: 0.2rem 0.7rem 0.75rem; border-top: 1px solid var(--border); }
+  .appr-meta { margin: 0.5rem 0 0.2rem; }
+  .appr-hist { margin-top: 0.35rem; }
+  .appr-hist summary { cursor: pointer; font-size: 0.72rem; font-weight: 700; color: var(--series-2); list-style: none; }
+  .appr-hist summary::-webkit-details-marker { display: none; }
+  textarea.appr-note {
+    width: 100%; background: var(--panel-2); color: var(--text); font-family: inherit; font-size: 0.8rem;
+    border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.6rem; min-height: 52px; resize: vertical;
+  }
+  textarea.appr-note:focus { outline: none; border-color: var(--primary-line); }
+  .appr-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+  .appr-actions .btn { padding: 0.45rem 0.8rem; font-size: 0.76rem; }
 
   /* floating map widgets */
   .draw-dock {
@@ -395,14 +595,53 @@
   .draw-hint .h-done { background: var(--good); color: #fff; }
   .draw-hint .h-cancel { background: rgba(255,255,255,0.15); color: #fff; }
 
+  .map-ctrls { position: absolute; right: 12px; top: 92px; z-index: 850; display: flex; flex-direction: column; gap: 6px; }
+  .map-ctrl-btn {
+    width: 38px; height: 38px; border-radius: 9px; background: var(--panel); border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer; display: grid; place-items: center;
+    box-shadow: 0 10px 30px -18px rgba(15,25,34,0.5);
+  }
+  .map-ctrl-btn svg { width: 17px; height: 17px; }
+  .map-ctrl-btn:hover { color: var(--primary); border-color: var(--primary-line); }
+  .map-ctrl-btn.on { background: var(--primary-soft); color: var(--primary); border-color: var(--primary-line); }
+  .bm-pop {
+    position: absolute; right: 58px; top: 92px; z-index: 860; width: 214px; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 10px; padding: 0.4rem;
+    box-shadow: 0 18px 42px -20px rgba(15,25,34,0.5);
+  }
+  .bm-pop .bm-grp { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); padding: 0.45rem 0.5rem 0.2rem; }
+  .bm-pop .bm-opt { display: flex; align-items: center; gap: 0.5rem; padding: 0.42rem 0.5rem; border-radius: 7px; font-size: 0.78rem; cursor: pointer; }
+  .bm-pop .bm-opt:hover { background: var(--panel-2); }
+  .bm-pop .bm-opt.sel { font-weight: 700; }
+  .bm-pop .bm-opt.sel::after { content: "✓"; margin-left: auto; color: var(--primary); }
+
+  .countdown-ov { position: absolute; inset: 0; z-index: 1500; display: grid; place-items: center; background: rgba(8,24,38,0.42); }
+  .countdown-ov .cd-ring {
+    width: 148px; height: 148px; border-radius: 50%; background: var(--panel); border: 4px solid var(--primary);
+    display: grid; place-items: center; box-shadow: 0 20px 50px -20px rgba(0,0,0,0.5);
+  }
+  .countdown-ov .cd-num { font-size: 3.3rem; font-weight: 800; color: var(--primary); font-family: "JetBrains Mono", monospace; }
+  .countdown-ov .cd-cap { position: absolute; top: calc(50% + 88px); color: #eaf1f5; font-size: 0.82rem; font-weight: 600; text-align: center; max-width: 280px; line-height: 1.45; }
+  .countdown-ov .cd-cancel {
+    position: absolute; top: calc(50% + 156px); border: none; background: rgba(255,255,255,0.16); color: #fff;
+    font-weight: 700; border-radius: 7px; padding: 0.35rem 0.85rem; cursor: pointer; font-size: 0.76rem;
+  }
+
   .map-fab {
-    position: absolute; right: 12px; bottom: 30px; z-index: 850;
+    position: absolute; right: 12px; bottom: 26px; z-index: 850;
     width: 38px; height: 38px; border-radius: 50%; background: var(--panel); border: 1px solid var(--border);
     color: var(--text-dim); cursor: pointer; display: grid; place-items: center;
     box-shadow: 0 10px 30px -18px rgba(15,25,34,0.5);
   }
   .map-fab svg { width: 17px; height: 17px; }
   .map-fab:hover { color: var(--primary); border-color: var(--primary-line); }
+  .wc-fab {
+    position: absolute; right: 12px; bottom: 74px; z-index: 850; height: 40px; border-radius: 999px;
+    padding: 0 0.95rem 0 0.75rem; background: var(--primary); color: #fff; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 700; font-size: 0.78rem;
+    box-shadow: 0 12px 30px -14px rgba(22,59,84,0.6);
+  }
+  .wc-fab svg { width: 16px; height: 16px; }
 
   /* toast */
   .toast-wrap {
@@ -418,12 +657,185 @@
   .toast.ok { background: var(--good); }
   @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } }
 
+  /* ---------------- questionnaire dialog ---------------- */
+  .qdlg-backdrop {
+    position: fixed; inset: 0; z-index: 2600; background: rgba(8, 24, 38, 0.5);
+    display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+    animation: toastIn 0.16s ease both;
+  }
+  .qdlg {
+    width: min(660px, 96vw); max-height: 88vh; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 14px; display: flex; flex-direction: column;
+    box-shadow: 0 40px 90px -30px rgba(8, 24, 38, 0.6); overflow: hidden;
+  }
+  .qdlg-head {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid var(--border); flex: 0 0 auto;
+  }
+  .qdlg-req { color: var(--critical); font-size: 0.78rem; font-weight: 800; }
+  .qdlg-head .grow { flex: 1; }
+  .qdlg-seg { display: flex; gap: 3px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+  .qdlg-seg button {
+    border: none; background: transparent; border-radius: 999px; padding: 0.3rem 0.7rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--text-dim); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.3rem;
+  }
+  .qdlg-seg button svg { width: 12px; height: 12px; }
+  .qdlg-seg button.sel { background: var(--primary); color: #fff; }
+  .qdlg-x {
+    width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text-dim); cursor: pointer; display: grid; place-items: center;
+  }
+  .qdlg-x svg { width: 14px; height: 14px; }
+  .qdlg-x:hover { color: var(--text); border-color: var(--primary-line); }
+  .qdlg-body { flex: 1; overflow-y: auto; padding: 0.4rem 1rem 1rem; }
+  .qdlg-body::-webkit-scrollbar { width: 8px; }
+  .qdlg-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+
+  .qq { padding: 0.8rem 0; border-top: 1px solid var(--border); }
+  .qq:first-child { border-top: none; }
+  .qq-head { display: flex; align-items: flex-start; gap: 0.5rem; }
+  .qq-num {
+    flex: 0 0 auto; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 6px;
+    background: var(--primary); color: #fff; font-size: 0.72rem; font-weight: 800;
+    display: grid; place-items: center;
+  }
+  .qq-num.sub { min-width: 26px; height: 18px; font-size: 0.62rem; background: var(--series-2); }
+  .qq-label { font-weight: 700; font-size: 0.86rem; }
+  .qq-hint { display: block; font-size: 0.72rem; color: var(--text-faint); font-style: italic; margin-top: 1px; }
+  .qq-input { margin-top: 0.5rem; }
+  .qq-input input {
+    width: 100%; background: var(--panel-2); color: var(--text); font-family: inherit;
+    border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.65rem; font-size: 0.84rem;
+  }
+  .qq-input input:focus { outline: none; border-color: var(--primary-line); }
+  .qq-sub { margin: 0.4rem 0 0 0.6rem; padding-left: 0.7rem; border-left: 2px solid var(--border); }
+  .qq-sub .qq { padding: 0.5rem 0; }
+
+  .qcal { margin-top: 0.4rem; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.6rem; background: var(--panel); max-width: 320px; }
+  .qcal-top { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.45rem; }
+  .qcal-top .grow { flex: 1; }
+  .qcal-nav {
+    width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel-2);
+    color: var(--text-dim); cursor: pointer; display: grid; place-items: center; flex: 0 0 auto;
+  }
+  .qcal-nav svg { width: 13px; height: 13px; }
+  .qcal-nav:hover { color: var(--text); border-color: var(--primary-line); }
+  .qcal-my { font-weight: 800; font-size: 0.82rem; }
+  .qcal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .qcal-dow { text-align: center; font-size: 0.62rem; font-weight: 800; color: var(--series-2); padding: 0.2rem 0; }
+  .qcal-day {
+    border: none; background: transparent; border-radius: 6px; padding: 0.4rem 0; font-size: 0.76rem;
+    font-weight: 600; color: var(--text); cursor: pointer;
+  }
+  .qcal-day:hover { background: var(--panel-2); }
+  .qcal-day.out { color: var(--text-faint); }
+  .qcal-day.sel { background: var(--primary); color: #fff; font-weight: 800; }
+  .qcal-clear { margin-top: 0.4rem; padding: 0.35rem 0.7rem; font-size: 0.72rem; }
+
+  .qdlg-foot {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem; padding: 0.65rem 0.85rem;
+    border-top: 1px solid var(--border); flex: 0 0 auto;
+  }
+  .qdlg-foot .grow { flex: 1; }
+  .qdlg-wiznav { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.74rem; color: var(--text-dim); font-weight: 700; }
+  .qdlg-wiznav .btn { padding: 0.4rem 0.7rem; font-size: 0.74rem; }
+
+  @media (max-width: 760px) {
+    .qdlg-backdrop { padding: 0; align-items: flex-end; }
+    .qdlg { width: 100vw; max-height: 92vh; border-radius: 14px 14px 0 0; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
   }
 
-  @media (max-width: 640px) {
-    :root { --dock-w: calc(100vw - var(--rail-w) - 20px); }
+  /* ============ mobile: bottom nav + bottom sheet ============ */
+  @media (max-width: 760px) {
+    :root { --rail-w: 0px; --dock-w: 100vw; --nav-h: 56px; }
+
+    .topbar {
+      height: calc(var(--topbar-h) + env(safe-area-inset-top));
+      padding-top: env(safe-area-inset-top);
+      padding-left: calc(0.7rem + env(safe-area-inset-left));
+      padding-right: calc(0.5rem + env(safe-area-inset-right));
+      gap: 0.4rem;
+    }
+    .workspace { inset: calc(var(--topbar-h) + env(safe-area-inset-top)) 0 0 0; }
+
+    /* rail -> fixed bottom navigation bar */
+    .rail {
+      left: 0; right: 0; top: auto; bottom: 0; width: auto;
+      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      padding: 0 2px env(safe-area-inset-bottom);
+      flex-direction: row; align-items: stretch; gap: 0;
+      border-right: none; border-top: 1px solid var(--border);
+      overflow-x: auto; overflow-y: hidden; z-index: 1150;
+      -webkit-overflow-scrolling: touch;
+    }
+    .rail-sep { display: none; }
+    .rail-btn {
+      flex: 1 0 auto; min-width: 15vw; height: auto; border-radius: 0;
+      padding: 0.35rem 0.2rem;
+    }
+    .rail-btn.active { background: transparent; }
+    .rail-btn.active::before {
+      left: 22%; right: 22%; top: 0; bottom: auto; width: auto; height: 3px;
+      border-radius: 0 0 3px 3px;
+    }
+    .rail-btn .tip { display: none; }
+    .rail-btn .badge { top: 2px; right: calc(50% - 15px); }
+
+    /* dock -> bottom sheet sitting above the nav bar */
+    .dock {
+      left: 0; right: 0; top: auto; width: auto;
+      bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      max-height: min(66vh, 560px);
+      gap: 8px; padding: 20px 8px 0;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -14px 34px -18px rgba(15, 25, 34, 0.45);
+    }
+    .dock.collapsed { pointer-events: none; }
+    .dock.collapsed > #dockTop,
+    .dock.collapsed > .card.panel { transform: translateY(115%); opacity: 0; }
+
+    /* the collapse control: a grab-handle on the open sheet, a "Panel" pill when closed */
+    .dock-tab {
+      left: 50%; top: 8px; transform: translateX(-50%);
+      width: 44px; height: 5px; border-radius: 999px;
+      background: var(--border); border: none; box-shadow: none;
+      pointer-events: auto; transition: none;
+    }
+    .dock-tab svg { display: none; }
+    .dock.collapsed .dock-tab {
+      left: 50%; top: auto; bottom: 10px;
+      transform: translateX(-50%);
+      width: 128px; height: 36px; border-radius: 999px;
+      background: var(--primary); color: #fff;
+      box-shadow: 0 12px 26px -12px rgba(22, 59, 84, 0.6);
+      display: grid; place-items: center;
+    }
+    .dock.collapsed .dock-tab::after { content: "Panel"; font-size: 0.8rem; font-weight: 700; }
+
+    .card.panel { border-radius: 12px; min-height: 0; }
+
+    /* floating widgets clear the sheet / nav */
+    .map-ctrls { top: 78px; }
+    .bm-pop { top: 78px; right: 56px; width: min(220px, 68vw); }
+    .draw-dock { top: 8px; }
+    .draw-hint { top: 52px; }
+    .map-fab { right: 12px; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px); }
+    .wc-fab { right: 12px; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 62px); }
+    .toast-wrap { bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 60px); }
+
+    .appr-actions .btn { flex: 1 1 auto; justify-content: center; }
+    .editor-actions .btn { flex: 1 1 auto; justify-content: center; }
+  }
+
+  @media (max-width: 380px) {
+    .rail-btn svg { width: 19px; height: 19px; }
   }
 </style>
 
@@ -432,11 +844,20 @@
     <img src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi" />
     <span class="name">GEO<span>MAPPING</span></span>
   </a>
-  <span class="sub">Manajemen Data Geospasial · DGT</span>
-  <span class="spacer"></span>
-  <button class="top-btn user" type="button" id="userBtn" title="Pengguna (statis — tanpa autentikasi)">
-    <span class="avatar">A</span><span class="label">Ahmad</span>
+  <button class="top-icon-btn" type="button" id="panelToggle" title="Sembunyikan / tampilkan panel" aria-label="Sembunyikan / tampilkan panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
   </button>
+  <span class="sub">Survei &amp; Pemetaan Lapangan · DGT</span>
+  <span id="wcChipSlot"></span>
+  <span class="spacer"></span>
+  <div style="position:relative">
+    <button class="top-btn user" type="button" id="userBtn" aria-haspopup="true" aria-expanded="false">
+      <span class="avatar" id="userAv">S</span><span class="label" id="userName">Pengguna</span>
+    </button>
+    <div class="user-menu" id="userMenu" hidden>
+      <button type="button" id="resetBtn">Setel ulang data lokal</button>
+    </div>
+  </div>
   <button class="top-icon-btn" type="button" id="langBtn" title="Bahasa" aria-label="Ganti bahasa">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4.4-2.5 8-5 9M5 9c0 2.4 2.8 4.5 6 5"/><path d="m13 21 4-9 4 9M14.5 17h5"/></svg>
   </button>
@@ -460,9 +881,27 @@
     </div>
   </div>
 
-  <div class="draw-dock" id="drawDock"></div>
-  <div class="draw-hint" id="drawHint" hidden></div>
+  <div class="map-ctrls">
+    <button class="map-ctrl-btn" id="bmBtn" type="button" title="Peta dasar" aria-label="Pilih peta dasar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>
+    </button>
+    <button class="map-ctrl-btn" id="bndBtn" type="button" title="Overlay batas wilayah administratif" aria-label="Overlay batas wilayah">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 6v12M21 6v12M3 18h18"/><path d="M8 6v3M13 6v3M18 6v3"/></svg>
+    </button>
+    <button class="map-ctrl-btn" id="poiBtn" type="button" title="Layer Point of Interest (POI)" aria-label="Layer POI">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+    </button>
+  </div>
+  <div class="bm-pop" id="bmPop" hidden></div>
 
+  <div class="draw-dock" id="drawDock" hidden></div>
+  <div class="draw-hint" id="drawHint" hidden></div>
+  <div class="countdown-ov" id="countdownOv" hidden></div>
+
+  <button class="wc-fab" id="wcFab" type="button" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    WorkCompartment
+  </button>
   <button class="map-fab" id="locateBtn" type="button" title="Lokasi saya" aria-label="Lokasi saya">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
   </button>
@@ -475,12 +914,15 @@
   "use strict";
 
   /* =================================================================
-     GEOMAPPING — geospatial data manager for the DGT tool family.
+     GEOMAPPING — front-end prototype of the Aplikasi Geomapping field
+     survey platform, structured to PRD_Geomapping.docx v1.0.
      Vanilla JS + Leaflet. State persists to localStorage under the
-     `geomapping:` prefix. All seeded data is fabricated/illustrative.
+     `geomapping:` prefix; there is no login gate (removed on request).
+     All seeded data is fabricated/illustrative.
      ================================================================= */
 
   var LS = "geomapping:";
+  var AUTH_KEY = "geomapping-auth";
   var store = {
     get: function (k, fallback) {
       try {
@@ -519,7 +961,6 @@
     layers: '<path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>',
     shapes: '<path d="M3 3h8v8H3z"/><circle cx="17.5" cy="7.5" r="4"/><path d="m12 22 5-9 5 9Z"/>',
     tag: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7.2-7.2A2 2 0 0 1 2.8 12V4a1 1 0 0 1 1-1h8a2 2 0 0 1 1.4.6l7.4 7.4a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
-    bookmark: '<path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/>',
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
     point: '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
     line: '<circle cx="5" cy="19" r="2.4"/><circle cx="19" cy="5" r="2.4"/><path d="m7 17 10-10"/>',
@@ -540,14 +981,32 @@
     building: '<path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h3a1 1 0 0 1 1 1v11M8 7h4M8 11h4M8 15h4"/>',
     road: '<path d="M4 21 8 3M20 21 16 3M12 5v3M12 12v3M12 19v1"/>',
     parcel: '<path d="M3 3h18v18H3z"/><path d="M3 9h18M9 3v18"/>',
-    boundary: '<path d="M3 6h18M3 6v12M21 6v12M3 18h18"/><path d="M8 6v3M13 6v3M18 6v3"/>'
+    boundary: '<path d="M3 6h18M3 6v12M21 6v12M3 18h18"/><path d="M8 6v3M13 6v3M18 6v3"/>',
+    folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    route: '<circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.4 18.6h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6H15"/>',
+    gps: '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>',
+    task: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="m9 12 2 2 4-4"/>',
+    camera: '<path d="M4 8a2 2 0 0 1 2-2h2l1.5-2h5L18 6h0a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><circle cx="12" cy="12.5" r="3.2"/>',
+    flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+    play: '<path d="m7 4 12 8-12 8Z"/>',
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>',
+    sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-4M20 13V3M2 14h4M10 8h4M18 17h4"/>',
+    arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+    approval: '<path d="M12 3 4 6.5v5c0 4.6 3.2 7.9 8 9 4.8-1.1 8-4.4 8-9v-5Z"/><path d="m8.7 11.8 2.2 2.2 4.4-4.4"/>',
+    x: '<path d="M6 6 18 18M18 6 6 18"/>',
+    history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/>',
+    chevL: '<path d="m15 18-6-6 6-6"/>',
+    chevR: '<path d="m9 18 6-6-6-6"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>'
   };
   function svg(name, sw) {
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) +
       '" stroke-linecap="round" stroke-linejoin="round">' + (I[name] || "") + '</svg>';
   }
 
-  /* ---------------- seed data ---------------- */
+  /* ---------------- seed data (all fabricated/illustrative) ---------------- */
   var DEFAULT_CLASSIFICATIONS = [
     { id: "cls-public", name: "Public Mapping", desc: "Pemetaan partisipatif publik", color: "#f5a623", icon: "pin" },
     { id: "cls-parcel", name: "Bidang Tanah", desc: "Persil & legalitas lahan", color: "#2c755b", icon: "parcel" },
@@ -556,82 +1015,247 @@
     { id: "cls-fasum", name: "Fasilitas Umum", desc: "Sekolah, puskesmas, pasar", color: "#c9974a", icon: "building" }
   ];
 
+  var DEFAULT_COMPARTMENTS = [
+    { id: "wc-seed-1", name: "Survei Kawasan SP-2 2026", desc: "Pendataan batas & fasilitas satuan permukiman SP-2.", thumb: "🏘️", createdAt: "2026-08-28T02:00:00.000Z" },
+    { id: "wc-seed-2", name: "Inventarisasi Jalan Poros", desc: "Tracking jaringan jalan penghubung antar-SP.", thumb: "🛣️", createdAt: "2026-08-29T02:00:00.000Z" }
+  ];
+  var WC_THUMBS = ["🏘️", "🛣️", "🌾", "🏥", "🏫", "🕌", "💧", "⚡", "🌉", "🏞️", "📍", "🗺️"];
+
   var DEFAULT_FEATURES = [
     {
-      id: "ft-seed-1", classificationId: "cls-public", title: "Blok Permukiman Kemang Selatan",
+      id: "ft-seed-1", classificationId: "cls-public", compartmentId: "wc-seed-1", title: "Blok Permukiman Kemang Selatan",
       description: "Delineasi indikatif blok hunian hasil pemetaan partisipatif warga.",
       address: "Kemang Selatan, Jakarta Selatan", images: [], privilege: "PUBLIC",
       geometry: { type: "Polygon", coordinates: [[
         [106.8205, -6.2695], [106.8330, -6.2680], [106.8402, -6.2762],
         [106.8352, -6.2851], [106.8221, -6.2833], [106.8205, -6.2695]
       ]] },
-      createdAt: "2026-08-30T04:10:00.000Z", updatedAt: "2026-08-30T04:10:00.000Z"
+      createdAt: "2026-08-30T04:10:00.000Z", updatedAt: "2026-08-30T04:10:00.000Z",
+      approval: {
+        status: "APPROVED", submittedBy: "surveyor01", submittedAt: "2026-08-30T04:10:00.000Z",
+        reviewer: "koordinator", reviewedAt: "2026-08-31T02:20:00.000Z", note: "Delineasi sesuai patok lapangan.",
+        history: [
+          { action: "APPROVED", by: "koordinator", at: "2026-08-31T02:20:00.000Z", note: "Delineasi sesuai patok lapangan." },
+          { action: "SUBMITTED", by: "surveyor01", at: "2026-08-30T04:10:00.000Z", note: "" }
+        ]
+      }
     },
     {
-      id: "ft-seed-2", classificationId: "cls-infra", title: "Ruas Jalan Poros SP-2",
+      id: "ft-seed-2", classificationId: "cls-infra", compartmentId: "wc-seed-2", title: "Ruas Jalan Poros SP-2",
       description: "Segmen jalan penghubung menuju pusat satuan permukiman.",
       address: "Poros SP-2", images: [], privilege: "PUBLIC",
       geometry: { type: "LineString", coordinates: [
         [106.8100, -6.3010], [106.8185, -6.2955], [106.8258, -6.2902], [106.8305, -6.2840]
       ] },
-      createdAt: "2026-08-30T04:12:00.000Z", updatedAt: "2026-08-30T04:12:00.000Z"
+      createdAt: "2026-08-30T04:12:00.000Z", updatedAt: "2026-08-30T04:12:00.000Z",
+      approval: {
+        status: "PENDING", submittedBy: "surveyor01", submittedAt: "2026-08-30T04:12:00.000Z",
+        reviewer: null, reviewedAt: null, note: "",
+        history: [{ action: "SUBMITTED", by: "surveyor01", at: "2026-08-30T04:12:00.000Z", note: "" }]
+      }
     },
     {
-      id: "ft-seed-3", classificationId: "cls-fasum", title: "Puskesmas Kawasan Blok C",
+      id: "ft-seed-3", classificationId: "cls-fasum", compartmentId: "wc-seed-1", title: "Puskesmas Kawasan Blok C",
       description: "Titik layanan kesehatan tingkat kawasan.",
       address: "Blok C", images: [], privilege: "RESTRICTED",
       geometry: { type: "Point", coordinates: [106.8281, -6.2921] },
-      createdAt: "2026-08-30T04:14:00.000Z", updatedAt: "2026-08-30T04:14:00.000Z"
+      questionnaire: {
+        owner: "Dinas Kesehatan Kabupaten",
+        hours: { mon: "08:00–14:00", tue: "08:00–14:00", wed: "08:00–14:00", thu: "08:00–14:00", fri: "08:00–11:00", sat: "Tutup", sun: "Tutup" },
+        phone: "(021) 555-0142",
+        founded: "2019-05-02",
+        addr: { street: "Jl. Poros Blok C No. 4", rtrw: "003/002", kel: "Sukamaju", kec: "Kawasan Timur", kota: "Kabupaten Transmigrasi", prov: "Ilustratif", pos: "16810" }
+      },
+      createdAt: "2026-08-30T04:14:00.000Z", updatedAt: "2026-08-30T04:14:00.000Z",
+      approval: {
+        status: "REJECTED", submittedBy: "surveyor01", submittedAt: "2026-08-30T04:14:00.000Z",
+        reviewer: "koordinator", reviewedAt: "2026-08-31T03:05:00.000Z", note: "Koordinat perlu diambil ulang dengan GPS presisi.",
+        history: [
+          { action: "REJECTED", by: "koordinator", at: "2026-08-31T03:05:00.000Z", note: "Koordinat perlu diambil ulang dengan GPS presisi." },
+          { action: "SUBMITTED", by: "surveyor01", at: "2026-08-30T04:14:00.000Z", note: "" }
+        ]
+      }
     }
   ];
 
+  // Point of Interest layer (PRD F-4.5/F-4.6) — illustrative.
+  var POIS = [
+    { id: "poi-1", name: "SDN Kawasan 01", kind: "Pendidikan", lat: -6.2760, lng: 106.8300 },
+    { id: "poi-2", name: "Puskesmas Pembantu Blok B", kind: "Kesehatan", lat: -6.2900, lng: 106.8220 },
+    { id: "poi-3", name: "Pasar Kawasan", kind: "Ekonomi", lat: -6.2830, lng: 106.8400 },
+    { id: "poi-4", name: "Kantor Desa SP-2", kind: "Pemerintahan", lat: -6.2980, lng: 106.8150 },
+    { id: "poi-5", name: "Masjid Jami Kawasan", kind: "Peribadatan", lat: -6.2720, lng: 106.8180 },
+    { id: "poi-6", name: "Balai Pertemuan Warga", kind: "Fasilitas Umum", lat: -6.2880, lng: 106.8350 },
+    { id: "poi-7", name: "Sumur Bor Komunal", kind: "Air Bersih", lat: -6.3010, lng: 106.8280 },
+    { id: "poi-8", name: "Gudang Logistik", kind: "Infrastruktur", lat: -6.2670, lng: 106.8260 }
+  ];
+
+  var DEFAULT_TASKS = [
+    { id: "tsk-1", title: "Verifikasi batas Blok Permukiman Kemang Selatan", desc: "Cek delineasi poligon terhadap patok lapangan.", done: false },
+    { id: "tsk-2", title: "Rekam titik fasilitas kesehatan SP-2", desc: "Tracking Point Puskesmas Pembantu + isi General Info & Questionnaire.", done: false },
+    { id: "tsk-3", title: "Tracking ruas jalan poros SP-2 s/d SP-3", desc: "Tracking Line mengikuti as jalan, lampirkan foto perkerasan.", done: true },
+    { id: "tsk-4", title: "Pendataan POI pasar kawasan", desc: "Ambil My Location di pintu utama pasar, lalu rekam titik.", done: false }
+  ];
+
+  /* Base maps (PRD F-3.1: 7 opsi). The Klikpeta / MapBox names are the PRD's;
+     the tiles are KEYLESS stand-ins (OSM / OpenTopoMap / Esri / CARTO) because
+     the real providers need API keys (PRD §8, out of front-end scope). */
   var BASEMAPS = {
-    osm: {
-      name: "OpenStreetMap", url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      opts: { maxZoom: 19, attribution: "&copy; OpenStreetMap contributors" }
-    },
-    carto: {
-      name: "Carto Positron (terang)", url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-      opts: { maxZoom: 20, subdomains: "abcd", attribution: "&copy; OpenStreetMap contributors &copy; CARTO" }
-    },
-    esri: {
-      name: "Esri Citra Satelit", url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      opts: { maxZoom: 19, attribution: "Tiles &copy; Esri, Maxar, Earthstar Geographics" }
-    }
+    kp_street: { name: "Klikpeta Street3", group: "Klikpeta", url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      opts: { maxZoom: 19, attribution: "&copy; OpenStreetMap contributors" } },
+    kp_topo: { name: "Klikpeta Topografi", group: "Klikpeta", url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      opts: { maxZoom: 17, subdomains: "abc", attribution: "&copy; OpenStreetMap contributors, SRTM | &copy; OpenTopoMap (CC-BY-SA)" } },
+    kp_gray: { name: "Klikpeta Gray Scale", group: "Klikpeta", url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      opts: { maxZoom: 16, attribution: "Tiles &copy; Esri" } },
+    mb_street: { name: "MapBox Street", group: "MapBox", url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+      opts: { maxZoom: 20, subdomains: "abcd", attribution: "&copy; OpenStreetMap contributors &copy; CARTO" } },
+    mb_sat: { name: "MapBox Satellite", group: "MapBox", url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      opts: { maxZoom: 19, attribution: "Tiles &copy; Esri, Maxar, Earthstar Geographics" } },
+    mb_light: { name: "MapBox Light", group: "MapBox", url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      opts: { maxZoom: 20, subdomains: "abcd", attribution: "&copy; OpenStreetMap contributors &copy; CARTO" } },
+    mb_dark: { name: "MapBox Dark", group: "MapBox", url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      opts: { maxZoom: 20, subdomains: "abcd", attribution: "&copy; OpenStreetMap contributors &copy; CARTO" } }
   };
 
-  /* ---------------- state ---------------- */
+  /* Illustrative administrative-boundary overlay (PRD F-3.3). A fabricated
+     nested grid around the Jakarta seed area — NOT real BPS/Dukcapil polygons. */
+  var BND_BBOX = { s: -6.400, n: -6.160, w: 106.700, e: 106.960 };
+  var BND_LEVELS = [
+    { key: "provinsi", label: "Provinsi", div: 1, color: "#163b54", weight: 2.4 },
+    { key: "kota", label: "Kota / Kabupaten", div: 2, color: "#33809c", weight: 2 },
+    { key: "kecamatan", label: "Kecamatan", div: 4, color: "#c9974a", weight: 1.6 },
+    { key: "kelurahan", label: "Kelurahan / Desa", div: 8, color: "#2c755b", weight: 1.2 }
+  ];
+
+  /* ---------------- persisted collections ---------------- */
   var classifications = store.get("classifications", null);
   if (!classifications || !classifications.length) { classifications = DEFAULT_CLASSIFICATIONS.slice(); store.set("classifications", classifications); }
   var features = store.get("features", null);
   if (features == null) { features = DEFAULT_FEATURES.slice(); store.set("features", features); }
-  var bookmarks = store.get("bookmarks", []);
+  // migrate: every feature carries an approval record (PRD open-question #2 workflow)
+  // and a questionnaire object (structured survey answers, keyed by question id)
+  features.forEach(function (f) {
+    if (!f.approval) {
+      var t = f.createdAt || new Date().toISOString();
+      f.approval = { status: "PENDING", submittedBy: "surveyor01", submittedAt: t, reviewer: null, reviewedAt: null, note: "", history: [{ action: "SUBMITTED", by: "surveyor01", at: t, note: "" }] };
+    }
+    if (!f.questionnaire || typeof f.questionnaire !== "object") f.questionnaire = {};
+  });
+  var compartments = store.get("compartments", null);
+  if (compartments == null) { compartments = DEFAULT_COMPARTMENTS.slice(); store.set("compartments", compartments); }
+  var tasks = store.get("tasks", null);
+  if (tasks == null) { tasks = DEFAULT_TASKS.slice(); store.set("tasks", tasks); }
+  var activity = store.get("activity", []);
+
+  var VIEWS = ["public", "mylayers", "approval", "activity", "edit", "task"];
+  var storedView = store.get("view", "public");
+  if (VIEWS.indexOf(storedView) < 0) storedView = "public";
 
   var state = {
-    view: store.get("view", "map"),
+    view: storedView,
     dockCollapsed: store.get("dockCollapsed", false),
     collectionId: store.get("collectionId", classifications[0].id),
-    basemap: store.get("basemap", "osm"),
-    hidden: store.get("hidden", {}),          // classificationId -> true if layer hidden
-    editing: null,                             // { isNew, id, type, latlngs, feature }
-    drawType: null,                            // 'Point' | 'LineString' | 'Polygon' while drawing
-    shapeMode: "vertex"                        // vertex | move | addvertex | delete
+    basemap: store.get("basemap", "kp_street"),
+    hidden: store.get("hidden", {}),            // classificationId -> true if layer hidden
+    boundary: store.get("boundary", {}),        // boundary level key -> true if shown
+    poiVisible: store.get("poiVisible", false),
+    activeCompartment: store.get("activeCompartment", null),
+    editing: null,                              // { isNew, id, type, latlngs, feature, trackKind }
+    drawType: null,                             // 'Point' | 'LineString' | 'Polygon' while manual-drawing
+    shapeMode: "vertex",                        // vertex | move | addvertex | delete
+    countdown: null,                            // seconds left during Tracking Point
+    lineTrack: null,                            // { kind:'LineString'|'Polygon', pts:[latlng] } during Tracking Line/Polygon
+    myLoc: null,                                // last known GPS LatLng (captured in Edit Mode / locate FAB)
+    myLocAcc: null,
+    wcCreating: false,
+    myLayersScopeAll: false,
+    myGeomFilter: "all",
+    apprFilter: "all",
+    apprOpen: {}
   };
+  if (!BASEMAPS[state.basemap]) state.basemap = "kp_street";
   if (!classifications.some(function (c) { return c.id === state.collectionId; })) state.collectionId = classifications[0].id;
+  if (state.activeCompartment && !compartments.some(function (c) { return c.id === state.activeCompartment; })) state.activeCompartment = null;
 
   function persist() {
     store.set("classifications", classifications);
     store.set("features", features);
-    store.set("bookmarks", bookmarks);
+    store.set("compartments", compartments);
+    store.set("tasks", tasks);
+    store.set("activity", activity);
     store.set("view", state.view);
     store.set("dockCollapsed", state.dockCollapsed);
     store.set("collectionId", state.collectionId);
     store.set("basemap", state.basemap);
     store.set("hidden", state.hidden);
+    store.set("boundary", state.boundary);
+    store.set("poiVisible", state.poiVisible);
+    store.set("activeCompartment", state.activeCompartment);
   }
   function clsById(id) { for (var i = 0; i < classifications.length; i++) if (classifications[i].id === id) return classifications[i]; return classifications[0]; }
+  function wcById(id) { for (var i = 0; i < compartments.length; i++) if (compartments[i].id === id) return compartments[i]; return null; }
 
-  /* ---------------- geo math ---------------- */
+  /* ---------------- approval workflow (PRD open question #2) ---------------- */
+  var APPROVAL_META = {
+    PENDING:  { label: "Menunggu",  color: "var(--warn)" },
+    APPROVED: { label: "Disetujui", color: "var(--good)" },
+    REJECTED: { label: "Ditolak",   color: "var(--critical)" }
+  };
+  var APPROVAL_ACTION_LABEL = { SUBMITTED: "Diajukan", APPROVED: "Disetujui", REJECTED: "Ditolak", RESET: "Dikembalikan ke Menunggu" };
+  // No login gate — resolve a default identity for approval/activity records.
+  // (sessionStorage is still honoured if something set it, but nothing does now.)
+  function userName() { try { return sessionStorage.getItem(AUTH_KEY) || "surveyor01"; } catch (e) { return "surveyor01"; } }
+  function ensureApproval(f) {
+    if (!f.approval) {
+      var t = f.createdAt || new Date().toISOString();
+      f.approval = { status: "PENDING", submittedBy: userName(), submittedAt: t, reviewer: null, reviewedAt: null, note: "", history: [{ action: "SUBMITTED", by: userName(), at: t, note: "" }] };
+    }
+    if (!f.approval.history) f.approval.history = [];
+    return f.approval;
+  }
+  function newApproval() {
+    var now = new Date().toISOString();
+    return { status: "PENDING", submittedBy: userName(), submittedAt: now, reviewer: null, reviewedAt: null, note: "", history: [{ action: "SUBMITTED", by: userName(), at: now, note: "" }] };
+  }
+  function setApproval(f, status, note) {
+    var a = ensureApproval(f);
+    var now = new Date().toISOString();
+    a.status = status;
+    if (status === "PENDING") { a.reviewer = null; a.reviewedAt = null; a.note = note || ""; }
+    else { a.reviewer = userName(); a.reviewedAt = now; a.note = note || ""; }
+    a.history.unshift({ action: status === "PENDING" ? "RESET" : status, by: userName(), at: now, note: note || "" });
+    persist();
+    logActivity("Approval — " + (APPROVAL_ACTION_LABEL[status === "PENDING" ? "RESET" : status]) + ": " + (f.title || "(tanpa judul)") + (note ? " — " + note : ""));
+  }
+  function apprCount(status) { return features.filter(function (f) { return ensureApproval(f).status === status; }).length; }
+
+  /* ---------------- activity log (PRD F-4.10/F-4.11) ---------------- */
+  function logActivity(action) {
+    activity.unshift({ id: uid("act"), ts: Date.now(), action: action });
+    if (activity.length > 200) activity = activity.slice(0, 200);
+    store.set("activity", activity);
+    updateRailBadges();
+    if (state.view === "activity") renderPanel();
+  }
+  var HARI = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  var BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  var MONTH_FULL = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  function fmtWhen(ts) {
+    var d = new Date(ts);
+    var jam = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    return HARI[d.getDay()] + ", " + d.getDate() + " " + BULAN[d.getMonth()] + " " + d.getFullYear() + " · " + jam;
+  }
+  function fmtDur(sec) {
+    sec = Math.max(0, Math.round(sec));
+    var hh = Math.floor(sec / 3600), mm = Math.round((sec % 3600) / 60);
+    if (hh) return hh + " j " + mm + " mnt";
+    if (mm) return mm + " mnt";
+    return "<1 mnt";
+  }
+
+  /* =================================================================
+     GEO MATH
+     ================================================================= */
   function toRad(d) { return d * Math.PI / 180; }
   function haversine(a, b) {
     var R = 6371008.8;
@@ -641,7 +1265,6 @@
     return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
   }
   function lineLengthM(ll) { var t = 0; for (var i = 1; i < ll.length; i++) t += haversine(ll[i - 1], ll[i]); return t; }
-  // geodesic polygon area, m^2 — ring may be open or closed
   function polygonAreaM2(ll) {
     var pts = ll.slice();
     if (pts.length > 2 && pts[0].lat === pts[pts.length - 1].lat && pts[0].lng === pts[pts.length - 1].lng) pts.pop();
@@ -666,7 +1289,6 @@
     return m >= 1000 ? fmtNum(m / 1000, 2) + " km (" + fmtNum(m, 0) + " m)" : fmtNum(m, 1) + " m";
   }
 
-  /* geometry <-> latlng arrays */
   function geomToLatLngs(g) {
     if (!g) return [];
     if (g.type === "Point") return [{ lat: g.coordinates[1], lng: g.coordinates[0] }];
@@ -682,6 +1304,12 @@
     return { type: "Polygon", coordinates: [ring] };
   }
   function geomLabel(t) { return t === "Point" ? "Titik" : t === "LineString" ? "Garis" : "Poligon"; }
+  function featureCentroid(f) {
+    var ll = geomToLatLngs(f.geometry);
+    var la = 0, lo = 0;
+    ll.forEach(function (p) { la += p.lat; lo += p.lng; });
+    return { lat: la / ll.length, lng: lo / ll.length };
+  }
 
   /* =================================================================
      MAP
@@ -691,21 +1319,64 @@
   map.attributionControl.setPrefix("");
 
   var tileLayer = null;
-  function setBasemap(key) {
-    if (!BASEMAPS[key]) key = "osm";
+  function setBasemap(key, quiet) {
+    if (!BASEMAPS[key]) key = "kp_street";
+    var changed = state.basemap !== key || !tileLayer;
     state.basemap = key;
     if (tileLayer) map.removeLayer(tileLayer);
     tileLayer = L.tileLayer(BASEMAPS[key].url, BASEMAPS[key].opts).addTo(map);
     tileLayer.bringToBack();
     persist();
+    renderBmPop();
+    if (changed && !quiet) logActivity("Ganti peta dasar → " + BASEMAPS[key].name);
   }
-  setBasemap(state.basemap);
 
   var featureLayer = L.layerGroup().addTo(map);   // saved features (read-only render)
-  var editLayer = null;                            // the shape currently being drawn / edited
-  var handleLayer = L.layerGroup().addTo(map);     // vertex / midpoint handles
-  var drawTemp = null;                             // preview line/polygon while drawing
-  var locateMarker = null;
+  var poiLayer = L.layerGroup().addTo(map);       // POI layer
+  var editLayer = null;                           // shape being drawn / edited
+  var handleLayer = L.layerGroup().addTo(map);    // vertex / midpoint / track handles
+  var drawTemp = null;                            // preview line/polygon while drawing
+  var locateMarker = null;                        // search / generic pin
+  var myLocMarker = null;                         // My Location balloon
+
+  /* boundary overlay groups */
+  var boundaryGroups = {};
+  (function buildBoundaries() {
+    BND_LEVELS.forEach(function (lv) {
+      var g = L.layerGroup();
+      var latStep = (BND_BBOX.n - BND_BBOX.s) / lv.div;
+      var lngStep = (BND_BBOX.e - BND_BBOX.w) / lv.div;
+      for (var r = 0; r < lv.div; r++) {
+        for (var c = 0; c < lv.div; c++) {
+          var s = BND_BBOX.s + r * latStep, w = BND_BBOX.w + c * lngStep;
+          L.rectangle([[s, w], [s + latStep, w + lngStep]], {
+            color: lv.color, weight: lv.weight, fill: false, dashArray: "5 4", interactive: false
+          }).addTo(g);
+        }
+      }
+      boundaryGroups[lv.key] = g;
+    });
+  })();
+  function renderBoundaries() {
+    BND_LEVELS.forEach(function (lv) {
+      var on = !!state.boundary[lv.key];
+      var g = boundaryGroups[lv.key];
+      if (on && !map.hasLayer(g)) g.addTo(map);
+      if (!on && map.hasLayer(g)) map.removeLayer(g);
+    });
+    var anyOn = BND_LEVELS.some(function (lv) { return state.boundary[lv.key]; });
+    document.getElementById("bndBtn").classList.toggle("on", anyOn);
+  }
+
+  function renderPOIs() {
+    poiLayer.clearLayers();
+    if (!state.poiVisible) return;
+    POIS.forEach(function (p) {
+      L.circleMarker([p.lat, p.lng], { radius: 5, color: "#fff", weight: 1.5, fillColor: "#c9974a", fillOpacity: 1 })
+        .bindPopup("<b>" + esc(p.name) + "</b><br>POI · " + esc(p.kind))
+        .addTo(poiLayer);
+    });
+  }
 
   function styleFor(cls) { return { color: cls.color, weight: 3, fillColor: cls.color, fillOpacity: 0.18 }; }
 
@@ -728,48 +1399,46 @@
         (f.geometry.type === "Polygon" ? "<br>Luas: " + fmtArea(polygonAreaM2(ll)) :
           f.geometry.type === "LineString" ? "<br>Panjang: " + fmtLen(lineLengthM(ll)) : ""));
       lyr.on("click", function (e) {
-        if (state.drawType || state.editing) return;
+        if (state.drawType || state.editing || state.lineTrack || state.countdown != null) return;
         L.DomEvent.stopPropagation(e);
+        state.view = "edit"; renderRail();
         openEditor(f);
       });
       featureLayer.addLayer(lyr);
     });
   }
 
-  /* ---------------- drawing ---------------- */
+  /* =================================================================
+     MANUAL DRAWING (Edit Mode → "atau gambar manual")
+     ================================================================= */
   function beginDraw(type) {
     cancelEditing(true);
+    stopLineTrack(true);
     state.drawType = type;
-    state.editing = { isNew: true, id: null, type: type, latlngs: [], feature: null };
+    state.editing = { isNew: true, id: null, type: type, latlngs: [], feature: null, trackKind: null };
     map.getContainer().style.cursor = "crosshair";
     map.doubleClickZoom.disable();
     renderDrawDock();
     renderDrawHint();
-    if (state.view !== "map") { state.view = "map"; renderRail(); }
+    if (state.view !== "edit") { state.view = "edit"; renderRail(); }
     renderPanel();
     toast(type === "Point" ? "Klik di peta untuk menempatkan titik" : "Klik untuk menambah titik · klik dua kali / Enter untuk selesai");
   }
-
   function addDrawPoint(latlng) {
     var e = state.editing;
-    if (state.drawType === "Point") {
-      e.latlngs = [latlng];
-      finishDraw();
-      return;
-    }
+    if (state.drawType === "Point") { e.latlngs = [latlng]; finishDraw(); return; }
     e.latlngs.push(latlng);
     refreshDrawPreview();
     renderDrawHint();
     renderPanel();
   }
-
   function refreshDrawPreview() {
     if (drawTemp) { map.removeLayer(drawTemp); drawTemp = null; }
     handleLayer.clearLayers();
     var e = state.editing;
     if (!e || !e.latlngs.length) return;
     if (state.drawType === "Polygon" && e.latlngs.length >= 3) {
-      drawTemp = L.polygon(e.latlngs, { color: "var(--primary)", weight: 2, dashArray: "4 4", fillOpacity: 0.08 });
+      drawTemp = L.polygon(e.latlngs, { color: "#163b54", weight: 2, dashArray: "4 4", fillOpacity: 0.08 });
     } else {
       drawTemp = L.polyline(e.latlngs, { color: "#163b54", weight: 2, dashArray: "4 4" });
     }
@@ -778,7 +1447,6 @@
       L.marker(p, { icon: L.divIcon({ className: "vhandle", iconSize: [11, 11] }), interactive: false }).addTo(handleLayer);
     });
   }
-
   function finishDraw() {
     var e = state.editing;
     var need = state.drawType === "Point" ? 1 : state.drawType === "LineString" ? 2 : 3;
@@ -790,11 +1458,11 @@
     renderDrawDock();
     renderDrawHint();
     openEditor({
-      id: null, classificationId: state.collectionId, title: "", description: "", address: "",
-      images: [], privilege: "PUBLIC", geometry: latLngsToGeom(type, e.latlngs)
+      id: null, classificationId: state.collectionId, compartmentId: state.activeCompartment || null,
+      title: "", description: "", address: "", images: [], privilege: "PUBLIC",
+      geometry: latLngsToGeom(type, e.latlngs)
     }, true);
   }
-
   function cancelDraw() {
     state.drawType = null;
     map.getContainer().style.cursor = "";
@@ -807,23 +1475,178 @@
     renderPanel();
   }
 
-  /* ---------------- editing an existing / just-drawn shape ---------------- */
-  function openEditor(feature, isNew) {
+  /* =================================================================
+     MY LOCATION (PRD F-5.5 / F-5.6) — GPS reference balloon
+     ================================================================= */
+  function setMyLoc(latlng, acc) {
+    state.myLoc = latlng;
+    state.myLocAcc = acc || null;
+    if (myLocMarker) map.removeLayer(myLocMarker);
+    myLocMarker = L.marker(latlng, {
+      icon: L.divIcon({ className: "myloc-balloon", html: "<i></i>", iconSize: [18, 18], iconAnchor: [9, 18] }),
+      zIndexOffset: 500, interactive: true
+    }).addTo(map).bindPopup("Posisi My Location (GPS)" + (acc ? "<br>akurasi &plusmn;" + Math.round(acc) + " m" : ""));
+    updateRailBadges();
+  }
+  function requestMyLoc(cb) {
+    toast("Mengambil posisi GPS …");
+    var done = false;
+    map.once("locationfound", function (e) { done = true; setMyLoc(e.latlng, e.accuracy); if (cb) cb(e.latlng); if (state.view === "edit") renderPanel(); });
+    map.once("locationerror", function () {
+      if (done) return;
+      // Prototype fallback: no GPS on desktop → use current map centre.
+      setMyLoc(map.getCenter(), null);
+      toast("GPS tidak tersedia — memakai pusat peta sebagai My Location", "err");
+      if (cb) cb(map.getCenter());
+      if (state.view === "edit") renderPanel();
+    });
+    map.locate({ enableHighAccuracy: true, timeout: 8000, maximumAge: 5000 });
+  }
+
+  /* =================================================================
+     TRACKING POINT (PRD F-5.3/F-5.4) — 10-second countdown
+     ================================================================= */
+  var CD_SECONDS = 10;
+  var cdTimer = null;
+  var cdOv = document.getElementById("countdownOv");
+  function startTrackPoint() {
+    if (state.countdown != null) return;
+    cancelEditing(true);
+    stopLineTrack(true);
+    if (state.drawType) cancelDraw();
+    state.countdown = CD_SECONDS;
+    renderCountdown();
+    cdTimer = setInterval(function () {
+      state.countdown--;
+      if (state.countdown <= 0) { finishTrackPoint(); }
+      else renderCountdown();
+    }, 1000);
+    renderPanel();
+  }
+  function renderCountdown() {
+    cdOv.hidden = false;
+    cdOv.innerHTML =
+      '<div class="cd-ring"><span class="cd-num">' + state.countdown + '</span></div>' +
+      '<div class="cd-cap">Berdiri tepat di titik yang ingin direkam. Koordinat diambil saat hitungan mencapai 0.</div>' +
+      '<button class="cd-cancel" id="cdCancel" type="button">Batalkan</button>';
+    qs(cdOv, "#cdCancel").addEventListener("click", cancelTrackPoint);
+  }
+  function cancelTrackPoint() {
+    clearInterval(cdTimer); cdTimer = null;
+    state.countdown = null;
+    cdOv.hidden = true; cdOv.innerHTML = "";
+    renderPanel();
+  }
+  function finishTrackPoint() {
+    clearInterval(cdTimer); cdTimer = null;
+    state.countdown = null;
+    cdOv.hidden = true; cdOv.innerHTML = "";
+    var pt = state.myLoc || map.getCenter();
+    if (!state.myLoc) toast("My Location belum diambil — memakai pusat peta", "err");
+    logActivity("Tracking Point selesai (hitung mundur " + CD_SECONDS + " dtk)");
+    openEditor({
+      id: null, classificationId: state.collectionId, compartmentId: state.activeCompartment || null,
+      title: "", description: "", address: "", images: [], privilege: "PUBLIC",
+      geometry: latLngsToGeom("Point", [L.latLng(pt.lat, pt.lng)])
+    }, true, "point");
+  }
+
+  /* =================================================================
+     TRACKING LINE / POLYGON (PRD F-5.6 – F-5.10)
+     ================================================================= */
+  function startLineTrack(kind) {
+    cancelEditing(true);
+    if (state.drawType) cancelDraw();
+    if (!state.myLoc) { toast("Ambil My Location dulu — titik awal harus menempel pada posisi Anda", "err"); return; }
+    state.lineTrack = { kind: kind, pts: [L.latLng(state.myLoc.lat, state.myLoc.lng)] };
+    if (state.view !== "edit") { state.view = "edit"; renderRail(); }
+    drawLineTrack();
+    renderPanel();
+    toast("Titik awal ditandai. Gerak ke titik berikutnya lalu tekan “Tambah titik”, atau klik peta.");
+  }
+  function lineTrackAddCurrent() {
+    if (!state.lineTrack) return;
+    var p = state.myLoc || map.getCenter();
+    state.lineTrack.pts.push(L.latLng(p.lat, p.lng));
+    drawLineTrack();
+    renderPanel();
+  }
+  function lineTrackAddAt(latlng) {
+    if (!state.lineTrack) return;
+    state.lineTrack.pts.push(latlng);
+    drawLineTrack();
+    renderPanel();
+  }
+  function lineTrackUndo() {
+    if (!state.lineTrack || state.lineTrack.pts.length <= 1) return;
+    state.lineTrack.pts.pop();
+    drawLineTrack();
+    renderPanel();
+  }
+  function drawLineTrack() {
+    if (drawTemp) { map.removeLayer(drawTemp); drawTemp = null; }
+    handleLayer.clearLayers();
+    var lt = state.lineTrack;
+    if (!lt) return;
+    var pts = lt.pts;
+    if (lt.kind === "Polygon" && pts.length >= 3) {
+      drawTemp = L.polygon(pts, { color: "#2563eb", weight: 3, dashArray: "5 4", fillOpacity: 0.08 });
+    } else if (pts.length >= 2) {
+      drawTemp = L.polyline(pts, { color: "#2563eb", weight: 3, dashArray: "5 4" });
+    }
+    if (drawTemp) drawTemp.addTo(map);
+    // start point = blue balloon (F-5.6); subsequent points = markers (F-5.8)
+    pts.forEach(function (p, i) {
+      if (i === 0) {
+        L.marker(p, { icon: L.divIcon({ className: "myloc-balloon", html: "<i></i>", iconSize: [18, 18], iconAnchor: [9, 18] }), interactive: false }).addTo(handleLayer);
+      } else {
+        L.marker(p, { icon: L.divIcon({ className: "vhandle", iconSize: [12, 12] }), interactive: false }).addTo(handleLayer);
+      }
+    });
+  }
+  function stopLineTrack(silent) {
+    if (!state.lineTrack) return;
+    state.lineTrack = null;
+    if (drawTemp) { map.removeLayer(drawTemp); drawTemp = null; }
+    handleLayer.clearLayers();
+    if (!silent) renderPanel();
+  }
+  function finishLineTrack() {
+    var lt = state.lineTrack;
+    if (!lt) return;
+    var need = lt.kind === "Polygon" ? 3 : 2;
+    if (lt.pts.length < need) { toast("Butuh minimal " + need + " titik", "err"); return; }
+    var kind = lt.kind, pts = lt.pts.slice();
+    var lenM = lineLengthM(pts);
+    stopLineTrack(true);
+    if (kind === "Polygon") logActivity("Tracking Polygon selesai · " + fmtArea(polygonAreaM2(pts)));
+    else logActivity("Tracking Line selesai · " + fmtLen(lenM));
+    openEditor({
+      id: null, classificationId: state.collectionId, compartmentId: state.activeCompartment || null,
+      title: "", description: "", address: "", images: [], privilege: "PUBLIC",
+      geometry: latLngsToGeom(kind, pts)
+    }, true, kind === "Polygon" ? "polygon" : "line");
+  }
+
+  /* =================================================================
+     EDIT AN EXISTING / JUST-CAPTURED SHAPE
+     ================================================================= */
+  function openEditor(feature, isNew, trackKind) {
     state.drawType = null;
     map.getContainer().style.cursor = "";
     map.doubleClickZoom.enable();
     state.shapeMode = feature.geometry.type === "Point" ? "move" : "vertex";
     state.editing = {
       isNew: !!isNew, id: feature.id || null, type: feature.geometry.type,
-      latlngs: geomToLatLngs(feature.geometry), feature: feature
+      latlngs: geomToLatLngs(feature.geometry), feature: feature, trackKind: trackKind || null
     };
+    if (state.view !== "edit") { state.view = "edit"; renderRail(); }
     renderFeatures();
     mountEditShape();
     renderDrawDock();
     renderDrawHint();
     renderPanel();
   }
-
   function mountEditShape() {
     if (editLayer) { map.removeLayer(editLayer); editLayer = null; }
     handleLayer.clearLayers();
@@ -842,27 +1665,23 @@
     }
     renderHandles();
   }
-
   function renderHandles() {
     handleLayer.clearLayers();
     var e = state.editing;
     if (!e || e.type === "Point") return;
     var mode = state.shapeMode;
-
     e.latlngs.forEach(function (p, i) {
-      var cls = "vhandle" + (mode === "delete" ? " del" : "");
+      var cn = "vhandle" + (mode === "delete" ? " del" : "");
       var m = L.marker(p, {
         draggable: mode === "vertex" || mode === "move",
-        icon: L.divIcon({ className: cls, iconSize: [14, 14] })
+        icon: L.divIcon({ className: cn, iconSize: [14, 14] })
       });
       m.on("drag", function (ev) {
         var np = ev.target.getLatLng();
         if (mode === "move") {
           var d = { lat: np.lat - e.latlngs[i].lat, lng: np.lng - e.latlngs[i].lng };
           e.latlngs = e.latlngs.map(function (q) { return L.latLng(q.lat + d.lat, q.lng + d.lng); });
-        } else {
-          e.latlngs[i] = np;
-        }
+        } else { e.latlngs[i] = np; }
         editLayer.setLatLngs(e.latlngs);
         updateReadout();
         if (mode === "move") renderHandles();
@@ -880,7 +1699,6 @@
       });
       handleLayer.addLayer(m);
     });
-
     if (mode === "addvertex") {
       var n = e.latlngs.length;
       var segs = e.type === "Polygon" ? n : n - 1;
@@ -901,13 +1719,11 @@
       }
     }
   }
-
   function updateReadout() {
     var e = state.editing;
     if (!e) return;
     var box = document.getElementById("qnBox");
-    if (!box) return;
-    box.innerHTML = questionnaireRows(e);
+    if (box) box.innerHTML = questionnaireRows(e);
   }
   function commitEditGeom() {
     var e = state.editing;
@@ -915,7 +1731,6 @@
     e.feature.geometry = latLngsToGeom(e.type, e.latlngs);
     updateReadout();
   }
-
   function cancelEditing(silent) {
     if (state.drawType) { cancelDraw(); return; }
     if (!state.editing) return;
@@ -930,110 +1745,135 @@
 
   /* map click routing */
   map.on("click", function (e) {
-    if (state.drawType) { addDrawPoint(e.latlng); }
+    if (state.drawType) { addDrawPoint(e.latlng); return; }
+    if (state.lineTrack) { lineTrackAddAt(e.latlng); return; }
   });
   map.on("dblclick", function () { if (state.drawType && state.drawType !== "Point") finishDraw(); });
   document.addEventListener("keydown", function (e) {
     if (e.key === "Enter" && state.drawType && state.drawType !== "Point") { e.preventDefault(); finishDraw(); }
+    else if (e.key === "Enter" && state.lineTrack) { e.preventDefault(); finishLineTrack(); }
     else if (e.key === "Escape") {
-      if (state.drawType) cancelDraw();
+      if (state.countdown != null) cancelTrackPoint();
+      else if (state.drawType) cancelDraw();
+      else if (state.lineTrack) stopLineTrack();
       else if (state.editing) cancelEditing();
     }
   });
 
   /* =================================================================
-     RAIL
+     RAIL — PRD Main Menu (4) + Edit Mode (4) + About
      ================================================================= */
   var RAIL = [
-    { id: "map", icon: "pin", label: "Peta & Objek" },
-    { id: "layers", icon: "layers", label: "Lapisan" },
-    { id: "features", icon: "shapes", label: "Daftar Objek" },
-    { id: "classifications", icon: "tag", label: "Klasifikasi" },
-    { id: "bookmarks", icon: "bookmark", label: "Penanda" },
-    { id: "about", icon: "info", label: "Tentang" }
+    { id: "public", icon: "folder", label: "Public Mapping" },
+    { id: "mylayers", icon: "shapes", label: "My Layers" },
+    { id: "approval", icon: "approval", label: "Approval" },
+    { sep: true },
+    { id: "edit", icon: "edit", label: "Edit Mode - Tracking" },
+    { id: "task", icon: "task", label: "Task" },
+    { sep: true },
+    { id: "activity", icon: "clock", label: "Activity" }
   ];
   var railEl = document.getElementById("rail");
   function renderRail() {
     railEl.innerHTML = RAIL.map(function (r) {
+      if (r.sep) return '<div class="rail-sep"></div>';
       return '<button class="rail-btn' + (state.view === r.id ? " active" : "") + '" data-view="' + r.id + '" type="button" aria-label="' + esc(r.label) + '">' +
-        svg(r.icon) + '<span class="tip">' + esc(r.label) + '</span></button>';
+        svg(r.icon) + '<span class="badge" data-badge="' + r.id + '" hidden></span>' +
+        '<span class="tip">' + esc(r.label) + '</span></button>';
     }).join("");
     qsa(railEl, ".rail-btn").forEach(function (b) {
       b.addEventListener("click", function () {
-        state.view = b.getAttribute("data-view");
-        if (state.view !== "map" && state.editing) cancelEditing(true);
+        var v = b.getAttribute("data-view");
+        if (v !== "edit") { if (state.editing) cancelEditing(true); if (state.drawType) cancelDraw(); if (state.lineTrack) stopLineTrack(true); }
+        state.view = v;
+        state.wcCreating = false;
         persist();
         renderRail();
         renderPanel();
+        if (state.dockCollapsed) setDockCollapsed(false); // tapping a nav item reveals its panel
       });
     });
+    updateRailBadges();
+  }
+  function updateRailBadges() {
+    var unfinished = tasks.filter(function (t) { return !t.done; }).length;
+    qsa(railEl, '[data-badge="task"]').forEach(function (b) { b.hidden = !unfinished; b.textContent = unfinished; });
+    var pending = apprCount("PENDING");
+    qsa(railEl, '[data-badge="approval"]').forEach(function (b) { b.hidden = !pending; b.textContent = pending; });
   }
 
   /* =================================================================
-     DOCK — top area (search + collection) and panel body
+     DOCK — top area (search / collection) + panel body
      ================================================================= */
   var dockEl = document.getElementById("dock");
   var dockTop = document.getElementById("dockTop");
   var panelBody = document.getElementById("panelBody");
 
-  document.getElementById("dockTab").addEventListener("click", function () {
-    state.dockCollapsed = !state.dockCollapsed;
-    dockEl.classList.toggle("collapsed", state.dockCollapsed);
+  var panelToggleBtn = document.getElementById("panelToggle");
+  function setDockCollapsed(collapsed) {
+    state.dockCollapsed = collapsed;
+    dockEl.classList.toggle("collapsed", collapsed);
+    panelToggleBtn.classList.toggle("on", collapsed);
     persist();
     setTimeout(function () { map.invalidateSize(); }, 240);
-  });
+  }
+  document.getElementById("dockTab").addEventListener("click", function () { setDockCollapsed(!state.dockCollapsed); });
+  panelToggleBtn.addEventListener("click", function () { setDockCollapsed(!state.dockCollapsed); });
   dockEl.classList.toggle("collapsed", state.dockCollapsed);
+  panelToggleBtn.classList.toggle("on", state.dockCollapsed);
 
   function renderDockTop() {
-    if (state.view !== "map") { dockTop.innerHTML = ""; return; }
+    var showSearch = state.view === "public" || state.view === "mylayers" || state.view === "edit";
+    var showCollection = state.view === "edit";
+    if (!showSearch) { dockTop.innerHTML = ""; return; }
     var cls = clsById(state.collectionId);
     dockTop.innerHTML =
       '<div class="search-row">' +
-        '<form class="search-box" id="searchForm">' +
-          svg("search") +
+        '<form class="search-box" id="searchForm">' + svg("search") +
           '<input id="searchInput" type="text" placeholder="Cari lokasi, objek, atau \'lat, lon\' …" autocomplete="off" />' +
         '</form>' +
         '<button class="icon-btn primary" id="searchGo" type="button" title="Cari" aria-label="Cari">' + svg("search") + '</button>' +
         '<button class="icon-btn" id="fsBtn" type="button" title="Layar penuh" aria-label="Layar penuh">' + svg("expand") + '</button>' +
       '</div>' +
-      '<details class="card collection" id="collectionCard">' +
-        '<summary>' +
-          '<span class="swatch" style="background:' + cls.color + '">' + svg(cls.icon) + '</span>' +
-          '<span><span class="c-name">' + esc(cls.name) + '</span><br><span class="c-desc">' + esc(cls.desc) + '</span></span>' +
-          '<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>' +
-        '</summary>' +
-        '<div class="opts">' +
-          classifications.map(function (c) {
-            return '<div class="opt' + (c.id === state.collectionId ? " sel" : "") + '" data-cls="' + c.id + '">' +
-              '<span class="dot" style="background:' + c.color + '"></span>' + esc(c.name) + '</div>';
-          }).join("") +
-        '</div>' +
-      '</details>';
+      (showCollection ?
+        '<details class="card collection" id="collectionCard">' +
+          '<summary>' +
+            '<span class="swatch" style="background:' + cls.color + '">' + svg(cls.icon) + '</span>' +
+            '<span><span class="c-name">' + esc(cls.name) + '</span><br><span class="c-desc">' + esc(cls.desc) + '</span></span>' +
+            '<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>' +
+          '</summary>' +
+          '<div class="opts">' +
+            classifications.map(function (c) {
+              return '<div class="opt' + (c.id === state.collectionId ? " sel" : "") + '" data-cls="' + c.id + '">' +
+                '<span class="dot" style="background:' + c.color + '"></span>' + esc(c.name) + '</div>';
+            }).join("") +
+          '</div>' +
+        '</details>' : "");
 
     qs(dockTop, "#searchForm").addEventListener("submit", function (e) { e.preventDefault(); runSearch(); });
     qs(dockTop, "#searchGo").addEventListener("click", runSearch);
     qs(dockTop, "#fsBtn").addEventListener("click", toggleFullscreen);
-    qsa(dockTop, ".collection .opt").forEach(function (o) {
-      o.addEventListener("click", function () {
-        state.collectionId = o.getAttribute("data-cls");
-        persist();
-        qs(dockTop, "#collectionCard").open = false;
-        renderDockTop();
-        if (state.editing && state.editing.isNew) {
-          state.editing.feature.classificationId = state.collectionId;
-          renderPanel();
-          mountEditShape();
-        }
+    if (qs(dockTop, "#collectionCard")) {
+      qsa(dockTop, ".collection .opt").forEach(function (o) {
+        o.addEventListener("click", function () {
+          state.collectionId = o.getAttribute("data-cls");
+          persist();
+          qs(dockTop, "#collectionCard").open = false;
+          renderDockTop();
+          if (state.editing && state.editing.isNew) {
+            state.editing.feature.classificationId = state.collectionId;
+            renderPanel();
+            mountEditShape();
+          }
+        });
       });
-    });
+    }
   }
 
-  /* ---------------- search ---------------- */
   function runSearch() {
     var inp = document.getElementById("searchInput");
     var q = (inp && inp.value || "").trim();
     if (!q) return;
-
     var m = q.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)\s*$/);
     if (m) {
       var la = parseFloat(m[1]), lo = parseFloat(m[2]);
@@ -1046,9 +1886,7 @@
     var hit = features.filter(function (f) {
       return (f.title + " " + (f.address || "")).toLowerCase().indexOf(q.toLowerCase()) >= 0;
     })[0];
-    if (hit) { zoomToFeature(hit); openEditor(hit); return; }
-
-    // best-effort geocode; degrades quietly when blocked / offline
+    if (hit) { zoomToFeature(hit); state.view = "edit"; renderRail(); openEditor(hit); return; }
     toast("Mencari “" + q + "” …");
     fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(q), { headers: { "Accept": "application/json" } })
       .then(function (r) { return r.ok ? r.json() : []; })
@@ -1070,7 +1908,6 @@
     if (f.geometry.type === "Point") map.flyTo(ll[0], 16);
     else map.flyToBounds(L.latLngBounds(ll), { padding: [60, 60], maxZoom: 16 });
   }
-
   function toggleFullscreen() {
     var el = document.documentElement;
     if (!document.fullscreenElement) { (el.requestFullscreen || el.webkitRequestFullscreen || function () {}).call(el); }
@@ -1078,7 +1915,7 @@
   }
 
   /* =================================================================
-     DRAW DOCK + HINT
+     DRAW DOCK + HINT + COUNTDOWN visibility
      ================================================================= */
   var drawDockEl = document.getElementById("drawDock");
   var drawHintEl = document.getElementById("drawHint");
@@ -1101,6 +1938,17 @@
     });
   }
   function renderDrawHint() {
+    if (state.lineTrack) {
+      var lt = state.lineTrack;
+      drawHintEl.hidden = false;
+      drawHintEl.innerHTML = '<span>' + geomLabel(lt.kind) + ' · ' + lt.pts.length + ' titik · ' +
+        (lt.kind === "Polygon" && lt.pts.length >= 3 ? fmtArea(polygonAreaM2(lt.pts)) : fmtLen(lineLengthM(lt.pts))) + '</span>' +
+        '<button class="h-done" type="button" id="hDone">Selesai</button>' +
+        '<button class="h-cancel" type="button" id="hCancel">Batal</button>';
+      qs(drawHintEl, "#hDone").addEventListener("click", finishLineTrack);
+      qs(drawHintEl, "#hCancel").addEventListener("click", function () { stopLineTrack(); });
+      return;
+    }
     if (!state.drawType || state.drawType === "Point") { drawHintEl.hidden = true; drawHintEl.innerHTML = ""; return; }
     var n = state.editing ? state.editing.latlngs.length : 0;
     drawHintEl.hidden = false;
@@ -1112,50 +1960,394 @@
   }
 
   /* =================================================================
-     PANEL BODY
+     PANEL DISPATCH
      ================================================================= */
   function renderPanel() {
     renderDockTop();
-    drawDockEl.hidden = state.view !== "map";
-    if (state.view !== "map") { drawHintEl.hidden = true; }
-    if (state.view === "map") renderMapPanel();
-    else if (state.view === "layers") renderLayersPanel();
-    else if (state.view === "features") renderFeaturesPanel();
-    else if (state.view === "classifications") renderClassPanel();
-    else if (state.view === "bookmarks") renderBookmarksPanel();
-    else renderAboutPanel();
+    var editView = state.view === "edit";
+    drawDockEl.hidden = !editView || state.countdown != null;
+    if (!editView) drawHintEl.hidden = true;
+    else renderDrawHint();
+
+    document.getElementById("wcFab").hidden = !(state.view === "public");
+
+    if (state.view === "mylayers") renderMyLayersPanel();
+    else if (state.view === "approval") renderApprovalPanel();
+    else if (state.view === "activity") renderActivityPanel();
+    else if (state.view === "edit") renderEditPanel();
+    else if (state.view === "task") renderTaskPanel();
+    else renderPublicPanel();
+    updateWcChip();
   }
 
-  /* ---- map view: draw prompt or the 3-step editor ---- */
   function questionnaireRows(e) {
     if (e.type === "Polygon") {
-      return '<div class="qn-row"><span class="qn-k">Area (m²)</span><span class="qn-v mono">' + fmtArea(polygonAreaM2(e.latlngs)) + '</span></div>' +
+      return '<div class="qn-row"><span class="qn-k">Area</span><span class="qn-v mono">' + fmtArea(polygonAreaM2(e.latlngs)) + '</span></div>' +
         '<div class="qn-row"><span class="qn-k">Keliling</span><span class="qn-v mono">' + fmtLen(lineLengthM(e.latlngs.concat([e.latlngs[0]]))) + '</span></div>' +
         '<div class="qn-row"><span class="qn-k">Jumlah titik</span><span class="qn-v mono">' + e.latlngs.length + '</span></div>';
     }
     if (e.type === "LineString") {
-      return '<div class="qn-row"><span class="qn-k">Panjang</span><span class="qn-v mono">' + fmtLen(lineLengthM(e.latlngs)) + '</span></div>' +
+      var lenM = lineLengthM(e.latlngs);
+      return '<div class="qn-row"><span class="qn-k">Panjang lintasan</span><span class="qn-v mono">' + fmtLen(lenM) + '</span></div>' +
+        '<div class="qn-row"><span class="qn-k">Est. waktu tempuh (jalan kaki)</span><span class="qn-v mono">' + fmtDur(lenM / (4.5 * 1000 / 3600)) + '</span></div>' +
         '<div class="qn-row"><span class="qn-k">Jumlah titik</span><span class="qn-v mono">' + e.latlngs.length + '</span></div>';
     }
     var p = e.latlngs[0];
     return '<div class="qn-row"><span class="qn-k">Latitude</span><span class="qn-v mono">' + p.lat.toFixed(6) + '</span></div>' +
-      '<div class="qn-row"><span class="qn-k">Longitude</span><span class="qn-v mono">' + p.lng.toFixed(6) + '</span></div>';
+      '<div class="qn-row"><span class="qn-k">Longitude</span><span class="qn-v mono">' + p.lng.toFixed(6) + '</span></div>' +
+      (state.myLocAcc ? '<div class="qn-row"><span class="qn-k">Akurasi GPS</span><span class="qn-v mono">&plusmn;' + Math.round(state.myLocAcc) + ' m</span></div>' : "");
   }
 
-  function renderMapPanel() {
-    if (state.drawType && !state.editing.feature) {
+  /* =================================================================
+     QUESTIONNAIRE — structured per-feature survey form (PRD F-4.x).
+     An illustrative "tempat usaha / fasilitas" template modeled on the
+     production Geomapping questionnaire (owner, operating hours, contact,
+     founding date, administrative address). Answers persist on the
+     feature under `f.questionnaire`, keyed by question id; group answers
+     nest one level: f.questionnaire[groupId][itemId]. Opened from the
+     "Edit" button on step 3 of the editor form via a modal dialog with
+     a Wizard (one question at a time) / Scroll View toggle.
+     ================================================================= */
+  var QUESTIONNAIRE = [
+    { id: "owner", label: "Nama Pemilik", hint: "Nama pemilik", type: "text" },
+    { id: "hours", label: "Jam Operasi", hint: "Jam operasional per hari", type: "group", items: [
+      { id: "mon", label: "Senin", type: "text" },
+      { id: "tue", label: "Selasa", type: "text" },
+      { id: "wed", label: "Rabu", type: "text" },
+      { id: "thu", label: "Kamis", type: "text" },
+      { id: "fri", label: "Jumat", type: "text" },
+      { id: "sat", label: "Sabtu", type: "text" },
+      { id: "sun", label: "Minggu", type: "text" }
+    ] },
+    { id: "phone", label: "Nomor Telefon", hint: "Phone number", type: "text" },
+    { id: "website", label: "Website", hint: "Website", type: "text" },
+    { id: "founded", label: "Tanggal Berdiri", hint: "Tanggal berdiri", type: "date" },
+    { id: "addr", label: "Alamat", hint: "Alamat lokasi", type: "group", items: [
+      { id: "street", label: "Jalan", type: "text" },
+      { id: "rtrw", label: "RT/RW", type: "text" },
+      { id: "kel", label: "Kelurahan", type: "text" },
+      { id: "kec", label: "Kecamatan", type: "text" },
+      { id: "kota", label: "Kota/Kabupaten", type: "text" },
+      { id: "prov", label: "Propinsi", type: "text" },
+      { id: "pos", label: "Kode Pos", type: "text" }
+    ] }
+  ];
+
+  function qnFieldCount() {
+    var n = 0;
+    QUESTIONNAIRE.forEach(function (q) { n += q.type === "group" ? q.items.length : 1; });
+    return n;
+  }
+  function qnAnsweredCount(data) {
+    data = data || {};
+    var n = 0;
+    QUESTIONNAIRE.forEach(function (q) {
+      if (q.type === "group") {
+        var g = data[q.id] || {};
+        q.items.forEach(function (it) { if (g[it.id] != null && String(g[it.id]).trim()) n++; });
+      } else if (data[q.id] != null && String(data[q.id]).trim()) n++;
+    });
+    return n;
+  }
+  function fmtDateID(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+    if (!m) return String(iso || "");
+    return (+m[3]) + " " + MONTH_FULL[+m[2] - 1] + " " + m[1];
+  }
+  function questionnaireSummary(f) {
+    var data = (f && f.questionnaire) || {};
+    var total = qnFieldCount();
+    var done = qnAnsweredCount(data);
+    if (!done) return '<div class="muted">Belum ada jawaban kuesioner. Ketuk <b>Edit</b> untuk mengisi ' + total + ' pertanyaan.</div>';
+    var rows = [];
+    QUESTIONNAIRE.forEach(function (q) {
+      if (q.type === "group") {
+        var g = data[q.id] || {};
+        q.items.forEach(function (it) {
+          var v = g[it.id];
+          if (v != null && String(v).trim()) rows.push({ k: q.label + " · " + it.label, v: String(v) });
+        });
+      } else {
+        var v = data[q.id];
+        if (v != null && String(v).trim()) rows.push({ k: q.label, v: q.type === "date" ? fmtDateID(v) : String(v) });
+      }
+    });
+    var shown = rows.slice(0, 4).map(function (r) {
+      return '<div class="qn-row"><span class="qn-k">' + esc(r.k) + '</span><span class="qn-v">' + esc(r.v) + '</span></div>';
+    }).join("");
+    var more = rows.length > 4
+      ? '<div class="qn-row"><span class="qn-k">…</span><span class="qn-v">+' + (rows.length - 4) + ' jawaban lain</span></div>'
+      : "";
+    return '<div class="qn-row"><span class="qn-k">Kelengkapan</span><span class="qn-v mono">' + done + ' / ' + total + '</span></div>' + shown + more;
+  }
+
+  var qdlgEl = null;
+  var qdlg = { mode: "scroll", step: 0, feature: null, draft: null, calView: null };
+
+  function openQuestionnaireDialog(feature) {
+    if (qdlgEl) return;
+    qdlg.feature = feature;
+    qdlg.mode = "scroll";
+    qdlg.step = 0;
+    qdlg.calView = {};
+    try { qdlg.draft = JSON.parse(JSON.stringify(feature.questionnaire || {})); }
+    catch (e) { qdlg.draft = {}; }
+
+    qdlgEl = document.createElement("div");
+    qdlgEl.className = "qdlg-backdrop";
+    qdlgEl.innerHTML =
+      '<div class="qdlg" role="dialog" aria-modal="true" aria-label="Kuesioner objek">' +
+        '<div class="qdlg-head">' +
+          '<span class="qdlg-req">* Wajib diisi</span>' +
+          '<span class="grow"></span>' +
+          '<div class="qdlg-seg" id="qdMode">' +
+            '<button type="button" data-m="wizard">' + svg("sliders") + ' Wizard</button>' +
+            '<button type="button" data-m="scroll">Tampilan Gulir</button>' +
+          '</div>' +
+          '<button class="qdlg-x" id="qdClose" type="button" aria-label="Tutup dialog">' + svg("close") + '</button>' +
+        '</div>' +
+        '<div class="qdlg-body" id="qdBody"></div>' +
+        '<div class="qdlg-foot">' +
+          '<div class="qdlg-wiznav" id="qdWizNav" hidden>' +
+            '<button class="btn btn-ghost" id="qdPrev" type="button">' + svg("chevL") + ' Sebelumnya</button>' +
+            '<span id="qdStepLabel"></span>' +
+            '<button class="btn btn-ghost" id="qdNext" type="button">Berikutnya ' + svg("chevR") + '</button>' +
+          '</div>' +
+          '<span class="grow"></span>' +
+          '<button class="btn btn-save" id="qdSave" type="button">' + svg("check") + ' Simpan</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(qdlgEl);
+
+    qdlgEl.addEventListener("mousedown", function (ev) { if (ev.target === qdlgEl) closeQuestionnaireDialog(); });
+    qs(qdlgEl, "#qdClose").addEventListener("click", closeQuestionnaireDialog);
+    qs(qdlgEl, "#qdSave").addEventListener("click", saveQuestionnaireDialog);
+    qsa(qdlgEl, "#qdMode button").forEach(function (b) {
+      b.addEventListener("click", function () { qdlg.mode = b.getAttribute("data-m"); qdlg.step = 0; renderQdlg(); });
+    });
+    qs(qdlgEl, "#qdPrev").addEventListener("click", function () { if (qdlg.step > 0) { qdlg.step--; renderQdlg(); } });
+    qs(qdlgEl, "#qdNext").addEventListener("click", function () { if (qdlg.step < QUESTIONNAIRE.length - 1) { qdlg.step++; renderQdlg(); } });
+    // capture phase + stopImmediatePropagation so Esc closes only the dialog,
+    // not the editor behind it (the global keydown handler calls cancelEditing on Esc)
+    document.addEventListener("keydown", qdlgKey, true);
+    renderQdlg();
+  }
+  function qdlgKey(ev) {
+    if (ev.key === "Escape" && qdlgEl) { ev.preventDefault(); ev.stopImmediatePropagation(); closeQuestionnaireDialog(); }
+  }
+  function closeQuestionnaireDialog() {
+    if (!qdlgEl) return;
+    document.removeEventListener("keydown", qdlgKey, true);
+    qdlgEl.remove(); qdlgEl = null;
+    qdlg.feature = null; qdlg.draft = null; qdlg.calView = null;
+  }
+
+  function qdlgSet(path, val) {
+    var p = path.split("/");
+    if (p.length === 2) {
+      if (!qdlg.draft[p[0]] || typeof qdlg.draft[p[0]] !== "object") qdlg.draft[p[0]] = {};
+      qdlg.draft[p[0]][p[1]] = val;
+    } else {
+      qdlg.draft[path] = val;
+    }
+  }
+  function qdlgGet(path) {
+    var p = path.split("/");
+    if (p.length === 2) return (qdlg.draft[p[0]] || {})[p[1]] || "";
+    return qdlg.draft[path] || "";
+  }
+
+  function renderQdlg() {
+    if (!qdlgEl) return;
+    qsa(qdlgEl, "#qdMode button").forEach(function (b) { b.classList.toggle("sel", b.getAttribute("data-m") === qdlg.mode); });
+    var wizard = qdlg.mode === "wizard";
+    var body = qs(qdlgEl, "#qdBody");
+    if (wizard) {
+      body.innerHTML = qqHtml(QUESTIONNAIRE[qdlg.step], qdlg.step + 1);
+    } else {
+      body.innerHTML = QUESTIONNAIRE.map(function (q, i) { return qqHtml(q, i + 1); }).join("");
+    }
+    var nav = qs(qdlgEl, "#qdWizNav");
+    nav.hidden = !wizard;
+    if (wizard) {
+      qs(qdlgEl, "#qdStepLabel").textContent = "Langkah " + (qdlg.step + 1) + " / " + QUESTIONNAIRE.length;
+      qs(qdlgEl, "#qdPrev").disabled = qdlg.step === 0;
+      qs(qdlgEl, "#qdNext").disabled = qdlg.step === QUESTIONNAIRE.length - 1;
+    }
+    wireQqInputs(body);
+    body.scrollTop = 0;
+  }
+
+  function qqHtml(q, num, parentId) {
+    var head =
+      '<div class="qq-head">' +
+        '<span class="qq-num' + (parentId ? " sub" : "") + '">' + num + '</span>' +
+        '<span><span class="qq-label">' + esc(q.label) + '</span>' +
+        (q.hint ? '<span class="qq-hint">(' + esc(q.hint) + ')</span>' : "") + '</span>' +
+      '</div>';
+    if (q.type === "group") {
+      var sub = q.items.map(function (it, i) { return qqHtml(it, num + "." + (i + 1), q.id); }).join("");
+      return '<div class="qq">' + head + '<div class="qq-sub">' + sub + '</div></div>';
+    }
+    var path = parentId ? parentId + "/" + q.id : q.id;
+    var val = qdlgGet(path);
+    if (q.type === "date") {
+      return '<div class="qq">' + head + '<div class="qq-input" data-cal="' + esc(path) + '">' + qcalHtml(val, path) + '</div></div>';
+    }
+    return '<div class="qq">' + head +
+      '<div class="qq-input"><input type="text" data-path="' + esc(path) + '" value="' + esc(val) + '" placeholder="Isi jawaban" /></div>' +
+      '</div>';
+  }
+  function wireQqInputs(root) {
+    qsa(root, "input[data-path]").forEach(function (inp) {
+      inp.addEventListener("input", function () { qdlgSet(inp.getAttribute("data-path"), inp.value); });
+    });
+    qsa(root, "[data-cal]").forEach(function (box) { wireQcal(box, box.getAttribute("data-cal")); });
+  }
+
+  /* compact inline date picker — matches the reference dialog's expanded calendar */
+  var QCAL_DOW = ["Sn", "Sl", "Rb", "Km", "Jm", "Sb", "Mg"];
+  function qcalHtml(iso, path) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+    var view = (qdlg.calView && qdlg.calView[path]) || null;
+    var vy, vm;
+    if (view) { vy = view.y; vm = view.m; }
+    else if (m) { vy = +m[1]; vm = +m[2] - 1; }
+    else { var t = new Date(); vy = t.getFullYear(); vm = t.getMonth(); }
+
+    var startDow = (new Date(vy, vm, 1).getDay() + 6) % 7;   // Mon = 0
+    var daysInMonth = new Date(vy, vm + 1, 0).getDate();
+    var prevDays = new Date(vy, vm, 0).getDate();
+    var cells = "";
+    for (var i = 0; i < 42; i++) {
+      var dayNum, out = false, cy = vy, cm = vm;
+      if (i < startDow) { dayNum = prevDays - startDow + 1 + i; out = true; cm = vm - 1; if (cm < 0) { cm = 11; cy = vy - 1; } }
+      else if (i >= startDow + daysInMonth) { dayNum = i - startDow - daysInMonth + 1; out = true; cm = vm + 1; if (cm > 11) { cm = 0; cy = vy + 1; } }
+      else { dayNum = i - startDow + 1; }
+      var cIso = cy + "-" + ("0" + (cm + 1)).slice(-2) + "-" + ("0" + dayNum).slice(-2);
+      cells += '<button type="button" class="qcal-day' + (out ? " out" : "") + (iso && cIso === iso ? " sel" : "") +
+        '" data-iso="' + cIso + '">' + dayNum + '</button>';
+      if (i >= startDow + daysInMonth - 1 && i % 7 === 6) break;
+    }
+    return '<div class="qcal">' +
+      '<div class="qcal-top">' +
+        '<button class="qcal-nav" data-nav="-1" type="button" aria-label="Bulan sebelumnya">' + svg("chevL") + '</button>' +
+        '<span class="grow"></span>' +
+        '<span class="qcal-my">' + MONTH_FULL[vm] + ' ' + vy + '</span>' +
+        '<span class="grow"></span>' +
+        '<button class="qcal-nav" data-nav="1" type="button" aria-label="Bulan berikutnya">' + svg("chevR") + '</button>' +
+      '</div>' +
+      '<div class="qcal-grid">' + QCAL_DOW.map(function (d) { return '<span class="qcal-dow">' + d + '</span>'; }).join("") + cells + '</div>' +
+      (iso ? '<button class="btn btn-ghost qcal-clear" data-clear="1" type="button">Kosongkan tanggal</button>' : "") +
+      '</div>';
+  }
+  function wireQcal(box, path) {
+    function redraw() { box.innerHTML = qcalHtml(qdlgGet(path), path); wireQcal(box, path); }
+    qsa(box, "[data-nav]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var cur = (qdlg.calView && qdlg.calView[path]) || null, base;
+        var g = /^(\d{4})-(\d{2})-(\d{2})$/.exec(qdlgGet(path));
+        if (cur) base = new Date(cur.y, cur.m, 1);
+        else if (g) base = new Date(+g[1], +g[2] - 1, 1);
+        else base = new Date();
+        base.setMonth(base.getMonth() + (+b.getAttribute("data-nav")));
+        qdlg.calView = qdlg.calView || {};
+        qdlg.calView[path] = { y: base.getFullYear(), m: base.getMonth() };
+        redraw();
+      });
+    });
+    qsa(box, "[data-iso]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var iso = b.getAttribute("data-iso");
+        qdlgSet(path, iso);
+        var mm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+        qdlg.calView = qdlg.calView || {};
+        qdlg.calView[path] = { y: +mm[1], m: +mm[2] - 1 };
+        redraw();
+      });
+    });
+    var clr = qs(box, "[data-clear]");
+    if (clr) clr.addEventListener("click", function () { qdlgSet(path, ""); redraw(); });
+  }
+
+  function saveQuestionnaireDialog() {
+    if (!qdlg.feature) return;
+    var clean = {};
+    QUESTIONNAIRE.forEach(function (q) {
+      if (q.type === "group") {
+        var g = qdlg.draft[q.id] || {}, out = {};
+        q.items.forEach(function (it) { var v = String(g[it.id] == null ? "" : g[it.id]).trim(); if (v) out[it.id] = v; });
+        if (Object.keys(out).length) clean[q.id] = out;
+      } else {
+        var v = String(qdlg.draft[q.id] == null ? "" : qdlg.draft[q.id]).trim();
+        if (v) clean[q.id] = v;
+      }
+    });
+    qdlg.feature.questionnaire = clean;
+    if (qdlg.feature.id && features.some(function (x) { return x.id === qdlg.feature.id; })) {
+      persist();
+      logActivity("Kuesioner diperbarui: " + (qdlg.feature.title || "(tanpa judul)"));
+    }
+    var sum = document.getElementById("qnSummary");
+    if (sum) sum.innerHTML = questionnaireSummary(qdlg.feature);
+    var btn = document.getElementById("qnEdit");
+    if (btn) btn.innerHTML = svg("edit") + " Edit (" + qnAnsweredCount(clean) + "/" + qnFieldCount() + ")";
+    toast("Jawaban kuesioner disimpan", "ok");
+    closeQuestionnaireDialog();
+  }
+
+  /* =================================================================
+     EDIT MODE PANEL — tracking landing + the capture/edit form
+     ================================================================= */
+  function renderEditPanel() {
+    if (state.countdown != null) {
       panelBody.innerHTML =
-        '<div class="req-note">Mode menggambar aktif</div>' +
+        '<div class="view-head"><h2>Tracking Point</h2></div>' +
+        '<div class="status-line"><span class="sl-dot sl-live"></span><span>Hitung mundur ' + state.countdown + ' detik — jangan bergerak.</span></div>' +
+        '<p class="muted">Koordinat direkam otomatis saat hitungan mencapai 0, memakai posisi My Location terakhir.</p>' +
+        '<button class="btn btn-ghost full" id="cdAbort" type="button">Batalkan</button>';
+      qs(panelBody, "#cdAbort").addEventListener("click", cancelTrackPoint);
+      return;
+    }
+
+    if (state.lineTrack) {
+      var lt = state.lineTrack;
+      var lenM = lineLengthM(lt.pts);
+      panelBody.innerHTML =
+        '<div class="view-head"><h2>Tracking ' + (lt.kind === "Polygon" ? "Polygon / Area" : "Line") + '</h2></div>' +
+        '<div class="status-line"><span class="sl-dot sl-live"></span><span>' + lt.pts.length + ' titik · ' +
+          (lt.kind === "Polygon" && lt.pts.length >= 3 ? fmtArea(polygonAreaM2(lt.pts)) : fmtLen(lenM)) + '</span></div>' +
+        '<p class="muted">Titik awal (balon biru) menempel pada My Location. Gerak ke titik berikutnya lalu tekan <b>Tambah titik</b>, atau klik langsung di peta untuk menyambung segmen.</p>' +
+        '<button class="btn btn-primary full" id="ltAdd" type="button">' + svg("plus") + ' Tambah titik (My Location + gabung)</button>' +
+        '<div style="height:6px"></div>' +
+        '<button class="btn btn-ghost full" id="ltRefresh" type="button">' + svg("gps") + ' Perbarui My Location dulu</button>' +
+        '<div style="height:6px"></div>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button class="btn btn-ghost" id="ltUndo" type="button" style="flex:1"' + (lt.pts.length <= 1 ? " disabled" : "") + '>Hapus titik terakhir</button>' +
+          '<button class="btn btn-save" id="ltDone" type="button" style="flex:1">' + svg("check") + ' Selesai</button>' +
+        '</div>' +
+        '<div style="height:6px"></div>' +
+        '<button class="btn btn-danger full" id="ltCancel" type="button">Batalkan tracking</button>';
+      qs(panelBody, "#ltAdd").addEventListener("click", lineTrackAddCurrent);
+      qs(panelBody, "#ltRefresh").addEventListener("click", function () { requestMyLoc(function () { toast("My Location diperbarui", "ok"); }); });
+      qs(panelBody, "#ltUndo").addEventListener("click", lineTrackUndo);
+      qs(panelBody, "#ltDone").addEventListener("click", finishLineTrack);
+      qs(panelBody, "#ltCancel").addEventListener("click", function () { stopLineTrack(); });
+      return;
+    }
+
+    if (state.drawType && state.editing && !state.editing.feature) {
+      panelBody.innerHTML =
+        '<div class="req-note">Mode menggambar manual aktif</div>' +
         '<div class="prompt"><p>' +
           (state.drawType === "Point"
             ? "Klik di peta untuk menempatkan titik."
             : "Klik pada peta untuk menambah titik. Klik dua kali, tekan <b>Enter</b>, atau tombol <b>Selesai</b> untuk mengakhiri. <b>Esc</b> membatalkan.") +
         '</p>' +
         (state.drawType !== "Point"
-          ? '<button class="btn btn-save full" id="pFinish" type="button">' + svg("check") + 'Selesai menggambar</button>' +
-            '<div style="height:8px"></div>' +
-            '<button class="btn btn-ghost full" id="pCancel" type="button">Batal</button>'
-          : '<button class="btn btn-ghost full" id="pCancel" type="button">Batal</button>') +
+          ? '<button class="btn btn-save full" id="pFinish" type="button">' + svg("check") + 'Selesai menggambar</button><div style="height:8px"></div>'
+          : "") +
+        '<button class="btn btn-ghost full" id="pCancel" type="button">Batal</button>' +
         '</div>';
       if (qs(panelBody, "#pFinish")) qs(panelBody, "#pFinish").addEventListener("click", finishDraw);
       qs(panelBody, "#pCancel").addEventListener("click", cancelDraw);
@@ -1163,16 +2355,39 @@
     }
 
     if (!state.editing) {
+      var hasLoc = !!state.myLoc;
       panelBody.innerHTML =
-        '<div class="view-head"><h2>Objek Geospasial</h2></div>' +
-        '<div class="prompt"><p>Pilih alat gambar untuk menambah objek baru, atau klik objek yang ada di peta untuk menyuntingnya.</p>' +
+        '<div class="view-head"><h2>Edit Mode</h2></div>' +
+        '<div class="status-line"><span class="sl-dot ' + (hasLoc ? "sl-ok" : "sl-off") + '"></span><span>' +
+          (hasLoc ? "My Location siap (" + state.myLoc.lat.toFixed(5) + ", " + state.myLoc.lng.toFixed(5) + ")" : "My Location belum diambil") + '</span>' +
+          '<span style="flex:1"></span><button class="hbtn" id="etLoc" type="button">' + svg("gps") + (hasLoc ? " Perbarui" : " Ambil") + '</button></div>' +
+        '<button class="big-card" id="tpPoint" type="button">' +
+          '<span class="bc-ico">' + svg("point") + '</span>' +
+          '<span><span class="bc-title">Tracking Point</span><span class="bc-desc">Rekam satu titik dengan hitung mundur ' + CD_SECONDS + ' detik, lalu isi General Info &amp; Questionnaire. Untuk gedung / POI juga.</span></span>' +
+        '</button>' +
+        '<button class="big-card" id="tpLine" type="button"' + (hasLoc ? "" : " disabled") + '>' +
+          '<span class="bc-ico">' + svg("line") + '</span>' +
+          '<span><span class="bc-title">Tracking Line</span><span class="bc-desc">Mulai dari My Location, sambung titik demi titik mengikuti jalur lapangan. Panjang &amp; waktu tempuh dihitung otomatis.</span></span>' +
+        '</button>' +
+        '<button class="big-card" id="tpPoly" type="button"' + (hasLoc ? "" : " disabled") + '>' +
+          '<span class="bc-ico">' + svg("polygon") + '</span>' +
+          '<span><span class="bc-title">Tracking Polygon / Area</span><span class="bc-desc">Rekam batas area dengan titik-titik menerus; luas &amp; keliling dihitung otomatis.</span></span>' +
+        '</button>' +
+        '<div class="sub-label">Atau gambar manual di peta</div>' +
         '<div class="draw-grid">' +
           '<button data-t="Point" type="button">' + svg("point") + 'Titik</button>' +
           '<button data-t="LineString" type="button">' + svg("line") + 'Garis</button>' +
           '<button data-t="Polygon" type="button">' + svg("polygon") + 'Poligon</button>' +
-        '</div></div>' +
-        '<div class="sub-label">Terakhir ditambahkan</div>' +
+        '</div>' +
+        '<div class="sub-label" style="display:flex;align-items:center;gap:.5rem">Terakhir ditambahkan' +
+          '<span style="flex:1"></span>' +
+          '<button class="xlink" id="etAll" type="button" style="text-transform:none;letter-spacing:0">Semua di My Layers ' + svg("arrowRight") + '</button></div>' +
         '<div class="list">' + recentFeaturesHtml() + '</div>';
+      qs(panelBody, "#etAll").addEventListener("click", function () { state.view = "mylayers"; persist(); renderRail(); renderPanel(); });
+      qs(panelBody, "#etLoc").addEventListener("click", function () { requestMyLoc(function () { renderPanel(); }); });
+      qs(panelBody, "#tpPoint").addEventListener("click", startTrackPoint);
+      qs(panelBody, "#tpLine").addEventListener("click", function () { startLineTrack("LineString"); });
+      qs(panelBody, "#tpPoly").addEventListener("click", function () { startLineTrack("Polygon"); });
       qsa(panelBody, ".draw-grid button").forEach(function (b) {
         b.addEventListener("click", function () { beginDraw(b.getAttribute("data-t")); });
       });
@@ -1180,18 +2395,24 @@
       return;
     }
 
-    // --- the editor ---
+    renderEditorForm();
+  }
+
+  function renderEditorForm() {
     var e = state.editing;
     var f = e.feature;
     var cls = clsById(f.classificationId || state.collectionId);
     var isPoint = e.type === "Point";
+    var isLineish = e.type !== "Point";
+    var kindTag = e.trackKind === "point" ? "Tracking Point" : e.trackKind === "line" ? "Tracking Line" : e.trackKind === "polygon" ? "Tracking Polygon" : "Gambar manual";
     panelBody.innerHTML =
+      '<div class="view-head"><h2>' + (e.isNew ? "Objek baru" : "Sunting objek") + '</h2><span class="count">' + esc(kindTag) + '</span></div>' +
       '<div class="req-note">* Wajib diisi</div>' +
 
       '<div class="step">' +
         '<div class="step-head"><span class="step-num">1</span><span class="step-title">Klasifikasi <span class="star">*</span></span></div>' +
         '<div class="field">' +
-          '<select id="fClass" style="border-left-color:' + cls.color + '">' +
+          '<select id="fClass" class="classif" style="border-left-color:' + cls.color + '">' +
             classifications.map(function (c) {
               return '<option value="' + c.id + '"' + (c.id === f.classificationId ? " selected" : "") + '>' + esc(c.name) + '</option>';
             }).join("") +
@@ -1201,16 +2422,23 @@
       '</div>' +
 
       '<div class="step">' +
-        '<div class="step-head"><span class="step-num">2</span><span class="step-title">Informasi</span></div>' +
+        '<div class="step-head"><span class="step-num">2</span><span class="step-title">General Info</span></div>' +
         '<div class="field" id="wrapTitle"><label>Judul <span class="star">*</span></label>' +
           '<input id="fTitle" type="text" value="' + esc(f.title) + '" placeholder="cth. Blok Permukiman SP-3" /></div>' +
         '<div class="field" id="wrapDesc"><label>Deskripsi <span class="star">*</span></label>' +
           '<textarea id="fDesc" placeholder="Uraian singkat objek">' + esc(f.description) + '</textarea></div>' +
         '<div class="field"><label>Alamat</label>' +
           '<input id="fAddr" type="text" value="' + esc(f.address || "") + '" placeholder="Alamat / lokasi administratif" /></div>' +
-        '<div class="field"><label>Gambar (URL)</label>' +
+        '<div class="field"><label>WorkCompartment</label>' +
+          '<select id="fComp">' +
+            '<option value=""' + (!f.compartmentId ? " selected" : "") + '>— tanpa kompartemen —</option>' +
+            compartments.map(function (c) {
+              return '<option value="' + c.id + '"' + (c.id === f.compartmentId ? " selected" : "") + '>' + esc(c.thumb + " " + c.name) + '</option>';
+            }).join("") +
+          '</select></div>' +
+        '<div class="field"><label>' + (isLineish ? "Foto / gambar (URL)" : "Gambar (URL)") + '</label>' +
           '<div class="img-list" id="imgList"></div>' +
-          '<button class="mini-btn ghost" id="imgAdd" type="button" style="margin-top:6px">' + svg("plus") + ' Tambah gambar</button></div>' +
+          '<button class="mini-btn ghost" id="imgAdd" type="button" style="margin-top:6px">' + svg("camera") + ' Tambah ' + (isLineish ? "foto" : "gambar") + '</button></div>' +
         '<div class="field"><label>Privilege <span class="star">*</span></label>' +
           '<select id="fPriv">' +
             ["PUBLIC", "RESTRICTED", "PRIVATE"].map(function (p) {
@@ -1220,9 +2448,20 @@
       '</div>' +
 
       '<div class="step">' +
-        '<div class="step-head"><span class="step-num">3</span><span class="step-title">Kuesioner</span>' +
-          '<span style="flex:1"></span><span class="mini-btn ghost" style="cursor:default">otomatis</span></div>' +
+        '<div class="step-head"><span class="step-num">3</span><span class="step-title">Questionnaire</span>' +
+          '<span style="flex:1"></span>' +
+          '<button class="mini-btn" id="qnEdit" type="button">' + svg("edit") + ' Edit (' + qnAnsweredCount(f.questionnaire) + '/' + qnFieldCount() + ')</button></div>' +
+        '<div id="qnSummary">' + questionnaireSummary(f) + '</div>' +
+        '<div class="sub-label" style="margin-top:.75rem">Ukuran otomatis</div>' +
         '<div id="qnBox">' + questionnaireRows(e) + '</div>' +
+      '</div>' +
+
+      '<div class="step">' +
+        '<div class="step-head"><span class="step-title">Status Approval</span>' +
+          '<span style="flex:1"></span>' + (e.isNew ? apprChip("PENDING") : "") + '</div>' +
+        (e.isNew
+          ? '<div class="qn-row"><span class="qn-k">Status</span><span class="qn-v">Menunggu — diajukan saat disimpan</span></div>'
+          : approvalMetaHtml(f)) +
       '</div>' +
 
       '<div class="step">' +
@@ -1243,7 +2482,6 @@
       '</div>' +
       (e.isNew ? "" : '<button class="btn btn-danger full" id="edDelete" type="button" style="margin-top:8px">' + svg("trash") + ' Hapus objek</button>');
 
-    // images
     var imgList = qs(panelBody, "#imgList");
     function renderImgs() {
       imgList.innerHTML = (f.images || []).map(function (u, i) {
@@ -1261,14 +2499,16 @@
     renderImgs();
     qs(panelBody, "#imgAdd").addEventListener("click", function () { f.images.push(""); renderImgs(); });
 
-    // classification change
+    if (!f.questionnaire || typeof f.questionnaire !== "object") f.questionnaire = {};
+    qs(panelBody, "#qnEdit").addEventListener("click", function () { openQuestionnaireDialog(f); });
+
     qs(panelBody, "#fClass").addEventListener("change", function () {
       f.classificationId = this.value;
       renderPanel();
       mountEditShape();
     });
+    qs(panelBody, "#fComp").addEventListener("change", function () { f.compartmentId = this.value || null; });
 
-    // shape tools
     qsa(panelBody, ".shape-tool[data-mode]").forEach(function (b) {
       b.addEventListener("click", function () {
         state.shapeMode = b.getAttribute("data-mode");
@@ -1297,11 +2537,11 @@
         cancelEditing(true);
         renderFeatures();
         renderPanel();
+        logActivity("Hapus objek: " + (e.feature.title || "(tanpa judul)"));
         toast("Objek dihapus", "ok");
       });
     }
   }
-
   function shapeToolBtn(mode, icon, title, disabled) {
     return '<button class="shape-tool' + (state.shapeMode === mode ? " active" : "") + '" data-mode="' + mode + '" type="button" title="' + esc(title) + '"' + (disabled ? " disabled" : "") + '>' + svg(icon) + '</button>';
   }
@@ -1321,12 +2561,15 @@
     var rec = {
       id: e.id || uid("ft"),
       classificationId: qs(panelBody, "#fClass").value,
+      compartmentId: qs(panelBody, "#fComp").value || null,
       title: title,
       description: desc,
       address: qs(panelBody, "#fAddr").value.trim(),
       images: (f.images || []).filter(function (u) { return u && u.trim(); }),
       privilege: qs(panelBody, "#fPriv").value,
+      questionnaire: (f.questionnaire && typeof f.questionnaire === "object") ? f.questionnaire : {},
       geometry: latLngsToGeom(e.type, e.latlngs),
+      approval: e.isNew ? newApproval() : ensureApproval(f),
       createdAt: e.isNew ? now : (f.createdAt || now),
       updatedAt: now
     };
@@ -1334,6 +2577,7 @@
     else features = features.map(function (x) { return x.id === rec.id ? rec : x; });
     persist();
 
+    logActivity((e.isNew ? "Simpan objek baru: " : "Perbarui objek: ") + title + " (" + geomLabel(e.type) + ")");
     state.editing = null;
     if (editLayer) { map.removeLayer(editLayer); editLayer = null; }
     handleLayer.clearLayers();
@@ -1341,10 +2585,10 @@
     renderDrawHint();
     renderFeatures();
     renderPanel();
-    toast("Objek disimpan", "ok");
+    toast("Objek disimpan ke My Layers", "ok");
   }
 
-  /* ---- recent features helper (map view) ---- */
+  /* ---- feature row helpers ---- */
   function recentFeaturesHtml() {
     var list = features.slice().sort(function (a, b) { return (b.updatedAt || "").localeCompare(a.updatedAt || ""); }).slice(0, 6);
     if (!list.length) return '<div class="muted">Belum ada objek.</div>';
@@ -1356,10 +2600,14 @@
     var meta = f.geometry.type === "Polygon" ? fmtArea(polygonAreaM2(ll))
       : f.geometry.type === "LineString" ? fmtLen(lineLengthM(ll))
       : ll[0].lat.toFixed(4) + ", " + ll[0].lng.toFixed(4);
+    var wc = f.compartmentId && wcById(f.compartmentId);
+    var a = ensureApproval(f);
+    var am = APPROVAL_META[a.status] || APPROVAL_META.PENDING;
     return '<div class="list-item" data-fid="' + f.id + '">' +
       '<span class="li-ico" style="background:' + cls.color + '">' + svg(cls.icon) + '</span>' +
       '<span class="li-body"><span class="li-title">' + esc(f.title || "(tanpa judul)") + '</span>' +
-      '<span class="li-meta">' + esc(cls.name) + ' · ' + meta + '</span></span>' +
+      '<span class="li-meta">' + geomLabel(f.geometry.type) + ' · ' + meta + (wc ? ' · ' + esc(wc.name) : "") + '</span></span>' +
+      '<span class="appr-dot" title="Approval: ' + am.label + '" style="background:' + am.color + '"></span>' +
       '<button class="li-act" data-del="' + f.id + '" type="button" aria-label="Hapus">' + svg("trash") + '</button>' +
       '</div>';
   }
@@ -1369,7 +2617,7 @@
         if (ev.target.closest("[data-del]")) return;
         var f = features.filter(function (x) { return x.id === row.getAttribute("data-fid"); })[0];
         if (!f) return;
-        state.view = "map"; renderRail();
+        state.view = "edit"; renderRail();
         zoomToFeature(f);
         openEditor(f);
       });
@@ -1384,65 +2632,227 @@
           setTimeout(function () { if (b.isConnected) { armed = false; b.classList.remove("confirm"); b.innerHTML = svg("trash"); } }, 2600);
           return;
         }
+        var victim = features.filter(function (x) { return x.id === b.getAttribute("data-del"); })[0];
         features = features.filter(function (x) { return x.id !== b.getAttribute("data-del"); });
         persist(); renderFeatures(); renderPanel();
+        if (victim) logActivity("Hapus objek: " + (victim.title || "(tanpa judul)"));
         toast("Objek dihapus", "ok");
       });
     });
   }
 
-  /* ---- layers view ---- */
-  function renderLayersPanel() {
-    panelBody.innerHTML =
-      '<div class="view-head"><h2>Lapisan</h2></div>' +
-      '<div class="sub-label">Peta dasar</div>' +
-      Object.keys(BASEMAPS).map(function (k) {
-        return '<label class="radio-row"><input type="radio" name="bm" value="' + k + '"' + (state.basemap === k ? " checked" : "") + '><span>' + esc(BASEMAPS[k].name) + '</span></label>';
-      }).join("") +
-      '<div class="sub-label">Visibilitas klasifikasi</div>' +
-      classifications.map(function (c) {
-        var cnt = features.filter(function (f) { return f.classificationId === c.id; }).length;
-        var on = !state.hidden[c.id];
-        return '<div class="toggle-row"><span class="dot" style="background:' + c.color + '"></span>' +
-          '<span class="grow">' + esc(c.name) + ' <span style="color:var(--text-faint)">(' + cnt + ')</span></span>' +
-          '<label class="switch"><input type="checkbox" data-cls="' + c.id + '"' + (on ? " checked" : "") + '><span class="track"></span></label></div>';
-      }).join("");
+  /* =================================================================
+     MAIN MENU → PUBLIC MAPPING (WorkCompartment, PRD F-4.1 – F-4.4)
+     ================================================================= */
+  var wcDraft = { name: "", desc: "", thumb: WC_THUMBS[0] };
+  function renderPublicPanel() {
+    if (state.wcCreating) {
+      panelBody.innerHTML =
+        '<div class="view-head"><h2>WorkCompartment baru</h2></div>' +
+        '<div class="field" id="wrapWcName"><label>Nama <span class="star">*</span></label>' +
+          '<input id="wcName" type="text" value="' + esc(wcDraft.name) + '" placeholder="cth. Survei Kawasan SP-3" /></div>' +
+        '<div class="field"><label>Keterangan</label>' +
+          '<textarea id="wcDesc" placeholder="Tujuan / lingkup pekerjaan proyek">' + esc(wcDraft.desc) + '</textarea></div>' +
+        '<div class="field"><label>Thumbnail</label>' +
+          '<div class="thumb-grid" id="wcThumbs">' +
+            WC_THUMBS.map(function (t) { return '<button type="button" data-t="' + t + '" class="' + (t === wcDraft.thumb ? "sel" : "") + '">' + t + '</button>'; }).join("") +
+          '</div></div>' +
+        '<div class="editor-actions">' +
+          '<button class="btn btn-cancel" id="wcCancel" type="button">' + svg("close") + ' Batal</button>' +
+          '<button class="btn btn-save" id="wcSave" type="button">' + svg("check") + ' Buat</button>' +
+        '</div>';
+      qs(panelBody, "#wcName").addEventListener("input", function () { wcDraft.name = this.value; });
+      qs(panelBody, "#wcDesc").addEventListener("input", function () { wcDraft.desc = this.value; });
+      qsa(panelBody, "#wcThumbs button").forEach(function (b) {
+        b.addEventListener("click", function () {
+          wcDraft.thumb = b.getAttribute("data-t");
+          qsa(panelBody, "#wcThumbs button").forEach(function (x) { x.classList.remove("sel"); });
+          b.classList.add("sel");
+        });
+      });
+      qs(panelBody, "#wcCancel").addEventListener("click", function () { state.wcCreating = false; renderPanel(); });
+      qs(panelBody, "#wcSave").addEventListener("click", function () {
+        var name = (wcDraft.name || "").trim();
+        if (!name) { qs(panelBody, "#wrapWcName").classList.add("invalid"); toast("Nama wajib diisi", "err"); return; }
+        var rec = { id: uid("wc"), name: name, desc: (wcDraft.desc || "").trim(), thumb: wcDraft.thumb, createdAt: new Date().toISOString() };
+        compartments.push(rec);
+        state.activeCompartment = rec.id;
+        state.wcCreating = false;
+        wcDraft = { name: "", desc: "", thumb: WC_THUMBS[0] };
+        persist();
+        logActivity("Buat & aktifkan WorkCompartment: " + rec.name);
+        renderPanel();
+        toast("WorkCompartment dibuat & diaktifkan", "ok");
+      });
+      return;
+    }
 
-    qsa(panelBody, 'input[name="bm"]').forEach(function (r) {
-      r.addEventListener("change", function () { setBasemap(r.value); });
+    var active = state.activeCompartment && wcById(state.activeCompartment);
+    panelBody.innerHTML =
+      '<div class="view-head"><h2>' + (active ? esc(active.thumb + " " + active.name) : "Public Mapping") + '</h2>' +
+        '<span class="count">' + compartments.length + '</span><span class="grow"></span>' +
+        (active ? '<button class="hbtn" id="wcExit" type="button">' + svg("close") + ' Public Mapping</button>' : "") +
+      '</div>' +
+      (active
+        ? '<p class="muted">' + esc(active.desc || "Tanpa keterangan.") + '</p>' +
+          '<div class="status-line"><span class="sl-dot sl-ok"></span><span>Kompartemen aktif — objek baru otomatis masuk ke sini. ' +
+            features.filter(function (f) { return f.compartmentId === active.id; }).length + ' objek tercatat.</span></div>'
+        : '<p class="muted">Pilih WorkCompartment untuk mengorganisir pekerjaan survei per proyek, atau tetap di Public Mapping default. Objek yang direkam saat sebuah kompartemen aktif otomatis dikaitkan dengannya.</p>') +
+      '<div class="sub-label">Daftar WorkCompartment</div>' +
+      '<div class="list" id="wcList">' +
+        compartments.map(function (c) {
+          var cnt = features.filter(function (f) { return f.compartmentId === c.id; }).length;
+          return '<div class="list-item' + (c.id === state.activeCompartment ? " active" : "") + '" data-wc="' + c.id + '">' +
+            '<span class="li-ico" style="background:var(--panel-2)">' + esc(c.thumb) + '</span>' +
+            '<span class="li-body"><span class="li-title">' + esc(c.name) + '</span>' +
+            '<span class="li-meta">' + esc(c.desc || "—") + ' · ' + cnt + ' objek</span></span>' +
+            '<button class="li-act" data-del="' + c.id + '" type="button" aria-label="Hapus">' + svg("trash") + '</button>' +
+          '</div>';
+        }).join("") +
+      '</div>' +
+      '<div style="height:10px"></div>' +
+      '<button class="btn btn-primary full" id="wcNew" type="button">' + svg("plus") + ' Buat WorkCompartment</button>';
+
+    if (qs(panelBody, "#wcExit")) qs(panelBody, "#wcExit").addEventListener("click", exitCompartment);
+    qs(panelBody, "#wcNew").addEventListener("click", function () { state.wcCreating = true; renderPanel(); });
+    qsa(panelBody, ".list-item[data-wc]").forEach(function (row) {
+      row.addEventListener("click", function (ev) {
+        if (ev.target.closest("[data-del]")) return;
+        var id = row.getAttribute("data-wc");
+        state.activeCompartment = state.activeCompartment === id ? null : id;
+        persist();
+        var wc = wcById(id);
+        logActivity(state.activeCompartment ? "Aktifkan WorkCompartment: " + (wc && wc.name) : "Kembali ke Public Mapping default");
+        renderPanel();
+        toast(state.activeCompartment ? "Kompartemen aktif: " + (wc && wc.name) : "Kembali ke Public Mapping", "ok");
+      });
     });
-    qsa(panelBody, ".switch input").forEach(function (c) {
+    qsa(panelBody, "[data-del]").forEach(function (b) {
+      var armed = false;
+      b.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        var id = b.getAttribute("data-del");
+        if (!armed) { armed = true; b.classList.add("confirm"); b.textContent = "Hapus?"; setTimeout(function () { if (b.isConnected) { armed = false; b.classList.remove("confirm"); b.innerHTML = svg("trash"); } }, 2600); return; }
+        compartments = compartments.filter(function (c) { return c.id !== id; });
+        features.forEach(function (f) { if (f.compartmentId === id) f.compartmentId = null; });
+        if (state.activeCompartment === id) state.activeCompartment = null;
+        persist(); renderPanel(); renderFeatures();
+        toast("WorkCompartment dihapus", "ok");
+      });
+    });
+  }
+  function exitCompartment() {
+    state.activeCompartment = null;
+    persist();
+    logActivity("Kembali ke Public Mapping default");
+    renderPanel();
+    toast("Kembali ke Public Mapping", "ok");
+  }
+  function updateWcChip() {
+    var slot = document.getElementById("wcChipSlot");
+    var active = state.activeCompartment && wcById(state.activeCompartment);
+    if (!active) { slot.innerHTML = ""; return; }
+    slot.innerHTML = '<span class="wc-chip"><span class="wc-emoji">' + esc(active.thumb) + '</span>' + esc(active.name) +
+      '<button type="button" id="wcChipExit" title="Keluar ke Public Mapping">' + svg("close") + '</button></span>';
+    var x = document.getElementById("wcChipExit");
+    if (x) x.addEventListener("click", exitCompartment);
+  }
+
+  /* =================================================================
+     MAIN MENU → MY LAYERS (PRD F-4.8 / F-4.9)
+     ================================================================= */
+  function renderMyLayersPanel() {
+    var active = state.activeCompartment && wcById(state.activeCompartment);
+    var scoped = active && !state.myLayersScopeAll;
+    var pool = features.filter(function (f) {
+      if (scoped && f.compartmentId !== active.id) return false;
+      if (state.myGeomFilter !== "all" && f.geometry.type !== state.myGeomFilter) return false;
+      return true;
+    });
+    panelBody.innerHTML =
+      '<div class="view-head"><h2>My Layers</h2><span class="count">' + pool.length + '</span><span class="grow"></span>' +
+        (active ? '<button class="hbtn" id="mlScope" type="button">' + (scoped ? "Semua kompartemen" : "Hanya " + esc(active.thumb)) + '</button>' : "") +
+      '</div>' +
+      '<button class="btn btn-primary full" id="mlNew" type="button" style="margin-bottom:.7rem">' + svg("plus") + ' Rekam objek baru (Edit Mode)</button>' +
+      (active ? '<div class="status-line"><span class="sl-dot ' + (scoped ? "sl-ok" : "sl-live") + '"></span><span>' +
+        (scoped ? "Menampilkan objek kompartemen “" + esc(active.name) + "”." : "Menampilkan seluruh objek dari semua kompartemen.") + '</span></div>' : "") +
+      '<div class="seg" id="mlSeg">' +
+        [["all", "Semua"], ["Point", "Titik"], ["LineString", "Garis"], ["Polygon", "Poligon"]].map(function (o) {
+          return '<button data-g="' + o[0] + '" class="' + (state.myGeomFilter === o[0] ? "sel" : "") + '">' + o[1] + '</button>';
+        }).join("") +
+      '</div>' +
+      '<div class="field"><input id="mlFilter" type="text" placeholder="Saring judul / alamat …" /></div>' +
+      '<div style="display:flex;gap:6px;margin-bottom:10px">' +
+        '<button class="btn btn-ghost" id="mlExport" type="button" style="flex:1">' + svg("download") + ' Ekspor</button>' +
+        '<button class="btn btn-ghost" id="mlImport" type="button" style="flex:1">' + svg("upload") + ' Impor</button>' +
+      '</div>' +
+      '<div class="list" id="mlList"></div>' +
+      classPanelHtml();
+
+    function paint(txt) {
+      var t = (txt || "").toLowerCase();
+      var rows = pool.filter(function (x) { return !t || (x.title + " " + (x.address || "")).toLowerCase().indexOf(t) >= 0; });
+      qs(panelBody, "#mlList").innerHTML = rows.length ? rows.map(featureRowHtml).join("") : '<div class="muted">Tidak ada objek yang cocok.</div>';
+      wireFeatureList(qs(panelBody, "#mlList"));
+    }
+    paint("");
+    wireClassPanel(panelBody);
+    qs(panelBody, "#mlNew").addEventListener("click", function () { state.view = "edit"; persist(); renderRail(); renderPanel(); });
+    qs(panelBody, "#mlFilter").addEventListener("input", function () { paint(this.value); });
+    qsa(panelBody, "#mlSeg button").forEach(function (b) {
+      b.addEventListener("click", function () { state.myGeomFilter = b.getAttribute("data-g"); renderPanel(); });
+    });
+    if (qs(panelBody, "#mlScope")) qs(panelBody, "#mlScope").addEventListener("click", function () { state.myLayersScopeAll = !state.myLayersScopeAll; renderPanel(); });
+    qs(panelBody, "#mlExport").addEventListener("click", exportGeoJSON);
+    qs(panelBody, "#mlImport").addEventListener("click", importGeoJSON);
+  }
+
+  /* classification manager — used inside My Layers (moved from the removed Layers menu) */
+  var ICON_CHOICES = ["pin", "parcel", "boundary", "road", "building", "layers", "tag", "shapes"];
+  function classPanelHtml() {
+    return '<details class="card" style="margin-top:14px;padding:.65rem .8rem">' +
+      '<summary style="cursor:pointer;font-weight:700;font-size:.82rem;list-style:none">Klasifikasi objek</summary>' +
+      '<div style="margin-top:.6rem">' +
+        classifications.map(function (c) {
+          var cnt = features.filter(function (f) { return f.classificationId === c.id; }).length;
+          var on = !state.hidden[c.id];
+          return '<div class="toggle-row"><span class="dot" style="background:' + c.color + '"></span>' +
+            '<span class="grow">' + esc(c.name) + ' <span style="color:var(--text-faint)">(' + cnt + ')</span></span>' +
+            '<label class="switch"><input type="checkbox" data-cls="' + c.id + '"' + (on ? " checked" : "") + '><span class="track"></span></label></div>';
+        }).join("") +
+        '<div class="sub-label">Tambah klasifikasi</div>' +
+        '<div class="field"><label>Nama</label><input id="ncName" type="text" placeholder="cth. Sumber Air" /></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label>Warna</label><input id="ncColor" type="color" value="#33809c" style="height:38px;padding:2px" /></div>' +
+          '<div class="field"><label>Ikon</label><select id="ncIcon">' +
+            ICON_CHOICES.map(function (k) { return '<option value="' + k + '">' + k + '</option>'; }).join("") +
+          '</select></div>' +
+        '</div>' +
+        '<div class="field"><label>Deskripsi</label><input id="ncDesc" type="text" placeholder="Keterangan singkat" /></div>' +
+        '<button class="btn btn-save full" id="ncAdd" type="button">' + svg("plus") + ' Tambah klasifikasi</button>' +
+      '</div></details>';
+  }
+  function wireClassPanel(root) {
+    qsa(root, ".switch input[data-cls]").forEach(function (c) {
       c.addEventListener("change", function () {
         var id = c.getAttribute("data-cls");
         if (c.checked) delete state.hidden[id]; else state.hidden[id] = true;
         persist(); renderFeatures();
       });
     });
-  }
-
-  /* ---- features list view ---- */
-  function renderFeaturesPanel() {
-    panelBody.innerHTML =
-      '<div class="view-head"><h2>Daftar Objek</h2><span class="count">' + features.length + '</span><span class="grow"></span></div>' +
-      '<div class="field"><input id="ftFilter" type="text" placeholder="Saring judul / alamat …" /></div>' +
-      '<div style="display:flex;gap:6px;margin-bottom:10px">' +
-        '<button class="btn btn-ghost" id="ftExport" type="button" style="flex:1">' + svg("download") + ' Ekspor</button>' +
-        '<button class="btn btn-ghost" id="ftImport" type="button" style="flex:1">' + svg("upload") + ' Impor</button>' +
-      '</div>' +
-      '<div class="list" id="ftList"></div>';
-
-    function paint(filter) {
-      var f = (filter || "").toLowerCase();
-      var rows = features.filter(function (x) {
-        return !f || (x.title + " " + (x.address || "")).toLowerCase().indexOf(f) >= 0;
+    var add = qs(root, "#ncAdd");
+    if (add) add.addEventListener("click", function () {
+      var name = qs(root, "#ncName").value.trim();
+      if (!name) { toast("Nama wajib diisi", "err"); return; }
+      classifications.push({
+        id: uid("cls"), name: name,
+        desc: qs(root, "#ncDesc").value.trim() || "-",
+        color: qs(root, "#ncColor").value,
+        icon: qs(root, "#ncIcon").value
       });
-      qs(panelBody, "#ftList").innerHTML = rows.length ? rows.map(featureRowHtml).join("") : '<div class="muted">Tidak ada objek yang cocok.</div>';
-      wireFeatureList(qs(panelBody, "#ftList"));
-    }
-    paint("");
-    qs(panelBody, "#ftFilter").addEventListener("input", function () { paint(this.value); });
-    qs(panelBody, "#ftExport").addEventListener("click", exportGeoJSON);
-    qs(panelBody, "#ftImport").addEventListener("click", importGeoJSON);
+      persist(); renderPanel(); renderDockTop();
+      toast("Klasifikasi ditambahkan", "ok");
+    });
   }
 
   function exportGeoJSON() {
@@ -1451,13 +2861,18 @@
       features: features.map(function (f) {
         var cls = clsById(f.classificationId);
         var ll = geomToLatLngs(f.geometry);
+        var wc = f.compartmentId && wcById(f.compartmentId);
         return {
-          type: "Feature",
-          geometry: f.geometry,
+          type: "Feature", geometry: f.geometry,
           properties: {
             id: f.id, title: f.title, description: f.description, address: f.address,
             classification: cls.name, classification_id: f.classificationId,
+            compartment: wc ? wc.name : undefined, compartment_id: f.compartmentId || undefined,
             privilege: f.privilege, images: f.images || [],
+            approval_status: ensureApproval(f).status,
+            approval_reviewer: f.approval.reviewer || undefined,
+            approval_submitted_at: f.approval.submittedAt || undefined,
+            approval_reviewed_at: f.approval.reviewedAt || undefined,
             area_m2: f.geometry.type === "Polygon" ? Math.round(polygonAreaM2(ll) * 100) / 100 : undefined,
             length_m: f.geometry.type === "LineString" ? Math.round(lineLengthM(ll) * 100) / 100 : undefined,
             createdAt: f.createdAt, updatedAt: f.updatedAt
@@ -1465,16 +2880,15 @@
         };
       })
     };
-    var text = JSON.stringify(fc, null, 2);
-    var blob = new Blob([text], { type: "application/geo+json" });
+    var blob = new Blob([JSON.stringify(fc, null, 2)], { type: "application/geo+json" });
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
     a.href = url; a.download = "geomapping-" + new Date().toISOString().slice(0, 10) + ".geojson";
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 0);
+    logActivity("Ekspor GeoJSON (" + features.length + " objek)");
     toast("Diekspor: " + features.length + " objek", "ok");
   }
-
   function importGeoJSON() {
     var inp = document.createElement("input");
     inp.type = "file"; inp.accept = ".geojson,.json,application/geo+json,application/json";
@@ -1492,20 +2906,29 @@
             var g = gf.geometry;
             if (!g || ["Point", "LineString", "Polygon"].indexOf(g.type) < 0) return;
             var p = gf.properties || {};
-            var cls = classifications.filter(function (c) {
-              return c.id === p.classification_id || c.name === p.classification;
-            })[0] || clsById(state.collectionId);
+            var cls = classifications.filter(function (c) { return c.id === p.classification_id || c.name === p.classification; })[0] || clsById(state.collectionId);
+            var wc = compartments.filter(function (c) { return c.id === p.compartment_id || c.name === p.compartment; })[0];
             var now = new Date().toISOString();
+            var impStatus = APPROVAL_META[p.approval_status] ? p.approval_status : "PENDING";
             features.push({
-              id: uid("ft"), classificationId: cls.id,
+              id: uid("ft"), classificationId: cls.id, compartmentId: wc ? wc.id : (state.activeCompartment || null),
               title: p.title || p.name || "Objek impor", description: p.description || "",
               address: p.address || "", images: Array.isArray(p.images) ? p.images : [],
               privilege: p.privilege || "PUBLIC", geometry: g,
+              approval: {
+                status: impStatus,
+                submittedBy: p.approval_reviewer ? (p.approval_reviewer + " (impor)") : userName(),
+                submittedAt: p.approval_submitted_at || p.createdAt || now,
+                reviewer: impStatus === "PENDING" ? null : (p.approval_reviewer || null),
+                reviewedAt: impStatus === "PENDING" ? null : (p.approval_reviewed_at || null),
+                note: "", history: [{ action: "SUBMITTED", by: userName(), at: now, note: "impor GeoJSON" }]
+              },
               createdAt: p.createdAt || now, updatedAt: now
             });
             added++;
           });
           persist(); renderFeatures(); renderPanel();
+          logActivity("Impor GeoJSON (" + added + " objek)");
           toast("Diimpor: " + added + " objek", "ok");
         } catch (e) { toast("Berkas GeoJSON tidak valid", "err"); }
       };
@@ -1514,154 +2937,277 @@
     inp.click();
   }
 
-  /* ---- classifications view ---- */
-  var ICON_CHOICES = ["pin", "parcel", "boundary", "road", "building", "layers", "tag", "shapes"];
-  function renderClassPanel() {
+  /* =================================================================
+     APPROVAL — review/verify survey objects before publishing
+     (PRD open question #2). Front-end prototype: any signed-in user
+     may act as reviewer.
+     ================================================================= */
+  function apprChip(status) {
+    var m = APPROVAL_META[status] || APPROVAL_META.PENDING;
+    return '<span class="appr-chip" style="color:' + m.color + ';background:color-mix(in srgb,' + m.color + ' 14%,transparent);border-color:' + m.color + '">' +
+      '<span class="appr-dot" style="background:' + m.color + '"></span>' + m.label + '</span>';
+  }
+  function apprHistoryHtml(a) {
+    if (!a.history || !a.history.length) return '<div class="muted" style="font-size:.7rem">Belum ada riwayat.</div>';
+    return a.history.map(function (h) {
+      return '<div class="act-item"><span class="act-dot" style="background:' + ((APPROVAL_META[h.action] || {}).color || 'var(--series-2)') + '"></span>' +
+        '<span><span>' + esc(APPROVAL_ACTION_LABEL[h.action] || h.action) + ' &middot; ' + esc(h.by || "-") + (h.note ? ' — ' + esc(h.note) : "") + '</span>' +
+        '<span class="act-when">' + fmtWhen(Date.parse(h.at) || Date.now()) + '</span></span></div>';
+    }).join("");
+  }
+  // shared read-only metadata block (used in the editor form too)
+  function approvalMetaHtml(f) {
+    var a = ensureApproval(f);
+    return '<div class="appr-meta">' +
+      '<div class="qn-row"><span class="qn-k">Status</span><span class="qn-v">' + apprChip(a.status) + '</span></div>' +
+      '<div class="qn-row"><span class="qn-k">Diajukan</span><span class="qn-v mono">' + esc(a.submittedBy || "-") + ' &middot; ' + (a.submittedAt ? fmtWhen(Date.parse(a.submittedAt)) : "-") + '</span></div>' +
+      '<div class="qn-row"><span class="qn-k">Ditinjau</span><span class="qn-v mono">' + (a.reviewer ? esc(a.reviewer) + ' &middot; ' + fmtWhen(Date.parse(a.reviewedAt)) : "—") + '</span></div>' +
+      (a.note ? '<div class="qn-row"><span class="qn-k">Catatan</span><span class="qn-v">' + esc(a.note) + '</span></div>' : "") +
+      '<details class="appr-hist"><summary>Riwayat approval (' + (a.history ? a.history.length : 0) + ')</summary>' +
+        '<div style="margin-top:.4rem">' + apprHistoryHtml(a) + '</div></details>' +
+    '</div>';
+  }
+
+  function renderApprovalPanel() {
+    var counts = { all: features.length, PENDING: apprCount("PENDING"), APPROVED: apprCount("APPROVED"), REJECTED: apprCount("REJECTED") };
+    var pool = features.filter(function (f) { return state.apprFilter === "all" || ensureApproval(f).status === state.apprFilter; });
+    pool = pool.slice().sort(function (x, y) {
+      var rank = { PENDING: 0, REJECTED: 1, APPROVED: 2 };
+      var d = rank[ensureApproval(x).status] - rank[ensureApproval(y).status];
+      return d || (ensureApproval(y).submittedAt || "").localeCompare(ensureApproval(x).submittedAt || "");
+    });
+
     panelBody.innerHTML =
-      '<div class="view-head"><h2>Klasifikasi</h2><span class="count">' + classifications.length + '</span></div>' +
-      '<div class="list" id="clsList">' +
-        classifications.map(function (c) {
-          var cnt = features.filter(function (f) { return f.classificationId === c.id; }).length;
-          return '<div class="list-item" data-cid="' + c.id + '">' +
-            '<span class="li-ico" style="background:' + c.color + '">' + svg(c.icon) + '</span>' +
-            '<span class="li-body"><span class="li-title">' + esc(c.name) + '</span>' +
-            '<span class="li-meta">' + esc(c.desc) + ' · ' + cnt + ' objek</span></span>' +
-            '<button class="li-act" data-del="' + c.id + '" type="button" aria-label="Hapus">' + svg("trash") + '</button>' +
+      '<div class="view-head"><h2>Approval</h2><span class="count">' + counts.PENDING + ' menunggu</span></div>' +
+      '<div class="seg" id="apprSeg">' +
+        [["all", "Semua " + counts.all], ["PENDING", "Menunggu " + counts.PENDING], ["APPROVED", "Disetujui " + counts.APPROVED], ["REJECTED", "Ditolak " + counts.REJECTED]].map(function (o) {
+          return '<button data-s="' + o[0] + '" class="' + (state.apprFilter === o[0] ? "sel" : "") + '">' + o[1] + '</button>';
+        }).join("") +
+      '</div>' +
+      (pool.length ? '<div class="list" id="apprList">' + pool.map(apprRowHtml).join("") + '</div>'
+                   : '<div class="muted">Tidak ada objek pada status ini.</div>');
+
+    qsa(panelBody, "#apprSeg button").forEach(function (b) {
+      b.addEventListener("click", function () { state.apprFilter = b.getAttribute("data-s"); renderPanel(); });
+    });
+    qsa(panelBody, "[data-appr]").forEach(function (row) {
+      var fid = row.getAttribute("data-appr");
+      var f = features.filter(function (x) { return x.id === fid; })[0];
+      if (!f) return;
+      row.querySelector(".appr-head").addEventListener("click", function () {
+        state.apprOpen[fid] = !state.apprOpen[fid];
+        renderPanel();
+      });
+      var zoom = row.querySelector("[data-zoom]");
+      if (zoom) zoom.addEventListener("click", function (e) { e.stopPropagation(); zoomToFeature(f); state.view = "edit"; renderRail(); openEditor(f); });
+      qsa(row, "[data-act]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var note = (row.querySelector(".appr-note") || {}).value || "";
+          var act = btn.getAttribute("data-act");
+          if (act === "REJECTED" && !note.trim()) { toast("Beri catatan alasan penolakan", "err"); return; }
+          setApproval(f, act, note.trim());
+          renderFeatures();
+          renderPanel();
+          toast("Status diperbarui: " + APPROVAL_META[act].label, "ok");
+        });
+      });
+    });
+  }
+  function apprRowHtml(f) {
+    var a = ensureApproval(f);
+    var cls = clsById(f.classificationId);
+    var open = !!state.apprOpen[f.id];
+    var wc = f.compartmentId && wcById(f.compartmentId);
+    return '<div class="appr-item' + (open ? " open" : "") + '" data-appr="' + f.id + '">' +
+      '<div class="appr-head">' +
+        '<span class="li-ico" style="background:' + cls.color + '">' + svg(cls.icon) + '</span>' +
+        '<span class="li-body"><span class="li-title">' + esc(f.title || "(tanpa judul)") + '</span>' +
+        '<span class="li-meta">' + geomLabel(f.geometry.type) + ' &middot; ' + esc(a.submittedBy || "-") + (wc ? ' &middot; ' + esc(wc.name) : "") + '</span></span>' +
+        apprChip(a.status) +
+        '<span class="appr-caret">' + svg("arrowRight") + '</span>' +
+      '</div>' +
+      (open
+        ? '<div class="appr-body">' +
+            approvalMetaHtml(f) +
+            '<button class="xlink" data-zoom="1" type="button" style="margin:.4rem 0 .6rem">Buka di peta / editor ' + svg("arrowRight") + '</button>' +
+            '<textarea class="appr-note" placeholder="Catatan reviewer (wajib untuk penolakan)"></textarea>' +
+            '<div class="appr-actions">' +
+              (a.status !== "APPROVED" ? '<button class="btn btn-save" data-act="APPROVED" type="button">' + svg("check") + ' Setujui</button>' : "") +
+              (a.status !== "REJECTED" ? '<button class="btn btn-danger" data-act="REJECTED" type="button">' + svg("x") + ' Tolak</button>' : "") +
+              (a.status !== "PENDING" ? '<button class="btn btn-ghost" data-act="PENDING" type="button">' + svg("history") + ' Kembalikan ke Menunggu</button>' : "") +
+            '</div>' +
+          '</div>'
+        : "") +
+    '</div>';
+  }
+
+  /* =================================================================
+     MAIN MENU → ACTIVITY (PRD F-4.10 / F-4.11)
+     ================================================================= */
+  function renderActivityPanel() {
+    panelBody.innerHTML =
+      '<div class="view-head"><h2>Activity</h2><span class="count">' + activity.length + '</span><span class="grow"></span>' +
+        (activity.length ? '<button class="hbtn" id="actClear" type="button">' + svg("trash") + ' Bersihkan</button>' : "") +
+      '</div>' +
+      (activity.length
+        ? '<div style="margin-top:.6rem">' + activity.map(function (a) {
+            return '<div class="act-item"><span class="act-dot"></span><span><span>' + esc(a.action) + '</span>' +
+              '<span class="act-when">' + fmtWhen(a.ts) + '</span></span></div>';
+          }).join("") + '</div>'
+        : '<div class="muted" style="margin-top:.6rem">Belum ada aktivitas tercatat.</div>');
+    if (qs(panelBody, "#actClear")) {
+      var b = qs(panelBody, "#actClear"), armed = false;
+      b.addEventListener("click", function () {
+        if (!armed) { armed = true; b.innerHTML = svg("trash") + " Yakin?"; return; }
+        activity = []; store.set("activity", activity); renderPanel(); updateRailBadges();
+      });
+    }
+  }
+
+  /* =================================================================
+     EDIT MODE → TASK (PRD F-5.13 / F-5.14)
+     ================================================================= */
+  function renderTaskPanel() {
+    var open = tasks.filter(function (t) { return !t.done; }).length;
+    panelBody.innerHTML =
+      '<div class="view-head"><h2>Task</h2><span class="count">' + open + ' terbuka</span></div>' +
+      '<div style="margin-top:.7rem">' +
+        tasks.map(function (t) {
+          return '<div class="task-item' + (t.done ? " done" : "") + '">' +
+            '<input type="checkbox" data-tid="' + t.id + '"' + (t.done ? " checked" : "") + ' />' +
+            '<span style="flex:1"><span class="ti-title">' + esc(t.title) + '</span>' +
+            '<span class="ti-desc">' + esc(t.desc || "") + '</span></span>' +
+            '<button class="li-act" data-del="' + t.id + '" type="button" aria-label="Hapus">' + svg("trash") + '</button>' +
           '</div>';
         }).join("") +
       '</div>' +
-      '<div class="sub-label">Tambah klasifikasi</div>' +
-      '<div class="field"><label>Nama</label><input id="ncName" type="text" placeholder="cth. Sumber Air" /></div>' +
-      '<div class="field"><label>Deskripsi</label><input id="ncDesc" type="text" placeholder="Keterangan singkat" /></div>' +
-      '<div class="field"><label>Warna</label><input id="ncColor" type="color" value="#33809c" style="height:38px;padding:2px" /></div>' +
-      '<div class="field"><label>Ikon</label><select id="ncIcon">' +
-        ICON_CHOICES.map(function (k) { return '<option value="' + k + '">' + k + '</option>'; }).join("") +
-      '</select></div>' +
-      '<button class="btn btn-save full" id="ncAdd" type="button">' + svg("plus") + ' Tambah</button>';
-
-    qsa(panelBody, ".list-item[data-cid]").forEach(function (row) {
-      row.addEventListener("click", function (ev) {
-        if (ev.target.closest("[data-del]")) return;
-        state.collectionId = row.getAttribute("data-cid");
-        persist();
-        toast("Koleksi aktif: " + clsById(state.collectionId).name, "ok");
+      '<div class="sub-label">Tambah tugas</div>' +
+      '<div class="field"><input id="tkTitle" type="text" placeholder="Judul tugas survei" /></div>' +
+      '<button class="btn btn-save full" id="tkAdd" type="button">' + svg("plus") + ' Tambah tugas</button>';
+    qsa(panelBody, "input[data-tid]").forEach(function (c) {
+      c.addEventListener("change", function () {
+        var t = tasks.filter(function (x) { return x.id === c.getAttribute("data-tid"); })[0];
+        if (!t) return;
+        t.done = c.checked; persist(); updateRailBadges();
+        logActivity((c.checked ? "Tandai tugas selesai: " : "Buka kembali tugas: ") + t.title);
+        renderPanel();
       });
     });
     qsa(panelBody, "[data-del]").forEach(function (b) {
-      var armed = false;
-      b.addEventListener("click", function (ev) {
-        ev.stopPropagation();
-        var id = b.getAttribute("data-del");
-        if (features.some(function (f) { return f.classificationId === id; })) { toast("Masih dipakai objek — tak bisa dihapus", "err"); return; }
-        if (classifications.length <= 1) { toast("Minimal satu klasifikasi", "err"); return; }
-        if (!armed) { armed = true; b.classList.add("confirm"); b.textContent = "Hapus?"; setTimeout(function () { if (b.isConnected) { armed = false; b.classList.remove("confirm"); b.innerHTML = svg("trash"); } }, 2600); return; }
-        classifications = classifications.filter(function (c) { return c.id !== id; });
-        if (state.collectionId === id) state.collectionId = classifications[0].id;
-        persist(); renderClassPanel(); renderDockTop();
+      b.addEventListener("click", function () {
+        tasks = tasks.filter(function (x) { return x.id !== b.getAttribute("data-del"); });
+        persist(); updateRailBadges(); renderPanel();
       });
     });
-    qs(panelBody, "#ncAdd").addEventListener("click", function () {
-      var name = qs(panelBody, "#ncName").value.trim();
-      if (!name) { toast("Nama wajib diisi", "err"); return; }
-      classifications.push({
-        id: uid("cls"), name: name,
-        desc: qs(panelBody, "#ncDesc").value.trim() || "—",
-        color: qs(panelBody, "#ncColor").value,
-        icon: qs(panelBody, "#ncIcon").value
-      });
-      persist(); renderClassPanel(); renderDockTop();
-      toast("Klasifikasi ditambahkan", "ok");
+    qs(panelBody, "#tkAdd").addEventListener("click", function () {
+      var v = qs(panelBody, "#tkTitle").value.trim();
+      if (!v) { toast("Judul tugas wajib diisi", "err"); return; }
+      tasks.push({ id: uid("tsk"), title: v, desc: "", done: false });
+      persist(); updateRailBadges(); renderPanel();
+      toast("Tugas ditambahkan", "ok");
     });
   }
 
-  /* ---- bookmarks view ---- */
-  function renderBookmarksPanel() {
-    panelBody.innerHTML =
-      '<div class="view-head"><h2>Penanda</h2><span class="count">' + bookmarks.length + '</span></div>' +
-      '<button class="btn btn-save full" id="bmAdd" type="button">' + svg("bookmark") + ' Simpan tampilan peta saat ini</button>' +
-      '<div class="sub-label">Tersimpan</div>' +
-      '<div class="list" id="bmList">' +
-        (bookmarks.length ? bookmarks.map(function (b) {
-          return '<div class="list-item" data-bid="' + b.id + '">' +
-            '<span class="li-ico" style="background:var(--series-2)">' + svg("bookmark") + '</span>' +
-            '<span class="li-body"><span class="li-title">' + esc(b.name) + '</span>' +
-            '<span class="li-meta mono">' + b.lat.toFixed(4) + ", " + b.lng.toFixed(4) + " · z" + b.zoom + '</span></span>' +
-            '<button class="li-act" data-del="' + b.id + '" type="button" aria-label="Hapus">' + svg("trash") + '</button>' +
-          '</div>';
-        }).join("") : '<div class="muted">Belum ada penanda.</div>') +
-      '</div>';
-
-    qs(panelBody, "#bmAdd").addEventListener("click", function () {
-      var c = map.getCenter();
-      var name = "Penanda " + (bookmarks.length + 1);
-      bookmarks.push({ id: uid("bm"), name: name, lat: c.lat, lng: c.lng, zoom: map.getZoom() });
-      persist(); renderBookmarksPanel();
-      toast("Penanda disimpan", "ok");
-    });
-    qsa(panelBody, ".list-item[data-bid]").forEach(function (row) {
-      row.addEventListener("click", function (ev) {
-        if (ev.target.closest("[data-del]")) return;
-        var b = bookmarks.filter(function (x) { return x.id === row.getAttribute("data-bid"); })[0];
-        if (b) map.flyTo([b.lat, b.lng], b.zoom);
-      });
-    });
-    qsa(panelBody, "[data-del]").forEach(function (b) {
-      b.addEventListener("click", function (ev) {
-        ev.stopPropagation();
-        bookmarks = bookmarks.filter(function (x) { return x.id !== b.getAttribute("data-del"); });
-        persist(); renderBookmarksPanel();
-      });
-    });
-  }
-
-  /* ---- about view ---- */
-  function renderAboutPanel() {
-    panelBody.innerHTML =
-      '<div class="view-head"><h2>Tentang GEOMAPPING</h2></div>' +
-      '<p class="muted">Alat manajemen data geospasial untuk keluarga aplikasi <b>DGT</b> (Digital Governance Transmigration). Gambar objek titik, garis, dan poligon di atas peta nyata; beri klasifikasi; isi informasi dan kuesioner (luas / panjang dihitung otomatis).</p>' +
-      '<div class="sub-label">Penyimpanan</div>' +
-      '<p class="muted">Semua data tersimpan di peramban ini (localStorage, awalan <span class="mono">geomapping:</span>). Tidak ada server dan tidak ada autentikasi — chip “Ahmad” bersifat statis. Gunakan <b>Ekspor</b> pada Daftar Objek untuk memindahkan data sebagai GeoJSON.</p>' +
-      '<div class="sub-label">Data awal</div>' +
-      '<p class="muted">Klasifikasi dan tiga objek contoh di sekitar Jakarta bersifat ilustratif/fiktif, bukan data kadastral atau statistik kementerian yang sebenarnya.</p>' +
-      '<div class="sub-label">Setel ulang</div>' +
-      '<button class="btn btn-danger full" id="resetBtn" type="button">' + svg("trash") + ' Hapus semua data lokal</button>' +
-      '<div style="height:10px"></div>' +
-      '<a class="btn btn-ghost full" href="../">Kembali ke DGT</a>';
-    var rb = qs(panelBody, "#resetBtn");
-    var armed = false;
-    rb.addEventListener("click", function () {
-      if (!armed) { armed = true; rb.innerHTML = svg("trash") + " Ketuk lagi untuk menghapus semuanya"; return; }
-      try {
-        Object.keys(localStorage).forEach(function (k) { if (k.indexOf(LS) === 0) localStorage.removeItem(k); });
-      } catch (e) {}
-      location.reload();
-    });
-  }
-
-  /* ---------------- locate ---------------- */
-  document.getElementById("locateBtn").addEventListener("click", function () {
-    toast("Mencari lokasi …");
-    map.locate({ setView: true, maxZoom: 16 });
-  });
-  map.on("locationfound", function (e) {
-    if (locateMarker) map.removeLayer(locateMarker);
-    locateMarker = L.circleMarker(e.latlng, { radius: 8, color: "#fff", weight: 2, fillColor: "#33809c", fillOpacity: 1 })
-      .addTo(map).bindPopup("Perkiraan lokasi Anda").openPopup();
-  });
-  map.on("locationerror", function () { toast("Lokasi tidak tersedia", "err"); });
+  /* =================================================================
+     LOCATE FAB + generic GPS handlers
+     ================================================================= */
+  document.getElementById("locateBtn").addEventListener("click", function () { requestMyLoc(); });
 
   document.getElementById("langBtn").addEventListener("click", function () {
     toast("Antarmuka dwibahasa belum tersedia pada prototipe ini");
   });
-  document.getElementById("userBtn").addEventListener("click", function () {
-    toast("Tanpa autentikasi — identitas pengguna bersifat statis");
-  });
 
-  /* ---------------- boot ---------------- */
-  renderRail();
-  renderDrawDock();
-  renderPanel();
-  renderFeatures();
-  setTimeout(function () { map.invalidateSize(); }, 100);
+  /* user menu / logout */
+  var userMenu = document.getElementById("userMenu");
+  document.getElementById("userBtn").addEventListener("click", function (e) {
+    e.stopPropagation();
+    userMenu.hidden = !userMenu.hidden;
+    this.setAttribute("aria-expanded", String(!userMenu.hidden));
+  });
+  document.addEventListener("click", function () { userMenu.hidden = true; document.getElementById("userBtn").setAttribute("aria-expanded", "false"); });
+  (function () {
+    var rb = document.getElementById("resetBtn"), armed = false;
+    rb.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (!armed) { armed = true; rb.textContent = "Ketuk lagi untuk hapus semua data"; return; }
+      try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf(LS) === 0) localStorage.removeItem(k); }); } catch (e2) {}
+      location.reload();
+    });
+  })();
+  document.getElementById("bmBtn").addEventListener("click", function (e) {
+    e.stopPropagation();
+    var p = document.getElementById("bmPop");
+    p.hidden = !p.hidden;
+    if (!p.hidden) renderBmPop();
+  });
+  document.addEventListener("click", function () { document.getElementById("bmPop").hidden = true; });
+  document.getElementById("bmPop").addEventListener("click", function (e) { e.stopPropagation(); });
+  document.getElementById("poiBtn").addEventListener("click", function () {
+    state.poiVisible = !state.poiVisible;
+    persist();
+    renderPOIs();
+    document.getElementById("poiBtn").classList.toggle("on", state.poiVisible);
+    toast(state.poiVisible ? "Layer POI aktif" : "Layer POI dimatikan");
+    logActivity(state.poiVisible ? "Aktifkan layer POI" : "Nonaktifkan layer POI");
+  });
+  document.getElementById("bndBtn").addEventListener("click", function () {
+    var anyOn = BND_LEVELS.some(function (lv) { return state.boundary[lv.key]; });
+    state.boundary = {};
+    if (!anyOn) BND_LEVELS.forEach(function (lv) { state.boundary[lv.key] = true; });
+    persist();
+    renderBoundaries();
+    toast(anyOn ? "Overlay batas wilayah dimatikan" : "Overlay batas wilayah aktif (semua tingkat)");
+  });
+  function renderBmPop() {
+    var p = document.getElementById("bmPop");
+    var groups = { Klikpeta: [], MapBox: [] };
+    Object.keys(BASEMAPS).forEach(function (k) { groups[BASEMAPS[k].group].push(k); });
+    p.innerHTML = Object.keys(groups).map(function (g) {
+      return '<div class="bm-grp">' + g + '</div>' + groups[g].map(function (k) {
+        return '<div class="bm-opt' + (state.basemap === k ? " sel" : "") + '" data-bm="' + k + '">' + esc(BASEMAPS[k].name) + '</div>';
+      }).join("");
+    }).join("");
+    qsa(p, ".bm-opt").forEach(function (o) {
+      o.addEventListener("click", function () { setBasemap(o.getAttribute("data-bm")); p.hidden = true; });
+    });
+  }
+
+  /* =================================================================
+     NO AUTH GATE — the login overlay (PRD Modul I) was removed on
+     request; the app opens straight into the workspace. `userName()`
+     still resolves a default identity for approval/activity records.
+     ================================================================= */
+
+  /* =================================================================
+     BOOT
+     ================================================================= */
+  var booted = false;
+  function boot() {
+    if (booted) return;
+    booted = true;
+    setBasemap(state.basemap, true);
+    renderBoundaries();
+    renderPOIs();
+    document.getElementById("poiBtn").classList.toggle("on", state.poiVisible);
+    renderRail();
+    renderDrawDock();
+    renderPanel();
+    renderFeatures();
+    setTimeout(function () { map.invalidateSize(); }, 100);
+  }
+
+  (function () {
+    var u = userName();
+    document.getElementById("userName").textContent = u;
+    document.getElementById("userAv").textContent = (u[0] || "S").toUpperCase();
+    boot();
+  })();
+
+  /* PWA — register the service worker (no-op when unsupported or on file://) */
+  if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () { /* offline mode simply unavailable */ });
+    });
+  }
 })();
 </script>
