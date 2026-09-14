@@ -137,8 +137,13 @@
 // since Angular relocates the toolbar/detail-panel *content* via ngTemplateOutlet instead (see
 // the component's doc comment) rather than moving nodes the way the original does. ----------
 .geo-fullscreen .geo-map-panel {
-  position: fixed; inset: 0; z-index: 50; margin: 0; border-radius: 0; border: none;
+  position: fixed; inset: 0; z-index: 50; border-radius: 0; border: none;
   padding: 0; display: flex; flex-direction: column;
+  // Bootstrap's .mb-4 utility (still on this element in the template) sets margin-bottom via
+  // !important, which a plain "margin: 0" here can't out-rank regardless of selector specificity —
+  // that 24px left a gap between the "fullscreen" map and the bottom of the viewport. Needs
+  // !important right back to actually win.
+  margin: 0 !important;
 
   .card-header { border-radius: 0; flex: 0 0 auto; }
   .map-search-row { flex: 0 0 auto; }
