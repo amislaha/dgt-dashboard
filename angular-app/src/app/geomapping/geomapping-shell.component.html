@@ -1,0 +1,100 @@
+<div class="topbar">
+  <a class="brand" routerLink="/" title="Kembali ke DGT" aria-label="Kembali ke halaman utama DGT">
+    <img src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi" />
+    <span class="name">GEO<span>MAPPING</span></span>
+  </a>
+  <button class="top-icon-btn" type="button" [class.on]="dockCollapsed" title="Sembunyikan / tampilkan panel" aria-label="Sembunyikan / tampilkan panel" (click)="setDockCollapsed(!dockCollapsed)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+  </button>
+  <span class="sub">Survei &amp; Pemetaan Lapangan · DGT</span>
+  <span *ngIf="activeCompartment" class="wc-chip">
+    <span class="wc-emoji">{{ activeCompartment.thumb }}</span>{{ activeCompartment.name }}
+    <button type="button" title="Keluar ke Public Mapping" (click)="exitCompartment()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6 18 18M18 6 6 18"/></svg>
+    </button>
+  </span>
+  <span class="spacer"></span>
+  <div style="position:relative">
+    <button class="top-btn user" type="button" aria-haspopup="true" [attr.aria-expanded]="userMenuOpen" (click)="toggleUserMenu($event)">
+      <span class="avatar">{{ userInitial }}</span><span class="label">{{ userDisplayName }}</span>
+    </button>
+    <div class="user-menu" *ngIf="userMenuOpen" (click)="$event.stopPropagation()">
+      <button type="button" (click)="onResetClick($event)">{{ resetArmed ? 'Ketuk lagi untuk hapus semua data' : 'Setel ulang data lokal' }}</button>
+    </div>
+  </div>
+  <button class="top-icon-btn" type="button" title="Bahasa" aria-label="Ganti bahasa" (click)="toastService.show('Antarmuka dwibahasa belum tersedia pada prototipe ini')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4.4-2.5 8-5 9M5 9c0 2.4 2.8 4.5 6 5"/><path d="m13 21 4-9 4 9M14.5 17h5"/></svg>
+  </button>
+  <a class="top-icon-btn" routerLink="/" title="Semua alat DGT" aria-label="Semua alat DGT">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  </a>
+</div>
+
+<div class="workspace">
+  <dgt-geomapping-map
+    [features]="features"
+    [classifications]="classifications"
+    [poiList]="poiList"
+    [poiVisible]="poiVisible"
+    [boundary]="boundary"
+    [basemap]="basemap">
+  </dgt-geomapping-map>
+
+  <nav class="rail">
+    <ng-container *ngFor="let r of rail">
+      <div class="rail-sep" *ngIf="r.sep"></div>
+      <button
+        *ngIf="!r.sep"
+        type="button"
+        class="rail-btn"
+        [class.active]="activeView === r.id"
+        [attr.aria-label]="r.label"
+        (click)="selectView(r.id!)">
+        <span [ngSwitch]="r.icon">
+          <svg *ngSwitchCase="'folder'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+          <svg *ngSwitchCase="'shapes'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8v8H3z"/><circle cx="17.5" cy="7.5" r="4"/><path d="m12 22 5-9 5 9Z"/></svg>
+          <svg *ngSwitchCase="'approval'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6.5v5c0 4.6 3.2 7.9 8 9 4.8-1.1 8-4.4 8-9v-5Z"/><path d="m8.7 11.8 2.2 2.2 4.4-4.4"/></svg>
+          <svg *ngSwitchCase="'edit'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>
+          <svg *ngSwitchCase="'task'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+          <svg *ngSwitchCase="'clock'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </span>
+        <span class="badge" *ngIf="r.id === 'task' && taskBadge">{{ taskBadge }}</span>
+        <span class="badge" *ngIf="r.id === 'approval' && approvalBadge">{{ approvalBadge }}</span>
+        <span class="tip">{{ r.label }}</span>
+      </button>
+    </ng-container>
+  </nav>
+
+  <div class="dock" [class.collapsed]="dockCollapsed">
+    <button class="dock-tab" type="button" aria-label="Sembunyikan / tampilkan panel" (click)="setDockCollapsed(!dockCollapsed)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="card panel">
+      <div class="panel-body">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-ctrls">
+    <button class="map-ctrl-btn" type="button" title="Peta dasar" aria-label="Pilih peta dasar" (click)="toggleBmPop($event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>
+    </button>
+    <button class="map-ctrl-btn" type="button" [class.on]="boundaryOn" title="Overlay batas wilayah administratif" aria-label="Overlay batas wilayah" (click)="toggleBoundary()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 6v12M21 6v12M3 18h18"/><path d="M8 6v3M13 6v3M18 6v3"/></svg>
+    </button>
+    <button class="map-ctrl-btn" type="button" [class.on]="poiVisible" title="Layer Point of Interest (POI)" aria-label="Layer POI" (click)="togglePoi()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+    </button>
+  </div>
+  <div class="bm-pop" *ngIf="bmPopOpen" (click)="$event.stopPropagation()">
+    <ng-container *ngFor="let group of basemapGroups | keyvalue">
+      <div class="bm-grp">{{ group.key }}</div>
+      <div class="bm-opt" *ngFor="let bm of group.value" [class.sel]="basemap === bm.key" (click)="chooseBasemap(bm.key)">{{ bm.name }}</div>
+    </ng-container>
+  </div>
+</div>
+
+<div class="toast-wrap" aria-live="polite">
+  <div class="toast" *ngFor="let t of toasts" [ngClass]="t.kind">{{ t.msg }}</div>
+</div>

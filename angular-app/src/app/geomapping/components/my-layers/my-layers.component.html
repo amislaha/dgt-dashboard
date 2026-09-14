@@ -1,0 +1,87 @@
+<div class="view-head">
+  <h2>My Layers</h2>
+  <span class="count">{{ pool.length }}</span>
+  <span class="grow"></span>
+  <button class="hbtn" type="button" *ngIf="activeCompartment" (click)="toggleScope()">
+    {{ scoped ? ('Hanya ' + activeCompartment.thumb) : 'Semua kompartemen' }}
+  </button>
+</div>
+
+<button class="btn btn-primary full" type="button" style="margin-bottom:.7rem" disabled title="Alat gambar & GPS tracking belum diporting (lihat PORT_NOTES.md)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+  Rekam objek baru (Edit Mode)
+</button>
+
+<div class="status-line" *ngIf="activeCompartment">
+  <span class="sl-dot" [class.sl-ok]="scoped" [class.sl-live]="!scoped"></span>
+  <span>{{ scoped ? ('Menampilkan objek kompartemen "' + activeCompartment.name + '".') : 'Menampilkan seluruh objek dari semua kompartemen.' }}</span>
+</div>
+
+<div class="seg">
+  <button type="button" *ngFor="let f of geomFilters" [class.sel]="geomFilter === f[0]" (click)="setGeomFilter(f[0])">{{ f[1] }}</button>
+</div>
+
+<div class="field">
+  <input type="text" [(ngModel)]="filterText" placeholder="Saring judul / alamat …" />
+</div>
+
+<div style="display:flex;gap:6px;margin-bottom:10px">
+  <button class="btn btn-ghost" type="button" style="flex:1" (click)="exportGeoJSON()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>
+    Ekspor
+  </button>
+  <button class="btn btn-ghost" type="button" style="flex:1" (click)="triggerImport()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9M7 13l5-5 5 5"/><path d="M4 4h16"/></svg>
+    Impor
+  </button>
+  <input #importInput type="file" accept=".geojson,.json,application/geo+json,application/json" hidden (change)="onImportFileChange($event)" />
+</div>
+
+<div class="list">
+  <div class="list-item" *ngFor="let row of rows">
+    <span class="li-ico" [style.background]="row.cls.color" [innerHTML]="iconSvg(row.cls.icon) | safeHtml"></span>
+    <span class="li-body">
+      <span class="li-title">{{ row.feature.title || '(tanpa judul)' }}</span>
+      <span class="li-meta">{{ geomLabel(row.feature.geometry.type) }} · {{ row.meta }}{{ row.compartmentName ? ' · ' + row.compartmentName : '' }}</span>
+    </span>
+    <span class="appr-dot" [title]="'Approval: ' + row.approvalLabel" [style.background]="row.approvalColor"></span>
+    <button class="li-act" type="button" [class.confirm]="deleteArmedId === row.feature.id" aria-label="Hapus" (click)="armDelete(row.feature.id, $event)">
+      <ng-container *ngIf="deleteArmedId === row.feature.id; else trashIcon">Hapus?</ng-container>
+      <ng-template #trashIcon>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+      </ng-template>
+    </button>
+  </div>
+  <div class="muted" *ngIf="!rows.length">Tidak ada objek yang cocok.</div>
+</div>
+
+<details class="card cls-manager">
+  <summary>Klasifikasi objek</summary>
+  <div class="cls-manager-body">
+    <div class="toggle-row" *ngFor="let c of classifications">
+      <span class="dot" [style.background]="c.color"></span>
+      <span class="grow">{{ data.clsLabel(c) }} <span style="color:var(--text-faint)">({{ classificationCount(c.id) }})</span></span>
+      <label class="switch">
+        <input type="checkbox" [checked]="!isHidden(c.id)" (change)="toggleClassification(c.id, $any($event.target).checked)" />
+        <span class="track"></span>
+      </label>
+    </div>
+
+    <div class="sub-label">Tambah klasifikasi</div>
+    <div class="field"><label>Nama</label><input type="text" [(ngModel)]="newClsName" placeholder="cth. Sumber Air" /></div>
+    <div class="field-row">
+      <div class="field"><label>Warna</label><input type="color" [(ngModel)]="newClsColor" style="height:38px;padding:2px" /></div>
+      <div class="field">
+        <label>Ikon</label>
+        <select [(ngModel)]="newClsIcon">
+          <option *ngFor="let k of iconChoices" [value]="k">{{ k }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Deskripsi</label><input type="text" [(ngModel)]="newClsDesc" placeholder="Keterangan singkat" /></div>
+    <button class="btn btn-save full" type="button" (click)="addClassification()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      Tambah klasifikasi
+    </button>
+  </div>
+</details>

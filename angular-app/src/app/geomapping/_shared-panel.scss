@@ -1,0 +1,133 @@
+// Shared "dock panel content" classes ported from geomapping/index.html — imported (Sass
+// @import, so each importing component gets its own compiled copy; Angular's per-component view
+// encapsulation gives no other way to share plain CSS across the shell + every routed panel
+// component) by every geomapping panel component that needs them: public-mapping, my-layers, and
+// (later phases) approval/task/activity/edit.
+
+// Ported from the shell's own .card (geomapping-shell.component.scss) — component style
+// encapsulation means that copy doesn't reach elements rendered by a *different* component (e.g.
+// <details class="card"> inside MyLayersComponent's own template), so it's duplicated here via
+// this shared partial rather than left missing.
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 10px 30px -18px rgba(15, 25, 34, 0.4);
+}
+
+.view-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+.view-head h2 { margin: 0; font-size: 1rem; font-weight: 800; color: var(--text); }
+.view-head .count {
+  font-size: 0.68rem; font-weight: 700; color: var(--series-2);
+  background: var(--series-2-soft); border-radius: 999px; padding: 0.1rem 0.5rem;
+}
+.view-head .grow { flex: 1; }
+.view-head .hbtn {
+  border: 1px solid var(--border); background: var(--muted); color: var(--text-dim);
+  border-radius: 999px; padding: 0.22rem 0.6rem; font-size: 0.7rem; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+
+  svg { width: 12px; height: 12px; }
+  &:hover { color: var(--text); border-color: var(--primary-line); }
+}
+
+.field { margin-bottom: 0.7rem; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 0.74rem; font-weight: 700; margin-bottom: 0.28rem; color: var(--text); }
+.field label .star { color: var(--critical); }
+.field input, .field textarea, .field select {
+  width: 100%; background: var(--muted); color: var(--text); font-family: inherit;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.6rem;
+  font-size: 0.82rem;
+}
+.field textarea { resize: vertical; min-height: 60px; }
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--primary-line); }
+.field .hint { font-size: 0.68rem; color: var(--text-faint); margin-top: 0.2rem; }
+.field.invalid input, .field.invalid select { border-color: var(--critical); background: rgba(206, 17, 38, 0.05); }
+.field-row { display: flex; gap: 6px; align-items: stretch; }
+.field-row .field { flex: 1; margin-bottom: 0; }
+
+.editor-actions { display: flex; gap: 0.6rem; justify-content: center; margin-top: 1rem; }
+.btn {
+  border: none; border-radius: var(--radius-sm); padding: 0.55rem 1.1rem; font-size: 0.82rem;
+  font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;
+
+  svg { width: 14px; height: 14px; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+.btn-cancel { background: var(--warn); color: #fff; &:hover { background: #a86a2e; } }
+.btn-save { background: var(--good); color: #fff; &:hover { background: #235f49; } }
+.btn-primary { background: var(--primary); color: #fff; &:hover { background: #102c40; } }
+.btn-ghost { background: var(--muted); color: var(--text-dim); border: 1px solid var(--border); &:hover { color: var(--text); } }
+.btn-danger { background: rgba(206,17,38,0.1); color: var(--critical); &:hover { background: rgba(206,17,38,0.18); } }
+.btn.full { width: 100%; justify-content: center; }
+
+.thumb-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 0.3rem; }
+.thumb-grid button {
+  aspect-ratio: 1; border-radius: 8px; border: 2px solid var(--border); background: var(--muted);
+  font-size: 1.05rem; cursor: pointer; display: grid; place-items: center;
+
+  &.sel { border-color: var(--primary); background: var(--primary-soft); }
+}
+
+.status-line {
+  display: flex; align-items: center; gap: 0.5rem; font-size: 0.76rem; background: var(--muted);
+  border-radius: 8px; padding: 0.5rem 0.65rem; margin-bottom: 0.8rem; color: var(--text);
+}
+.status-line .sl-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+.sl-ok { background: var(--good); }
+.sl-off { background: var(--text-faint); }
+.sl-live { background: var(--series-2); }
+
+.sub-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); margin: 1rem 0 0.4rem; }
+.sub-label:first-child { margin-top: 0; }
+.muted { font-size: 0.76rem; color: var(--text-dim); line-height: 1.55; }
+
+.list { display: flex; flex-direction: column; gap: 0.4rem; }
+.list-item {
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.65rem;
+  display: flex; align-items: center; gap: 0.55rem; cursor: pointer; background: var(--card);
+
+  &:hover { border-color: var(--primary-line); background: var(--muted); }
+  &.active { border-color: var(--primary); background: var(--primary-soft); }
+}
+.list-item .li-ico { width: 26px; height: 26px; border-radius: 7px; flex: 0 0 auto; display: grid; place-items: center; font-size: 0.9rem; }
+.list-item .li-ico svg { width: 14px; height: 14px; color: #fff; }
+.list-item .li-body { flex: 1; min-width: 0; }
+.list-item .li-title { display: block; font-size: 0.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.list-item .li-meta { display: block; font-size: 0.68rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.list-item .li-act {
+  width: 26px; height: 26px; flex: 0 0 auto; border: none; background: transparent; cursor: pointer;
+  color: var(--text-faint); border-radius: 6px; display: grid; place-items: center; padding: 0;
+
+  svg { width: 14px; height: 14px; }
+  &:hover { color: var(--critical); background: rgba(206,17,38,0.1); }
+  &.confirm { color: #fff; background: var(--critical); font-size: 0.62rem; font-weight: 800; width: auto; padding: 0 0.4rem; }
+}
+
+.appr-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+.list-item > .appr-dot { margin: 0 0.1rem; }
+
+.seg { display: flex; gap: 4px; background: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 3px; margin-bottom: 0.7rem; }
+.seg button {
+  flex: 1; border: none; background: transparent; border-radius: 999px; padding: 0.35rem 0.4rem;
+  font-size: 0.72rem; font-weight: 700; color: var(--text-dim); cursor: pointer;
+
+  &.sel { background: var(--card); color: var(--primary); box-shadow: 0 1px 4px rgba(15,25,34,0.12); }
+}
+
+.toggle-row {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-top: 1px solid var(--border);
+}
+.toggle-row:first-child { border-top: none; }
+.toggle-row .dot { width: 12px; height: 12px; border-radius: 4px; flex: 0 0 auto; }
+.toggle-row .grow { flex: 1; font-size: 0.8rem; color: var(--text); }
+.switch { position: relative; width: 34px; height: 19px; flex: 0 0 auto; display: inline-block; }
+.switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.switch .track {
+  position: absolute; inset: 0; background: var(--border); border-radius: 999px; transition: background 0.15s ease; cursor: pointer;
+}
+.switch .track::before {
+  content: ''; position: absolute; width: 15px; height: 15px; left: 2px; top: 2px; background: #fff;
+  border-radius: 50%; transition: transform 0.15s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.switch input:checked + .track { background: var(--primary); }
+.switch input:checked + .track::before { transform: translateX(15px); }

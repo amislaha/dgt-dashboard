@@ -1,0 +1,67 @@
+/**
+ * Ports geomapping/index.html's `I` icon-path map + `svg()` helper verbatim (24x24 viewBox,
+ * `currentColor` stroke) — ported in full even though Phase 1 only uses a subset, since
+ * classifications reference these icon names dynamically and later phases (drawing tools, edit
+ * mode) need the rest.
+ */
+export const GEOMAPPING_ICON_PATHS: { [key: string]: string } = {
+  pin: '<path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/>',
+  layers: '<path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>',
+  shapes: '<path d="M3 3h8v8H3z"/><circle cx="17.5" cy="7.5" r="4"/><path d="m12 22 5-9 5 9Z"/>',
+  tag: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7.2-7.2A2 2 0 0 1 2.8 12V4a1 1 0 0 1 1-1h8a2 2 0 0 1 1.4.6l7.4 7.4a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  point: '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  line: '<circle cx="5" cy="19" r="2.4"/><circle cx="19" cy="5" r="2.4"/><path d="m7 17 10-10"/>',
+  polygon: '<path d="m12 3 8 6-3 10H7L4 9l8-6Z"/>',
+  edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>',
+  move: '<path d="M12 2v20M2 12h20"/><path d="m8 5 4-3 4 3M8 19l4 3 4-3M5 8l-3 4 3 4M19 8l3 4-3 4"/>',
+  addpt: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>',
+  delpt: '<circle cx="12" cy="12" r="8"/><path d="M8 12h8"/>',
+  eraser: '<path d="m5 13 6-6 8 8-4 4H9l-4-4Z"/><path d="M22 21H7"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  expand: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  download: '<path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 20h16"/>',
+  upload: '<path d="M12 21V9M7 13l5-5 5 5"/><path d="M4 4h16"/>',
+  close: '<path d="M6 6 18 18M18 6 6 18"/>',
+  check: '<path d="m5 12 5 5 9-9"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  building: '<path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h3a1 1 0 0 1 1 1v11M8 7h4M8 11h4M8 15h4"/>',
+  road: '<path d="M4 21 8 3M20 21 16 3M12 5v3M12 12v3M12 19v1"/>',
+  parcel: '<path d="M3 3h18v18H3z"/><path d="M3 9h18M9 3v18"/>',
+  boundary: '<path d="M3 6h18M3 6v12M21 6v12M3 18h18"/><path d="M8 6v3M13 6v3M18 6v3"/>',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  route: '<circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.4 18.6h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6H15"/>',
+  gps: '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>',
+  task: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="m9 12 2 2 4-4"/>',
+  camera: '<path d="M4 8a2 2 0 0 1 2-2h2l1.5-2h5L18 6h0a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><circle cx="12" cy="12.5" r="3.2"/>',
+  flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+  play: '<path d="m7 4 12 8-12 8Z"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>',
+  sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-4M20 13V3M2 14h4M10 8h4M18 17h4"/>',
+  arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  approval: '<path d="M12 3 4 6.5v5c0 4.6 3.2 7.9 8 9 4.8-1.1 8-4.4 8-9v-5Z"/><path d="m8.7 11.8 2.2 2.2 4.4-4.4"/>',
+  x: '<path d="M6 6 18 18M18 6 6 18"/>',
+  history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/>',
+  chevL: '<path d="m15 18-6-6 6-6"/>',
+  chevR: '<path d="m9 18 6-6-6-6"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>',
+  users: '<circle cx="9" cy="8" r="3"/><path d="M15 11a3 3 0 1 0-2-5"/><path d="M3.5 20c0-3 2.7-5 5.5-5s5.5 2 5.5 5"/><path d="M17 15c2 .4 3.5 2 3.5 5"/>',
+  store: '<path d="M4 9h16l-1.2-4.2A1 1 0 0 0 17.8 4H6.2a1 1 0 0 0-1 .8L4 9Z"/><path d="M5 9v10h14V9"/><path d="M9.5 19v-5h5v5"/>',
+  coins: '<circle cx="8.5" cy="8.5" r="5"/><path d="M13 6.2a5 5 0 1 1-3.8 9.3"/>',
+  bed: '<path d="M3 8v11M3 14h18v5M21 19v-5a3 3 0 0 0-3-3h-7v3"/><circle cx="7" cy="10.5" r="1.6"/>',
+  home: '<path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  car: '<path d="M5 12l1.6-4.6A2 2 0 0 1 8.5 6h7a2 2 0 0 1 1.9 1.4L19 12"/><path d="M4 12h16v5H4z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>',
+  book: '<path d="M12 6c-1.6-1.2-4-2-7-2v13c3 0 5.4.8 7 2 1.6-1.2 4-2 7-2V4c-3 0-5.4.8-7 2Z"/><path d="M12 6v13"/>',
+  utensils: '<path d="M7 3v8M5 3v6a2 2 0 0 0 4 0V3M7 11v10"/><path d="M17 3c-1.7 0-3 2.2-3 5s1.3 4 3 4v9"/>',
+  heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/>',
+  landmark: '<path d="M4 21h16M5 21v-9M19 21v-9M10 21v-9M14 21v-9M4 10h16L12 4Z"/>',
+  bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>',
+  dome: '<path d="M4 21h16M6 21v-8M18 21v-8M12 4c3 1.2 5 4.2 5 9H7c0-4.8 2-7.8 5-9ZM12 4V2"/>'
+};
+
+export function geomappingSvg(name: string, strokeWidth?: number): string {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth || 2}" stroke-linecap="round" stroke-linejoin="round">${GEOMAPPING_ICON_PATHS[name] || ''}</svg>`;
+}

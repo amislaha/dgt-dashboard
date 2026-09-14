@@ -1,0 +1,26 @@
+@import '../../shared-panel';
+
+.list-item .li-ico ::ng-deep svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  color: #fff;
+}
+
+.cls-manager {
+  margin-top: 14px;
+  padding: 0.65rem 0.8rem;
+
+  summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.82rem;
+    list-style: none;
+    color: var(--text);
+
+    &::-webkit-details-marker { display: none; }
+  }
+}
+.cls-manager-body {
+  margin-top: 0.6rem;
+}

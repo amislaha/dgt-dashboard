@@ -32,16 +32,15 @@ export class LauncherComponent {
   password = '';
   showForgotHint = false;
 
-  // gis-dgt/ and geomapping/ are separate static sites living as sibling
-  // folders in the same repo (not part of this Angular workspace — see root
-  // CLAUDE.md) — kept here as external links so the launcher stays the one
-  // place that lists every tool, matching the original static launcher's
-  // 4-card grid.
+  // gis-dgt/ is still a separate static site living as a sibling folder in the same repo (not
+  // part of this Angular workspace — see root CLAUDE.md) — kept as an external link. geomapping/
+  // now HAS an Angular port (src/app/geomapping/, Phase 1: Public Mapping + My Layers — see its
+  // own PORT_NOTES.md) and routes internally like dashboard/data-manager do.
   cards: LauncherCard[] = [
     { id: 'dashboard', title: 'Dashboard DGT', cta: 'Buka dashboard', num: '01', route: '/dashboard', accent: 'primary' },
     { id: 'data-manager', title: 'DGT Data Manager', cta: 'Buka data manager', num: '02', route: '/data-manager', accent: 'series2' },
     { id: 'gis-dgt', title: 'GIS DGT', cta: 'Buka GIS DGT', num: '03', route: 'gis-dgt/', accent: 'gold', external: true },
-    { id: 'geomapping', title: 'GEOMAPPING', cta: 'Buka GEOMAPPING', num: '04', route: 'geomapping/', accent: 'geo', external: true }
+    { id: 'geomapping', title: 'GEOMAPPING', cta: 'Buka GEOMAPPING', num: '04', route: '/geomapping', accent: 'geo' }
   ];
 
   constructor(private readonly auth: AuthGateService, private readonly router: Router) {}

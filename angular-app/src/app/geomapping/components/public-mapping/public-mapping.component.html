@@ -1,0 +1,69 @@
+<ng-container *ngIf="wcCreating; else listView">
+  <div class="view-head"><h2>WorkCompartment baru</h2></div>
+  <div class="field" [class.invalid]="wcNameInvalid">
+    <label>Nama <span class="star">*</span></label>
+    <input type="text" [(ngModel)]="wcDraft.name" placeholder="cth. Survei Kawasan SP-3" />
+  </div>
+  <div class="field">
+    <label>Keterangan</label>
+    <textarea [(ngModel)]="wcDraft.desc" placeholder="Tujuan / lingkup pekerjaan proyek"></textarea>
+  </div>
+  <div class="field">
+    <label>Thumbnail</label>
+    <div class="thumb-grid">
+      <button type="button" *ngFor="let t of wcThumbs" [class.sel]="t === wcDraft.thumb" (click)="wcDraft.thumb = t">{{ t }}</button>
+    </div>
+  </div>
+  <div class="editor-actions">
+    <button class="btn btn-cancel" type="button" (click)="cancelCreate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6 18 18M18 6 6 18"/></svg>
+      Batal
+    </button>
+    <button class="btn btn-save" type="button" (click)="saveCreate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-9"/></svg>
+      Buat
+    </button>
+  </div>
+</ng-container>
+
+<ng-template #listView>
+  <div class="view-head">
+    <h2>{{ activeCompartment ? (activeCompartment.thumb + ' ' + activeCompartment.name) : 'Public Mapping' }}</h2>
+    <span class="count">{{ compartments.length }}</span>
+    <span class="grow"></span>
+    <button class="hbtn" type="button" *ngIf="activeCompartment" (click)="exitCompartment()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6 18 18M18 6 6 18"/></svg>
+      Public Mapping
+    </button>
+  </div>
+
+  <p class="muted" *ngIf="activeCompartment">{{ activeCompartment.desc || 'Tanpa keterangan.' }}</p>
+  <div class="status-line" *ngIf="activeCompartment">
+    <span class="sl-dot sl-ok"></span>
+    <span>Kompartemen aktif — objek baru otomatis masuk ke sini. {{ featureCount(activeCompartment.id) }} objek tercatat.</span>
+  </div>
+  <p class="muted" *ngIf="!activeCompartment">Pilih WorkCompartment untuk mengorganisir pekerjaan survei per proyek, atau tetap di Public Mapping default. Objek yang direkam saat sebuah kompartemen aktif otomatis dikaitkan dengannya.</p>
+
+  <div class="sub-label">Daftar WorkCompartment</div>
+  <div class="list">
+    <div class="list-item" *ngFor="let c of compartments" [class.active]="c.id === activeCompartmentId" (click)="toggleActive(c)">
+      <span class="li-ico" style="background:var(--muted)">{{ c.thumb }}</span>
+      <span class="li-body">
+        <span class="li-title">{{ c.name }}</span>
+        <span class="li-meta">{{ c.desc || '—' }} · {{ featureCount(c.id) }} objek</span>
+      </span>
+      <button class="li-act" type="button" [class.confirm]="deleteArmedId === c.id" aria-label="Hapus" (click)="armDelete(c.id, $event)">
+        <ng-container *ngIf="deleteArmedId === c.id; else trashIcon">Hapus?</ng-container>
+        <ng-template #trashIcon>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+        </ng-template>
+      </button>
+    </div>
+  </div>
+
+  <div style="height:10px"></div>
+  <button class="btn btn-primary full" type="button" (click)="startCreate()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    Buat WorkCompartment
+  </button>
+</ng-template>
