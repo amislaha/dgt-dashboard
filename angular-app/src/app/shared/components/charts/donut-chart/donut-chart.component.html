@@ -1,0 +1,20 @@
+<svg
+  class="chart-svg"
+  [attr.viewBox]="'0 0 ' + size + ' ' + size"
+  [attr.width]="size" [attr.height]="size"
+  role="img" aria-label="donut chart">
+  <circle
+    *ngFor="let arc of arcs"
+    [attr.cx]="cx" [attr.cy]="cy" [attr.r]="r"
+    fill="none" [attr.stroke]="arc.color" [attr.stroke-width]="stroke"
+    [attr.stroke-dasharray]="arc.dashArray"
+    [attr.stroke-dashoffset]="arc.dashOffset"
+    [attr.transform]="'rotate(-90 ' + cx + ' ' + cy + ')'">
+    <title>{{ arc.label }}: {{ arc.value }}</title>
+  </circle>
+
+  <ng-container *ngIf="centerLabel">
+    <text [attr.x]="cx" [attr.y]="cy - 2" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="700">{{ centerLabel }}</text>
+    <text [attr.x]="cx" [attr.y]="cy + 14" text-anchor="middle" fill="var(--text-faint)" font-size="8.5">{{ centerSub }}</text>
+  </ng-container>
+</svg>

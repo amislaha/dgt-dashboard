@@ -1,0 +1,42 @@
+<div class="launcher-wrap d-flex align-items-center justify-content-center">
+
+  <!-- #loginView equivalent -->
+  <div class="login-card card shadow-sm" *ngIf="!isAuthenticated">
+    <div class="card-body p-4">
+      <h1 class="h4 font-weight-bold mb-1">DGT</h1>
+      <p class="text-muted mb-4">Digital Governance Transmigration</p>
+
+      <form (ngSubmit)="submit()">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" name="username" class="form-control" [(ngModel)]="username" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" class="form-control" [(ngModel)]="password" autocomplete="current-password">
+        </div>
+        <div class="alert alert-danger py-2" *ngIf="error">{{ error }}</div>
+        <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- #launcherView equivalent -->
+  <div class="launcher-grid" *ngIf="isAuthenticated">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h4 font-weight-bold mb-0">DGT</h1>
+      <a href="javascript:void(0)" (click)="signOut()">Keluar</a>
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-4" *ngFor="let card of cards">
+        <div class="card h-100 launcher-card" [ngClass]="'accent-' + card.accent" (click)="open(card)">
+          <div class="card-body">
+            <h2 class="h5 font-weight-bold">{{ card.title }}</h2>
+            <p class="text-muted mb-0">{{ card.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

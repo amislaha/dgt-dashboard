@@ -1,0 +1,16 @@
+<header class="topbar navbar navbar-expand navbar-light bg-white border-bottom px-3">
+  <button
+    type="button"
+    class="btn btn-sm btn-outline-secondary mr-3"
+    [attr.aria-label]="isNarrow ? 'Buka menu' : 'Ciutkan menu'"
+    (click)="toggleRail.emit()">
+    <span *ngIf="isNarrow">☰</span>
+    <span *ngIf="!isNarrow">{{ railCollapsed ? '»' : '«' }}</span>
+  </button>
+
+  <span class="navbar-brand mb-0 font-weight-bold">{{ brand }}</span>
+
+  <div class="ml-auto d-flex align-items-center">
+    <ng-content></ng-content>
+  </div>
+</header>

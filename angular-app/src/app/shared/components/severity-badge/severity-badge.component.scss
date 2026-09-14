@@ -1,0 +1,10 @@
+.sev {
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  padding: .25em .6em;
+}
+
+.sev-good { color: var(--good); background: var(--good-soft); }
+.sev-warn { color: var(--warn); background: var(--warn-soft); }
+.sev-critical { color: var(--critical); background: var(--critical-soft); }
+.sev-neutral { color: var(--text-dim); background: var(--muted); }

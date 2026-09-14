@@ -1,0 +1,20 @@
+<svg
+  class="chart-svg"
+  [attr.viewBox]="'0 0 ' + width + ' ' + height"
+  width="100%"
+  [attr.height]="height"
+  role="img"
+  [attr.aria-label]="ariaLabel">
+  <ng-container *ngFor="let bar of bars; let i = index">
+    <rect
+      class="bar-rect"
+      [attr.x]="bar.x" [attr.y]="bar.y"
+      [attr.width]="bar.width" [attr.height]="bar.height"
+      rx="3" [attr.fill]="bar.color" opacity="0.92"
+      [style.animation-delay.ms]="i * 45">
+      <title>{{ bar.label }}: {{ bar.valueLabel }}</title>
+    </rect>
+    <text [attr.x]="bar.labelX" [attr.y]="bar.tickY" text-anchor="middle" fill="var(--text-faint)" font-size="9">{{ bar.label }}</text>
+    <text [attr.x]="bar.labelX" [attr.y]="bar.valueY" text-anchor="middle" fill="var(--text-dim)" font-size="9.5" font-family="'JetBrains Mono', monospace">{{ bar.valueLabel }}</text>
+  </ng-container>
+</svg>

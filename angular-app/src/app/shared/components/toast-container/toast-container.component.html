@@ -1,0 +1,12 @@
+<div class="toast-container">
+  <div
+    *ngFor="let toast of (toasts$ | async)"
+    class="toast show text-white"
+    [ngClass]="'bg-' + toast.variant"
+    role="status">
+    <div class="toast-body d-flex justify-content-between align-items-center">
+      <span>{{ toast.text }}</span>
+      <button type="button" class="close text-white ml-2" (click)="dismiss(toast.id)" aria-label="Tutup">&times;</button>
+    </div>
+  </div>
+</div>

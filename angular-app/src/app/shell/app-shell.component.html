@@ -1,0 +1,25 @@
+<div class="shell d-flex">
+  <dgt-rail-nav
+    [items]="navItems"
+    [activeId]="activeId"
+    [collapsed]="railCollapsed"
+    [open]="railOpen"
+    (select)="onSelect($event)"
+    (closeMobile)="railOpen = false">
+  </dgt-rail-nav>
+
+  <div class="main flex-grow-1 d-flex flex-column">
+    <dgt-topbar
+      [brand]="brand"
+      [isNarrow]="isNarrow"
+      [railCollapsed]="railCollapsed"
+      [railOpen]="railOpen"
+      (toggleRail)="onToggleRail()">
+      <ng-content select="[topbar-actions]"></ng-content>
+    </dgt-topbar>
+
+    <div class="main-content flex-grow-1">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

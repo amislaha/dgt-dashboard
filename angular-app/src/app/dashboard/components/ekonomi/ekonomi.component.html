@@ -1,0 +1,55 @@
+<dgt-page-head
+  title="Potensi Ekonomi, Komoditas, Hilirisasi &amp; Investasi Kawasan"
+  description="Dasbor komoditas unggulan, rantai pasok hulu-hilir, dan peta peluang investasi — Trans Karya Nusa.">
+</dgt-page-head>
+
+<div class="row mb-4">
+  <div class="col-lg-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Indeks Komoditas Unggulan</h2></div>
+      <div class="card-body">
+        <dgt-bar-chart [data]="komoditasBarData" [height]="200"></dgt-bar-chart>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Rantai Hilirisasi — Kelapa Sawit</h2></div>
+      <div class="card-body">
+        <div class="stepper d-flex flex-wrap justify-content-between">
+          <div class="step text-center" *ngFor="let s of hilirisasiSteps">
+            <div class="s-icon mx-auto mb-2">{{ s.no }}</div>
+            <div class="s-label small">{{ s.label }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="h6 font-weight-bold mb-0">Peluang Investasi Terbuka</h2>
+    <span class="small text-muted">siap diakses calon mitra</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Kawasan</th>
+          <th>Sektor</th>
+          <th>Estimasi Nilai</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of investasiRows">
+          <td>{{ r.kawasan }}</td>
+          <td>{{ r.sektor }}</td>
+          <td class="mono">{{ r.nilai }}</td>
+          <td><span class="badge" [ngClass]="r.statusClass">{{ r.status }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

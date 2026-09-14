@@ -1,0 +1,17 @@
+// Ports the original's "realisasi" self-drawing line animation: the path's
+// stroke-dasharray is set to its own total length (computed in the component
+// class via getTotalLength(), same technique as the original comment
+// describes), then animated down to 0 offset here.
+.line-draw {
+  stroke-dashoffset: var(--len, 0);
+  animation: lineDraw var(--duration-slow, 280ms) var(--ease-standard, ease-out) forwards;
+  animation-duration: 900ms;
+}
+
+@keyframes lineDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line-draw { animation: none; stroke-dashoffset: 0; }
+}

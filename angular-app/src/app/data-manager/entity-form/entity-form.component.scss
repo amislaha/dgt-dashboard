@@ -1,0 +1,12 @@
+// Ports the original `.field`/`.field-row` spacing (data-manager/index.html)
+// on top of Bootstrap's .form-row/.form-group grid.
+.form-group {
+  margin-bottom: 0.9rem;
+
+  label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 0.3rem;
+  }
+}

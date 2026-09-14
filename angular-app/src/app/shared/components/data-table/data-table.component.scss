@@ -1,0 +1,14 @@
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.table-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+table {
+  margin-bottom: 0;
+}

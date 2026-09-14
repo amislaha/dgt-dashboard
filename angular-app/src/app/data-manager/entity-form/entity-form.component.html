@@ -1,0 +1,64 @@
+<form *ngIf="form" [formGroup]="form">
+  <div class="form-row" *ngFor="let group of rowGroups">
+    <div class="form-group" [ngClass]="group.length > 1 ? 'col-6' : 'col-12'" *ngFor="let field of group">
+      <label [attr.for]="'f_' + field.name">
+        {{ field.label }}<span *ngIf="field.required" class="text-danger"> *</span>
+      </label>
+
+      <ng-container [ngSwitch]="field.type">
+        <select
+          *ngSwitchCase="'select'"
+          [id]="'f_' + field.name"
+          class="form-control form-control-sm"
+          [class.is-invalid]="fieldInvalid(field)"
+          [formControlName]="field.name">
+          <option value="" disabled>— pilih —</option>
+          <option *ngFor="let opt of field.options" [value]="opt">{{ opt }}</option>
+        </select>
+
+        <select
+          *ngSwitchCase="'fk'"
+          [id]="'f_' + field.name"
+          class="form-control form-control-sm"
+          [class.is-invalid]="fieldInvalid(field)"
+          [formControlName]="field.name">
+          <option value="" disabled>— pilih —</option>
+          <option *ngFor="let opt of fkOptions[field.name]" [value]="opt.id">{{ opt.label }}</option>
+        </select>
+
+        <textarea
+          *ngSwitchCase="'textarea'"
+          [id]="'f_' + field.name"
+          class="form-control form-control-sm"
+          rows="3"
+          [class.is-invalid]="fieldInvalid(field)"
+          [formControlName]="field.name"
+          [placeholder]="field.placeholder || ''">
+        </textarea>
+
+        <input
+          *ngSwitchCase="'number'"
+          type="number"
+          [id]="'f_' + field.name"
+          class="form-control form-control-sm"
+          [class.is-invalid]="fieldInvalid(field)"
+          [formControlName]="field.name"
+          [attr.min]="field.min"
+          [attr.max]="field.max"
+          [placeholder]="field.placeholder || ''" />
+
+        <input
+          *ngSwitchDefault
+          type="text"
+          [id]="'f_' + field.name"
+          class="form-control form-control-sm"
+          [class.is-invalid]="fieldInvalid(field)"
+          [formControlName]="field.name"
+          [placeholder]="field.placeholder || ''" />
+      </ng-container>
+
+      <small class="form-text text-muted" *ngIf="field.hint">{{ field.hint }}</small>
+      <small class="form-text text-danger" *ngIf="fieldInvalid(field)">Kolom ini wajib diisi.</small>
+    </div>
+  </div>
+</form>

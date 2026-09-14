@@ -1,0 +1,28 @@
+<div class="table-wrap table-responsive">
+  <table class="table" [class.table-sm]="density === 'compact'" [class.table-hover]="rowClick.observers.length > 0">
+    <thead>
+      <tr>
+        <th
+          *ngFor="let column of columns"
+          [class.text-right]="column.numeric"
+          [class.sortable]="column.sortable"
+          (click)="onHeaderClick(column)">
+          {{ column.label }}
+          <span *ngIf="column.sortable && sortKey === column.key">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of rows; trackBy: trackByIndex" (click)="rowClick.emit(row)">
+        <td *ngFor="let column of columns" [class.text-right]="column.numeric">
+          {{ cell(row, column) }}
+        </td>
+      </tr>
+      <tr *ngIf="rows.length === 0">
+        <td [attr.colspan]="columns.length" class="empty-state text-center text-muted py-4">
+          {{ emptyLabel }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

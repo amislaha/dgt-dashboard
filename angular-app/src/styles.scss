@@ -1,0 +1,68 @@
+// Global styles. Bootstrap's compiled CSS is linked directly in angular.json
+// ("styles" array) for build simplicity; this file supplies the design-token
+// bridge (CSS custom properties) plus small global resets/utilities that sit
+// on top of Bootstrap, mirroring the base rules every original *.index.html
+// tool hand-rolled in its inline <style> block.
+@import 'styles/tokens';
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+// Scroll-snap KPI strip and ticker marquee have no Bootstrap equivalent —
+// ported here as global utility classes rather than duplicated per module
+// (used by dashboard/geospasial and dashboard/analitik).
+.scroll-snap-row {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: var(--space-2);
+
+  > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+}
+
+.ticker-bar {
+  overflow: hidden;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.ticker-track {
+  display: inline-block;
+  padding-left: 100%;
+  animation: tickerScroll 24s linear infinite;
+}
+
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+}
+
+// Severity/status chip helper — used across dashboard + data-manager tables
+// in place of the prototype's ad hoc `.sev`/`.badge` classes.
+.chip-good { color: var(--good); background: var(--good-soft); }
+.chip-warn { color: var(--warn); background: var(--warn-soft); }
+.chip-critical { color: var(--critical); background: var(--critical-soft); }

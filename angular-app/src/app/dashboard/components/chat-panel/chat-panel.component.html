@@ -1,0 +1,19 @@
+<div class="chat-panel" [class.compact]="mode === 'compact'" [class.full]="mode === 'full'">
+  <div class="chat-log">
+    <div class="msg" *ngFor="let m of chatLog" [class.user]="m.role === 'user'" [class.ai]="m.role === 'ai'">
+      <span [innerHTML]="m.text | safeHtml"></span>
+    </div>
+  </div>
+  <div class="chat-input-row d-flex">
+    <input
+      type="text"
+      class="form-control form-control-sm"
+      placeholder="Contoh: kawasan mana yang paling berisiko?"
+      [(ngModel)]="draft"
+      (keydown.enter)="onEnter()" />
+    <button type="button" class="btn btn-primary btn-sm" (click)="onSendClick()">Kirim</button>
+  </div>
+  <div class="chat-suggest d-flex flex-wrap">
+    <button type="button" class="btn btn-outline-secondary btn-sm" *ngFor="let q of suggestions" (click)="onSuggestion(q)">{{ q }}</button>
+  </div>
+</div>

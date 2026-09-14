@@ -1,0 +1,12 @@
+// Ports the original `.panel`/`.table-wrap` card and `.search-box` sizing
+// (data-manager/index.html) using shared tokens instead of re-declared hex values.
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.search-box {
+  width: 220px;
+}

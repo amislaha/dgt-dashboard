@@ -1,0 +1,41 @@
+<ng-container *ngIf="config">
+  <dgt-page-head [title]="config.label" [description]="config.sub">
+    <div class="input-group input-group-sm search-box mr-2">
+      <div class="input-group-prepend">
+        <span class="input-group-text bg-white">🔎</span>
+      </div>
+      <input
+        type="text"
+        class="form-control"
+        [placeholder]="'Cari ' + config.label.toLowerCase() + '...'"
+        [value]="query"
+        (input)="onSearch($any($event.target).value)" />
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">+ Tambah</button>
+  </dgt-page-head>
+
+  <div class="panel">
+    <dgt-data-table
+      [columns]="columns"
+      [rows]="rows"
+      [sortKey]="sortKey"
+      [sortDir]="sortDir"
+      [emptyLabel]="emptyLabel"
+      (sortChange)="onSort($event)"
+      (rowClick)="openEdit($event)">
+    </dgt-data-table>
+  </div>
+
+  <dgt-drawer [open]="drawerOpen" [title]="drawerTitle" (closed)="closeDrawer()">
+    <dgt-entity-form *ngIf="drawerOpen" [config]="config" [record]="editing" (saved)="onFormSaved($event)"></dgt-entity-form>
+
+    <div drawer-footer class="d-flex justify-content-between align-items-center w-100">
+      <button *ngIf="editing" type="button" class="btn btn-outline-danger btn-sm" (click)="deleteCurrent()">Hapus</button>
+      <span *ngIf="!editing"></span>
+      <div>
+        <button type="button" class="btn btn-secondary btn-sm mr-2" (click)="closeDrawer()">Batal</button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="submitForm()">Simpan</button>
+      </div>
+    </div>
+  </dgt-drawer>
+</ng-container>

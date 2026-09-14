@@ -1,0 +1,14 @@
+.gauge-fill {
+  animation: gaugeFill var(--duration-slow, 280ms) var(--ease-standard, ease-out) both;
+  animation-duration: 700ms;
+  stroke-dashoffset: var(--arc-len, 0);
+}
+
+@keyframes gaugeFill {
+  from { stroke-dashoffset: var(--arc-len, 0); }
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gauge-fill { animation: none; stroke-dashoffset: 0; }
+}

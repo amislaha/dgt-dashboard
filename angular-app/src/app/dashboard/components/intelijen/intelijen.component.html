@@ -1,0 +1,46 @@
+<dgt-page-head
+  title="Executive Intelligence, Pelaporan Strategis &amp; AI Assistant"
+  description="Konsolidasi statistik sektoral transmigrasi tingkat nasional dan asisten AI untuk pertanyaan cepat pimpinan.">
+</dgt-page-head>
+
+<div class="row mb-4">
+  <div class="col-6 col-md-3 mb-3">
+    <dgt-kpi-tile label="Kawasan Mandiri" [value]="mandiriCount" [delta]="'dari ' + kawasan.length + ' kawasan'" dir="up"></dgt-kpi-tile>
+  </div>
+  <div class="col-6 col-md-3 mb-3">
+    <dgt-kpi-tile label="Luas HPL Nasional" [value]="hplRb + 'rb Ha'" delta="seluruh kawasan terpantau" dir="up"></dgt-kpi-tile>
+  </div>
+  <div class="col-6 col-md-3 mb-3">
+    <dgt-kpi-tile label="Luas SHM Terbit" [value]="shmRb + 'rb Ha'" [delta]="shmPctOfHpl + '% dari HPL'" dir="up"></dgt-kpi-tile>
+  </div>
+  <div class="col-6 col-md-3 mb-3">
+    <dgt-kpi-tile label="Peringatan Aktif" [value]="activeAlerts" delta="perlu tindak lanjut" dir="down" [alert]="activeAlerts > 0"></dgt-kpi-tile>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Laporan Strategis</h2></div>
+      <div class="card-body">
+        <p class="text-muted">Ringkasan otomatis kondisi seluruh kawasan untuk bahan rapat pimpinan, disusun dari data 8 modul di atas.</p>
+        <div class="d-flex flex-wrap" style="gap: var(--space-2)">
+          <button type="button" class="btn btn-primary btn-sm" disabled>Unduh Ringkasan PDF</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" disabled>Jadwalkan Laporan Mingguan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h6 font-weight-bold mb-0">AI Assistant</h2>
+        <span class="small text-muted">tanya cepat seputar data kawasan</span>
+      </div>
+      <div class="card-body">
+        <dgt-chat-panel mode="full"></dgt-chat-panel>
+      </div>
+    </div>
+  </div>
+</div>

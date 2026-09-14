@@ -1,0 +1,136 @@
+:host {
+  display: contents;
+}
+
+.rail-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--background);
+  opacity: .4;
+  z-index: 1029; // just under Bootstrap's .offcanvas (1030+) — see note below
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-w);
+  background: var(--sidebar);
+  color: var(--sidebar-foreground);
+  flex: 0 0 auto;
+  transition: width var(--duration-base) var(--ease-standard);
+  overflow: hidden;
+}
+
+// Desktop full-collapse: width goes to 0, not a mini icon-rail — see
+// component doc comment. Handing the space back to `.main` is the whole
+// point, so no min-width here.
+.rail.collapsed {
+  width: 0;
+  padding: 0;
+  border-right: none;
+}
+
+.rail-head {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.rail-back-link {
+  color: var(--sidebar-primary);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.rail-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-2);
+}
+
+.rail-group-label {
+  display: block;
+  padding: 0 var(--space-2);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-2xs, .6875rem);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--sidebar-foreground);
+  opacity: .6;
+}
+
+.rail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--sidebar-foreground);
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--sidebar-accent);
+  }
+
+  &.active {
+    background: var(--sidebar-accent);
+    color: #fff;
+
+    .rail-icon {
+      color: var(--sidebar-primary);
+    }
+  }
+}
+
+.rail-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  display: flex;
+  color: currentColor;
+}
+
+.rail-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.rail-label {
+  font-size: var(--text-sm, .8125rem);
+  font-weight: 500;
+}
+
+.rail-sub {
+  font-size: var(--text-2xs, .6875rem);
+  opacity: .65;
+}
+
+// Mobile off-canvas mode: ≤760px, matches the original breakpoint.
+@media (max-width: 760px) {
+  .rail {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1030;
+    transform: translateX(-100%);
+    width: min(var(--sidebar-w), 85vw);
+  }
+
+  .rail.open {
+    transform: translateX(0);
+  }
+
+  // On mobile the desktop collapse state is irrelevant — `open` is the only
+  // thing that matters, so undo any `width:0` from `.collapsed`.
+  .rail.collapsed {
+    width: min(var(--sidebar-w), 85vw);
+    padding: inherit;
+  }
+}

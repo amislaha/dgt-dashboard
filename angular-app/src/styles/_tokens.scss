@@ -1,0 +1,180 @@
+// ============================================================================
+// Design tokens ported from design-system/tokens/*.css (the canonical source —
+// see CLAUDE.md "design-system/" section). The three original HTML tools each
+// hand-rolled their own slightly-diverged copy of these under the same
+// variable names; this file reconciles them back to the design-system's
+// values, which is the one this port treats as authoritative.
+//
+// Exposed BOTH as Sass variables (consumed by _bootstrap-overrides.scss at
+// compile time) and as CSS custom properties on :root (consumed directly by
+// component .scss files, matching the *.prompt.md component specs verbatim).
+// ============================================================================
+
+// --- Colour ramps (design-system/tokens/colors.css) ------------------------
+$biru-50: #eef2f6; $biru-100: #d7e1ea; $biru-200: #aec2d2; $biru-300: #7e9db6;
+$biru-400: #4b7695; $biru-500: #2a5a78; $biru-600: #163b54; $biru-700: #102c40;
+$biru-800: #0c2233; $biru-900: #081826; $biru-950: #050f19;
+
+$teal-50: #eef5f8; $teal-100: #d5e7ee; $teal-200: #a9cedb; $teal-300: #75b0c4;
+$teal-400: #4b95ad; $teal-500: #33809c; $teal-600: #2a6b83; $teal-700: #205468;
+
+$emas-50: #fbf6ec; $emas-100: #f6ead3; $emas-200: #eed7ae; $emas-300: #dfb87e;
+$emas-400: #cfa460; $emas-500: #c09546; $emas-600: #9d7936; $emas-700: #765a28;
+
+$merah-50: #fdeef0; $merah-100: #fad7db; $merah-200: #f3aeb6; $merah-300: #e97e8b;
+$merah-400: #dd4b5d; $merah-500: #ce1126; $merah-600: #af0e20; $merah-700: #8c0b1a;
+
+$hijau-50: #edf6f1; $hijau-100: #d3e9dd; $hijau-200: #a6d2bc; $hijau-300: #6fb195;
+$hijau-400: #438f72; $hijau-500: #2c755b; $hijau-600: #1f5d47; $hijau-700: #174838;
+
+$abu-0: #ffffff; $abu-50: #f7f9fa; $abu-100: #eff3f5; $abu-200: #dfe6ea;
+$abu-300: #c4d0d8; $abu-400: #97a7b2; $abu-500: #71818c; $abu-600: #5b6b76;
+$abu-700: #42505a; $abu-800: #2a3740; $abu-900: #1a2530; $abu-950: #0f1922;
+
+// --- Semantic aliases --------------------------------------------------------
+$color-background: $abu-0;
+$color-foreground: $abu-950;
+$color-primary: $biru-600;
+$color-primary-foreground: #f4f8fa;
+$color-secondary: $abu-100;
+$color-secondary-foreground: $biru-800;
+$color-muted: $abu-100;
+$color-muted-foreground: $abu-600;
+$color-accent: $biru-50;
+$color-accent-foreground: $biru-700;
+$color-destructive: $merah-500;
+$color-success: $hijau-600;
+$color-warning: $emas-500;
+$color-info: $teal-500;
+$color-border: $abu-200;
+$color-ring: $teal-500;
+
+$chart-1: $biru-600; $chart-2: $teal-500; $chart-3: $emas-300; $chart-4: $emas-500; $chart-5: $merah-400;
+
+$sidebar-bg: $biru-900;
+$sidebar-fg: #d5e1ea;
+$sidebar-primary: $emas-300;
+$sidebar-accent: rgba(255, 255, 255, .08);
+$sidebar-border: rgba(255, 255, 255, .10);
+
+// --- Typography (design-system/tokens/typography.css) -----------------------
+$font-sans: "Plus Jakarta Sans", -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$font-serif: "Lora", Georgia, "Times New Roman", serif;
+$font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+$text-2xs: .6875rem; $text-xs: .75rem; $text-sm: .8125rem; $text-base: .875rem;
+$text-md: 1rem; $text-lg: 1.125rem; $text-xl: 1.25rem; $text-2xl: 1.5rem;
+$text-3xl: 1.875rem; $text-4xl: 2.25rem; $text-5xl: 3rem; $text-6xl: 3.75rem;
+
+// --- Spacing (design-system/tokens/spacing.css) ------------------------------
+$space-0: 0; $space-1: .25rem; $space-2: .5rem; $space-3: .75rem; $space-4: 1rem;
+$space-5: 1.25rem; $space-6: 1.5rem; $space-8: 2rem; $space-10: 2.5rem;
+$space-12: 3rem; $space-16: 4rem; $space-20: 5rem; $space-24: 6rem;
+
+$control-h-sm: 2rem; $control-h: 2.25rem; $control-h-lg: 2.5rem;
+$gap-inline: .5rem; $gap-stack: 1rem; $gap-section: 3rem;
+
+$sidebar-w: 16rem; $sidebar-w-collapsed: 3.5rem; $topbar-h: 3.5rem; $page-px: 1.5rem;
+$container-max: 1200px;
+
+// --- Radius (design-system/tokens/radius.css) --------------------------------
+$radius-base: .625rem;
+$radius-sm: .375rem; // radius-base - 4px
+$radius-md: .5rem;   // radius-base - 2px
+$radius-lg: $radius-base;
+$radius-xl: .8125rem; // radius-base + 4px
+$radius-2xl: 1.25rem;
+$radius-full: 9999px;
+
+// --- Elevation (design-system/tokens/elevation.css) --------------------------
+$shadow-xs: 0 1px 2px rgba(15, 26, 22, .06);
+$shadow-sm: 0 1px 3px rgba(15, 26, 22, .08), 0 1px 2px rgba(15, 26, 22, .05);
+$shadow-md: 0 4px 10px -2px rgba(15, 26, 22, .09), 0 2px 4px -2px rgba(15, 26, 22, .06);
+$shadow-lg: 0 12px 24px -6px rgba(15, 26, 22, .12), 0 4px 8px -4px rgba(15, 26, 22, .06);
+
+// --- Motion (design-system/tokens/motion.css) --------------------------------
+$duration-fast: 120ms; $duration-base: 180ms; $duration-slow: 280ms;
+$ease-standard: cubic-bezier(.2, 0, 0, 1);
+
+// ============================================================================
+// CSS custom-property bridge — so component templates/styles can reference
+// the *exact* token names used in design-system/*.prompt.md and in the
+// original dashboard/data-manager CSS, without re-deriving them per file.
+// ============================================================================
+:root {
+  // Semantic surface colours
+  --background: #{$color-background};
+  --foreground: #{$color-foreground};
+  --card: #{$color-background};
+  --primary: #{$color-primary};
+  --primary-soft: #{rgba($color-primary, .16)};
+  --primary-line: #{rgba($color-primary, .45)};
+  --secondary: #{$color-secondary};
+  --muted: #{$color-muted};
+  --muted-foreground: #{$color-muted-foreground};
+  --accent: #{$color-accent};
+  --destructive: #{$color-destructive};
+  --border: #{$color-border};
+  --border-soft: #{rgba($color-foreground, .08)};
+  --ring: #{$color-ring};
+
+  --text: #{$color-foreground};
+  --text-dim: #{$abu-700};
+  --text-faint: #{$abu-500};
+
+  --good: #{$color-success};
+  --good-soft: #{rgba($color-success, .16)};
+  --warn: #{$color-warning};
+  --warn-soft: #{rgba($color-warning, .16)};
+  --critical: #{$color-destructive};
+  --critical-soft: #{rgba($color-destructive, .16)};
+  --series-2: #{$color-info};
+  --series-2-soft: #{rgba($color-info, .18)};
+
+  --chart-1: #{$chart-1}; --chart-2: #{$chart-2}; --chart-3: #{$chart-3};
+  --chart-4: #{$chart-4}; --chart-5: #{$chart-5};
+
+  --sidebar: #{$sidebar-bg};
+  --sidebar-foreground: #{$sidebar-fg};
+  --sidebar-primary: #{$sidebar-primary};
+  --sidebar-accent: #{$sidebar-accent};
+  --sidebar-border: #{$sidebar-border};
+
+  // Type
+  --font-sans: #{$font-sans};
+  --font-mono: #{$font-mono};
+
+  // Spacing / geometry
+  --space-1: #{$space-1}; --space-2: #{$space-2}; --space-3: #{$space-3};
+  --space-4: #{$space-4}; --space-6: #{$space-6}; --space-8: #{$space-8};
+  --control-h-sm: #{$control-h-sm}; --control-h: #{$control-h}; --control-h-lg: #{$control-h-lg};
+  --sidebar-w: #{$sidebar-w}; --sidebar-w-collapsed: #{$sidebar-w-collapsed};
+  --topbar-h: #{$topbar-h}; --page-px: #{$page-px};
+
+  --radius: #{$radius-lg};
+  --radius-sm: #{$radius-sm};
+  --radius-lg: #{$radius-xl};
+  --radius-full: #{$radius-full};
+
+  --shadow-xs: #{$shadow-xs};
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+
+  --duration-fast: #{$duration-fast};
+  --duration-base: #{$duration-base};
+  --ease-standard: #{$ease-standard};
+}
+
+// design-system/tokens/colors.css .dark{} block — not wired up as a theme
+// switch anywhere yet (the original prototype is deliberately single-theme,
+// see CLAUDE.md "Theming"); kept here as an opt-in class so a future dark
+// mode doesn't require re-deriving these values.
+.dark {
+  --background: #081420; --foreground: #e8eef3; --card: #0e1f2e;
+  --primary: #{$teal-300}; --secondary: #182c3c; --muted: #182c3c;
+  --muted-foreground: #97a7b2; --accent: #12293a; --destructive: #e4566a;
+  --success: #4d9d7e; --warning: #{$emas-300}; --info: #{$teal-300};
+  --border: rgba(255, 255, 255, .12); --ring: #{$teal-300};
+  --sidebar: #050f19; --sidebar-foreground: #c2d3de;
+}

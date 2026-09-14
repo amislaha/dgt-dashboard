@@ -1,0 +1,47 @@
+// ============================================================================
+// Bootstrap 4 Sass variable overrides, sourced from _tokens.scss (which in
+// turn mirrors design-system/tokens/*.css). Import this file BEFORE
+// "~bootstrap/scss/bootstrap" so these variables take effect.
+//
+// This app links the compiled node_modules/bootstrap/dist/css/bootstrap.min.css
+// in angular.json for simplicity/build-speed (see angular.json "styles").
+// If your team prefers a fully token-driven Bootstrap build instead of the
+// prebuilt CSS + override layer, swap that angular.json entry for a
+// styles.scss that does `@import "~bootstrap/scss/bootstrap";` after this
+// file — every variable below is already named to match Bootstrap 4's own
+// $variable names for that path.
+// ============================================================================
+
+@import 'tokens';
+
+$primary: $color-primary;
+$secondary: $abu-500;
+$success: $color-success;
+$warning: $color-warning;
+$danger: $color-destructive;
+$info: $color-info;
+$light: $abu-50;
+$dark: $abu-900;
+
+$body-bg: $color-background;
+$body-color: $color-foreground;
+$border-color: $color-border;
+$text-muted: $color-muted-foreground;
+
+$font-family-sans-serif: $font-sans;
+$font-family-monospace: $font-mono;
+$font-size-base: $text-base;
+
+$border-radius: $radius-lg;
+$border-radius-sm: $radius-sm;
+$border-radius-lg: $radius-xl;
+
+$box-shadow-sm: $shadow-xs;
+$box-shadow: $shadow-sm;
+$box-shadow-lg: $shadow-lg;
+
+$input-btn-focus-color: rgba($color-ring, .35);
+$transition-base: all $duration-base $ease-standard;
+
+$grid-gutter-width: 24px;
+$spacer: 1rem;

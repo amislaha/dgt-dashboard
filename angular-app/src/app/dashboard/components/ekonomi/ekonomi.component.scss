@@ -1,0 +1,19 @@
+.badge-stage-tumbuh { color: #fff; background: var(--warn); }
+.badge-stage-berkembang { color: #fff; background: var(--series-2); }
+.badge-stage-mandiri { color: #fff; background: var(--good); }
+
+.step {
+  flex: 1 1 18%;
+}
+
+.s-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}

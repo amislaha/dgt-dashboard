@@ -1,0 +1,9 @@
+<div class="page-head d-flex flex-wrap justify-content-between align-items-start mb-4">
+  <div>
+    <h1 class="h4 font-weight-bold mb-1">{{ title }}</h1>
+    <p class="text-muted mb-0" *ngIf="description">{{ description }}</p>
+  </div>
+  <div class="page-head-toolbar d-flex align-items-center flex-wrap">
+    <ng-content></ng-content>
+  </div>
+</div>

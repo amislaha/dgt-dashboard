@@ -1,0 +1,56 @@
+<dgt-page-head
+  title="Analitik Kawasan, Skoring Prioritas 5T &amp; Early Warning"
+  description="Pemodelan statistik untuk skoring prioritas intervensi serta notifikasi otomatis Early Warning System (EWS).">
+</dgt-page-head>
+
+<div class="row">
+  <div class="col-lg-7 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h6 font-weight-bold mb-0">Skoring Prioritas Intervensi</h2>
+        <span class="small text-muted">semakin rendah indeks 5T, semakin tinggi prioritas</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Kawasan</th>
+              <th class="text-right">Indeks 5T</th>
+              <th>Risiko</th>
+              <th>Prioritas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of priorityRows">
+              <td class="mono">#{{ row.rank }} {{ row.kawasan.nama }}</td>
+              <td class="text-right mono">{{ row.kawasan.indeks5t }}</td>
+              <td><dgt-severity-badge [severity]="severityOf(row.kawasan.risiko)" [label]="riskLabel(row.kawasan.risiko)"></dgt-severity-badge></td>
+              <td><dgt-severity-badge [severity]="severityOf(row.priority)" [label]="priorityLabel(row.priority)"></dgt-severity-badge></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5 mb-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h6 font-weight-bold mb-0">Early Warning System</h2>
+        <span class="small text-muted">{{ activeCount }} aktif</span>
+      </div>
+      <div class="card-body">
+        <div class="ews-item d-flex mb-3" *ngFor="let a of alerts" [class.ack]="a.ack">
+          <dgt-severity-badge class="mr-2" [severity]="severityOf(a.sev)" [label]="riskLabel(a.sev)"></dgt-severity-badge>
+          <div class="ews-body flex-grow-1">
+            <div class="t font-weight-bold small">{{ a.title }}</div>
+            <div class="d small text-muted">{{ a.detail }}</div>
+            <div class="ews-meta small text-muted">{{ a.when }}</div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary align-self-start ml-2" (click)="toggleAck(a.id)">{{ a.ack ? 'Dibuka' : 'Tandai' }}</button>
+        </div>
+        <p class="text-muted mb-0" *ngIf="!alerts.length">Tidak ada peringatan aktif.</p>
+      </div>
+    </div>
+  </div>
+</div>

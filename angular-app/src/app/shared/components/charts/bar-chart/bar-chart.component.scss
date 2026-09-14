@@ -1,0 +1,13 @@
+.bar-rect {
+  animation: barGrow var(--duration-slow, 280ms) var(--ease-standard, ease-out) both;
+  transform-origin: bottom;
+}
+
+@keyframes barGrow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-rect { animation: none; }
+}

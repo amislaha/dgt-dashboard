@@ -1,0 +1,14 @@
+<div class="scrim" *ngIf="open" (click)="onScrimClick()"></div>
+
+<aside class="drawer" [class.open]="open" role="dialog" [attr.aria-hidden]="!open">
+  <div class="drawer-head d-flex justify-content-between align-items-center">
+    <h2 class="h6 font-weight-bold mb-0">{{ title }}</h2>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closed.emit()" aria-label="Tutup">✕</button>
+  </div>
+  <div class="drawer-body">
+    <ng-content></ng-content>
+  </div>
+  <div class="drawer-foot">
+    <ng-content select="[drawer-footer]"></ng-content>
+  </div>
+</aside>

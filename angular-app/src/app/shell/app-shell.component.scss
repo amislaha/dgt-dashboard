@@ -1,0 +1,9 @@
+.shell {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.main-content {
+  padding: var(--page-px);
+  overflow-x: hidden;
+}

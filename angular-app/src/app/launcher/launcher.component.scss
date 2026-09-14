@@ -1,0 +1,29 @@
+.launcher-wrap {
+  min-height: 100vh;
+  padding: var(--space-6);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  border-radius: var(--radius-lg);
+}
+
+.launcher-grid {
+  width: 100%;
+  max-width: var(--container-max, 1200px);
+}
+
+.launcher-card {
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  border-top: 3px solid var(--border);
+  transition: box-shadow var(--duration-base) var(--ease-standard);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  &.accent-primary { border-top-color: var(--primary); }
+  &.accent-success { border-top-color: var(--good); }
+}

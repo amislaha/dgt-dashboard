@@ -1,0 +1,20 @@
+.kpi-tile {
+  min-width: 160px;
+  border-color: var(--border);
+  border-radius: var(--radius);
+}
+
+.k-label {
+  font-size: var(--text-xs, .75rem);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.k-value {
+  font-size: var(--text-xl, 1.25rem);
+  margin: var(--space-1) 0;
+}
+
+.k-delta {
+  font-size: var(--text-xs, .75rem);
+}

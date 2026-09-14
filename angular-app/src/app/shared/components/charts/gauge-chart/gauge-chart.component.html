@@ -1,0 +1,11 @@
+<svg class="chart-svg" [attr.viewBox]="'0 0 ' + width + ' ' + height" width="100%" [attr.height]="height">
+  <path [attr.d]="trackPath" fill="none" stroke="var(--muted)" stroke-width="10" stroke-linecap="round"></path>
+  <path
+    class="gauge-fill"
+    [attr.d]="valuePath"
+    fill="none" [attr.stroke]="color" stroke-width="10" stroke-linecap="round"
+    [attr.stroke-dasharray]="arcLen.toFixed(2)"
+    [style.--arc-len]="arcLen.toFixed(2)"></path>
+  <text [attr.x]="cx" [attr.y]="cy - 10" text-anchor="middle" fill="var(--text)" font-size="20" font-weight="700">{{ value }}</text>
+  <text [attr.x]="cx" [attr.y]="cy + 6" text-anchor="middle" fill="var(--text-faint)" font-size="8.5">{{ label }}</text>
+</svg>

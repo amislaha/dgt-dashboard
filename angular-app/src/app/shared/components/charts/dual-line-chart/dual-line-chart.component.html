@@ -1,0 +1,23 @@
+<svg
+  class="chart-svg"
+  [attr.viewBox]="'0 0 ' + width + ' ' + height"
+  width="100%"
+  [attr.height]="height"
+  role="img"
+  aria-label="s-curve chart">
+  <line *ngFor="let gy of gridLines" x1="14" [attr.y1]="gy" [attr.x2]="width - 14" [attr.y2]="gy" stroke="var(--border-soft)" stroke-width="1"></line>
+
+  <path [attr.d]="path1" fill="none" stroke="var(--series-2)" stroke-width="2" stroke-dasharray="4 3"></path>
+
+  <path
+    #s2Path
+    class="line-draw"
+    [attr.d]="path2"
+    fill="none" stroke="var(--primary)" stroke-width="2.4"
+    [attr.stroke-dasharray]="lineLength"
+    [style.--len.px]="lineLength"></path>
+
+  <text *ngFor="let tick of tickLabels" [attr.x]="tick.x" [attr.y]="height - 6" text-anchor="middle" fill="var(--text-faint)" font-size="8.5">{{ tick.label }}</text>
+
+  <circle *ngFor="let p of points" [attr.cx]="p.x" [attr.cy]="p.y" r="2.6" fill="var(--primary)"></circle>
+</svg>

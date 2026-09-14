@@ -1,0 +1,7 @@
+<dgt-app-shell [navItems]="navItems" [activeId]="activeId" [brand]="'DGT Data Manager'" (select)="onSelect($event)">
+  <span topbar-actions class="topbar-stat d-none d-sm-inline-flex align-items-center">
+    <span class="status-dot mr-2"></span>{{ totalLabel }}
+  </span>
+
+  <router-outlet></router-outlet>
+</dgt-app-shell>
