@@ -25,6 +25,7 @@ on:
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
   group: deploy-angular
@@ -79,3 +80,15 @@ jobs:
           fi
           git commit -m "Deploy Angular app build output to Pages [skip ci]"
           git push
+
+      # A push authenticated with the default GITHUB_TOKEN was observed NOT
+      # to trigger Pages' own (legacy, branch-based) auto-rebuild — likely
+      # the same "GITHUB_TOKEN doesn't cascade automation" restriction GitHub
+      # applies to Actions workflow triggers, extended here too. Ask for a
+      # build explicitly rather than relying on that. If this step ever
+      # starts failing on a permissions error, the fallback is a manual
+      # `gh api -X POST repos/<owner>/<repo>/pages/builds`.
+      - name: Request a Pages (re)build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
