@@ -7,6 +7,9 @@ interface LauncherCard {
   description: string;
   route: string;
   accent: string;
+  /** true for sibling static sites outside this Angular app (gis-dgt/, geomapping/) —
+   *  rendered as a plain <a href>, not routed through the Angular Router. */
+  external?: boolean;
 }
 
 /**
@@ -26,9 +29,16 @@ export class LauncherComponent {
   password = '';
   error = '';
 
+  // gis-dgt/ and geomapping/ are separate static sites living as sibling
+  // folders in the same repo (not part of this Angular workspace — see root
+  // CLAUDE.md) — kept here as external links so the launcher stays the one
+  // place that lists every tool, matching the original static launcher's
+  // 4-card grid (dashboard/index.html's port replaced only cards 1-2).
   cards: LauncherCard[] = [
     { title: 'DGT Dashboard', description: 'Situation-room DSS untuk kawasan transmigrasi.', route: '/dashboard', accent: 'primary' },
-    { title: 'DGT Data Manager', description: 'CRUD data induk WPT/SKP/SP, komoditi, program, satker, personel, IKU.', route: '/data-manager', accent: 'success' }
+    { title: 'DGT Data Manager', description: 'CRUD data induk WPT/SKP/SP, komoditi, program, satker, personel, IKU.', route: '/data-manager', accent: 'success' },
+    { title: 'GIS DGT', description: 'Coming soon — placeholder page, belum ada tool di baliknya.', route: 'gis-dgt/', accent: 'warning', external: true },
+    { title: 'GEOMAPPING', description: 'Data manager geospasial: gambar, klasifikasi, dan simpan objek peta.', route: 'geomapping/', accent: 'info', external: true }
   ];
 
   constructor(private readonly auth: AuthGateService, private readonly router: Router) {}
@@ -50,6 +60,14 @@ export class LauncherComponent {
   }
 
   open(card: LauncherCard): void {
+    if (card.external) {
+      // Plain navigation, not the Angular Router — these are separate static
+      // sites outside this SPA. Relative to <base href> (set at build time
+      // via --base-href), so this resolves correctly wherever the app is
+      // deployed.
+      window.location.href = card.route;
+      return;
+    }
     this.router.navigateByUrl(card.route);
   }
 }

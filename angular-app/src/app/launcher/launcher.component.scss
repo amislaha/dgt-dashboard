@@ -26,4 +26,6 @@
 
   &.accent-primary { border-top-color: var(--primary); }
   &.accent-success { border-top-color: var(--good); }
+  &.accent-warning { border-top-color: var(--warn); }
+  &.accent-info { border-top-color: var(--series-2); }
 }
