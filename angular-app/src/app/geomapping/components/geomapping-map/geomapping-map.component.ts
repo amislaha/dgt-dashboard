@@ -41,7 +41,9 @@ export class GeomappingMapComponent implements AfterViewInit, OnChanges, OnDestr
   ngAfterViewInit(): void {
     this.map = L.map(this.mapElRef.nativeElement, { zoomControl: false, attributionControl: true }).setView([-6.284, 106.826], 13);
     L.control.zoom({ position: 'topright' }).addTo(this.map);
-    this.map.attributionControl.setPrefix('');
+    // Drops the "Leaflet" prefix text before the tile attribution — `attributionControl` is a
+    // real public property at runtime but missing from this project's @types/leaflet version.
+    (this.map as any).attributionControl.setPrefix('');
     this.featureLayer.addTo(this.map);
     this.poiLayer.addTo(this.map);
     this.buildBoundaryGrid();

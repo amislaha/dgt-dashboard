@@ -67,7 +67,7 @@ export class GeomappingShellComponent implements OnInit, OnDestroy {
   userInitial = 'S';
   userDisplayName = 'surveyor01';
 
-  @ViewChild(GeomappingMapComponent) mapComponent?: GeomappingMapComponent;
+  @ViewChild(GeomappingMapComponent, { static: false }) mapComponent?: GeomappingMapComponent;
 
   private readonly subs: Subscription[] = [];
 

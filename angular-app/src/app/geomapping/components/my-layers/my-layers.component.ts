@@ -50,7 +50,7 @@ export class MyLayersComponent implements OnInit, OnDestroy {
   newClsIcon = 'pin';
   newClsDesc = '';
 
-  @ViewChild('importInput') importInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('importInput', { static: true }) importInputRef?: ElementRef<HTMLInputElement>;
 
   private readonly subs: Subscription[] = [];
 
