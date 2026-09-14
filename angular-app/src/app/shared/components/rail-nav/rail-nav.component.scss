@@ -66,19 +66,23 @@
 .rail-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: var(--space-4) var(--space-2);
+  padding: var(--space-4) var(--space-3);
 }
 
 .rail-group-label {
   display: block;
   padding: 0 var(--space-2);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   font-size: var(--text-2xs, .6875rem);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .1em;
   color: var(--text-faint);
 }
 
+// More breathing room between items (was a near-invisible 2px) and a bigger, more deliberate
+// click target — enlarged/spaced out on request as a deliberate exception to the source's own
+// tighter, denser rail-item spacing.
 .rail-item {
   position: relative;
   display: flex;
@@ -89,12 +93,17 @@
   background: transparent;
   color: var(--text-dim);
   text-align: left;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  margin-bottom: 2px;
+  margin-bottom: var(--space-2);
   transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard),
-    border-color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
+    border-color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   &:hover {
     background: var(--muted);
@@ -107,8 +116,8 @@
     content: '';
     position: absolute;
     left: 0;
-    top: 20%;
-    bottom: 20%;
+    top: 18%;
+    bottom: 18%;
     width: 3px;
     border-radius: 2px;
     background: var(--primary);
@@ -120,45 +129,56 @@
     background: var(--primary-soft);
     border-color: var(--primary-line);
     color: var(--text);
+    box-shadow: var(--shadow-xs);
 
     &::before {
       transform: scaleY(1);
     }
 
     .rail-icon {
-      color: var(--primary);
+      background: var(--primary);
+      color: var(--card);
     }
   }
 }
 
+// A small rounded "chip" behind each icon (rather than a bare glyph) — reads as more considered/
+// polished than a plain icon-and-label row, and gives the active state somewhere to show itself
+// besides just the accent bar.
 .rail-icon {
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
   flex: 0 0 auto;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md, .5rem);
+  background: var(--muted);
   color: var(--text-faint);
-  transition: transform var(--duration-base) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+  transition: transform var(--duration-base) var(--ease-standard), color var(--duration-fast) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard);
 
   ::ng-deep svg {
     display: block;
-    width: 100%;
-    height: 100%;
+    width: 18px;
+    height: 18px;
   }
 }
 
 .rail-item:hover .rail-icon {
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
 
 .rail-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  gap: 2px;
+  line-height: 1.25;
 }
 
 .rail-label {
   font-size: var(--text-sm, .8125rem);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .rail-sub {
