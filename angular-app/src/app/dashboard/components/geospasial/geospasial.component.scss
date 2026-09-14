@@ -142,9 +142,14 @@
 
   .card-header { border-radius: 0; flex: 0 0 auto; }
   .map-search-row { flex: 0 0 auto; }
-  .card-body { flex: 1 1 auto; min-height: 0; }
+  // .card-body growing via flex:1 only reserves the right amount of space for it — it's still a
+  // plain block box, so its own child (.sebaran-body, an ordinary div) does NOT automatically
+  // stretch to fill that grown height on its own. Chain the same flex-column/flex:1 treatment one
+  // level deeper so .sebaran-body (and the Leaflet map inside it, height:100%) actually fills it,
+  // instead of collapsing to its old fixed 420px and leaving the rest of the viewport blank.
+  .card-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 0; }
 }
-.geo-fullscreen .geo-map-panel .sebaran-body { height: auto !important; }
+.geo-fullscreen .geo-map-panel .sebaran-body { flex: 1 1 auto; min-height: 0; height: auto !important; }
 // Leaflet's own zoom control sits inside .leaflet-top.leaflet-right at Leaflet's default top:0 —
 // rendered by the child <dgt-kawasan-map> component, so reaching it needs ::ng-deep to cross that
 // encapsulation boundary. Same 152px clearance as the layer catalogue above (map header + IKU

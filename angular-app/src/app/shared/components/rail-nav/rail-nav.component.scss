@@ -51,8 +51,10 @@
 }
 
 .rail-logo {
-  width: 28px;
-  height: 28px;
+  // Bigger than dashboard/index.html's own 28px rail-logo — enlarged on request, a deliberate
+  // exception to matching the source exactly here.
+  width: 40px;
+  height: 40px;
   display: block;
   object-fit: contain;
 }
