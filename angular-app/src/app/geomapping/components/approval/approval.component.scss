@@ -1,0 +1,58 @@
+@import '../../shared-panel';
+
+.xlink {
+  display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.74rem; font-weight: 700;
+  color: var(--series-2); background: none; border: none; padding: 0; cursor: pointer;
+
+  svg { width: 12px; height: 12px; }
+  &:hover { color: var(--primary); }
+}
+
+.appr-chip {
+  display: inline-flex; align-items: center; gap: 0.32rem; flex: 0 0 auto;
+  font-size: 0.66rem; font-weight: 800; padding: 0.12rem 0.5rem 0.12rem 0.4rem;
+  border: 1px solid currentColor; border-radius: 999px; white-space: nowrap;
+}
+.appr-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+
+.appr-item {
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--card); overflow: hidden;
+  margin-bottom: 0.4rem;
+
+  &.open { border-color: var(--primary-line); }
+  &.open .appr-caret { transform: rotate(90deg); }
+}
+.appr-head {
+  display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.65rem; cursor: pointer;
+
+  &:hover { background: var(--muted); }
+  .li-ico { width: 26px; height: 26px; border-radius: 7px; flex: 0 0 auto; display: grid; place-items: center; }
+  .li-ico ::ng-deep svg { width: 14px; height: 14px; color: #fff; display: block; }
+  .li-body { flex: 1; min-width: 0; }
+  .li-title { display: block; font-size: 0.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+  .li-meta { display: block; font-size: 0.68rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+}
+.appr-caret {
+  color: var(--text-faint); display: grid; place-items: center; transition: transform 0.15s ease;
+
+  ::ng-deep svg { width: 14px; height: 14px; display: block; }
+}
+.appr-body { padding: 0.2rem 0.7rem 0.75rem; border-top: 1px solid var(--border); }
+.appr-meta { margin: 0.5rem 0 0.2rem; }
+.appr-hist {
+  margin-top: 0.35rem;
+
+  summary { cursor: pointer; font-size: 0.72rem; font-weight: 700; color: var(--series-2); list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+}
+textarea.appr-note {
+  width: 100%; background: var(--muted); color: var(--text); font-family: inherit; font-size: 0.8rem;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.6rem; min-height: 52px; resize: vertical;
+
+  &:focus { outline: none; border-color: var(--primary-line); }
+}
+.appr-actions {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem;
+
+  .btn { padding: 0.45rem 0.8rem; font-size: 0.76rem; }
+}

@@ -81,6 +81,15 @@
 .sub-label:first-child { margin-top: 0; }
 .muted { font-size: 0.76rem; color: var(--text-dim); line-height: 1.55; }
 
+// Used by Approval (history entries) and Activity (the log list itself).
+.act-item {
+  display: flex; gap: 0.6rem; padding: 0.55rem 0; border-top: 1px solid var(--border); font-size: 0.78rem;
+
+  &:first-child { border-top: none; }
+}
+.act-item .act-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--series-2); margin-top: 0.35rem; flex: 0 0 auto; }
+.act-item .act-when { font-size: 0.66rem; color: var(--text-faint); margin-top: 2px; }
+
 .list { display: flex; flex-direction: column; gap: 0.4rem; }
 .list-item {
   border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.65rem;

@@ -3,6 +3,8 @@ import { BehaviorSubject } from 'rxjs';
 import { geomToLatLngs, lineLengthM, polygonAreaM2 } from './geo-math';
 import {
   ActivityEntry,
+  APPROVAL_ACTION_LABEL,
+  ApprovalHistoryEntry,
   ApprovalStatus,
   Classification,
   Compartment,
@@ -321,6 +323,65 @@ export class GeomappingDataService {
     if (victim) {
       this.logActivity('Hapus objek: ' + (victim.title || '(tanpa judul)'));
     }
+  }
+
+  // ---------------- approval workflow (PRD open question #2) ----------------
+  /** Ports `setApproval(f, status, note)` verbatim: PENDING clears reviewer/reviewedAt, any other
+   *  status stamps the current user + now as reviewer/reviewedAt. Always prepends a history entry
+   *  (RESET for a PENDING status, the status itself otherwise) — matches `APPROVAL_ACTION_LABEL`'s
+   *  4 keys (SUBMITTED/APPROVED/REJECTED/RESET). */
+  setApproval(id: string, status: ApprovalStatus, note: string): void {
+    const now = new Date().toISOString();
+    const next = this.features.map(f => {
+      if (f.id !== id) {
+        return f;
+      }
+      const a = f.approval;
+      const historyEntry: ApprovalHistoryEntry = { action: status === 'PENDING' ? 'RESET' : status, by: this.userName(), at: now, note: note || '' };
+      return {
+        ...f,
+        approval: {
+          ...a,
+          status,
+          reviewer: status === 'PENDING' ? null : this.userName(),
+          reviewedAt: status === 'PENDING' ? null : now,
+          note: note || '',
+          history: [historyEntry, ...(a.history || [])]
+        }
+      };
+    });
+    this.featuresSubject.next(next);
+    lsSet('features', next);
+    const f = this.features.find(x => x.id === id);
+    const actionLabel = APPROVAL_ACTION_LABEL[status === 'PENDING' ? 'RESET' : status];
+    this.logActivity('Approval — ' + actionLabel + ': ' + (f ? f.title || '(tanpa judul)' : '') + (note ? ' — ' + note : ''));
+  }
+
+  // ---------------- tasks ----------------
+  addTask(title: string): void {
+    const next = [...this.tasks, { id: uid('tsk'), title, desc: '', done: false }];
+    this.tasksSubject.next(next);
+    lsSet('tasks', next);
+  }
+  toggleTaskDone(id: string, done: boolean): void {
+    const t = this.tasks.find(x => x.id === id);
+    const next = this.tasks.map(x => (x.id === id ? { ...x, done } : x));
+    this.tasksSubject.next(next);
+    lsSet('tasks', next);
+    if (t) {
+      this.logActivity((done ? 'Tandai tugas selesai: ' : 'Buka kembali tugas: ') + t.title);
+    }
+  }
+  deleteTask(id: string): void {
+    const next = this.tasks.filter(x => x.id !== id);
+    this.tasksSubject.next(next);
+    lsSet('tasks', next);
+  }
+
+  // ---------------- activity log ----------------
+  clearActivity(): void {
+    this.activitySubject.next([]);
+    lsSet('activity', []);
   }
 
   // ---------------- classifications (visibility + adding new ones) ----------------

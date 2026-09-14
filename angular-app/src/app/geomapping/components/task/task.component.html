@@ -1,0 +1,26 @@
+<div class="view-head">
+  <h2>Task</h2>
+  <span class="count">{{ openCount }} terbuka</span>
+</div>
+
+<div style="margin-top:.7rem">
+  <div class="task-item" *ngFor="let t of tasks" [class.done]="t.done">
+    <input type="checkbox" [checked]="t.done" (change)="toggleDone(t.id, $any($event.target).checked)" />
+    <span style="flex:1">
+      <span class="ti-title">{{ t.title }}</span>
+      <span class="ti-desc">{{ t.desc }}</span>
+    </span>
+    <button class="li-act" type="button" aria-label="Hapus" (click)="deleteTask(t.id)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="sub-label">Tambah tugas</div>
+<div class="field">
+  <input type="text" [(ngModel)]="newTitle" placeholder="Judul tugas survei" (keydown.enter)="addTask()" />
+</div>
+<button class="btn btn-save full" type="button" (click)="addTask()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+  Tambah tugas
+</button>

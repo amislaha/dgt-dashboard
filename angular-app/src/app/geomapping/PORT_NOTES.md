@@ -6,8 +6,10 @@ see repo-root `CLAUDE.md` and the source file's own top comment for the PRD this
 
 This is a genuinely large app — a full-screen Leaflet map workspace with drawing tools, GPS
 tracking, a dynamic per-feature questionnaire, an approval workflow, activity log, and task list
-— so it's being ported in phases rather than one pass. **This first pass (Phase 1) is the shell +
-two read-mostly views: Public Mapping and My Layers.** See "Explicit TODOs" below for the rest.
+— so it's being ported in phases rather than one pass. **Phase 1 is the shell + two read-mostly
+views (Public Mapping, My Layers). Phase 2 adds Approval/Task/Activity.** The one thing left is
+Edit Mode itself (manual drawing, GPS tracking, the feature editor + questionnaire dialog) — see
+"Explicit TODOs" below.
 
 ## What's implemented (Phase 1)
 
@@ -58,6 +60,34 @@ two read-mostly views: Public Mapping and My Layers.** See "Explicit TODOs" belo
   routes internally (`/geomapping`) instead of an external link to the sibling static site — same
   change already made for `/dashboard` and `/data-manager` when those were ported. GIS DGT is
   still external (still just a "coming soon" placeholder in the static original, nothing to port).
+- **The old static `geomapping/` moved to `legacy-static/geomapping/`** — it occupied the exact
+  `/geomapping` URL this port's own route needs, and GitHub Pages serves a real file at an exact
+  path before ever falling through to the Angular SPA, so the static site was silently winning
+  over this port at that URL until it moved (same fix `dashboard/`/`data-manager/` needed
+  earlier). See root `CLAUDE.md`'s "Hosting / visibility" section.
+
+## Phase 2 — what's implemented (Approval / Task / Activity)
+
+- **`ApprovalComponent`** (`renderApprovalPanel()`/`apprRowHtml()`/`approvalMetaHtml()`/
+  `apprHistoryHtml()`/`apprChip()`): status filter tabs with live counts, sorted list (pending →
+  rejected → approved, then newest-submitted-first within each), expandable rows with the full
+  approval meta block + history + a reviewer note field, and the three actions (Approve/Reject/
+  Reset-to-Pending) — rejecting without a note is blocked, matching the original. Any signed-in
+  user can act as reviewer, same as the original (no real role check, front-end prototype).
+  `GeomappingDataService.setApproval()` added for this. The "Buka di peta / editor" link
+  (`zoomToFeature()`/`openEditor()` in the original) can't do either yet — Edit Mode isn't ported
+  and the shell's persistent map isn't reachable from a routed panel component — so it just routes
+  to Edit Mode's placeholder instead of doing nothing.
+- **`TaskComponent`** (`renderTaskPanel()`): the to-do list, toggle done, delete, add a new task
+  (title only, same as the original). `GeomappingDataService.addTask()`/`toggleTaskDone()`/
+  `deleteTask()` added. One deliberate fix vs. the source: its delete button
+  (`class="li-act"`) never actually gets the `.li-act` icon-button styling, because that CSS rule
+  is scoped to `.list-item .li-act` and task rows use `.task-item` instead — a CSS-scoping miss in
+  the source, not a real design choice, so this port gives it the same styling rather than
+  reproducing the miss.
+- **`ActivityComponent`** (`renderActivityPanel()`): the log list, "Bersihkan" (clear) with the
+  same tap-to-arm/tap-to-confirm pattern used elsewhere. `GeomappingDataService.clearActivity()`
+  added.
 
 ## Explicit TODOs — later phases, in roughly the order they'd naturally build on each other
 
@@ -73,14 +103,9 @@ two read-mostly views: Public Mapping and My Layers.** See "Explicit TODOs" belo
    either, see below), image-URL list, the Wizard/Scroll-View questionnaire modal
    (`QUESTIONNAIRE`, already modelled in `GeomappingFeature.questionnaire` but no UI reads/writes
    it yet).
-4. **Approval panel** (`renderApprovalPanel()`/`setApproval()`): review pending objects, approve/
-   reject with a note, history. `GeomappingDataService` doesn't have `setApproval()`/
-   `ensureApproval()` yet either — add alongside the panel.
-5. **Task panel** (`renderTaskPanel()`): the survey to-do list, toggle done. `DEFAULT_TASKS`/
-   `GeomappingTask` already modelled; just needs the panel + a `toggleTaskDone()` data-service
-   method.
-6. **Activity panel** (`renderActivityPanel()`): the log list UI. `logActivity()`/`activity$`
-   already exist and are already being called by everything above; just needs the panel.
+4. ~~Approval panel~~ — **done, Phase 2.**
+5. ~~Task panel~~ — **done, Phase 2.**
+6. ~~Activity panel~~ — **done, Phase 2.**
 7. **Search** (`runSearch()`/`dropPin()`/`zoomToFeature()`, Nominatim geocoding) and the dock-top
    search row + classification-collection picker (`renderDockTop()`) — Phase 1 left the dock top
    empty rather than ship a non-functional search box; build both together.
@@ -89,11 +114,17 @@ two read-mostly views: Public Mapping and My Layers.** See "Explicit TODOs" belo
    than copying the original's hand-written service worker — a real build/tooling change, out of
    scope for a component-level port pass, and this workspace has never been through a real
    `ng build`/`ng serve` yet regardless (see root `angular-app/README.md`'s Node-version caveat).
+   Also worth knowing: the *original static* `legacy-static/geomapping/` still registers its own
+   service worker at whatever URL it's loaded from — a browser that visits it there and later
+   visits this Angular port's `/geomapping` (same origin) is unaffected (different scope/path), but
+   a browser that visited the OLD `/geomapping` URL *before* the legacy-static/ move may still have
+   a stale service worker registered at that now-vacated scope; harmless (nothing serves that scope
+   as the SPA), just a residual local artifact for anyone who saw it pre-move.
 9. **`wc-fab`** (the floating "+ WorkCompartment" quick-create button, shown only in Public
    Mapping) and the **`.map-fab`** locate button weren't ported — both are reachable via
    already-ported UI (the "Buat WorkCompartment" button inside the panel; the locate FAB has no
    home until GPS tracking, item 2, lands), so there's no dangling requirement, just noting they're
-   visually absent from Phase 1.
+   visually absent still.
 
 ## Simplifications / things to double-check once the workspace has a real build
 

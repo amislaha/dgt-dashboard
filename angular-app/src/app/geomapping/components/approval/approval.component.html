@@ -1,0 +1,73 @@
+<div class="view-head">
+  <h2>Approval</h2>
+  <span class="count">{{ count('PENDING') }} menunggu</span>
+</div>
+
+<div class="seg">
+  <button type="button" *ngFor="let o of filterOptions" [class.sel]="filter === o[0]" (click)="setFilter(o[0])">{{ o[1] }} {{ count(o[0]) }}</button>
+</div>
+
+<div class="list" *ngIf="pool.length; else emptyState">
+  <div class="appr-item" *ngFor="let f of pool" [class.open]="openId[f.id]">
+    <div class="appr-head" (click)="toggleOpen(f.id)">
+      <span class="li-ico" [style.background]="clsOf(f).color" [innerHTML]="iconSvg(clsOf(f).icon) | safeHtml"></span>
+      <span class="li-body">
+        <span class="li-title">{{ f.title || '(tanpa judul)' }}</span>
+        <span class="li-meta">{{ geomLabel(f) }} &middot; {{ f.approval.submittedBy || '-' }}{{ wcOf(f) ? (' &middot; ' + wcOf(f)!.name) : '' }}</span>
+      </span>
+      <span class="appr-chip" [style.color]="statusMeta(f.approval.status).color" [style.border-color]="statusMeta(f.approval.status).color">
+        <span class="appr-dot" [style.background]="statusMeta(f.approval.status).color"></span>{{ statusMeta(f.approval.status).label }}
+      </span>
+      <span class="appr-caret" [innerHTML]="iconSvg('arrowRight') | safeHtml"></span>
+    </div>
+
+    <div class="appr-body" *ngIf="openId[f.id]">
+      <div class="appr-meta">
+        <div class="qn-row"><span class="qn-k">Status</span><span class="qn-v">
+          <span class="appr-chip" [style.color]="statusMeta(f.approval.status).color" [style.border-color]="statusMeta(f.approval.status).color">
+            <span class="appr-dot" [style.background]="statusMeta(f.approval.status).color"></span>{{ statusMeta(f.approval.status).label }}
+          </span>
+        </span></div>
+        <div class="qn-row"><span class="qn-k">Diajukan</span><span class="qn-v mono">{{ f.approval.submittedBy || '-' }} &middot; {{ fmtWhen(f.approval.submittedAt) }}</span></div>
+        <div class="qn-row"><span class="qn-k">Ditinjau</span><span class="qn-v mono">{{ f.approval.reviewer ? (f.approval.reviewer + ' &middot; ' + fmtWhen(f.approval.reviewedAt)) : '—' }}</span></div>
+        <div class="qn-row" *ngIf="f.approval.note"><span class="qn-k">Catatan</span><span class="qn-v">{{ f.approval.note }}</span></div>
+        <details class="appr-hist">
+          <summary>Riwayat approval ({{ f.approval.history.length }})</summary>
+          <div style="margin-top:.4rem">
+            <ng-container *ngIf="f.approval.history.length; else noHist">
+              <div class="act-item" *ngFor="let h of f.approval.history">
+                <span class="act-dot" [style.background]="historyDotColor(h.action)"></span>
+                <span>
+                  <span>{{ actionLabel(h.action) }} &middot; {{ h.by || '-' }}{{ h.note ? (' — ' + h.note) : '' }}</span>
+                  <span class="act-when">{{ fmtWhen(h.at) }}</span>
+                </span>
+              </div>
+            </ng-container>
+            <ng-template #noHist><div class="muted" style="font-size:.7rem">Belum ada riwayat.</div></ng-template>
+          </div>
+        </details>
+      </div>
+
+      <button class="xlink" type="button" style="margin:.4rem 0 .6rem" (click)="goToEditor()">
+        Buka di peta / editor
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </button>
+      <textarea class="appr-note" placeholder="Catatan reviewer (wajib untuk penolakan)" [(ngModel)]="noteDraft[f.id]"></textarea>
+      <div class="appr-actions">
+        <button class="btn btn-save" type="button" *ngIf="f.approval.status !== 'APPROVED'" (click)="act(f, 'APPROVED')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-9"/></svg>
+          Setujui
+        </button>
+        <button class="btn btn-danger" type="button" *ngIf="f.approval.status !== 'REJECTED'" (click)="act(f, 'REJECTED')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6 18 18M18 6 6 18"/></svg>
+          Tolak
+        </button>
+        <button class="btn btn-ghost" type="button" *ngIf="f.approval.status !== 'PENDING'" (click)="act(f, 'PENDING')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/></svg>
+          Kembalikan ke Menunggu
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #emptyState><div class="muted">Tidak ada objek pada status ini.</div></ng-template>

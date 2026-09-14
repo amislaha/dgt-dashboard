@@ -1,0 +1,23 @@
+@import '../../shared-panel';
+
+.task-item {
+  display: flex; gap: 0.6rem; align-items: flex-start; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.6rem 0.65rem; margin-bottom: 0.45rem;
+
+  &.done { opacity: 0.6; }
+  &.done .ti-title { text-decoration: line-through; }
+  input { margin-top: 0.15rem; accent-color: var(--primary); width: 16px; height: 16px; flex: 0 0 auto; }
+  .ti-title { font-weight: 700; font-size: 0.8rem; display: block; color: var(--text); }
+  .ti-desc { font-size: 0.72rem; color: var(--text-dim); margin-top: 2px; line-height: 1.45; display: block; }
+
+  // The source scopes .li-act's icon-button treatment to ".list-item .li-act" only — task rows use
+  // .task-item instead, so its own delete button gets no styling there (a CSS-scoping miss in the
+  // source, not a deliberate look). Given this rather than reproducing it.
+  .li-act {
+    width: 26px; height: 26px; flex: 0 0 auto; border: none; background: transparent; cursor: pointer;
+    color: var(--text-faint); border-radius: 6px; display: grid; place-items: center; padding: 0;
+
+    svg { width: 14px; height: 14px; }
+    &:hover { color: var(--critical); background: rgba(206,17,38,0.1); }
+  }
+}

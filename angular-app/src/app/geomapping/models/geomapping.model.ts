@@ -269,3 +269,10 @@ export const APPROVAL_META: { [key in ApprovalStatus]: { label: string; color: s
   APPROVED: { label: 'Disetujui', color: 'var(--good)' },
   REJECTED: { label: 'Ditolak', color: 'var(--critical)' }
 };
+
+export const APPROVAL_ACTION_LABEL: { [key in ApprovalHistoryEntry['action']]: string } = {
+  SUBMITTED: 'Diajukan',
+  APPROVED: 'Disetujui',
+  REJECTED: 'Ditolak',
+  RESET: 'Dikembalikan ke Menunggu'
+};
