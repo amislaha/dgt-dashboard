@@ -1,42 +1,85 @@
-<div class="launcher-wrap d-flex align-items-center justify-content-center">
+<!--
+  Ports root index.html's #loginView/#launcherView toggle 1:1 (see CLAUDE.md
+  root "index.html" section) — a COSMETIC gate only, see AuthGateService.
+  Kept as fully custom markup/CSS like the original static page rather than
+  Bootstrap components, so the two stay pixel-equivalent.
+-->
+<div class="launcher-page">
 
   <!-- #loginView equivalent -->
-  <div class="login-card card shadow-sm" *ngIf="!isAuthenticated">
-    <div class="card-body p-4">
-      <h1 class="h4 font-weight-bold mb-1">DGT</h1>
-      <p class="text-muted mb-4">Digital Governance Transmigration</p>
-
-      <form (ngSubmit)="submit()">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input id="username" name="username" class="form-control" [(ngModel)]="username" autocomplete="username">
+  <div class="view" *ngIf="!isAuthenticated">
+    <div class="login-shell">
+      <div class="login-visual">
+        <div class="login-visual-glow" aria-hidden="true"></div>
+        <div class="login-visual-grid" aria-hidden="true"></div>
+        <div class="login-visual-top">
+          <img class="mark mark-visual" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
+          <div class="eyebrow eyebrow-visual">Kementerian Transmigrasi</div>
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input id="password" name="password" type="password" class="form-control" [(ngModel)]="password" autocomplete="current-password">
+        <div class="login-visual-body">
+          <h2>Digital Governance Transmigration</h2>
+          <p>Satu ruang kendali untuk memantau kawasan transmigrasi — legalitas lahan, demografi, hingga peringatan dini — lintas kementerian, dalam satu layar.</p>
+          <ul class="login-visual-points">
+            <li>Pemantauan 8 modul strategis</li>
+            <li>Peta sebaran kawasan real-time</li>
+            <li>Peringatan dini terintegrasi</li>
+          </ul>
         </div>
-        <div class="alert alert-danger py-2" *ngIf="error">{{ error }}</div>
-        <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+      </div>
+      <form class="login-form-panel" (ngSubmit)="submit()" autocomplete="off">
+        <h1>Masuk ke DGT</h1>
+        <p class="login-sub">Gunakan akun yang terdaftar untuk mengakses dashboard.</p>
+        <div class="field">
+          <label for="loginUser">Nama pengguna</label>
+          <input type="text" id="loginUser" name="username" required placeholder="cth. admin"
+                 [(ngModel)]="username" autocomplete="username">
+        </div>
+        <div class="field">
+          <div class="field-row">
+            <label for="loginPass">Kata sandi</label>
+            <button type="button" class="forgot-link" (click)="toggleForgotHint()">Lupa kata sandi?</button>
+          </div>
+          <input type="password" id="loginPass" name="password" required placeholder="••••••••"
+                 [(ngModel)]="password" autocomplete="current-password">
+        </div>
+        <p class="forgot-hint" *ngIf="showForgotHint">Hubungi administrator sistem untuk mengatur ulang kata sandi Anda.</p>
+        <button type="submit" class="login-submit">Masuk</button>
       </form>
     </div>
   </div>
 
   <!-- #launcherView equivalent -->
-  <div class="launcher-grid" *ngIf="isAuthenticated">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="h4 font-weight-bold mb-0">DGT</h1>
-      <a href="javascript:void(0)" (click)="signOut()">Keluar</a>
+  <div class="view" *ngIf="isAuthenticated">
+    <div class="header">
+      <div class="header-glow" aria-hidden="true"></div>
+      <img class="mark" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
+      <div class="eyebrow">Kementerian Transmigrasi</div>
+      <h1>DGT — Digital Governance Transmigration</h1>
+      <p>Pilih salah satu alat di bawah untuk melanjutkan.</p>
     </div>
-    <div class="row">
-      <div class="col-md-6 mb-4" *ngFor="let card of cards">
-        <div class="card h-100 launcher-card" [ngClass]="'accent-' + card.accent" (click)="open(card)">
-          <div class="card-body">
-            <h2 class="h5 font-weight-bold">{{ card.title }}</h2>
-            <p class="text-muted mb-0">{{ card.description }}</p>
-          </div>
+
+    <div class="cards">
+      <a class="card" *ngFor="let card of cards; let i = index" [ngClass]="'accent-' + card.accent"
+         [style.--i]="i" href="javascript:void(0)" (click)="open(card)">
+        <div class="card-icon" [ngSwitch]="card.id">
+          <svg *ngSwitchCase="'dashboard'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          <svg *ngSwitchCase="'data-manager'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>
+          <svg *ngSwitchCase="'gis-dgt'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/></svg>
+          <svg *ngSwitchCase="'geomapping'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
         </div>
-      </div>
+        <div class="card-body">
+          <h2>{{ card.title }}</h2>
+          <span class="go">{{ card.cta }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          </span>
+        </div>
+        <span class="num">{{ card.num }}</span>
+      </a>
     </div>
+
+    <footer>
+      <button type="button" class="logout-link" (click)="signOut()">Keluar</button>
+    </footer>
   </div>
 
 </div>

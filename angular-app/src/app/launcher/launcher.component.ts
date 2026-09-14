@@ -3,12 +3,15 @@ import { Router } from '@angular/router';
 import { AuthGateService } from '../core/services/auth-gate.service';
 
 interface LauncherCard {
+  /** Matches the ngSwitch case in the template that picks the inline icon. */
+  id: string;
   title: string;
-  description: string;
+  cta: string;
+  num: string;
   route: string;
-  accent: string;
+  accent: 'primary' | 'series2' | 'gold' | 'geo';
   /** true for sibling static sites outside this Angular app (gis-dgt/, geomapping/) —
-   *  rendered as a plain <a href>, not routed through the Angular Router. */
+   *  rendered as a plain navigation, not routed through the Angular Router. */
   external?: boolean;
 }
 
@@ -27,18 +30,18 @@ interface LauncherCard {
 export class LauncherComponent {
   username = '';
   password = '';
-  error = '';
+  showForgotHint = false;
 
   // gis-dgt/ and geomapping/ are separate static sites living as sibling
   // folders in the same repo (not part of this Angular workspace — see root
   // CLAUDE.md) — kept here as external links so the launcher stays the one
   // place that lists every tool, matching the original static launcher's
-  // 4-card grid (dashboard/index.html's port replaced only cards 1-2).
+  // 4-card grid.
   cards: LauncherCard[] = [
-    { title: 'DGT Dashboard', description: 'Situation-room DSS untuk kawasan transmigrasi.', route: '/dashboard', accent: 'primary' },
-    { title: 'DGT Data Manager', description: 'CRUD data induk WPT/SKP/SP, komoditi, program, satker, personel, IKU.', route: '/data-manager', accent: 'success' },
-    { title: 'GIS DGT', description: 'Coming soon — placeholder page, belum ada tool di baliknya.', route: 'gis-dgt/', accent: 'warning', external: true },
-    { title: 'GEOMAPPING', description: 'Data manager geospasial: gambar, klasifikasi, dan simpan objek peta.', route: 'geomapping/', accent: 'info', external: true }
+    { id: 'dashboard', title: 'Dashboard DGT', cta: 'Buka dashboard', num: '01', route: '/dashboard', accent: 'primary' },
+    { id: 'data-manager', title: 'DGT Data Manager', cta: 'Buka data manager', num: '02', route: '/data-manager', accent: 'series2' },
+    { id: 'gis-dgt', title: 'GIS DGT', cta: 'Buka GIS DGT', num: '03', route: 'gis-dgt/', accent: 'gold', external: true },
+    { id: 'geomapping', title: 'GEOMAPPING', cta: 'Buka GEOMAPPING', num: '04', route: 'geomapping/', accent: 'geo', external: true }
   ];
 
   constructor(private readonly auth: AuthGateService, private readonly router: Router) {}
@@ -48,14 +51,22 @@ export class LauncherComponent {
   }
 
   submit(): void {
-    if (this.auth.signIn(this.username, this.password)) {
-      this.error = '';
-    } else {
-      this.error = 'Masukkan username dan password.';
-    }
+    // Cosmetic gate only — the native `required` attributes on both fields
+    // already block an empty submission, matching the original's "any
+    // non-empty username/password is accepted" behavior with no error UI.
+    this.auth.signIn(this.username, this.password);
+  }
+
+  toggleForgotHint(): void {
+    // Cosmetic only — no backend to send a reset link to, so this just
+    // surfaces a static hint, same as the original's forgotBtn handler.
+    this.showForgotHint = !this.showForgotHint;
   }
 
   signOut(): void {
+    this.username = '';
+    this.password = '';
+    this.showForgotHint = false;
     this.auth.signOut();
   }
 
