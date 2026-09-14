@@ -1,13 +1,21 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
-import { Kawasan, STAGE_COLOR_HEX } from '../../services/dashboard-data.service';
+import { Kawasan, STAGE_COLOR_HEX, kawasanAreaLatLngs } from '../../services/dashboard-data.service';
 
 /**
  * Real Leaflet + OpenStreetMap basemap for the Geospasial module — ports the
  * `renderDasar()` live-map branch of dashboard/index.html (search `L.map(`)
- * as a standalone child component. Per the port spec, the CSP static-basemap
- * fallback (`renderDasarStatic()`/`BASEMAP_STATIC_SRC`) is NOT ported — that
- * was specifically a Claude-Artifact-preview workaround, irrelevant here.
+ * as a standalone child component. The CSP static-basemap fallback
+ * (`renderDasarStatic()`) is still NOT ported here — it was specifically a
+ * Claude-Artifact-preview workaround, irrelevant to a real deployment — but
+ * the same static image now backs the separate locator inset (see
+ * `GeospasialComponent`/`assets/basemap-indonesia.jpg`), which IS part of
+ * the live UI regardless of Leaflet availability.
+ *
+ * Each kawasan is drawn as an actual irregular polygon area
+ * (`kawasanAreaLatLngs()`), not a point marker — ports a later revision of
+ * the original (see PORT_NOTES.md) that replaced single-point circle
+ * markers so a kawasan reads as an area even before zooming in.
  */
 @Component({
   selector: 'dgt-kawasan-map',
@@ -22,29 +30,33 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   @ViewChild('mapEl', { static: true }) mapElRef!: ElementRef<HTMLDivElement>;
 
   private map: L.Map | null = null;
-  private markers: { [id: string]: L.CircleMarker } = {};
+  private areas: { [id: string]: L.Polygon } = {};
 
   ngAfterViewInit(): void {
+    // zoomControl:false + a separate topright control (matching the original) frees up the
+    // top-left corner for the layer catalogue, which GeospasialComponent overlays on top of us.
     this.map = L.map(this.mapElRef.nativeElement, {
       scrollWheelZoom: false,
-      attributionControl: true,
-      zoomControl: true
+      attributionControl: false,
+      zoomControl: false
     }).setView([-2.2, 118], 5);
+    L.control.zoom({ position: 'topright' }).addTo(this.map);
+    L.control.attribution({ position: 'bottomright' }).addTo(this.map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
-      attribution: '&copy; OpenStreetMap contributors'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
     }).addTo(this.map);
 
-    this.plotMarkers();
+    this.plotAreas();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.map && changes.kawasan) {
-      this.plotMarkers();
+      this.plotAreas();
     }
     if (this.map && changes.selectedId && !changes.selectedId.firstChange) {
-      this.highlightSelected();
+      this.panToSelected();
     }
   }
 
@@ -57,6 +69,22 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
   }
 
+  /** Called by the parent's layer-catalogue checkboxes — ports `wireLayerCatalog()`'s Leaflet
+   *  branch (add/remove the polygon layer; there's no real "hide" concept on an `L.Polygon`). */
+  setAreaVisible(id: string, visible: boolean): void {
+    const area = this.areas[id];
+    if (!this.map || !area) {
+      return;
+    }
+    if (visible) {
+      if (!this.map.hasLayer(area)) {
+        area.addTo(this.map);
+      }
+    } else if (this.map.hasLayer(area)) {
+      this.map.removeLayer(area);
+    }
+  }
+
   ngOnDestroy(): void {
     // mirrors the original's manual `activeLeafletMap.remove()` discipline on tab-switch/view-toggle
     if (this.map) {
@@ -65,35 +93,55 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
   }
 
-  private plotMarkers(): void {
+  private plotAreas(): void {
     if (!this.map) {
       return;
     }
-    Object.keys(this.markers).forEach(id => this.map!.removeLayer(this.markers[id]));
-    this.markers = {};
+    Object.keys(this.areas).forEach(id => this.map!.removeLayer(this.areas[id]));
+    this.areas = {};
 
     this.kawasan.forEach(k => {
-      const marker = L.circleMarker([k.lat, k.lon], {
-        radius: 9,
-        color: '#ffffff',
-        weight: 1.5,
+      const area = L.polygon(kawasanAreaLatLngs(k), {
+        color: '#0a0f1c',
+        weight: 1.3,
+        opacity: 0.85,
         fillColor: STAGE_COLOR_HEX[k.tahap],
-        fillOpacity: 0.9
+        fillOpacity: 0.42
       }).addTo(this.map!);
-      marker.bindPopup(`<b>${k.nama}</b><br>${k.provinsi}<br>Indeks 5T: ${k.indeks5t}`);
-      marker.on('click', () => this.select.emit(k));
-      this.markers[k.id] = marker;
+      area.bindPopup(
+        `<b>${k.nama}</b><br/>${k.provinsi}<br/>Tahap: ${k.tahap}` +
+          `<br/>Populasi: ${k.populasi.toLocaleString('id-ID')} jiwa` +
+          `<br/>Luas HPL: ${k.hplHa.toLocaleString('id-ID')} ha`
+      );
+      area.on('click', () => this.select.emit(k));
+      this.areas[k.id] = area;
     });
 
-    this.highlightSelected();
+    // Fit to every kawasan's own coordinates instead of the fixed setView center/zoom above —
+    // ports a later fix for SKP Salor (lon 140.4°, Papua) sitting permanently off-screen at the
+    // old hand-picked view. Done after a tick so the container has a real, laid-out size to fit
+    // against (mirrors the original's setTimeout(...,60)).
+    if (this.kawasan.length) {
+      setTimeout(() => {
+        if (!this.map) {
+          return;
+        }
+        const bounds = L.latLngBounds(this.kawasan.map(k => [k.lat, k.lon] as [number, number]));
+        this.map.fitBounds(bounds, { padding: [22, 22] });
+        Object.keys(this.areas).forEach(id => this.areas[id].redraw());
+      }, 60);
+    }
   }
 
-  private highlightSelected(): void {
-    Object.keys(this.markers).forEach(id => {
-      this.markers[id].setStyle({ weight: id === this.selectedId ? 3 : 1.5 });
-      if (id === this.selectedId) {
-        this.markers[id].bringToFront();
-      }
-    });
+  private panToSelected(): void {
+    if (!this.map || !this.selectedId) {
+      return;
+    }
+    const area = this.areas[this.selectedId];
+    const k = this.kawasan.find(x => x.id === this.selectedId);
+    if (area && k) {
+      this.map.panTo([k.lat, k.lon]);
+      area.openPopup();
+    }
   }
 }

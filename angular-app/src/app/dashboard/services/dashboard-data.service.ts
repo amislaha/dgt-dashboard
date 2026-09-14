@@ -100,6 +100,63 @@ export const STAGE_BADGE_CLASS: { [key in Tahap]: string } = {
   Mandiri: 'mandiri'
 };
 
+/** Ports `seededRandom()` — a small deterministic PRNG keyed off a string seed, used so the
+ *  same kawasan always generates the same fabricated area shape across renders/reloads. */
+export function seededRandom(seed: string): () => number {
+  let s = 0;
+  for (let i = 0; i < seed.length; i++) {
+    s = (Math.imul(s, 31) + seed.charCodeAt(i)) >>> 0;
+  }
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+/** Ports `kawasanAreaLatLngs()` — a fabricated per-kawasan boundary "blob" (no real cadastral/HPL
+ *  polygon data exists, see CLAUDE.md "Data layer"), an irregular ring generated deterministically
+ *  from the kawasan's own id, roughly sized by its HPL extent. Longitude is corrected by
+ *  cos(latitude) so the ring isn't visibly stretched east-west. Replaces a single-point circle
+ *  marker with an actual area per kawasan on the live Leaflet map. */
+export function kawasanAreaLatLngs(k: Kawasan): [number, number][] {
+  const rnd = seededRandom(k.id + '-area');
+  const points = 10;
+  const baseDeg = 0.5 + Math.sqrt(k.hplHa) / 350;
+  const lonScale = 1 / Math.max(0.15, Math.cos((k.lat * Math.PI) / 180));
+  const ring: [number, number][] = [];
+  for (let i = 0; i < points; i++) {
+    const angle = (i / points) * Math.PI * 2;
+    const r = baseDeg * (0.65 + rnd() * 0.7);
+    ring.push([k.lat + Math.sin(angle) * r, k.lon + Math.cos(angle) * r * lonScale]);
+  }
+  return ring;
+}
+
+/** Ports `BASEMAP_BBOX`/`mercatorPx()`/`basemapPct()` — the Web Mercator projection math used to
+ *  place a dot over the static `assets/basemap-indonesia.jpg` mosaic (a real OSM tile snapshot,
+ *  zoom 5, extracted from the original's baked-in base64 `BASEMAP_STATIC_SRC`) for the map panel's
+ *  "you are here" locator inset. Must stay in sync with the bounding box the image was cropped to. */
+export const BASEMAP_BBOX = { lonMin: 93.5, lonMax: 141.5, latMin: -11.5, latMax: 7.0, zoom: 5 };
+
+function mercatorPx(lon: number, lat: number, zoom: number): [number, number] {
+  const n = Math.pow(2, zoom);
+  const x = ((lon + 180) / 360) * n * 256;
+  const latRad = (lat * Math.PI) / 180;
+  const y = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n * 256;
+  return [x, y];
+}
+
+const bmTopLeft = mercatorPx(BASEMAP_BBOX.lonMin, BASEMAP_BBOX.latMax, BASEMAP_BBOX.zoom);
+const bmBotRight = mercatorPx(BASEMAP_BBOX.lonMax, BASEMAP_BBOX.latMin, BASEMAP_BBOX.zoom);
+
+export function basemapPct(lon: number, lat: number): { xPct: number; yPct: number } {
+  const p = mercatorPx(lon, lat, BASEMAP_BBOX.zoom);
+  return {
+    xPct: ((p[0] - bmTopLeft[0]) / (bmBotRight[0] - bmTopLeft[0])) * 100,
+    yPct: ((p[1] - bmTopLeft[1]) / (bmBotRight[1] - bmTopLeft[1])) * 100
+  };
+}
+
 const KAWASAN: Kawasan[] = [
   { id: 'k1', nama: 'SKP Salor', provinsi: 'Papua Selatan', tipe: 'SKP', tahap: 'Berkembang', populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: 'med', lat: -8.40, lon: 140.40 },
   { id: 'k2', nama: 'KPB Rambutan', provinsi: 'Sumatera Selatan', tipe: 'KPB', tahap: 'Mandiri', populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: 'low', lat: -3.05, lon: 104.75 },
@@ -146,14 +203,25 @@ const ASAL_DAERAH: AsalDaerah[] = [
   { asal: 'Jawa Barat', jml: 2140 }, { asal: 'NTB', jml: 1380 }, { asal: 'Bali', jml: 690 }
 ];
 
-/** 7 of the source's 17 IKU (Renstra Kementerian Transmigrasi) — a representative subset, see PORT_NOTES.md. */
+/** All 17 IKU (Renstra Kementerian Transmigrasi) — previously ported as a representative 7-item
+ *  subset (see PORT_NOTES.md); the full list is needed for a 1:1 IKU-chip strip. */
 const IKU_LIST: IkuItem[] = [
   { no: 1, satuan: 'Indeks', nilai: 72, trend: 2.4, indikator: 'Nilai rata-rata Indeks Transformasi 45 Kawasan Transmigrasi.', pic: 'Elis Sampe Andi, S.E, M.M' },
   { no: 2, satuan: 'Persen', nilai: 61, trend: 1.8, indikator: 'Persentase kepastian hukum status lahan yang terselesaikan, termasuk dukungan fasilitasi legalisasi tanah transmigrasi.', pic: 'La Ode Muhajirin, S.IP, M.Si' },
   { no: 3, satuan: 'Persen', nilai: 58, trend: -0.9, indikator: 'Persentase pembangunan prasarana, sarana & utilitas serta penempatan transmigran lokal.', pic: 'Robi Suherman Ponglabba, ST, MT / Ria Fajarianti, S.E., M.M' },
+  { no: 4, satuan: 'Persen', nilai: 64, trend: 3.1, indikator: 'Persentase pembangunan prasarana, sarana & utilitas umum untuk transmigran patriot.', pic: 'Robi Suherman Ponglabba, ST, MT' },
+  { no: 5, satuan: 'Persen', nilai: 55, trend: -1.4, indikator: 'Persentase pembangunan PSU dan penempatan transmigran Karya Nusantara.', pic: 'Robi Suherman Ponglabba, ST, MT / Ria Fajarianti, S.E., M.M' },
+  { no: 6, satuan: 'Indeks', nilai: 69, trend: 1.2, indikator: 'Nilai rata-rata indeks transformasi Kawasan Transmigrasi Prioritas Kementerian.', pic: 'Elis Sampe Andi, S.E, M.M' },
   { no: 7, satuan: 'Persen', nilai: 47, trend: 2.0, indikator: 'Persentase lahan transmigrasi yang telah terbit SK & Sertipikat HPL, serta SHM.', pic: 'La Ode Muhajirin, S.IP, M.Si / Edy Wibowo, S.T., M.M' },
+  { no: 8, satuan: 'Persen', nilai: 66, trend: -0.6, indikator: 'Persentase SP/PSP/Kawasan Perkotaan Baru yang dibangun PSU untuk transmigrasi lokal.', pic: 'Robi Suherman Ponglabba, ST, MT' },
+  { no: 9, satuan: 'Persen', nilai: 52, trend: 1.5, indikator: 'Persentase Kepala Keluarga (KK) transmigran lokal yang ditempatkan di SP transmigrasi.', pic: 'Ria Fajarianti, S.E., M.M' },
+  { no: 10, satuan: 'Persen', nilai: 60, trend: 2.7, indikator: 'Persentase SP/PSP/Kawasan Perkotaan Baru transmigrasi patriot yang dibangun PSU.', pic: 'Robi Suherman Ponglabba, ST, MT' },
+  { no: 11, satuan: 'Persen', nilai: 57, trend: 0.8, indikator: 'Persentase SP/PSP/Kawasan Perkotaan Baru transmigrasi Karya Nusantara yang dibangun PSU.', pic: 'Robi Suherman Ponglabba, ST, MT' },
+  { no: 12, satuan: 'Persen', nilai: 49, trend: -1.1, indikator: 'Persentase KK transmigran Karya Nusantara yang difasilitasi penempatannya.', pic: 'Ria Fajarianti, S.E., M.M' },
   { no: 13, satuan: 'Persen', nilai: 63, trend: 1.9, indikator: 'Persentase meningkatnya jumlah kawasan yang berdaya saing dan mandiri (45 kawasan & kawasan prioritas kementerian).', pic: 'Elis Sampe Andi, S.E, M.M' },
   { no: 14, satuan: 'Persen', nilai: 71, trend: 3.4, indikator: 'Persentase realisasi implementasi Rencana Aksi Reformasi Birokrasi & Transformasi Digital.', pic: 'Ir. Rajumber Prihatin, M.Si' },
+  { no: 15, satuan: 'Nilai', nilai: 82, trend: 0.5, indikator: 'Nilai Pengawasan Kearsipan Ditjen PPK Transmigrasi.', pic: 'Ir. Rajumber Prihatin, M.Si' },
+  { no: 16, satuan: 'Nilai', nilai: 78, trend: -0.7, indikator: 'Tingkat penerapan pengendalian intern Ditjen PPK Transmigrasi.', pic: 'Ir. Rajumber Prihatin, M.Si' },
   { no: 17, satuan: 'Nilai', nilai: 85, trend: 2.2, indikator: 'Nilai SAKIP (Sistem Akuntabilitas Kinerja Instansi Pemerintah) Ditjen PPK Transmigrasi.', pic: 'Ir. Rajumber Prihatin, M.Si' }
 ];
 

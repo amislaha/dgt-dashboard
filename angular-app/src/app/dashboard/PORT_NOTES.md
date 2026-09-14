@@ -26,9 +26,13 @@ Everything below lives under `src/app/dashboard/`.
     below.
   - `provinces` and `nationalKPI` are derived the same way the original does
     (reduced from `kawasan` at read time, not stored separately).
-  - `ikuList`: ported **7 of the source's 17** IKU rows (a representative
-    subset spanning different `satuan` types) — kept in the data service for
-    completeness but not currently consumed by any component (see below).
+  - `ikuList`: all **17** of the source's IKU rows, consumed by the
+    Geospasial IKU-chip strip (see below) — previously a 7-row representative
+    subset that wasn't rendered anywhere.
+  - `kawasanAreaLatLngs()`/`seededRandom()` and `BASEMAP_BBOX`/
+    `mercatorPx()`/`basemapPct()` (the fabricated per-kawasan polygon shape
+    and the static-basemap projection math, respectively) are also ported
+    here now, for `KawasanMapComponent` and the Geospasial locator inset.
 - **`EwsService`**: the single shared `ewsAlerts` array (all 5 source alerts,
   verbatim) + `toggleAck()`, as a `BehaviorSubject`. Both `GeospasialComponent`
   and `AnalitikComponent` inject it and render their own EWS list from the
@@ -45,16 +49,21 @@ Everything below lives under `src/app/dashboard/`.
   (full), each with its own local `chatLog`, both calling the same
   `AiMockService` — so by construction the two chat UIs can't drift, matching
   the CLAUDE.md callout that the original's duplication here is intentional.
-- **`KawasanMapComponent`**: real Leaflet + OSM tile layer, one
-  `L.circleMarker` per kawasan colored by `STAGE_COLOR_HEX[tahap]`, popup with
-  nama/provinsi/indeks5t, click emits `(select)`. Created in
-  `ngAfterViewInit`, torn down in `ngOnDestroy` (`map.remove()`), with a
-  public `invalidateSize()` called by the parent after the map panel's expand
-  transition — mirrors the original's manual `activeLeafletMap` lifecycle
-  discipline. The CSP static-basemap fallback (`BASEMAP_STATIC_SRC`,
-  `renderDasarStatic()`) was intentionally **not** ported — the spec calls
-  this out explicitly as an Artifact-preview-only workaround, irrelevant to a
-  real Angular deployment.
+- **`KawasanMapComponent`**: real Leaflet + OSM tile layer, one `L.polygon`
+  area per kawasan (`kawasanAreaLatLngs()`, not a point marker — see the
+  Geospasial section below) colored by `STAGE_COLOR_HEX[tahap]`, popup with
+  nama/provinsi/tahap/populasi/luas HPL, click emits `(select)`. `fitBounds()`
+  to every kawasan's coordinates once added (not a fixed center/zoom), a
+  `topright` zoom control, and a public `setAreaVisible(id, visible)` for the
+  Geospasial layer catalogue. Created in `ngAfterViewInit`, torn down in
+  `ngOnDestroy` (`map.remove()`), with a public `invalidateSize()` called by
+  the parent after the map panel's fullscreen transition — mirrors the
+  original's manual `activeLeafletMap` lifecycle discipline. The CSP
+  static-basemap fallback (`BASEMAP_STATIC_SRC`, `renderDasarStatic()`) is
+  still **not** ported here (an Artifact-preview-only workaround, irrelevant
+  to a real Angular deployment) — but the same baked-in image now backs the
+  separate locator inset in `GeospasialComponent`, which IS part of the live
+  UI regardless of Leaflet availability (see below).
 - **One component per module** under `components/`, each using
   `dgt-page-head` / `dgt-kpi-tile` / `dgt-data-table` / the chart components /
   `dgt-severity-badge` in place of the original's hand-rolled
@@ -75,35 +84,50 @@ Everything below lives under `src/app/dashboard/`.
 
 ## Geospasial — what's in, what's deliberately different
 
-`GeospasialComponent` ports the layout **CLAUDE.md documents** ("Geospasial
-module layout" section): DSS toolbar (Site/Periode context chips + a real
-Area `<select>` + an alert chip that scrolls to the EWS panel), a
-`.scroll-snap-row` of `dgt-kpi-tile`s for the 7 executive-summary metrics
-(Kawasan Mandiri / Populasi / Indeks 5T / Realisasi Anggaran / Capaian
-Infrastruktur / Komoditas Unggulan / Peringatan Aktif), a two-column
-`grid-2`-equivalent (Bootstrap `row`/`col-lg-8`+`col-lg-4`) with the map panel
-+ tabbed "Detail Kawasan" (Profil/Tabel/Grafik/Foto) on the left and
-Summary/EWS/Komoditas/AI-chat panels on the right, and a `.ticker-bar`
-marquee of unacknowledged alerts.
+**Update**: `GeospasialComponent` now ports the **current**
+`dashboard/index.html` Geospasial module, not the older layout CLAUDE.md's
+own "Architecture" section still describes — that section is itself stale
+(see the flag it already carries). CLAUDE.md should be updated to match,
+but as of this pass it has not been (out of scope for this component).
 
-**Important divergence to flag**: while reading the *current*
-`dashboard/index.html` in full (as instructed) to build this port, its
-Geospasial module turned out to have evolved substantially past what
-CLAUDE.md's "Architecture" section describes — recent commits
-(`16acabd` "Geospasial fullscreen layout rework", `cd1fc12` "Fix Geospasial
-fullscreen map, add layer catalogue and per-panel hide") replaced the
-KPI-strip with a horizontally-scrolling **17-item IKU chip row** (with a
-shared expandable detail box), added a **fullscreen map mode** that
-reparents the filter toolbar and several panels via direct DOM manipulation,
-and added a collapsible **per-kawasan layer catalogue** overlay on the map.
-None of that is mentioned in CLAUDE.md. This port follows CLAUDE.md's
-documented architecture (the STG-tile strip) rather than reverse-engineering
-the newer undocumented layout, and does **not** implement: the IKU chip
-row/detail box, fullscreen mode, or the per-kawasan layer catalogue toggle.
-The province "grid" view toggle, kawasan search, map-panel expand/collapse,
-tabbed Detail Kawasan, ranked summary panel, EWS panel, komoditas panel, and
-embedded AI chat are all ported. Flagging this for the team rather than
-silently picking one version.
+DSS toolbar (Site/Periode context chips + a real Area `<select>` + an alert
+chip that scrolls to the EWS panel — no page title/description above it, per
+the source's own "no header for dashboard app"), a horizontally-scrolling
+**17-item IKU chip row** (`.stg-strip`/`.stg-strip-row` class names kept from
+the older STG-tile strip, same as the source) with a shared expandable
+detail box, a two-column `row`/`col-lg-8`+`col-lg-4` layout with the map
+panel + tabbed "Detail Kawasan" (Profil/Tabel/Grafik/Foto) + a collapsible
+per-kawasan **layer catalogue** overlay on the left, and
+Summary/EWS/AI-chat panels (no more Komoditas panel — removed in the source)
+on the right, plus a `.ticker-bar` marquee of unacknowledged alerts.
+
+**Fullscreen mode** ("Perbesar panel peta"): the map panel takes over the
+viewport; the filter toolbar and the Detail Kawasan panel need to appear in
+a different spot while it's active. The original does this via direct DOM
+manipulation (`insertBefore`/`appendChild` on raw nodes). This port achieves
+the same visual result the idiomatic Angular way instead: `toolbarTpl` and
+`detailPanelTpl` are each declared once (`<ng-template>`) and instantiated
+in whichever of two spots is active via `*ngTemplateOutlet`, gated by the
+`fullscreen` flag — no manual DOM reparenting. Layering (the fixed map panel
+vs. everything floating on top of it) is done with the same z-index-context
+approach as the original, just expressed over Bootstrap's `.row`/`.card`
+instead of the hand-rolled `.grid-2`/`.panel`.
+
+The map itself now draws each kawasan as a real irregular polygon area
+(`kawasanAreaLatLngs()`, ported to `DashboardDataService`) instead of a
+point marker, colored by `STAGE_COLOR_HEX` — see `KawasanMapComponent`.
+`fitBounds()` to every kawasan's coordinates on load (fixing SKP Salor,
+Papua, previously off-screen at a fixed center/zoom) and a `topright`
+zoom control (clearing space for the layer catalogue) are ported too.
+
+The "you are here" **locator inset** is also now ported — previously
+skipped because it depended on the CSP-only static-basemap fallback image.
+That image (`BASEMAP_STATIC_SRC`, a real OSM zoom-5 mosaic baked into the
+original as base64) was extracted and committed as a real file,
+`src/assets/basemap-indonesia.jpg`, rather than inlined as a giant base64
+string in a component — same pixels, more usable in an editor/diff. The
+`mercatorPx()`/`basemapPct()` projection math that places the dot on it
+lives in `DashboardDataService` alongside `BASEMAP_BBOX`.
 
 ## Simplifications vs. the source (beyond the Geospasial note above)
 
@@ -117,24 +141,18 @@ silently picking one version.
 - **`mapX`/`mapY`** on `kawasan` were dropped — CLAUDE.md itself calls these
   "unused leftovers from a removed locator inset," so there was nothing to
   port.
-- **Locator inset** (`.map-locator`, `basemapPct()`/`mercatorPx()` projection
-  math) was not ported — it existed only to place a dot on the static
-  fallback image, which this port doesn't use (see Leaflet note above).
 - **Indonesian number formatting**: the original calls
   `.toLocaleString('id-ID')` throughout; this port uses Angular's `number`
   pipe with a digits-format string but no explicit locale (the app doesn't
   register `id-ID` locale data anywhere, and doing so is outside this
   module's scope), so grouping separators render in the runtime's default
   locale rather than Indonesian style. Cosmetic only.
-- **IKU list**: 7 of 17 rows ported into `DashboardDataService.getIkuList()`
-  but not currently rendered anywhere (see Geospasial divergence above) —
-  left in place for whichever team decision follows on the IKU-chip question.
 
 ## Explicit TODOs for the team
 
-- Decide whether to chase the newer Geospasial layout (IKU chips, fullscreen
-  mode, layer catalogue) in a follow-up pass, or keep this port aligned with
-  CLAUDE.md's documented architecture and update CLAUDE.md instead.
+- Update CLAUDE.md's "Architecture of dashboard/index.html" section — it
+  still documents the pre-IKU-chip/fullscreen/layer-catalogue Geospasial
+  layout (see the Geospasial section above, now ported and up to date here).
 - Backfill real kawasan photos once/if the asset files are brought into the
   Angular workspace (`src/assets/...`) and wired to `Kawasan.foto`.
 - Register `id-ID` Angular locale data app-wide if pixel-accurate Indonesian

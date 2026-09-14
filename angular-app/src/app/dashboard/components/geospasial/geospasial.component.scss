@@ -1,22 +1,184 @@
-.geo-kpi-tile {
-  min-width: 170px;
+// ---------- toolbar chips (info-chip/field-inline/alert-chip) — no Bootstrap equivalent, ported
+// verbatim from the source's own custom classes ----------
+.info-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 600;
+  color: var(--text-dim); background: var(--muted); border: 1px solid var(--border);
+  border-radius: 999px; padding: 0.32rem 0.7rem; white-space: nowrap;
 }
+.field-inline {
+  display: flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; color: var(--text-dim);
+
+  select { padding: 0.32rem 0.55rem; font-size: 0.74rem; height: auto; }
+}
+.alert-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700;
+  color: var(--text-dim); background: var(--muted); border: 1px solid var(--border);
+  border-radius: 999px; padding: 0.32rem 0.7rem; cursor: pointer; white-space: nowrap;
+
+  &.warn { color: var(--critical); background: var(--critical-soft); border-color: transparent; }
+}
+.geo-fullscreen .card-header .geo-toolbar { margin-bottom: 0; }
+
+// ---------- IKU strip — 17 chips, a single horizontally-scrolling row with a shared expandable
+// detail box below (replaces the older 7-tile executive-summary strip) ----------
+.stg-strip-row { display: flex; align-items: stretch; gap: 0.4rem; margin-bottom: 1rem; }
+.stg-strip {
+  flex: 1 1 auto; display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.35rem;
+  scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+
+  &::-webkit-scrollbar { height: 5px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+  &::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+}
+.iku-chip {
+  position: relative; display: flex; flex-direction: column; gap: 0.15rem;
+  flex: 0 0 auto; min-width: 150px; scroll-snap-align: start;
+  background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 0.5rem 1.7rem 0.5rem 0.6rem;
+
+  &.active { border-color: var(--primary-line); background: var(--primary-soft); }
+}
+.iku-no { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-faint); }
+.iku-val { font-size: 1rem; font-weight: 700; color: var(--text); display: flex; align-items: baseline; gap: 0.4rem; }
+.iku-trend {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap;
+  padding: 0.05rem 0.32rem; border-radius: 999px; align-self: center;
+
+  &.up { color: var(--good); background: var(--good-soft); }
+  &.down { color: var(--critical); background: var(--critical-soft); }
+}
+.iku-info-btn {
+  position: absolute; top: 0.4rem; right: 0.4rem; width: 18px; height: 18px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--card); border: 1px solid var(--border); border-radius: 50%;
+  color: var(--text-faint); cursor: pointer;
+
+  &:hover, &.active { border-color: var(--primary-line); color: var(--primary); background: var(--primary-soft); }
+  svg { width: 11px; height: 11px; }
+}
+.iku-detail {
+  margin-top: 0.6rem; margin-bottom: 1rem; background: var(--muted); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.7rem 0.85rem; font-size: 0.8rem; color: var(--text-dim); line-height: 1.55;
+
+  b { color: var(--text); }
+}
+
+// ---------- map panel ----------
+.geo-map-panel { position: relative; }
 
 .sebaran-body {
   height: 420px;
   position: relative;
   z-index: 1;
-  transition: height var(--duration-slow, 0.28s) var(--ease-standard, ease);
-
-  &.expanded {
-    height: 640px;
-  }
 
   ::ng-deep dgt-kawasan-map {
     display: block;
     height: 100%;
   }
 }
+
+// ---------- per-kawasan layer catalogue, overlaid on the map (dasar view only) ----------
+.map-layer-catalog {
+  position: absolute; top: 10px; left: 10px; z-index: 750;
+  width: 210px; max-width: calc(100% - 20px); max-height: calc(100% - 20px);
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
+  display: flex; flex-direction: column; overflow: hidden; font-size: 0.78rem;
+}
+.geo-fullscreen .map-layer-catalog {
+  position: fixed; top: 152px; left: 16px; right: auto; bottom: auto; max-height: calc(100vh - 168px);
+  pointer-events: auto;
+}
+.map-layer-catalog-head {
+  display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.55rem;
+  border-bottom: 1px solid var(--border-soft);
+
+  .map-layer-all { flex: 1 1 auto; padding: 0; }
+  .nm { font-weight: 700; text-transform: uppercase; font-size: 0.66rem; letter-spacing: 0.03em; color: var(--text-dim); }
+}
+.map-layer-collapse {
+  flex: 0 0 auto; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-dim); cursor: pointer;
+
+  &:hover { border-color: var(--primary-line); color: var(--primary); }
+  svg { width: 12px; height: 12px; transition: transform var(--duration-base, 180ms) var(--ease-standard, ease); }
+  svg.rotated { transform: rotate(180deg); }
+}
+.map-layer-catalog-list { overflow-y: auto; padding: 0.3rem; display: flex; flex-direction: column; gap: 0.1rem; }
+.map-layer-catalog.collapsed .map-layer-catalog-list { display: none; }
+.map-layer-item {
+  display: flex; align-items: center; gap: 0.4rem; padding: 0.28rem 0.4rem;
+  border-radius: 6px; cursor: pointer; user-select: none;
+
+  &:hover { background: var(--muted); }
+  input { accent-color: var(--primary); flex: 0 0 auto; }
+  .map-layer-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; border: 1px solid rgba(0,0,0,0.15); }
+  .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 500; }
+  .ct { flex: 0 0 auto; font-size: 0.64rem; color: var(--text-faint); max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+// ---------- "you are here" locator inset — a static basemap snapshot, dasar view only ----------
+.map-locator {
+  position: absolute; right: 10px; bottom: 10px; width: 96px; height: 96px;
+  border-radius: 8px; overflow: hidden; border: 2px solid rgba(255,255,255,0.9);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35); z-index: 5; pointer-events: none;
+
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .loc-dot {
+    position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--critical); border: 1.5px solid #fff; transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 3px rgba(206,17,38,0.35);
+  }
+}
+
+// ---------- fullscreen map mode ("Perbesar panel peta") — the map panel takes over the whole
+// viewport; everything else floats on top of it via position:fixed, no DOM reparenting needed
+// since Angular relocates the toolbar/detail-panel *content* via ngTemplateOutlet instead (see
+// the component's doc comment) rather than moving nodes the way the original does. ----------
+.geo-fullscreen .geo-map-panel {
+  position: fixed; inset: 0; z-index: 50; margin: 0; border-radius: 0; border: none;
+  padding: 0; display: flex; flex-direction: column;
+
+  .card-header { border-radius: 0; flex: 0 0 auto; }
+  .map-search-row { flex: 0 0 auto; }
+  .card-body { flex: 1 1 auto; min-height: 0; }
+}
+.geo-fullscreen .geo-map-panel .sebaran-body { height: auto !important; }
+// Leaflet's own zoom control sits inside .leaflet-top.leaflet-right at Leaflet's default top:0 —
+// rendered by the child <dgt-kawasan-map> component, so reaching it needs ::ng-deep to cross that
+// encapsulation boundary. Same 152px clearance as the layer catalogue above (map header + IKU
+// strip), just on the opposite corner.
+.geo-fullscreen ::ng-deep .leaflet-top.leaflet-right { top: 152px; }
+
+// The map panel escapes to position:fixed above, but everything else here (IKU strip, detail
+// box, ticker, the row of cards) is still normal flow — without its own stacking treatment it
+// would paint BEHIND the now-fullscreen map panel (z-index:50). Promoting this whole wrapper to
+// position:fixed too (over the same viewport, one z-index higher) and giving its own children
+// z-index:51 puts them back on top, same layering approach as the original's #geoOverlayPanels/
+// .grid-2 rules — just expressed over a Bootstrap .row instead of a hand-rolled .grid-2.
+.geo-overlay-panels.geo-fullscreen {
+  position: fixed; inset: 0; z-index: 55; padding: 1rem; overflow: hidden; pointer-events: none;
+  display: flex; flex-direction: column; min-height: 0;
+
+  > .stg-strip-row, > .iku-detail, > .ticker-bar {
+    flex: 0 0 auto; pointer-events: none; position: relative; z-index: 51;
+  }
+  > .stg-strip-row > * { pointer-events: auto; }
+  > .row {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; pointer-events: none; margin: 0;
+
+    > div { pointer-events: auto; }
+  }
+}
+// The map panel column itself needs no z-index carve-out (it's the fixed z-index:50 element
+// being stacked UNDER everything above), but its sibling cards (Detail Kawasan when relocated
+// into the right column, Summary/EWS/AI) need to actually out-rank it.
+.geo-fullscreen .col-lg-4 > .card,
+.geo-fullscreen .col-lg-8 > .card:not(.geo-map-panel) {
+  position: relative; z-index: 51;
+}
+.geo-fullscreen .stg-strip-row { margin-top: 3.2rem; }
 
 .geo-grid-pad {
   height: 100%;

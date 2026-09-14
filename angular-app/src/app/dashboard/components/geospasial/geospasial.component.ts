@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { DashboardDataService, Kawasan, Komoditas, Province, STAGE_BADGE_CLASS } from '../../services/dashboard-data.service';
+import { basemapPct, DashboardDataService, IkuItem, Kawasan, Province, STAGE_BADGE_CLASS, STAGE_COLOR_HEX } from '../../services/dashboard-data.service';
 import { EwsAlert, EwsService } from '../../services/ews.service';
 import { BarDatum } from '../../../shared/components/charts/chart.model';
 import { DataTableColumn } from '../../../shared/components/data-table/data-table.model';
@@ -8,29 +8,22 @@ import { KawasanMapComponent } from './kawasan-map.component';
 
 type DetailTab = 'profil' | 'tabel' | 'grafik' | 'foto';
 
-interface KpiTileView {
-  label: string;
-  value: string;
-  delta: string;
-  dir: 'up' | 'down';
-  alert?: boolean;
-}
-
 /**
  * Landing module (`state.tab` defaults to "geospasial" in the original —
- * see CLAUDE.md "Geospasial module layout"). Ports: the DSS toolbar (area
- * select + alert chip), the horizontal-scroll-snap executive-summary strip
- * (the 7 STG tiles — Kawasan Mandiri/Populasi/Indeks 5T/Realisasi Anggaran/
- * Capaian Infrastruktur/Komoditas Unggulan/Peringatan Aktif), the two-column
- * layout (map + tabbed Detail Kawasan on the left; Summary/EWS/Komoditas/AI
- * chat on the right), and the ticker marquee.
+ * see CLAUDE.md "Geospasial module layout"). This ports the CURRENT
+ * dashboard/index.html — not the older layout CLAUDE.md's own architecture
+ * section still documents (see PORT_NOTES.md for the full history) — which
+ * has no page title/description, a 17-item IKU-chip strip in place of the
+ * old 7-tile executive-summary strip, a fullscreen map mode, and a
+ * collapsible per-kawasan layer catalogue. The Komoditas Unggulan panel that
+ * used to sit in the right column is gone in this version.
  *
- * Simplification vs. the CURRENT dashboard/index.html (see PORT_NOTES.md):
- * the live file has since evolved past what CLAUDE.md documents — an IKU-chip
- * strip, a fullscreen map mode with DOM-reparenting panel choreography, and a
- * collapsible per-kawasan layer catalogue. This port follows CLAUDE.md's
- * documented architecture (the STG-tile strip) rather than that newer,
- * undocumented layout, and does not implement fullscreen/layer-catalogue.
+ * The original's fullscreen mode reparents the filter toolbar and the
+ * Detail Kawasan panel via direct DOM manipulation (`insertBefore`/
+ * `appendChild`) — this port achieves the identical visual result the
+ * idiomatic Angular way instead: `toolbarTpl`/`detailPanelTpl` are each
+ * defined once and instantiated in one of two spots via `ngTemplateOutlet`
+ * depending on `fullscreen`, rather than physically moving DOM nodes.
  */
 @Component({
   selector: 'dgt-geospasial',
@@ -40,7 +33,7 @@ interface KpiTileView {
 export class GeospasialComponent implements OnInit, OnDestroy {
   kawasan: Kawasan[] = [];
   provinces: Province[] = [];
-  komoditas: Komoditas[] = [];
+  ikuList: IkuItem[] = [];
 
   geoArea = 'Semua';
   selectedKawasanId: string | null = null;
@@ -50,16 +43,32 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   searchOpen = false;
   searchQuery = '';
   searchMiss = false;
-  expanded = false;
+
+  // "Perbesar panel peta": the map panel takes over the whole viewport; Detail Kawasan joins
+  // Summary/EWS/AI in the right column (see detailPanelTpl in the template), which defaults to
+  // hidden every time fullscreen is entered — panelsHidden is the one toggle that brings the
+  // whole group back. Ports .geo-fullscreen/.geo-panels-hidden.
+  fullscreen = false;
+  panelsHidden = false;
+
+  // Collapsible per-kawasan layer catalogue overlaid on the map (dasar view only). Ports
+  // layerCatalogHtml()/wireLayerCatalog() — starts collapsed every time fullscreen is entered,
+  // same as the original ("the full kawasan list floating open by default would immediately
+  // overlap the map toolbar/panels in the same crowded top corner").
+  layerCollapsed = false;
+  layerVisible: { [id: string]: boolean } = {};
+
+  // Expandable IKU detail box — clicking the same chip's "i" button again closes it.
+  activeIku: number | null = null;
 
   showHPL = true;
   showSHM = true;
   selectedProv: string | null = null;
 
-  kpiTiles: KpiTileView[] = [];
   alerts: EwsAlert[] = [];
 
   readonly stageBadgeClass = STAGE_BADGE_CLASS;
+  readonly stageColorHex = STAGE_COLOR_HEX;
 
   readonly tabelColumns: DataTableColumn<Kawasan>[] = [
     { key: 'nama', label: 'Kawasan', sortable: true },
@@ -77,12 +86,12 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.kawasan = this.data.getKawasan();
     this.provinces = this.data.getProvinces();
-    this.komoditas = this.data.getKomoditas();
+    this.ikuList = this.data.getIkuList();
     this.selectedKawasanId = this.kawasan.length ? this.kawasan[0].id : null;
+    this.kawasan.forEach(k => (this.layerVisible[k.id] = true));
 
     this.ewsSub = this.ews.alerts$.subscribe(alerts => {
       this.alerts = alerts;
-      this.buildKpiTiles();
     });
   }
 
@@ -90,26 +99,6 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     if (this.ewsSub) {
       this.ewsSub.unsubscribe();
     }
-  }
-
-  private buildKpiTiles(): void {
-    const kpi = this.data.getNationalKPI();
-    const mandiriCount = this.kawasan.filter(k => k.tahap === 'Mandiri').length;
-    const avgAnggaran = Math.round(this.kawasan.reduce((s, k) => s + k.anggaranPct, 0) / (this.kawasan.length || 1));
-    const infra = this.data.getInfraKategori();
-    const avgInfra = Math.round(infra.reduce((s, i) => s + i.capaian, 0) / (infra.length || 1));
-    const topKomoditas = this.komoditas.slice().sort((a, b) => b.nilai - a.nilai)[0];
-    const active = this.ews.getActiveCount();
-
-    this.kpiTiles = [
-      { label: 'Kawasan Mandiri', value: String(mandiriCount), delta: `dari ${this.kawasan.length} kawasan`, dir: 'up' },
-      { label: 'Populasi', value: kpi.totalPopulasi.toLocaleString('id-ID'), delta: '3.2% dari kuartal lalu', dir: 'up' },
-      { label: 'Indeks 5T', value: String(kpi.avgIndeks), delta: '4 poin', dir: 'up' },
-      { label: 'Realisasi Anggaran', value: `${avgAnggaran}%`, delta: '5% bulan ini', dir: 'up' },
-      { label: 'Capaian Infrastruktur', value: `${avgInfra}%`, delta: `rata-rata ${infra.length} kategori`, dir: 'up' },
-      { label: 'Komoditas Unggulan', value: topKomoditas ? topKomoditas.nama : '—', delta: topKomoditas ? `Indeks ${topKomoditas.nilai}` : '', dir: 'up' },
-      { label: 'Peringatan Aktif', value: String(active), delta: 'perlu tindak lanjut', dir: active > 0 ? 'down' : 'up', alert: active > 0 }
-    ];
   }
 
   get selectedKawasan(): Kawasan | undefined {
@@ -148,16 +137,31 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     }));
   }
 
-  get komoditasBarData(): BarDatum[] {
-    return this.komoditas.map(k => ({ label: k.nama, value: k.nilai, color: 'var(--primary)' }));
-  }
-
   get tickerItems(): EwsAlert[] {
     return this.alerts.filter(a => !a.ack);
   }
 
+  /** "you are here" locator inset position, projected onto the static basemap mosaic — hidden
+   *  (via the template's *ngIf) whenever nothing is selected or the grid view is active. */
+  get locatorPos(): { xPct: number; yPct: number } | null {
+    const k = this.selectedKawasan;
+    return k ? basemapPct(k.lon, k.lat) : null;
+  }
+
+  get layerAllChecked(): boolean {
+    return this.kawasan.every(k => this.layerVisible[k.id]);
+  }
+
+  get layerIndeterminate(): boolean {
+    return !this.layerAllChecked && this.kawasan.some(k => this.layerVisible[k.id]);
+  }
+
   onAreaChange(value: string): void {
     this.geoArea = value;
+  }
+
+  toggleIkuDetail(i: number): void {
+    this.activeIku = this.activeIku === i ? null : i;
   }
 
   selectKawasan(k: Kawasan): void {
@@ -195,14 +199,40 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.selectKawasan(found);
   }
 
-  toggleExpand(): void {
-    this.expanded = !this.expanded;
+  /** "Perbesar panel peta" — see the `fullscreen`/`panelsHidden` doc comment above. */
+  toggleFullscreen(): void {
+    this.fullscreen = !this.fullscreen;
+    if (this.fullscreen) {
+      this.panelsHidden = true;
+      this.layerCollapsed = true;
+    } else {
+      this.panelsHidden = false;
+    }
     // matches the original's setTimeout(...,210) after the panel's own CSS transition finishes
     setTimeout(() => {
       if (this.kawasanMap) {
         this.kawasanMap.invalidateSize();
       }
     }, 210);
+  }
+
+  togglePanels(): void {
+    this.panelsHidden = !this.panelsHidden;
+  }
+
+  toggleLayerCollapse(): void {
+    this.layerCollapsed = !this.layerCollapsed;
+  }
+
+  onLayerAllToggle(checked: boolean): void {
+    this.kawasan.forEach(k => this.onLayerToggle(k.id, checked));
+  }
+
+  onLayerToggle(id: string, visible: boolean): void {
+    this.layerVisible[id] = visible;
+    if (this.kawasanMap) {
+      this.kawasanMap.setAreaVisible(id, visible);
+    }
   }
 
   setView(view: 'dasar' | 'grid'): void {
