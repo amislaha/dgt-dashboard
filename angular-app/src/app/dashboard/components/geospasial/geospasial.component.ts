@@ -208,12 +208,18 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     } else {
       this.panelsHidden = false;
     }
-    // matches the original's setTimeout(...,210) after the panel's own CSS transition finishes
-    setTimeout(() => {
-      if (this.kawasanMap) {
-        this.kawasanMap.invalidateSize();
-      }
-    }, 210);
+    // Leaflet caches its container size and only reloads tiles for a newly-exposed area when
+    // told to — .card-body growing to fill the viewport via CSS alone leaves it still painting
+    // tiles only for its old ~420px box otherwise. A single setTimeout(...,210) (matching the
+    // original's own post-transition delay) turned out not to be reliable here — Angular's zone
+    // re-entry plus the flex reflow this toggle triggers don't have as tight a guaranteed timing
+    // relationship as a plain CSS transition's 'transitionend' did in the original. Call it
+    // several times instead: once after the browser has actually committed a layout+paint pass
+    // (double rAF), then twice more as a safety net for any longer-tail async reflow.
+    const invalidate = () => this.kawasanMap && this.kawasanMap.invalidateSize();
+    requestAnimationFrame(() => requestAnimationFrame(invalidate));
+    setTimeout(invalidate, 210);
+    setTimeout(invalidate, 500);
   }
 
   togglePanels(): void {
