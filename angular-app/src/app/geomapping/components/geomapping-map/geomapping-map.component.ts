@@ -84,7 +84,7 @@ export class GeomappingMapComponent implements AfterViewInit, OnChanges, OnDestr
 
     // ports `map.on("click", ...)`/`map.on("dblclick", ...)` (index.html:1826-1830) — routes to
     // whichever of manual-draw/line-track is active, a no-op otherwise.
-    this.map.on('click', e => this.editService.mapClick(toLL(e.latlng)));
+    this.map.on('click', e => this.editService.mapClick(toLL((e as L.LeafletMouseEvent).latlng)));
     this.map.on('dblclick', () => this.editService.mapDblClick());
 
     this.editSubs.push(this.editService.drawType$.subscribe(t => this.onDrawTypeChange(t)));
