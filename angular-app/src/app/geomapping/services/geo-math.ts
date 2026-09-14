@@ -11,6 +11,12 @@ export interface LatLng {
   lng: number;
 }
 
+/** The map's fixed initial centre (`GeomappingMapComponent.ngAfterViewInit`'s `setView` call) —
+ *  also used by `GeomappingEditService` as the GPS-denied fallback for My Location/Tracking Point,
+ *  where the source falls back to the *live* map centre (`map.getCenter()`); see that service's
+ *  `requestMyLoc()` doc comment for why this port uses a fixed point instead. */
+export const DEFAULT_MAP_CENTER: LatLng = { lat: -6.284, lng: 106.826 };
+
 function toRad(d: number): number {
   return (d * Math.PI) / 180;
 }

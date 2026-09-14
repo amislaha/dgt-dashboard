@@ -7,7 +7,7 @@
   </button>
 </div>
 
-<button class="btn btn-primary full" type="button" style="margin-bottom:.7rem" disabled title="Alat gambar & GPS tracking belum diporting (lihat PORT_NOTES.md)">
+<button class="btn btn-primary full" type="button" style="margin-bottom:.7rem" (click)="startNewFeature()">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
   Rekam objek baru (Edit Mode)
 </button>
@@ -38,7 +38,7 @@
 </div>
 
 <div class="list">
-  <div class="list-item" *ngFor="let row of rows">
+  <div class="list-item" *ngFor="let row of rows" (click)="openFeature(row.feature)">
     <span class="li-ico" [style.background]="row.cls.color" [innerHTML]="iconSvg(row.cls.icon) | safeHtml"></span>
     <span class="li-body">
       <span class="li-title">{{ row.feature.title || '(tanpa judul)' }}</span>

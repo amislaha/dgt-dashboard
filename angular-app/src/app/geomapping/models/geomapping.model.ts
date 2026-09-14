@@ -50,7 +50,10 @@ export interface ApprovalRecord {
   history: ApprovalHistoryEntry[];
 }
 
-export type FeaturePrivilege = 'PUBLIC' | 'RESTRICTED';
+/** Note: the source's editor form offers 3 options (PUBLIC/RESTRICTED/PRIVATE, see
+ *  `renderEditorForm()`'s `#fPriv` select) — this type only had the first 2 until Edit Mode
+ *  (Phase 3) needed the third; fixed here rather than left as a silent gap. */
+export type FeaturePrivilege = 'PUBLIC' | 'RESTRICTED' | 'PRIVATE';
 
 export interface GeomappingFeature {
   id: string;
@@ -63,11 +66,30 @@ export interface GeomappingFeature {
   privilege: FeaturePrivilege;
   geometry: GeomappingGeometry;
   /** Structured survey answers keyed by question id — group questions (e.g. "hours", "addr")
-   *  nest one level: questionnaire[groupId][itemId]. See QUESTIONNAIRE (Phase 2, not ported yet). */
+   *  nest one level: questionnaire[groupId][itemId]. See QUESTIONNAIRE below. */
   questionnaire: { [key: string]: any };
   createdAt: string;
   updatedAt: string;
   approval: ApprovalRecord;
+}
+
+/** A feature still being captured/edited in Edit Mode — ports the shape `state.editing.feature`
+ *  holds in the source before `saveEditor()` stamps id/createdAt/updatedAt/approval onto it.
+ *  `id`/`createdAt`/`updatedAt`/`approval` are only present once editing an *existing* feature. */
+export interface GeomappingFeatureDraft {
+  id?: string;
+  classificationId: string;
+  compartmentId: string | null;
+  title: string;
+  description: string;
+  address: string;
+  images: string[];
+  privilege: FeaturePrivilege;
+  geometry: GeomappingGeometry;
+  questionnaire: { [key: string]: any };
+  createdAt?: string;
+  updatedAt?: string;
+  approval?: ApprovalRecord;
 }
 
 export interface Poi {
@@ -276,3 +298,56 @@ export const APPROVAL_ACTION_LABEL: { [key in ApprovalHistoryEntry['action']]: s
   REJECTED: 'Ditolak',
   RESET: 'Dikembalikan ke Menunggu'
 };
+
+export const MONTH_FULL: string[] = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
+/** One leaf question — `type: 'group'` has no `type` field of its own on the leaf, only its
+ *  `items`; a leaf under a group is addressed as `groupId/itemId` (see QuestionnaireDialogComponent
+ *  `path`). Ports `QUESTIONNAIRE` (geomapping/index.html:2108) verbatim. */
+export interface QuestionnaireItem {
+  id: string;
+  label: string;
+  type: 'text' | 'date';
+}
+export interface QuestionnaireQuestion {
+  id: string;
+  label: string;
+  hint?: string;
+  type: 'text' | 'date' | 'group';
+  items?: QuestionnaireItem[];
+}
+
+/**
+ * Structured per-feature survey form (PRD F-4.x) — an illustrative "tempat usaha / fasilitas"
+ * template (owner, operating hours, contact, founding date, administrative address). Answers
+ * persist on the feature under `f.questionnaire`, keyed by question id; group answers nest one
+ * level: `f.questionnaire[groupId][itemId]`. Opened from the "Edit" button on step 3 of the
+ * editor form via QuestionnaireDialogComponent (Wizard / Scroll View toggle).
+ */
+export const QUESTIONNAIRE: QuestionnaireQuestion[] = [
+  { id: 'owner', label: 'Nama Pemilik', hint: 'Nama pemilik', type: 'text' },
+  { id: 'hours', label: 'Jam Operasi', hint: 'Jam operasional per hari', type: 'group', items: [
+    { id: 'mon', label: 'Senin', type: 'text' },
+    { id: 'tue', label: 'Selasa', type: 'text' },
+    { id: 'wed', label: 'Rabu', type: 'text' },
+    { id: 'thu', label: 'Kamis', type: 'text' },
+    { id: 'fri', label: 'Jumat', type: 'text' },
+    { id: 'sat', label: 'Sabtu', type: 'text' },
+    { id: 'sun', label: 'Minggu', type: 'text' }
+  ] },
+  { id: 'phone', label: 'Nomor Telefon', hint: 'Phone number', type: 'text' },
+  { id: 'website', label: 'Website', hint: 'Website', type: 'text' },
+  { id: 'founded', label: 'Tanggal Berdiri', hint: 'Tanggal berdiri', type: 'date' },
+  { id: 'addr', label: 'Alamat', hint: 'Alamat lokasi', type: 'group', items: [
+    { id: 'street', label: 'Jalan', type: 'text' },
+    { id: 'rtrw', label: 'RT/RW', type: 'text' },
+    { id: 'kel', label: 'Kelurahan', type: 'text' },
+    { id: 'kec', label: 'Kecamatan', type: 'text' },
+    { id: 'kota', label: 'Kota/Kabupaten', type: 'text' },
+    { id: 'prov', label: 'Propinsi', type: 'text' },
+    { id: 'pos', label: 'Kode Pos', type: 'text' }
+  ] }
+];

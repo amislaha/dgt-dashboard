@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { geomToLatLngs, lineLengthM, polygonAreaM2 } from './geo-math';
+import { geomLabel, geomToLatLngs, lineLengthM, polygonAreaM2 } from './geo-math';
 import {
   ActivityEntry,
   APPROVAL_ACTION_LABEL,
   ApprovalHistoryEntry,
+  ApprovalRecord,
   ApprovalStatus,
   Classification,
   Compartment,
@@ -14,6 +15,7 @@ import {
   DEFAULT_TASKS,
   DEFAULT_BASEMAP,
   GeomappingFeature,
+  GeomappingFeatureDraft,
   GeomappingTask,
   Poi,
   POIS
@@ -315,6 +317,50 @@ export class GeomappingDataService {
   }
 
   // ---------------- features ----------------
+  private newApprovalRecord(): ApprovalRecord {
+    const now = new Date().toISOString();
+    return {
+      status: 'PENDING',
+      submittedBy: this.userName(),
+      submittedAt: now,
+      reviewer: null,
+      reviewedAt: null,
+      note: '',
+      history: [{ action: 'SUBMITTED', by: this.userName(), at: now, note: '' }]
+    };
+  }
+
+  /** Ports `saveEditor()`'s record-building + persist/log (geomapping/index.html:2650) — the DOM
+   *  field-reading and validation stay in EditComponent/GeomappingEditService, this just takes the
+   *  already-validated draft and turns it into a stored `GeomappingFeature`. A brand-new feature
+   *  gets a fresh PENDING `ApprovalRecord` (`newApproval()` in the source); an existing one keeps
+   *  its approval untouched (`ensureApproval(f)` in the source, which — since this port's features
+   *  always carry an `approval` once loaded, see the constructor — just means "keep it"). */
+  saveFeature(draft: GeomappingFeatureDraft, isNew: boolean): GeomappingFeature {
+    const now = new Date().toISOString();
+    const existing = !isNew && draft.id ? this.features.find(f => f.id === draft.id) : undefined;
+    const rec: GeomappingFeature = {
+      id: draft.id || uid('ft'),
+      classificationId: draft.classificationId,
+      compartmentId: draft.compartmentId || null,
+      title: draft.title,
+      description: draft.description,
+      address: draft.address,
+      images: (draft.images || []).filter(u => u && u.trim()),
+      privilege: draft.privilege,
+      questionnaire: draft.questionnaire && typeof draft.questionnaire === 'object' ? draft.questionnaire : {},
+      geometry: draft.geometry,
+      approval: isNew ? this.newApprovalRecord() : existing ? existing.approval : this.newApprovalRecord(),
+      createdAt: isNew ? now : draft.createdAt || now,
+      updatedAt: now
+    };
+    const next = isNew ? [...this.features, rec] : this.features.map(f => (f.id === rec.id ? rec : f));
+    this.featuresSubject.next(next);
+    lsSet('features', next);
+    this.logActivity((isNew ? 'Simpan objek baru: ' : 'Perbarui objek: ') + rec.title + ' (' + geomLabel(rec.geometry.type) + ')');
+    return rec;
+  }
+
   deleteFeature(id: string): void {
     const victim = this.features.find(f => f.id === id);
     const next = this.features.filter(f => f.id !== id);

@@ -8,7 +8,8 @@ import { MyLayersComponent } from './components/my-layers/my-layers.component';
 import { ApprovalComponent } from './components/approval/approval.component';
 import { TaskComponent } from './components/task/task.component';
 import { ActivityComponent } from './components/activity/activity.component';
-import { ComingSoonComponent } from './components/coming-soon/coming-soon.component';
+import { EditComponent } from './components/edit/edit.component';
+import { QuestionnaireDialogComponent } from './components/questionnaire-dialog/questionnaire-dialog.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { ComingSoonComponent } from './components/coming-soon/coming-soon.compon
     ApprovalComponent,
     TaskComponent,
     ActivityComponent,
-    ComingSoonComponent
+    EditComponent,
+    QuestionnaireDialogComponent
   ],
   imports: [SharedModule, GeomappingRoutingModule]
 })

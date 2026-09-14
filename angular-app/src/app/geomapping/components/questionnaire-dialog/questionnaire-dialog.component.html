@@ -1,0 +1,84 @@
+<div class="qdlg-backdrop" (mousedown)="onBackdropMouseDown($event)">
+  <div class="qdlg" role="dialog" aria-modal="true" aria-label="Kuesioner objek">
+    <div class="qdlg-head">
+      <span class="qdlg-req">* Wajib diisi</span>
+      <span class="grow"></span>
+      <div class="qdlg-seg">
+        <button type="button" [class.sel]="mode === 'wizard'" (click)="setMode('wizard')">
+          <span [innerHTML]="iconSvg('sliders') | safeHtml"></span> Wizard
+        </button>
+        <button type="button" [class.sel]="mode === 'scroll'" (click)="setMode('scroll')">Tampilan Gulir</button>
+      </div>
+      <button class="qdlg-x" type="button" aria-label="Tutup dialog" (click)="close()" [innerHTML]="iconSvg('close') | safeHtml"></button>
+    </div>
+
+    <div class="qdlg-body">
+      <ng-container *ngIf="mode === 'wizard'; else scrollBody">
+        <ng-container *ngFor="let q of questions; let qi = index">
+          <ng-container *ngIf="qi === step" [ngTemplateOutlet]="qBlock" [ngTemplateOutletContext]="{ q: q, num: qi + 1 }"></ng-container>
+        </ng-container>
+      </ng-container>
+      <ng-template #scrollBody>
+        <ng-container *ngFor="let q of questions; let qi = index" [ngTemplateOutlet]="qBlock" [ngTemplateOutletContext]="{ q: q, num: qi + 1 }"></ng-container>
+      </ng-template>
+
+      <ng-template #qBlock let-q="q" let-num="num">
+        <div class="qq">
+          <div class="qq-head">
+            <span class="qq-num">{{ num }}</span>
+            <span><span class="qq-label">{{ q.label }}</span><span class="qq-hint" *ngIf="q.hint">({{ q.hint }})</span></span>
+          </div>
+
+          <div class="qq-sub" *ngIf="q.type === 'group'">
+            <div class="qq" *ngFor="let it of q.items; let ii = index">
+              <div class="qq-head">
+                <span class="qq-num sub">{{ num }}.{{ ii + 1 }}</span>
+                <span><span class="qq-label">{{ it.label }}</span></span>
+              </div>
+              <div class="qq-input">
+                <input type="text" [value]="get(fieldPath(q, it))" (input)="onInput(fieldPath(q, it), $event)" placeholder="Isi jawaban" />
+              </div>
+            </div>
+          </div>
+
+          <div class="qq-input" *ngIf="q.type === 'text'">
+            <input type="text" [value]="get(fieldPath(q))" (input)="onInput(fieldPath(q), $event)" placeholder="Isi jawaban" />
+          </div>
+
+          <div class="qq-input" *ngIf="q.type === 'date'">
+            <div class="qcal">
+              <div class="qcal-top">
+                <button class="qcal-nav" type="button" aria-label="Bulan sebelumnya" (click)="navCal(fieldPath(q), -1)" [innerHTML]="iconSvg('chevL') | safeHtml"></button>
+                <span class="grow"></span>
+                <span class="qcal-my">{{ calendar(fieldPath(q)).label }}</span>
+                <span class="grow"></span>
+                <button class="qcal-nav" type="button" aria-label="Bulan berikutnya" (click)="navCal(fieldPath(q), 1)" [innerHTML]="iconSvg('chevR') | safeHtml"></button>
+              </div>
+              <div class="qcal-grid">
+                <span class="qcal-dow" *ngFor="let d of calendar(fieldPath(q)).dow">{{ d }}</span>
+                <button type="button" class="qcal-day" *ngFor="let d of calendar(fieldPath(q)).days" [class.out]="d.out" [class.sel]="d.sel" (click)="pickDate(fieldPath(q), d.iso)">{{ d.day }}</button>
+              </div>
+              <button class="btn btn-ghost qcal-clear" type="button" *ngIf="get(fieldPath(q))" (click)="clearDate(fieldPath(q))">Kosongkan tanggal</button>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="qdlg-foot">
+      <div class="qdlg-wiznav" *ngIf="mode === 'wizard'">
+        <button class="btn btn-ghost" type="button" [disabled]="step === 0" (click)="prev()">
+          <span [innerHTML]="iconSvg('chevL') | safeHtml"></span> Sebelumnya
+        </button>
+        <span>Langkah {{ step + 1 }} / {{ questions.length }}</span>
+        <button class="btn btn-ghost" type="button" [disabled]="step === questions.length - 1" (click)="next()">
+          Berikutnya <span [innerHTML]="iconSvg('chevR') | safeHtml"></span>
+        </button>
+      </div>
+      <span class="grow"></span>
+      <button class="btn btn-save" type="button" (click)="save()">
+        <span [innerHTML]="iconSvg('check') | safeHtml"></span> Simpan
+      </button>
+    </div>
+  </div>
+</div>

@@ -81,6 +81,19 @@
 .sub-label:first-child { margin-top: 0; }
 .muted { font-size: 0.76rem; color: var(--text-dim); line-height: 1.55; }
 
+// Ported from geomapping/index.html's `.qn-row` (search `.qn-row {`) — used by ApprovalComponent's
+// meta block since Phase 2 but never actually defined until now (a Phase 2 gap; fixed here rather
+// than left for Phase 3's editor form, which also uses it, to rediscover).
+.qn-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+  background: var(--muted); border-radius: 7px; padding: 0.5rem 0.7rem; margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+
+  .qn-k { color: var(--text-dim); font-weight: 600; }
+  .qn-v { font-weight: 700; }
+  .qn-v.mono { font-family: 'JetBrains Mono', monospace; }
+}
+
 // Used by Approval (history entries) and Activity (the log list itself).
 .act-item {
   display: flex; gap: 0.6rem; padding: 0.55rem 0; border-top: 1px solid var(--border); font-size: 0.78rem;

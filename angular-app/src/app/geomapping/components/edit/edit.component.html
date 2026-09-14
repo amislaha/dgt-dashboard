@@ -1,0 +1,271 @@
+<ng-container *ngIf="countdown != null; else notCountdown">
+  <div class="view-head"><h2>Tracking Point</h2></div>
+  <div class="status-line"><span class="sl-dot sl-live"></span><span>Hitung mundur {{ countdown }} detik — jangan bergerak.</span></div>
+  <p class="muted">Koordinat direkam otomatis saat hitungan mencapai 0, memakai posisi My Location terakhir.</p>
+  <button class="btn btn-ghost full" type="button" (click)="cancelTrackPoint()">Batalkan</button>
+</ng-container>
+
+<ng-template #notCountdown>
+  <ng-container *ngIf="lineTrack; else notLineTrack">
+    <div class="view-head"><h2>Tracking {{ lineTrack.kind === 'Polygon' ? 'Polygon / Area' : 'Line' }}</h2></div>
+    <div class="status-line"><span class="sl-dot sl-live"></span><span>{{ lineTrack.pts.length }} titik &middot; {{ lineTrackLenLabel }}</span></div>
+    <p class="muted">Titik awal (balon biru) menempel pada My Location. Gerak ke titik berikutnya lalu tekan <b>Tambah titik</b>, atau klik langsung di peta untuk menyambung segmen.</p>
+    <button class="btn btn-primary full" type="button" (click)="lineTrackAddCurrent()">
+      <span [innerHTML]="iconSvg('plus') | safeHtml"></span> Tambah titik (My Location + gabung)
+    </button>
+    <div style="height:6px"></div>
+    <button class="btn btn-ghost full" type="button" (click)="refreshLocQuiet()">
+      <span [innerHTML]="iconSvg('gps') | safeHtml"></span> Perbarui My Location dulu
+    </button>
+    <div style="height:6px"></div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-ghost" type="button" style="flex:1" [disabled]="lineTrack.pts.length <= 1" (click)="lineTrackUndo()">Hapus titik terakhir</button>
+      <button class="btn btn-save" type="button" style="flex:1" (click)="finishLineTrack()"><span [innerHTML]="iconSvg('check') | safeHtml"></span> Selesai</button>
+    </div>
+    <div style="height:6px"></div>
+    <button class="btn btn-danger full" type="button" (click)="cancelLineTrack()">Batalkan tracking</button>
+  </ng-container>
+</ng-template>
+
+<ng-template #notLineTrack>
+  <ng-container *ngIf="drawType && editing && !editing.feature; else notManualDraw">
+    <div class="req-note">Mode menggambar manual aktif</div>
+    <div class="prompt">
+      <p *ngIf="drawType === 'Point'">Klik di peta untuk menempatkan titik.</p>
+      <p *ngIf="drawType !== 'Point'">Klik pada peta untuk menambah titik. Klik dua kali, tekan <b>Enter</b>, atau tombol <b>Selesai</b> untuk mengakhiri. <b>Esc</b> membatalkan.</p>
+      <ng-container *ngIf="drawType !== 'Point'">
+        <button class="btn btn-save full" type="button" (click)="finishDraw()"><span [innerHTML]="iconSvg('check') | safeHtml"></span> Selesai menggambar</button>
+        <div style="height:8px"></div>
+      </ng-container>
+      <button class="btn btn-ghost full" type="button" (click)="cancelDraw()">Batal</button>
+    </div>
+  </ng-container>
+</ng-template>
+
+<ng-template #notManualDraw>
+  <ng-container *ngIf="editing && editing.feature; else landing">
+    <div class="view-head">
+      <h2>{{ editing.isNew ? 'Objek baru' : 'Sunting objek' }}</h2>
+      <span class="count">{{ editing.trackKind === 'point' ? 'Tracking Point' : editing.trackKind === 'line' ? 'Tracking Line' : editing.trackKind === 'polygon' ? 'Tracking Polygon' : 'Gambar manual' }}</span>
+    </div>
+    <div class="req-note">* Wajib diisi</div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">1</span><span class="step-title">Klasifikasi <span class="star">*</span></span></div>
+      <div class="field">
+        <select class="classif" [style.border-left-color]="selectedClassification?.color" [ngModel]="formClassificationId" (ngModelChange)="onClassificationChange($event)">
+          <ng-container *ngFor="let row of data.classOrder()">
+            <optgroup *ngIf="row.grp" [label]="row.grp">
+              <option *ngFor="let c of row.items" [value]="c.id">{{ c.name }}</option>
+            </optgroup>
+            <option *ngIf="!row.grp" [value]="row.items[0].id">{{ row.items[0].name }}</option>
+          </ng-container>
+        </select>
+        <div class="classif-preview" *ngIf="selectedClassification">
+          <span class="dot" [style.background]="selectedClassification.color"></span><span>{{ selectedClassification.desc }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head"><span class="step-num">2</span><span class="step-title">General Info</span></div>
+      <div class="field" [class.invalid]="titleInvalid">
+        <label>Judul <span class="star">*</span></label>
+        <input type="text" [(ngModel)]="formTitle" placeholder="cth. Blok Permukiman SP-3" />
+      </div>
+      <div class="field" [class.invalid]="descInvalid">
+        <label>Deskripsi <span class="star">*</span></label>
+        <textarea [(ngModel)]="formDescription" placeholder="Uraian singkat objek"></textarea>
+      </div>
+      <div class="field">
+        <label>Alamat</label>
+        <input type="text" [(ngModel)]="formAddress" placeholder="Alamat / lokasi administratif" />
+      </div>
+      <div class="field">
+        <label>WorkCompartment</label>
+        <select [(ngModel)]="formCompartmentId">
+          <option [ngValue]="null">— tanpa kompartemen —</option>
+          <option *ngFor="let c of compartments" [ngValue]="c.id">{{ c.thumb }} {{ c.name }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>{{ editing.type === 'Point' ? 'Gambar (URL)' : 'Foto / gambar (URL)' }}</label>
+        <div class="img-list">
+          <div class="img-row" *ngFor="let u of images; let i = index">
+            <input type="text" [value]="u" (input)="updateImage(i, $any($event.target).value)" placeholder="https://…" />
+            <button type="button" (click)="removeImage(i)" aria-label="Hapus"><span [innerHTML]="iconSvg('close') | safeHtml"></span></button>
+          </div>
+        </div>
+        <button class="mini-btn ghost" type="button" style="margin-top:6px" (click)="addImage()">
+          <span [innerHTML]="iconSvg('camera') | safeHtml"></span> Tambah {{ editing.type === 'Point' ? 'gambar' : 'foto' }}
+        </button>
+      </div>
+      <div class="field">
+        <label>Privilege <span class="star">*</span></label>
+        <select [(ngModel)]="formPrivilege">
+          <option *ngFor="let p of privileges" [value]="p">{{ p }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head">
+        <span class="step-num">3</span><span class="step-title">Questionnaire</span>
+        <span style="flex:1"></span>
+        <button class="mini-btn" type="button" (click)="openQuestionnaire()">
+          <span [innerHTML]="iconSvg('edit') | safeHtml"></span> Edit ({{ qnAnsweredCount() }}/{{ qnFieldCount() }})
+        </button>
+      </div>
+      <ng-container *ngIf="qnAnsweredCount() > 0; else noQn">
+        <div class="qn-row"><span class="qn-k">Kelengkapan</span><span class="qn-v mono">{{ qnAnsweredCount() }} / {{ qnFieldCount() }}</span></div>
+        <div class="qn-row" *ngFor="let r of questionnaireSummaryRows.slice(0, 4)"><span class="qn-k">{{ r.k }}</span><span class="qn-v">{{ r.v }}</span></div>
+        <div class="qn-row" *ngIf="questionnaireSummaryRows.length > 4"><span class="qn-k">…</span><span class="qn-v">+{{ questionnaireSummaryRows.length - 4 }} jawaban lain</span></div>
+      </ng-container>
+      <ng-template #noQn><div class="muted">Belum ada jawaban kuesioner. Ketuk <b>Edit</b> untuk mengisi {{ qnFieldCount() }} pertanyaan.</div></ng-template>
+      <div class="sub-label" style="margin-top:.75rem">Ukuran otomatis</div>
+      <div class="qn-row" *ngFor="let r of readoutRows"><span class="qn-k">{{ r.k }}</span><span class="qn-v mono">{{ r.v }}</span></div>
+    </div>
+
+    <div class="step">
+      <div class="step-head">
+        <span class="step-title">Status Approval</span>
+        <span style="flex:1"></span>
+        <span class="appr-chip" *ngIf="editing.isNew" [style.color]="statusMeta('PENDING').color" [style.border-color]="statusMeta('PENDING').color">
+          <span class="appr-dot" [style.background]="statusMeta('PENDING').color"></span>{{ statusMeta('PENDING').label }}
+        </span>
+      </div>
+      <div class="qn-row" *ngIf="editing.isNew"><span class="qn-k">Status</span><span class="qn-v">Menunggu — diajukan saat disimpan</span></div>
+      <div class="appr-meta" *ngIf="!editing.isNew && editing.feature.approval">
+        <div class="qn-row">
+          <span class="qn-k">Status</span>
+          <span class="qn-v">
+            <span class="appr-chip" [style.color]="statusMeta(editing.feature.approval.status).color" [style.border-color]="statusMeta(editing.feature.approval.status).color">
+              <span class="appr-dot" [style.background]="statusMeta(editing.feature.approval.status).color"></span>{{ statusMeta(editing.feature.approval.status).label }}
+            </span>
+          </span>
+        </div>
+        <div class="qn-row"><span class="qn-k">Diajukan</span><span class="qn-v mono">{{ editing.feature.approval.submittedBy || '-' }} &middot; {{ fmtWhen(editing.feature.approval.submittedAt) }}</span></div>
+        <div class="qn-row"><span class="qn-k">Ditinjau</span><span class="qn-v mono">{{ editing.feature.approval.reviewer ? (editing.feature.approval.reviewer + ' &middot; ' + fmtWhen(editing.feature.approval.reviewedAt)) : '—' }}</span></div>
+        <div class="qn-row" *ngIf="editing.feature.approval.note"><span class="qn-k">Catatan</span><span class="qn-v">{{ editing.feature.approval.note }}</span></div>
+        <details class="appr-hist">
+          <summary>Riwayat approval ({{ editing.feature.approval.history.length }})</summary>
+          <div style="margin-top:.4rem">
+            <ng-container *ngIf="editing.feature.approval.history.length; else noHist">
+              <div class="act-item" *ngFor="let h of editing.feature.approval.history">
+                <span class="act-dot" [style.background]="historyDotColor(h.action)"></span>
+                <span>
+                  <span>{{ actionLabel(h.action) }} &middot; {{ h.by || '-' }}{{ h.note ? (' — ' + h.note) : '' }}</span>
+                  <span class="act-when">{{ fmtWhen(h.at) }}</span>
+                </span>
+              </div>
+            </ng-container>
+            <ng-template #noHist><div class="muted" style="font-size:.7rem">Belum ada riwayat.</div></ng-template>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-head">
+        <span class="step-title">Sunting Bentuk</span>
+        <span style="flex:1"></span>
+        <span style="font-size:.7rem;color:var(--text-faint)">{{ geomLabel(editing.type) }}</span>
+      </div>
+      <div class="shape-tools">
+        <button
+          class="shape-tool"
+          type="button"
+          *ngFor="let m of shapeModes"
+          [class.active]="shapeMode === m[0]"
+          [disabled]="m[3] && editing.type === 'Point'"
+          [title]="m[2]"
+          (click)="setShapeMode(m[0])">
+          <span [innerHTML]="iconSvg(m[1]) | safeHtml"></span>
+        </button>
+        <button class="shape-tool danger" type="button" [disabled]="editing.type === 'Point'" title="Bersihkan &amp; gambar ulang" (click)="restartDrawing()">
+          <span [innerHTML]="iconSvg('eraser') | safeHtml"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="editor-actions">
+      <button class="btn btn-cancel" type="button" (click)="cancelEditing()"><span [innerHTML]="iconSvg('close') | safeHtml"></span> Batal</button>
+      <button class="btn btn-save" type="button" (click)="save()"><span [innerHTML]="iconSvg('check') | safeHtml"></span> Simpan</button>
+    </div>
+    <button class="btn btn-danger full" type="button" style="margin-top:8px" *ngIf="!editing.isNew" (click)="deleteFeature()">
+      <span [innerHTML]="iconSvg('trash') | safeHtml"></span> {{ deleteArmed ? 'Ketuk lagi untuk hapus permanen' : 'Hapus objek' }}
+    </button>
+
+    <dgt-questionnaire-dialog
+      *ngIf="showQuestionnaire"
+      [initial]="editing.feature.questionnaire"
+      (saved)="onQuestionnaireSaved($event)"
+      (closed)="onQuestionnaireClosed()">
+    </dgt-questionnaire-dialog>
+  </ng-container>
+</ng-template>
+
+<ng-template #landing>
+  <div class="view-head"><h2>Edit Mode</h2></div>
+  <div class="status-line">
+    <span class="sl-dot" [class.sl-ok]="hasLoc" [class.sl-off]="!hasLoc"></span>
+    <span *ngIf="hasLoc">My Location siap ({{ myLoc?.lat?.toFixed(5) }}, {{ myLoc?.lng?.toFixed(5) }})</span>
+    <span *ngIf="!hasLoc">My Location belum diambil</span>
+    <span style="flex:1"></span>
+    <button class="hbtn" type="button" (click)="requestLoc()">
+      <span [innerHTML]="iconSvg('gps') | safeHtml"></span>{{ hasLoc ? ' Perbarui' : ' Ambil' }}
+    </button>
+  </div>
+
+  <button class="big-card" type="button" (click)="startTrackPoint()">
+    <span class="bc-ico" [innerHTML]="iconSvg('point') | safeHtml"></span>
+    <span>
+      <span class="bc-title">Tracking Point</span>
+      <span class="bc-desc">Rekam satu titik dengan hitung mundur {{ CD_SECONDS }} detik, lalu isi General Info &amp; Questionnaire. Untuk gedung / POI juga.</span>
+    </span>
+  </button>
+  <button class="big-card" type="button" [disabled]="!hasLoc" (click)="startLineTrack('LineString')">
+    <span class="bc-ico" [innerHTML]="iconSvg('line') | safeHtml"></span>
+    <span>
+      <span class="bc-title">Tracking Line</span>
+      <span class="bc-desc">Mulai dari My Location, sambung titik demi titik mengikuti jalur lapangan. Panjang &amp; waktu tempuh dihitung otomatis.</span>
+    </span>
+  </button>
+  <button class="big-card" type="button" [disabled]="!hasLoc" (click)="startLineTrack('Polygon')">
+    <span class="bc-ico" [innerHTML]="iconSvg('polygon') | safeHtml"></span>
+    <span>
+      <span class="bc-title">Tracking Polygon / Area</span>
+      <span class="bc-desc">Rekam batas area dengan titik-titik menerus; luas &amp; keliling dihitung otomatis.</span>
+    </span>
+  </button>
+
+  <div class="sub-label">Atau gambar manual di peta</div>
+  <div class="draw-grid">
+    <button type="button" *ngFor="let t of drawTools" (click)="beginDraw(t[0])">
+      <span [innerHTML]="iconSvg(t[1]) | safeHtml"></span>{{ t[2] }}
+    </button>
+  </div>
+
+  <div class="sub-label" style="display:flex;align-items:center;gap:.5rem">
+    Terakhir ditambahkan
+    <span style="flex:1"></span>
+    <button class="xlink" type="button" style="text-transform:none;letter-spacing:0" (click)="goToMyLayers()">
+      Semua di My Layers <span [innerHTML]="iconSvg('arrowRight') | safeHtml"></span>
+    </button>
+  </div>
+  <div class="list">
+    <div class="list-item" *ngFor="let f of recentFeatures" (click)="openFeature(f)">
+      <span class="li-ico" [style.background]="clsOf(f).color" [innerHTML]="iconSvg(clsOf(f).icon) | safeHtml"></span>
+      <span class="li-body">
+        <span class="li-title">{{ f.title || '(tanpa judul)' }}</span>
+        <span class="li-meta">{{ geomLabel(f.geometry.type) }} &middot; {{ rowMeta(f) }}</span>
+      </span>
+      <span class="appr-dot" [title]="'Approval: ' + apprLabel(f)" [style.background]="apprColor(f)"></span>
+      <button class="li-act" type="button" [class.confirm]="rowDeleteArmedId === f.id" aria-label="Hapus" (click)="armRowDelete(f.id, $event)">
+        <ng-container *ngIf="rowDeleteArmedId === f.id; else trashIcon">Hapus?</ng-container>
+        <ng-template #trashIcon><span [innerHTML]="iconSvg('trash') | safeHtml"></span></ng-template>
+      </button>
+    </div>
+    <div class="muted" *ngIf="!recentFeatures.length">Belum ada objek.</div>
+  </div>
+</ng-template>

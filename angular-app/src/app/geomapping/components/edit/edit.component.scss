@@ -1,0 +1,124 @@
+@import '../../shared-panel';
+
+// Ports geomapping/index.html's Edit Mode CSS not already covered by _shared-panel.scss (search
+// `.req-note`/`.step`/`.mini-btn`/`.classif-preview`/`.img-list`/`.shape-tools`/`.prompt`/
+// `.draw-grid`/`.big-card`) — `--panel`/`--panel-2`/`--gold` in the source map to this port's
+// `--card`/`--muted`/`--primary` tokens, same mapping every other geomapping component uses.
+
+// The source scopes `.hbtn` (the pill-shaped "Ambil"/"Perbarui" My Location button) to
+// `.view-head .hbtn` only, but also uses it inside `.status-line` on the Edit Mode landing screen
+// (index.html:2460, `<button class="hbtn" id="etLoc">` sits in the status line, not a `.view-head`)
+// — the same class of CSS-scoping miss already fixed for the Task panel's delete button in
+// Phase 2, not a deliberate "only styled inside a header" design. Restyled unscoped here so it
+// isn't silently plain text.
+.hbtn {
+  border: 1px solid var(--border); background: var(--muted); color: var(--text-dim);
+  border-radius: 999px; padding: 0.22rem 0.6rem; font-size: 0.7rem; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+
+  ::ng-deep svg { width: 12px; height: 12px; }
+  &:hover { color: var(--text); border-color: var(--primary-line); }
+}
+
+.req-note { color: var(--critical); font-size: 0.74rem; font-weight: 700; margin-bottom: 0.7rem; }
+
+.step { border-top: 1px solid var(--border); padding: 0.85rem 0; }
+.step:first-of-type { border-top: none; padding-top: 0.2rem; }
+.step-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; }
+.step-num {
+  width: 21px; height: 21px; border-radius: 50%; background: var(--series-2); color: #fff;
+  font-size: 0.72rem; font-weight: 800; display: grid; place-items: center; flex: 0 0 auto;
+}
+.step-title { font-weight: 700; font-size: 0.9rem; }
+.step-title .star { color: var(--critical); }
+.mini-btn {
+  border: none; border-radius: 6px; padding: 0.15rem 0.5rem; font-size: 0.68rem; font-weight: 700;
+  cursor: pointer; background: var(--primary); color: #fff; display: inline-flex; align-items: center; gap: 0.25rem;
+
+  ::ng-deep svg { width: 11px; height: 11px; }
+  &.ghost { background: var(--muted); color: var(--text-dim); border: 1px solid var(--border); }
+}
+
+.field select.classif { border-left-width: 4px; }
+.classif-preview {
+  display: flex; align-items: center; gap: 0.45rem; margin-top: 0.35rem; font-size: 0.72rem; color: var(--text-dim);
+
+  .dot { width: 12px; height: 12px; border-radius: 4px; }
+}
+
+.img-list {
+  display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.4rem;
+
+  .img-row { display: flex; gap: 0.35rem; }
+  .img-row input { flex: 1; }
+  .img-row button {
+    width: 30px; flex: 0 0 30px; border: 1px solid var(--border); background: var(--muted);
+    border-radius: 6px; cursor: pointer; color: var(--text-dim); display: grid; place-items: center;
+
+    ::ng-deep svg { width: 13px; height: 13px; }
+  }
+}
+
+.xlink {
+  display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.74rem; font-weight: 700;
+  color: var(--series-2); background: none; border: none; padding: 0; cursor: pointer;
+
+  ::ng-deep svg { width: 12px; height: 12px; }
+  &:hover { color: var(--primary); }
+}
+
+.appr-chip {
+  display: inline-flex; align-items: center; gap: 0.32rem; flex: 0 0 auto;
+  font-size: 0.66rem; font-weight: 800; padding: 0.12rem 0.5rem 0.12rem 0.4rem;
+  border: 1px solid currentColor; border-radius: 999px; white-space: nowrap;
+}
+.appr-hist {
+  margin-top: 0.35rem;
+
+  summary { cursor: pointer; font-size: 0.72rem; font-weight: 700; color: var(--series-2); list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+}
+
+.shape-tools { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.2rem; }
+.shape-tool {
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--card); color: var(--text-dim); cursor: pointer; display: grid; place-items: center;
+
+  ::ng-deep svg { width: 16px; height: 16px; }
+  &:hover { border-color: var(--primary-line); color: var(--text); }
+  &.active { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &.danger.active { border-color: var(--critical); background: rgba(206, 17, 38, 0.1); color: var(--critical); }
+}
+
+.prompt {
+  text-align: center; padding: 0.5rem 0;
+
+  p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.55; margin: 0 0 0.9rem; }
+}
+.draw-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+
+  button {
+    border: 1px solid var(--border); background: var(--muted); border-radius: var(--radius-sm);
+    padding: 0.7rem 0.3rem; cursor: pointer; display: flex; flex-direction: column; align-items: center;
+    gap: 0.35rem; font-size: 0.72rem; font-weight: 700; color: var(--text-dim);
+
+    ::ng-deep svg { width: 20px; height: 20px; }
+    &:hover { border-color: var(--primary-line); color: var(--primary); background: var(--primary-soft); }
+  }
+}
+
+.big-card {
+  display: flex; gap: 0.7rem; align-items: flex-start; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.8rem; cursor: pointer; background: var(--card);
+  width: 100%; text-align: left; margin-bottom: 0.5rem;
+
+  &:hover { border-color: var(--primary-line); background: var(--muted); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  .bc-ico { width: 34px; height: 34px; border-radius: 9px; background: var(--primary-soft); color: var(--primary); display: grid; place-items: center; flex: 0 0 auto; }
+  .bc-ico ::ng-deep svg { width: 18px; height: 18px; }
+  .bc-title { display: block; font-weight: 700; font-size: 0.84rem; }
+  .bc-desc { display: block; font-size: 0.72rem; color: var(--text-dim); margin-top: 2px; line-height: 1.45; }
+}
+

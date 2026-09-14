@@ -9,3 +9,22 @@
   height: 100%;
   background: var(--muted);
 }
+
+// Ports geomapping/index.html's `.vhandle`/`.myloc-balloon` (search `.vhandle {`) — the L.divIcon
+// classNames used by Edit Mode's vertex/midpoint handles and the My Location balloon. `::ng-deep`
+// is required (deprecated but still functional, same as elsewhere in this port) because Leaflet
+// appends marker DOM nodes directly into the map's own panes, outside this component's normal
+// view-encapsulated style scope, even though they're still a physical descendant of
+// `.geomapping-map-el`.
+::ng-deep .vhandle {
+  background: #fff; border: 2px solid var(--primary); border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); cursor: grab;
+}
+::ng-deep .vhandle.del { border-color: var(--critical); cursor: pointer; }
+::ng-deep .vhandle.mid { border-style: dashed; border-color: var(--series-2); opacity: 0.85; cursor: copy; }
+::ng-deep .myloc-balloon { background: transparent; border: none; }
+::ng-deep .myloc-balloon i {
+  display: block; width: 18px; height: 18px; border-radius: 50% 50% 50% 0;
+  background: #2563eb; border: 2px solid #fff; transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}

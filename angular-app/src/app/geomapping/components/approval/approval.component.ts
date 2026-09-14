@@ -5,6 +5,7 @@ import { geomappingSvg } from '../../config/icons';
 import { APPROVAL_ACTION_LABEL, APPROVAL_META, ApprovalHistoryEntry, ApprovalStatus, Classification, Compartment, GeomappingFeature } from '../../models/geomapping.model';
 import { fmtWhen, geomLabel } from '../../services/geo-math';
 import { GeomappingDataService } from '../../services/geomapping-data.service';
+import { GeomappingEditService } from '../../services/geomapping-edit.service';
 import { GeomappingToastService } from '../../services/geomapping-toast.service';
 
 type ApprFilter = 'all' | ApprovalStatus;
@@ -14,9 +15,10 @@ type ApprFilter = 'all' | ApprovalStatus;
  * `apprChip()` (geomapping/index.html:3043-3145) — "Approval", PRD open question #2. Any signed-in
  * user may act as reviewer (front-end prototype, no real role check — same as the original).
  *
- * `zoomToFeature()`/`openEditor()` (the "Buka di peta / editor" link) are disabled here: Edit Mode
- * hasn't been ported yet (see PORT_NOTES.md) and the shell owns the persistent map this panel has
- * no reference to, so there's nowhere for that link to actually go until both land.
+ * "Buka di peta / editor" (`goToEditor`) ports `zoomToFeature()` + `openEditor()`: opens the row's
+ * feature in `GeomappingEditService` and navigates to `/geomapping/edit` — the map (shell-owned,
+ * subscribed to the same service) pans to it and `EditComponent` renders the editor form, the same
+ * as clicking a My Layers row.
  */
 @Component({
   selector: 'dgt-approval',
@@ -40,7 +42,12 @@ export class ApprovalComponent implements OnInit, OnDestroy {
 
   private readonly subs: Subscription[] = [];
 
-  constructor(readonly data: GeomappingDataService, private readonly toast: GeomappingToastService, private readonly router: Router) {}
+  constructor(
+    readonly data: GeomappingDataService,
+    private readonly toast: GeomappingToastService,
+    private readonly router: Router,
+    private readonly editService: GeomappingEditService
+  ) {}
 
   ngOnInit(): void {
     this.subs.push(this.data.features$.subscribe(f => (this.features = f)));
@@ -101,11 +108,8 @@ export class ApprovalComponent implements OnInit, OnDestroy {
     return geomappingSvg(name);
   }
 
-  /** "Buka di peta / editor" — the original pans the map + opens the feature editor
-   *  (`zoomToFeature()`/`openEditor()`). Neither exists in this port yet (Edit Mode isn't ported —
-   *  see PORT_NOTES.md — and the shell's persistent map isn't reachable from a routed panel like
-   *  this one), so this just routes to Edit Mode's placeholder for now rather than doing nothing. */
-  goToEditor(): void {
+  goToEditor(f: GeomappingFeature): void {
+    this.editService.openEditor(f, false);
     this.router.navigateByUrl('/geomapping/edit');
   }
 

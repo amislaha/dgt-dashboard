@@ -147,6 +147,48 @@ dgt-geomapping-map { position: absolute; inset: 0; z-index: 0; }
 .panel { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 .panel-body { flex: 1; overflow-y: auto; padding: 0.95rem 1rem 1.1rem; }
 
+// ---------------- Edit Mode floating map widgets — ports `.draw-dock`/`.draw-hint`/`.countdown-ov`
+// (index.html:583-640); see this component's own doc comment for why they live here rather than
+// in EditComponent. ----------------
+.draw-dock {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 850;
+  display: flex; gap: 4px; padding: 4px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 10px 30px -18px rgba(15, 25, 34, 0.5);
+
+  button {
+    display: inline-flex; align-items: center; gap: 0.35rem; border: none; background: transparent;
+    color: var(--text-dim); border-radius: 7px; padding: 0.4rem 0.6rem; font-size: 0.74rem; font-weight: 700;
+    cursor: pointer;
+
+    svg { width: 15px; height: 15px; }
+    &:hover { background: var(--muted); color: var(--text); }
+    &.active { background: var(--primary-soft); color: var(--primary); }
+  }
+}
+
+.draw-hint {
+  position: absolute; top: 60px; left: 50%; transform: translateX(-50%); z-index: 850;
+  display: flex; align-items: center; gap: 0.7rem; background: var(--sidebar); color: #eaf1f5;
+  border-radius: 8px; padding: 0.45rem 0.7rem; font-size: 0.76rem; font-weight: 600;
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.6);
+
+  button { border: none; border-radius: 6px; padding: 0.25rem 0.6rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+  .h-done { background: var(--good); color: #fff; }
+  .h-cancel { background: rgba(255, 255, 255, 0.15); color: #fff; }
+}
+
+.countdown-ov { position: absolute; inset: 0; z-index: 1500; display: grid; place-items: center; background: rgba(8, 24, 38, 0.42); }
+.countdown-ov .cd-ring {
+  width: 148px; height: 148px; border-radius: 50%; background: var(--card); border: 4px solid var(--primary);
+  display: grid; place-items: center; box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.5);
+}
+.countdown-ov .cd-num { font-size: 3.3rem; font-weight: 800; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
+.countdown-ov .cd-cap { position: absolute; top: calc(50% + 88px); color: #eaf1f5; font-size: 0.82rem; font-weight: 600; text-align: center; max-width: 280px; line-height: 1.45; }
+.countdown-ov .cd-cancel {
+  position: absolute; top: calc(50% + 156px); border: none; background: rgba(255, 255, 255, 0.16); color: #fff;
+  font-weight: 700; border-radius: 7px; padding: 0.35rem 0.85rem; cursor: pointer; font-size: 0.76rem;
+}
+
 // ---------------- floating map widgets ----------------
 .map-ctrls { position: absolute; right: 12px; top: 92px; z-index: 850; display: flex; flex-direction: column; gap: 6px; }
 .map-ctrl-btn {

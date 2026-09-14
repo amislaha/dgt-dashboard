@@ -1,9 +1,11 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { geomappingSvg } from '../../config/icons';
 import { APPROVAL_META, Classification, Compartment, GeomappingFeature, GeometryType } from '../../models/geomapping.model';
 import { geomLabel, geomToLatLngs, fmtArea, fmtLen, lineLengthM, polygonAreaM2, LatLng } from '../../services/geo-math';
 import { GeomappingDataService } from '../../services/geomapping-data.service';
+import { GeomappingEditService } from '../../services/geomapping-edit.service';
 import { GeomappingToastService } from '../../services/geomapping-toast.service';
 
 interface FeatureRow {
@@ -54,7 +56,12 @@ export class MyLayersComponent implements OnInit, OnDestroy {
 
   private readonly subs: Subscription[] = [];
 
-  constructor(readonly data: GeomappingDataService, private readonly toast: GeomappingToastService) {}
+  constructor(
+    readonly data: GeomappingDataService,
+    private readonly toast: GeomappingToastService,
+    private readonly editService: GeomappingEditService,
+    private readonly router: Router
+  ) {}
 
   ngOnInit(): void {
     this.subs.push(this.data.features$.subscribe(f => (this.features = f)));
@@ -129,6 +136,16 @@ export class MyLayersComponent implements OnInit, OnDestroy {
 
   setGeomFilter(key: string): void {
     this.geomFilter = key;
+  }
+
+  /** Ports `wireFeatureList()`'s row click (index.html:2716-2724): opens the feature in Edit Mode. */
+  openFeature(f: GeomappingFeature): void {
+    this.editService.openEditor(f, false);
+    this.router.navigateByUrl('/geomapping/edit');
+  }
+
+  startNewFeature(): void {
+    this.router.navigateByUrl('/geomapping/edit');
   }
 
   deleteArmedId: string | null = null;

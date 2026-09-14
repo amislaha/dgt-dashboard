@@ -76,6 +76,32 @@
     </div>
   </div>
 
+  <div class="draw-dock" *ngIf="activeView === 'edit' && countdown == null">
+    <button type="button" *ngFor="let t of drawTools" [class.active]="drawType === t[0]" (click)="toggleDraw(t[0])">
+      <svg *ngIf="t[1] === 'point'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      <svg *ngIf="t[1] === 'line'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="19" r="2.4"/><circle cx="19" cy="5" r="2.4"/><path d="m7 17 10-10"/></svg>
+      <svg *ngIf="t[1] === 'polygon'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 6-3 10H7L4 9l8-6Z"/></svg>
+      {{ t[2] }}
+    </button>
+  </div>
+
+  <div class="draw-hint" *ngIf="lineTrack">
+    <span>{{ lineTrackHintLabel }}</span>
+    <button class="h-done" type="button" (click)="finishLineTrack()">Selesai</button>
+    <button class="h-cancel" type="button" (click)="cancelLineTrack()">Batal</button>
+  </div>
+  <div class="draw-hint" *ngIf="!lineTrack && drawType && drawType !== 'Point'">
+    <span>{{ manualDrawHintLabel }}</span>
+    <button class="h-done" type="button" (click)="finishDraw()">Selesai</button>
+    <button class="h-cancel" type="button" (click)="cancelDraw()">Batal</button>
+  </div>
+
+  <div class="countdown-ov" *ngIf="countdown != null">
+    <div class="cd-ring"><span class="cd-num">{{ countdown }}</span></div>
+    <div class="cd-cap">Berdiri tepat di titik yang ingin direkam. Koordinat diambil saat hitungan mencapai 0.</div>
+    <button class="cd-cancel" type="button" (click)="cancelTrackPoint()">Batalkan</button>
+  </div>
+
   <div class="map-ctrls">
     <button class="map-ctrl-btn" type="button" title="Peta dasar" aria-label="Pilih peta dasar" (click)="toggleBmPop($event)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>
