@@ -1,4 +1,89 @@
+// Ports dashboard/index.html's `.shell`/`.rail-fab`/`.main` (no topbar — see
+// the component's own doc comment for why this diverges from the shared
+// `<dgt-app-shell>` data-manager still uses).
 :host {
   display: block;
   min-height: 100vh;
+}
+
+.shell {
+  min-height: 100vh;
+  position: relative;
+}
+
+.main {
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--space-6, 1.5rem) var(--space-6, 1.5rem) 3rem;
+}
+
+// ---------- rail-fab (sidebar toggle) ----------
+// The only persistent chrome in this module (no header bar at all) — reveals
+// the collapsed-by-default rail on desktop, or opens the mobile off-canvas
+// drawer, from the same one button.
+.rail-fab {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1031; // above the rail's own z-index (1030) on mobile, so it's never covered by the open drawer
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  box-shadow: 0 4px 14px -6px rgba(15, 25, 34, 0.25);
+  transition: left var(--duration-fast, 120ms) var(--ease-standard), opacity var(--duration-fast, 120ms) var(--ease-standard),
+    transform var(--duration-fast, 120ms) var(--ease-standard);
+
+  &:hover {
+    border-color: var(--primary-line);
+    color: var(--primary);
+  }
+}
+
+// While the rail is collapsed (the default state), don't sit permanently on
+// top of the page's own toolbar — reveal only on hover near the top-left
+// corner instead, via a bigger invisible hit-region than the button itself.
+.rail-fab.hidden-until-hover {
+  opacity: 0;
+  transform: translateX(-8px);
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: -14px;
+    width: 60px;
+    height: 60px;
+    pointer-events: auto;
+  }
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+}
+
+// Once the rail is expanded on desktop, nudge the fab clear of the rail's
+// own header instead of sitting on top of it.
+.rail-fab.shifted {
+  left: 246px;
+}
+
+// Touch has no hover to reveal it with — keep it always visible/tappable on
+// mobile regardless of collapsed state.
+@media (max-width: 760px) {
+  .rail-fab.hidden-until-hover {
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
 }

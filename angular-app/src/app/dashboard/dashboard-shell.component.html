@@ -1,3 +1,28 @@
-<dgt-app-shell [navItems]="navItems" [activeId]="activeId" brand="DGT Dashboard" (select)="onSelect($event)">
-  <router-outlet></router-outlet>
-</dgt-app-shell>
+<div class="shell d-flex">
+  <dgt-rail-nav
+    [items]="navItems"
+    [activeId]="activeId"
+    [collapsed]="!isNarrow && railCollapsed"
+    [open]="isNarrow && railOpen"
+    logoSrc="assets/logo-emblem.png"
+    logoAlt="Lambang Kementerian Transmigrasi"
+    backLabel="Kembali ke DGT"
+    groupLabel="Modul Eksekutif"
+    (select)="onSelect($event)"
+    (closeMobile)="railOpen = false">
+  </dgt-rail-nav>
+
+  <button
+    type="button"
+    class="rail-fab"
+    [class.hidden-until-hover]="!isNarrow && railCollapsed"
+    [class.shifted]="!isNarrow && !railCollapsed"
+    aria-label="Buka/tutup menu modul"
+    (click)="toggleRail()">
+    &#9776;
+  </button>
+
+  <main class="main flex-grow-1">
+    <router-outlet></router-outlet>
+  </main>
+</div>

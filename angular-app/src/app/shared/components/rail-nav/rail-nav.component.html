@@ -3,13 +3,14 @@
 
   <nav class="rail" [class.collapsed]="collapsed" [class.open]="open">
     <div class="rail-head">
-      <a class="rail-back-link" routerLink="/" [attr.aria-label]="backLabel">
-        <span class="rail-logo">DGT</span>
+      <a class="rail-back-link" routerLink="/" [title]="backLabel" [attr.aria-label]="backLabel">
+        <img class="rail-logo" *ngIf="logoSrc" [src]="logoSrc" [alt]="logoAlt" />
+        <span class="rail-logo-text" *ngIf="!logoSrc">DGT</span>
       </a>
     </div>
 
     <div class="rail-body">
-      <span class="rail-group-label">Modul</span>
+      <span class="rail-group-label">{{ groupLabel }}</span>
       <button
         *ngFor="let item of items"
         type="button"

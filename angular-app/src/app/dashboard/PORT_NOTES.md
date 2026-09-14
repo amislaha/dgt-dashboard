@@ -6,12 +6,34 @@ Everything below lives under `src/app/dashboard/`.
 
 ## What's implemented
 
-- **Shell**: `DashboardShellComponent` wraps `<dgt-app-shell>` (rail + topbar,
-  already built in `src/app/shell`) around a `<router-outlet>`. `activeId` is
-  derived from the deepest activated child route's `data.navId`, updated on
-  every `NavigationEnd`. The 8 `NavItem`s (id/label/sub) are copied verbatim
-  from the original `MODULES` array, in the same order (Geospasial first —
-  it's the landing module, `state.tab` defaults to it in the source).
+- **Shell**: `DashboardShellComponent` now composes its own bespoke shell
+  (`dgt-rail-nav` + one floating `.rail-fab` toggle + `<router-outlet>`)
+  instead of the shared `<dgt-app-shell>`/`<dgt-topbar>` (still used by
+  data-manager, unchanged). The current dashboard/index.html has no topbar
+  at all ("No header bar in this app at all (removed by request)") — just
+  `<nav class="rail collapsed">` + one persistent floating hamburger button
+  that both reveals the collapsed-by-default desktop rail (hover near the
+  top-left corner) and drives the mobile off-canvas drawer, ported here as
+  `.rail-fab`/`toggleRail()`. `activeId` is derived from the deepest
+  activated child route's `data.navId`, updated on every `NavigationEnd`.
+  The 8 `NavItem`s (id/label/sub/**icon**) are copied verbatim from the
+  original `MODULES` array, in the same order (Geospasial first — it's the
+  landing module, `state.tab` defaults to it in the source) — the per-module
+  icons (`ICON_PATHS`/`railIcon()`) are newly ported too, as
+  `config/module-icons.ts`; the rail previously rendered with no icons at
+  all, unlike data-manager's own rail (which already had its equivalent,
+  `ENTITY_ICON_PATHS`/`entityIconSvg()`).
+- **`RailNavComponent`** (`src/app/shared/components/rail-nav/`, shared with
+  data-manager): was styled with the design-system's dark `--sidebar` theme,
+  which doesn't match either original tool — both `dashboard/index.html`'s
+  and `data-manager/index.html`'s own `.rail` are light panels. Restyled to
+  match (`var(--card)`/`var(--text-dim)`, a `var(--primary)` left-accent bar
+  on the active item, matching dashboard's own `.rail-item::before`). Also
+  gained `logoSrc`/`logoAlt` inputs for an image rail-head logo (dashboard's
+  `assets/logo-emblem.png`; data-manager keeps its plain text mark, since
+  its own emblem lives in its topbar instead) and a `groupLabel` input
+  (dashboard passes "Modul Eksekutif", matching the source; was hardcoded to
+  the generic "Modul" for both consumers before).
 - **Routing** (`dashboard-routing.module.ts`): one child route per module
   under the shell, `''` redirects to `geospasial`.
 - **`DashboardDataService`**: TypeScript interfaces (`Kawasan`, `Province`,
