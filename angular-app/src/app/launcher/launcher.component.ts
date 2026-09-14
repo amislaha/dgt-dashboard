@@ -10,8 +10,8 @@ interface LauncherCard {
   num: string;
   route: string;
   accent: 'primary' | 'series2' | 'gold' | 'geo';
-  /** true for sibling static sites outside this Angular app (gis-dgt/, geomapping/) —
-   *  rendered as a plain navigation, not routed through the Angular Router. */
+  /** true for sibling static sites outside this Angular app (gis-dgt/) — rendered as a plain
+   *  navigation, not routed through the Angular Router. */
   external?: boolean;
 }
 

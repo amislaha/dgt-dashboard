@@ -5,15 +5,16 @@ name: Deploy Angular app to Pages
 # master branch, path "/" — see CLAUDE.md "Hosting / visibility"). This
 # deliberately does NOT switch the repo's Pages source to Actions-based
 # deployment: that would mean Pages serves ONLY what this workflow uploads,
-# which would break geomapping/, gis-dgt/, design-system/, and legacy-static/
-# — all still reachable today by Pages serving the whole branch. Committing
-# the build output back to master keeps those working untouched, at the
-# cost of the (known, deliberate) anti-pattern of build output living in
-# source control.
+# which would break gis-dgt/, design-system/, and legacy-static/ — all still
+# reachable today by Pages serving the whole branch. Committing the build
+# output back to master keeps those working untouched, at the cost of the
+# (known, deliberate) anti-pattern of build output living in source control.
 #
-# The old static launcher/dashboard/data-manager were moved to
+# The old static launcher/dashboard/data-manager/geomapping were moved to
 # legacy-static/ specifically so this workflow's output (index.html + hashed
-# bundle files) can occupy the repo root without colliding with them.
+# bundle files) can occupy their old repo-root paths without colliding with
+# them — geomapping/ joined the other three once its own Angular port
+# (angular-app/src/app/geomapping/) needed the /geomapping path.
 
 on:
   push:
@@ -79,7 +80,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- . ':!legacy-static' ':!geomapping' ':!gis-dgt' ':!design-system' ':!angular-app' ':!DGT.md' ':!CLAUDE.md' ':!.github'
+          # geomapping/ moved under legacy-static/ (same reason dashboard/data-manager did
+          # earlier: freeing up its old repo-root path for this workflow's own Angular build
+          # output) — ':!legacy-static' alone already covers it, the standalone ':!geomapping'
+          # entry is gone since it'd now match nothing at repo root.
+          git add -A -- . ':!legacy-static' ':!gis-dgt' ':!design-system' ':!angular-app' ':!DGT.md' ':!CLAUDE.md' ':!.github'
           if git diff --cached --quiet; then
             echo "No build-output changes to deploy."
             exit 0
