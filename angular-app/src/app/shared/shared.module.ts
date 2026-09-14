@@ -17,7 +17,7 @@ import { DonutChartComponent } from './components/charts/donut-chart/donut-chart
 import { GaugeChartComponent } from './components/charts/gauge-chart/gauge-chart.component';
 import { SafeHtmlPipe } from './pipes/safe-html.pipe';
 
-const COMPONENTS = [
+export const COMPONENTS = [
   RailNavComponent,
   TopbarComponent,
   PageHeadComponent,

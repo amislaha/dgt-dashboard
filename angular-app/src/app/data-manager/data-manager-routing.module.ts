@@ -14,7 +14,7 @@ function entityRoute(path: string, entityKey: EntityKey) {
  * Default route redirects to `wpt`, the top of the WPT → SKP → SP hierarchy,
  * per the port spec.
  */
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: '',
     component: DataManagerShellComponent,

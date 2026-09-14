@@ -16,7 +16,7 @@ import { IntelijenComponent } from './components/intelijen/intelijen.component';
  * defaulting to `"geospasial"` in dashboard/index.html (it's the landing
  * module — see CLAUDE.md "Geospasial module layout").
  */
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: '',
     component: DashboardShellComponent,
