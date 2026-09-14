@@ -1,0 +1,81 @@
+name: Deploy Angular app to Pages
+
+# Builds angular-app/ (Angular 8) and commits the compiled output to the
+# repo root, which is what GitHub Pages already serves as-is (source =
+# master branch, path "/" — see CLAUDE.md "Hosting / visibility"). This
+# deliberately does NOT switch the repo's Pages source to Actions-based
+# deployment: that would mean Pages serves ONLY what this workflow uploads,
+# which would break geomapping/, gis-dgt/, design-system/, and legacy-static/
+# — all still reachable today by Pages serving the whole branch. Committing
+# the build output back to master keeps those working untouched, at the
+# cost of the (known, deliberate) anti-pattern of build output living in
+# source control.
+#
+# The old static launcher/dashboard/data-manager were moved to
+# legacy-static/ specifically so this workflow's output (index.html + hashed
+# bundle files) can occupy the repo root without colliding with them.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'angular-app/**'
+      - '.github/workflows/deploy-angular.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-angular
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - uses: actions/checkout@v4
+
+      # Angular 8's toolchain targets this era of Node. package.json uses
+      # dart-sass ("sass", pure JS) instead of node-sass specifically so this
+      # step doesn't need a native compiler toolchain to match — see
+      # angular-app/package.json.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '12.22.12'
+
+      - name: Install dependencies
+        working-directory: angular-app
+        # --ignore-scripts skips devDependency postinstall steps (notably
+        # protractor's webdriver-manager download) that this build doesn't
+        # need and that can be flaky/slow in CI.
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Build Angular app
+        working-directory: angular-app
+        run: npx ng build --configuration production --base-href /dgt-dashboard/
+
+      - name: Stage build output at repo root
+        run: |
+          set -e
+          SRC="angular-app/dist/dgt-angular"
+          cp -f "$SRC"/index.html ./index.html
+          # GitHub Pages has no server-side rewrites; serving the SPA's own
+          # index.html as 404.html is the standard fallback so a direct/deep
+          # link (e.g. /dgt-dashboard/dashboard/geospasial) still loads the
+          # app and lets Angular Router take over client-side.
+          cp -f "$SRC"/index.html ./404.html
+          find "$SRC" -maxdepth 1 -type f ! -name index.html -exec cp -f {} . \;
+
+      - name: Commit and push build output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- . ':!legacy-static' ':!geomapping' ':!gis-dgt' ':!design-system' ':!angular-app' ':!DGT.md' ':!CLAUDE.md' ':!.github'
+          if git diff --cached --quiet; then
+            echo "No build-output changes to deploy."
+            exit 0
+          fi
+          git commit -m "Deploy Angular app build output to Pages [skip ci]"
+          git push

@@ -1,13 +1,29 @@
 # DGT — Angular 8 port
 
 This is an Angular 8 + TypeScript + Bootstrap 4 rebuild of the three static
-tools in the parent repo (`../index.html` launcher, `../dashboard/`,
-`../data-manager/`). It's a real, structurally faithful port — not a spec
-document — built as a single Angular CLI workspace with lazy-loaded feature
-modules, an Angular Router replacing the original's manual DOM-swap
-"routing", and a shared component library (`src/app/shared/`) standing in
-for the copy-pasted CSS classes (`.panel`, `.badge`, `.table-wrap`, `.rail`,
-etc.) the original hand-rolled independently in each tool.
+tools originally at the parent repo's root (`index.html` launcher,
+`dashboard/`, `data-manager/` — now archived under `../legacy-static/`,
+see below). It's a real, structurally faithful port — not a spec document —
+built as a single Angular CLI workspace with lazy-loaded feature modules, an
+Angular Router replacing the original's manual DOM-swap "routing", and a
+shared component library (`src/app/shared/`) standing in for the
+copy-pasted CSS classes (`.panel`, `.badge`, `.table-wrap`, `.rail`, etc.)
+the original hand-rolled independently in each tool.
+
+## This is now the live site
+
+`.github/workflows/deploy-angular.yml` (repo root) builds this app on Node
+12 (`ng build --configuration production --base-href /dgt-dashboard/`) on
+every push touching `angular-app/**`, then commits the compiled output
+straight into the repo's `master` root — which is what GitHub Pages already
+serves as-is, so this becomes **https://amislaha.github.io/dgt-dashboard/**
+once that workflow succeeds. See root `CLAUDE.md`'s "Hosting / visibility"
+section for the full mechanics (why a bot-commit instead of switching Pages
+to Actions-native deployment, the `404.html`-as-`index.html` SPA-routing
+fallback, etc.) and check `gh run list --workflow=deploy-angular.yml` for
+build status — **this workspace has never had a real `npm install`/`ng
+build` run against it before that workflow** (see the Node-version caveat
+below), so its first CI run is also its first real compile check.
 
 ## ⚠️ Before you `npm install`
 
@@ -58,11 +74,11 @@ src/
 │  ├─ shell/            AppShellComponent — rail+topbar+content chrome,
 │  │                    reused by both feature modules below
 │  ├─ launcher/         root route — cosmetic login gate + card grid
-│  │                    (ports ../index.html; NOT real auth, see
-│  │                    AuthGateService's doc comment)
-│  ├─ dashboard/        lazy-loaded — ports ../dashboard/index.html
+│  │                    (ports ../legacy-static/index.html; NOT real auth,
+│  │                    see AuthGateService's doc comment)
+│  ├─ dashboard/        lazy-loaded — ports ../legacy-static/dashboard/index.html
 │  │                    (see src/app/dashboard/PORT_NOTES.md)
-│  └─ data-manager/     lazy-loaded — ports ../data-manager/index.html
+│  └─ data-manager/     lazy-loaded — ports ../legacy-static/data-manager/index.html
 │                       (see src/app/data-manager/PORT_NOTES.md)
 ├─ styles/
 │  ├─ _tokens.scss              design tokens, ported from
@@ -78,10 +94,11 @@ src/
 
 The original repo has **three divergent `:root` token sets** (root
 launcher, dashboard, data-manager each hand-roll slightly different values
-under the same variable names — see root `CLAUDE.md`). This port treats
-`../design-system/tokens/*.css` as the single source of truth and builds
-one token set from it (`src/styles/_tokens.scss`); the per-tool visual
-drift in the original is not preserved.
+under the same variable names — see root `CLAUDE.md`, and now
+`../legacy-static/*`). This port treats `../design-system/tokens/*.css` as
+the single source of truth and builds one token set from it
+(`src/styles/_tokens.scss`); the per-tool visual drift in the original is
+not preserved.
 
 The dashboard and data-manager are kept as **two separate lazy-loaded
 feature modules**, matching the fact that they're independent tools at
