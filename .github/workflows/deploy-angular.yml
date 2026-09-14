@@ -67,7 +67,13 @@ jobs:
           # link (e.g. /dgt-dashboard/dashboard/geospasial) still loads the
           # app and lets Angular Router take over client-side.
           cp -f "$SRC"/index.html ./404.html
-          find "$SRC" -maxdepth 1 -type f ! -name index.html -exec cp -f {} . \;
+          # -type f (rather than a plain -maxdepth 1) previously copied only
+          # top-level *files* (the hashed js/css bundles) and silently
+          # dropped subdirectories — so ng build's unhashed `assets/` copy
+          # (anything under angular-app/src/assets, e.g. logo-emblem.png)
+          # never made it to the deployed root and 404'd. -mindepth 1 avoids
+          # re-copying $SRC onto itself; -r picks up directories too.
+          find "$SRC" -mindepth 1 -maxdepth 1 ! -name index.html -exec cp -rf {} . \;
 
       - name: Commit and push build output
         run: |
