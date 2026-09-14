@@ -2,8 +2,12 @@
   <div class="card-body py-3 px-3">
     <div class="k-label text-muted">{{ label }}</div>
     <div class="k-value font-weight-bold">{{ value }}</div>
-    <div class="k-delta" *ngIf="delta" [class.text-danger]="alert || dir === 'down'" [class.text-success]="!alert && dir === 'up'">
-      <span aria-hidden="true">{{ (alert || dir === 'down') ? '▼' : '▲' }}</span>
+    <div
+      class="k-delta"
+      *ngIf="delta"
+      [class.text-danger]="alert || dir === 'down'"
+      [class.text-success]="!alert && dir === 'up'"
+      [class.text-muted]="!alert && dir === 'flat'">
       {{ delta }}
     </div>
   </div>

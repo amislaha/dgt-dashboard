@@ -1,10 +1,17 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { AiMockService } from '../../services/ai-mock.service';
 
 export interface ChatMessage {
   role: 'ai' | 'user';
   text: string;
 }
+
+/** The two chat UIs open with different welcome text in the source — `#geoChatLog`'s first
+ *  message ("Tanya cepat...") vs. `#chatLog`'s ("Saya dapat merangkum..."). */
+const WELCOME: { [key in 'compact' | 'full']: string } = {
+  compact: 'Selamat datang. Tanya cepat seputar kawasan, risiko, atau anggaran.',
+  full: 'Selamat datang. Saya dapat merangkum status kawasan, risiko, dan anggaran dari data pada dashboard ini.'
+};
 
 /**
  * Shared "Asisten AI" chat UI, used by BOTH the Geospasial embedded mini chat
@@ -20,18 +27,20 @@ export interface ChatMessage {
   templateUrl: './chat-panel.component.html',
   styleUrls: ['./chat-panel.component.scss']
 })
-export class ChatPanelComponent {
+export class ChatPanelComponent implements OnInit {
   @Input() mode: 'compact' | 'full' = 'compact';
 
   readonly suggestions = ['kawasan mandiri', 'risiko tinggi', 'realisasi anggaran'];
 
-  chatLog: ChatMessage[] = [
-    { role: 'ai', text: 'Selamat datang. Saya dapat merangkum status kawasan, risiko, dan anggaran dari data pada dashboard ini.' }
-  ];
+  chatLog: ChatMessage[] = [];
 
   draft = '';
 
   constructor(private readonly ai: AiMockService) {}
+
+  ngOnInit(): void {
+    this.chatLog = [{ role: 'ai', text: WELCOME[this.mode] }];
+  }
 
   send(text: string): void {
     if (!text || !text.trim()) {

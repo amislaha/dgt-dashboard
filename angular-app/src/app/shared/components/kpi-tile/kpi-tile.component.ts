@@ -12,9 +12,13 @@ import { Component, Input } from '@angular/core';
 export class KpiTileComponent {
   @Input() label = '';
   @Input() value = '';
-  /** Formatted delta text, e.g. "+3.2%". Omit to hide the trend row. */
+  /** Formatted delta text, e.g. "+3.2%" — verbatim from the source's own `kpiTile()` calls,
+   *  which do NOT auto-render a trend arrow: some delta strings embed one ("▲ 3.2% ..."), most
+   *  don't. `dir` only ever controls the text colour here, matching the original's
+   *  `.k-delta.up`/`.down`/`.flat` CSS classes — don't add an arrow glyph unless the source's own
+   *  call site has one baked into its delta string. Omit `delta` to hide the trend row. */
   @Input() delta?: string;
-  @Input() dir: 'up' | 'down' = 'up';
+  @Input() dir: 'up' | 'down' | 'flat' = 'flat';
   /** true flips the trend colour to critical even on an "up" arrow — used by
    *  the "Peringatan Aktif" tile when EWS alerts are active. */
   @Input() alert = false;

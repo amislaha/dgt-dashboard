@@ -49,6 +49,19 @@ Everything below lives under `src/app/dashboard/`.
   (full), each with its own local `chatLog`, both calling the same
   `AiMockService` — so by construction the two chat UIs can't drift, matching
   the CLAUDE.md callout that the original's duplication here is intentional.
+  Its opening message is now mode-dependent (`WELCOME.compact`/`.full`) — it
+  previously hardcoded Intelijen's own wording ("Saya dapat merangkum...")
+  for both, so the Geospasial mini chat was opening with the wrong greeting
+  instead of the source's `#geoChatLog`-specific "Tanya cepat...".
+- **`KpiTileComponent`**: `dir` now also accepts `'flat'` (no colour, ports
+  `.k-delta.flat`) alongside `'up'`/`'down'` — previously binary. It also no
+  longer auto-renders a trend arrow: the source's own `kpiTile()` never does
+  either, so a `dir="up"` tile is plain black text unless the *caller's own
+  delta string* happens to have "▲ " baked in (about half of them do, half
+  don't — verified against every `kpiTile(...)` call site). The 3 consumers
+  (Profil, Monitoring, Intelijen) were previously getting this wrong in both
+  directions — a `dir` that should've been `flat`, or a missing/extra arrow
+  glyph — fixed per call site to match the source exactly.
 - **`KawasanMapComponent`**: real Leaflet + OSM tile layer, one `L.polygon`
   area per kawasan (`kawasanAreaLatLngs()`, not a point marker — see the
   Geospasial section below) colored by `STAGE_COLOR_HEX[tahap]`, popup with
