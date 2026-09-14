@@ -5,9 +5,10 @@
 // variable names; this file reconciles them back to the design-system's
 // values, which is the one this port treats as authoritative.
 //
-// Exposed BOTH as Sass variables (consumed by _bootstrap-overrides.scss at
-// compile time) and as CSS custom properties on :root (consumed directly by
-// component .scss files, matching the *.prompt.md component specs verbatim).
+// Pure Sass variables ONLY — no CSS output — so this can be @imported by
+// _bootstrap-overrides.scss (compiled into Bootstrap's own source) without
+// emitting anything twice. The CSS custom-property bridge consumed directly
+// by component .scss files lives in _tokens-bridge.scss instead.
 // ============================================================================
 
 // --- Colour ramps (design-system/tokens/colors.css) ------------------------
@@ -95,86 +96,3 @@ $shadow-lg: 0 12px 24px -6px rgba(15, 26, 22, .12), 0 4px 8px -4px rgba(15, 26, 
 // --- Motion (design-system/tokens/motion.css) --------------------------------
 $duration-fast: 120ms; $duration-base: 180ms; $duration-slow: 280ms;
 $ease-standard: cubic-bezier(.2, 0, 0, 1);
-
-// ============================================================================
-// CSS custom-property bridge — so component templates/styles can reference
-// the *exact* token names used in design-system/*.prompt.md and in the
-// original dashboard/data-manager CSS, without re-deriving them per file.
-// ============================================================================
-:root {
-  // Semantic surface colours
-  --background: #{$color-background};
-  --foreground: #{$color-foreground};
-  --card: #{$color-background};
-  --primary: #{$color-primary};
-  --primary-soft: #{rgba($color-primary, .16)};
-  --primary-line: #{rgba($color-primary, .45)};
-  --secondary: #{$color-secondary};
-  --muted: #{$color-muted};
-  --muted-foreground: #{$color-muted-foreground};
-  --accent: #{$color-accent};
-  --destructive: #{$color-destructive};
-  --border: #{$color-border};
-  --border-soft: #{rgba($color-foreground, .08)};
-  --ring: #{$color-ring};
-
-  --text: #{$color-foreground};
-  --text-dim: #{$abu-700};
-  --text-faint: #{$abu-500};
-
-  --good: #{$color-success};
-  --good-soft: #{rgba($color-success, .16)};
-  --warn: #{$color-warning};
-  --warn-soft: #{rgba($color-warning, .16)};
-  --critical: #{$color-destructive};
-  --critical-soft: #{rgba($color-destructive, .16)};
-  --series-2: #{$color-info};
-  --series-2-soft: #{rgba($color-info, .18)};
-
-  --chart-1: #{$chart-1}; --chart-2: #{$chart-2}; --chart-3: #{$chart-3};
-  --chart-4: #{$chart-4}; --chart-5: #{$chart-5};
-
-  --sidebar: #{$sidebar-bg};
-  --sidebar-foreground: #{$sidebar-fg};
-  --sidebar-primary: #{$sidebar-primary};
-  --sidebar-accent: #{$sidebar-accent};
-  --sidebar-border: #{$sidebar-border};
-
-  // Type
-  --font-sans: #{$font-sans};
-  --font-mono: #{$font-mono};
-
-  // Spacing / geometry
-  --space-1: #{$space-1}; --space-2: #{$space-2}; --space-3: #{$space-3};
-  --space-4: #{$space-4}; --space-6: #{$space-6}; --space-8: #{$space-8};
-  --control-h-sm: #{$control-h-sm}; --control-h: #{$control-h}; --control-h-lg: #{$control-h-lg};
-  --sidebar-w: #{$sidebar-w}; --sidebar-w-collapsed: #{$sidebar-w-collapsed};
-  --topbar-h: #{$topbar-h}; --page-px: #{$page-px};
-
-  --radius: #{$radius-lg};
-  --radius-sm: #{$radius-sm};
-  --radius-lg: #{$radius-xl};
-  --radius-full: #{$radius-full};
-
-  --shadow-xs: #{$shadow-xs};
-  --shadow-sm: #{$shadow-sm};
-  --shadow-md: #{$shadow-md};
-  --shadow-lg: #{$shadow-lg};
-
-  --duration-fast: #{$duration-fast};
-  --duration-base: #{$duration-base};
-  --ease-standard: #{$ease-standard};
-}
-
-// design-system/tokens/colors.css .dark{} block — not wired up as a theme
-// switch anywhere yet (the original prototype is deliberately single-theme,
-// see CLAUDE.md "Theming"); kept here as an opt-in class so a future dark
-// mode doesn't require re-deriving these values.
-.dark {
-  --background: #081420; --foreground: #e8eef3; --card: #0e1f2e;
-  --primary: #{$teal-300}; --secondary: #182c3c; --muted: #182c3c;
-  --muted-foreground: #97a7b2; --accent: #12293a; --destructive: #e4566a;
-  --success: #4d9d7e; --warning: #{$emas-300}; --info: #{$teal-300};
-  --border: rgba(255, 255, 255, .12); --ring: #{$teal-300};
-  --sidebar: #050f19; --sidebar-foreground: #c2d3de;
-}

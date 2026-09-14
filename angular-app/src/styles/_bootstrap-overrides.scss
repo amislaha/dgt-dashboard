@@ -1,15 +1,16 @@
 // ============================================================================
 // Bootstrap 4 Sass variable overrides, sourced from _tokens.scss (which in
-// turn mirrors design-system/tokens/*.css). Import this file BEFORE
-// "~bootstrap/scss/bootstrap" so these variables take effect.
+// turn mirrors design-system/tokens/*.css). Imported from styles.scss BEFORE
+// "~bootstrap/scss/bootstrap" so these variables take effect on every plain
+// Bootstrap class (.btn-primary, .card, .navbar, .table, .form-control,
+// etc.) instead of Bootstrap's own default blue/gray theme — see
+// styles.scss for the actual import order.
 //
-// This app links the compiled node_modules/bootstrap/dist/css/bootstrap.min.css
-// in angular.json for simplicity/build-speed (see angular.json "styles").
-// If your team prefers a fully token-driven Bootstrap build instead of the
-// prebuilt CSS + override layer, swap that angular.json entry for a
-// styles.scss that does `@import "~bootstrap/scss/bootstrap";` after this
-// file — every variable below is already named to match Bootstrap 4's own
-// $variable names for that path.
+// (Earlier revision of this app linked the prebuilt
+// node_modules/bootstrap/dist/css/bootstrap.min.css directly in angular.json
+// instead, which meant this file was never actually compiled into anything
+// — every raw Bootstrap class rendered in stock Bootstrap colors. Fixed;
+// see git history if you're wondering why this comment mentions it.)
 // ============================================================================
 
 @import 'tokens';

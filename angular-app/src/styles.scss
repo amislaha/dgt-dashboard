@@ -1,9 +1,19 @@
-// Global styles. Bootstrap's compiled CSS is linked directly in angular.json
-// ("styles" array) for build simplicity; this file supplies the design-token
-// bridge (CSS custom properties) plus small global resets/utilities that sit
-// on top of Bootstrap, mirroring the base rules every original *.index.html
-// tool hand-rolled in its inline <style> block.
-@import 'styles/tokens';
+// Global styles. Bootstrap is compiled from its own Sass source HERE (not
+// linked as prebuilt CSS — see angular.json's "styles" array, which no
+// longer references node_modules/bootstrap/dist/css/*.css) so that
+// _bootstrap-overrides.scss's variable overrides (DGT navy/teal/gold,
+// Plus Jakarta Sans, custom radius/shadow scale) actually take effect on
+// every plain Bootstrap class (.btn-primary, .card, .navbar, .table, etc.)
+// instead of Bootstrap's own default blue/gray theme.
+@import 'styles/bootstrap-overrides';
+@import '~bootstrap/scss/bootstrap';
+
+// Design-token CSS custom-property bridge (see _tokens-bridge.scss) — for
+// component .scss files that reference var(--primary) etc. directly, plus
+// the small global resets/utilities below that sit on top of Bootstrap,
+// mirroring the base rules every original *.index.html tool hand-rolled in
+// its inline <style> block.
+@import 'styles/tokens-bridge';
 
 html, body {
   height: 100%;
