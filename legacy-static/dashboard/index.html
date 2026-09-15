@@ -963,6 +963,27 @@
     { nama: "Perikanan Tambak", nilai: 39 }, { nama: "Rumput Laut", nilai: 28 }
   ];
 
+  var infraKategori = [
+    { nama: "Jalan Poros & Jembatan", capaian: 71 },
+    { nama: "Sarana Ibadah", capaian: 88 },
+    { nama: "Sekolah & PAUD", capaian: 64 },
+    { nama: "Fasilitas Kesehatan", capaian: 57 },
+    { nama: "Air Bersih & Sanitasi", capaian: 49 }
+  ];
+
+  var klCollab = [
+    { kl: "Kementerian PU", program: "Jalan Poros Kawasan", kawasanCount: 6, status: "Berjalan" },
+    { kl: "Kementerian Kesehatan", program: "Puskesmas Pembantu", kawasanCount: 4, status: "Berjalan" },
+    { kl: "Kementerian Pendidikan", program: "Rehabilitasi Sekolah", kawasanCount: 5, status: "Perencanaan" },
+    { kl: "Kementerian Pertanian", program: "Optimalisasi Lahan Sawah", kawasanCount: 3, status: "Berjalan" },
+    { kl: "Kementerian ESDM", program: "Elektrifikasi Desa", kawasanCount: 7, status: "Selesai" }
+  ];
+
+  var asalDaerah = [
+    { asal: "Jawa Tengah", jml: 3120 }, { asal: "Jawa Timur", jml: 2870 },
+    { asal: "Jawa Barat", jml: 2140 }, { asal: "NTB", jml: 1380 }, { asal: "Bali", jml: 690 }
+  ];
+
   /* 17 IKU (Indikator Kinerja Utama) per Renstra Kementerian Transmigrasi — same source ERD as
      data-manager's SEED.iku (kept as a separate illustrative copy here, per this repo's
      one-self-contained-file-per-tool convention; not read from data-manager at runtime). The
@@ -1158,6 +1179,8 @@
   var ICON_PATHS = {
     profil: '<path d="M12 2 L21 7 L12 12 L3 7 Z"/><path d="M3 12 L12 17 L21 12"/><path d="M3 17 L12 22 L21 17"/>',
     geospasial: '<path d="M12 21s7-7.58 7-12a7 7 0 1 0-14 0c0 4.42 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>',
+    demografi: '<circle cx="8.5" cy="8" r="3"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9.3" r="2.3"/><path d="M15 14.2c2.6.3 4.5 2.5 4.5 5.3"/>',
+    infrastruktur: '<rect x="4" y="8" width="7" height="13"/><rect x="13" y="3" width="7" height="18"/><path d="M6.5 11h2M6.5 14h2M6.5 17h2M15.5 6h2M15.5 9h2M15.5 12h2M15.5 15h2"/>',
     monitoring: '<path d="M3 20h18"/><path d="M4 16l5-6 4 3 6-8"/><path d="M15 5h5v5"/>',
     ekonomi: '<ellipse cx="12" cy="6" rx="7" ry="2.4"/><path d="M5 6v5c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4V6"/><path d="M5 11v5c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4v-5"/>',
     analitik: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.7" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
@@ -1171,6 +1194,8 @@
   var MODULES = [
     { id: "geospasial", label: "Geospasial & Legalitas Lahan", sub: "HPL · SHM · Trans Tuntas" },
     { id: "profil", label: "Data Induk & Profil Kawasan", sub: "5T · SKP / KPB" },
+    { id: "demografi", label: "Demografi & Pembauran", sub: "Transmigran · Masyarakat Lokal" },
+    { id: "infrastruktur", label: "Infrastruktur & Kolaborasi K/L", sub: "Trans Gotong Royong" },
     { id: "monitoring", label: "Monitoring Program & Anggaran", sub: "Timeline · Kurva S" },
     { id: "ekonomi", label: "Ekonomi & Investasi Kawasan", sub: "Trans Karya Nusa" },
     { id: "analitik", label: "Analitik, Skoring & EWS", sub: "Prioritas · Peringatan Dini" },
@@ -1381,9 +1406,7 @@
     /* Just the 17 IKU indicators — the 7 STG executive-summary tiles (Kawasan Mandiri, Populasi,
        Indeks 5T, Realisasi Anggaran, Capaian Infrastruktur, Peringatan Aktif) that used to share
        this row were dropped per request, "remove indicator selain IKU"; those metrics still live on
-       their own modules (Profil/Monitoring/etc — "Capaian Infrastruktur" itself no longer has a
-       module at all, the Infrastruktur & Kolaborasi K/L module was removed on a later request).
-       A small, subtle horizontal scrollbar
+       their own modules (Profil/Monitoring/Infrastruktur/etc). A small, subtle horizontal scrollbar
        replaces the old wrap-to-multiple-rows layout — see .stg-strip's scrollbar-* rules — so the
        row stays a single compact line instead of either scrolling with a full-size default
        scrollbar or growing tall across several rows. Each IKU chip's own "i" button still expands
@@ -1994,6 +2017,55 @@
     return wrap;
   }
 
+  /* ---------- render: 03 Demografi ---------- */
+  function renderDemografi() {
+    var wrap = h(
+      pageHead("Transmigran, Masyarakat Lokal & Kependudukan", "Visualisasi persebaran demografi, asal daerah transmigran, dan tingkat pembauran dengan masyarakat lokal.") +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-header"><h2>Asal Daerah Transmigran (Top 5)</h2></div><div id="asalBar"></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2>Indeks Pembauran Sosial</h2><span class="hint">rata-rata nasional</span></div>' +
+        '<div style="display:flex;justify-content:center">' + '</div><div id="pembauranGauge" style="display:flex;justify-content:center"></div>' +
+        '<p class="desc" style="text-align:center;margin-top:0.3rem">Skala 0–100 · berbasis survei interaksi sosial &amp; partisipasi kegiatan bersama</p></div>' +
+      '</div>' +
+      '<div class="panel"><div class="panel-header"><h2>Populasi per Kawasan</h2><span class="hint">jumlah jiwa transmigran terdaftar</span></div><div id="popBar"></div></div>'
+    );
+
+    var asalData = asalDaerah.map(function (a) { return { label: a.asal, value: a.jml, color: "var(--series-2)" }; });
+    qs(wrap, "#asalBar").appendChild(barChart(asalData, { height: 190 }));
+
+    qs(wrap, "#pembauranGauge").appendChild(gauge(67, 100, { label: "/ 100", color: "var(--good)" }));
+
+    var popData = kawasan.map(function (k) { return { label: k.nama.replace(/^SKP |^KPB /, ""), value: k.populasi, color: "var(--primary)" }; });
+    qs(wrap, "#popBar").appendChild(barChart(popData, { height: 200, width: 900 }));
+
+    return wrap;
+  }
+
+  /* ---------- render: 04 Infrastruktur ---------- */
+  function renderInfrastruktur() {
+    var wrap = h(
+      pageHead("Infrastruktur, Sarana Prasarana & Kolaborasi K/L", "Inventarisasi aset fisik kawasan dan pemetaan intervensi program lintas Kementerian/Lembaga — Trans Gotong Royong.") +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-header"><h2>Capaian Infrastruktur per Kategori</h2></div>' +
+        '<div id="infraList"></div></div>' +
+        '<div class="panel"><div class="panel-header"><h2>Kolaborasi Kementerian/Lembaga</h2></div>' +
+        '<div class="table-wrap"><table><thead><tr><th>K/L</th><th>Program</th><th>Kawasan</th><th>Status</th></tr></thead><tbody>' +
+        klCollab.map(function (c) {
+          var statusClass = c.status === "Selesai" ? "mandiri" : c.status === "Berjalan" ? "berkembang" : "tumbuh";
+          return '<tr><td>' + c.kl + '</td><td>' + c.program + '</td><td class="mono">' + c.kawasanCount + '</td><td><span class="badge ' + statusClass + '">' + c.status + '</span></td></tr>';
+        }).join("") + '</tbody></table></div></div>' +
+      '</div>'
+    );
+
+    qs(wrap, "#infraList").innerHTML = infraKategori.map(function (i) {
+      return '<div style="margin-bottom:0.7rem"><div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:0.3rem">' +
+        '<span>' + i.nama + '</span><span class="mono">' + i.capaian + '%</span></div>' +
+        '<div class="bar-track" style="width:100%;height:7px"><div class="bar-fill" style="width:' + i.capaian + '%"></div></div></div>';
+    }).join("");
+
+    return wrap;
+  }
+
   /* ---------- render: 05 Monitoring ---------- */
   function renderMonitoring() {
     var wrap = h(
@@ -2150,8 +2222,8 @@
   }
 
   var RENDERERS = {
-    profil: renderProfil, geospasial: renderGeospasial,
-    monitoring: renderMonitoring, ekonomi: renderEkonomi,
+    profil: renderProfil, geospasial: renderGeospasial, demografi: renderDemografi,
+    infrastruktur: renderInfrastruktur, monitoring: renderMonitoring, ekonomi: renderEkonomi,
     analitik: renderAnalitik, intelijen: renderIntelijen
   };
 

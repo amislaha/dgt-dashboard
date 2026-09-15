@@ -16,7 +16,7 @@ Everything below lives under `src/app/dashboard/`.
   top-left corner) and drives the mobile off-canvas drawer, ported here as
   `.rail-fab`/`toggleRail()`. `activeId` is derived from the deepest
   activated child route's `data.navId`, updated on every `NavigationEnd`.
-  The `NavItem`s (id/label/sub/**icon**) are copied verbatim from the
+  The 8 `NavItem`s (id/label/sub/**icon**) are copied verbatim from the
   original `MODULES` array, in the same order (Geospasial first — it's the
   landing module, `state.tab` defaults to it in the source) — the per-module
   icons (`ICON_PATHS`/`railIcon()`) are newly ported too, as
@@ -37,7 +37,8 @@ Everything below lives under `src/app/dashboard/`.
 - **Routing** (`dashboard-routing.module.ts`): one child route per module
   under the shell, `''` redirects to `geospasial`.
 - **`DashboardDataService`**: TypeScript interfaces (`Kawasan`, `Province`,
-  `SCurve`, `Komoditas`, `IkuItem`, `NationalKPI`) plus the ported mock arrays, exposed via plain getter
+  `SCurve`, `Komoditas`, `InfraKategori`, `KlCollab`, `AsalDaerah`, `IkuItem`,
+  `NationalKPI`) plus the ported mock arrays, exposed via plain getter
   methods (no NgRx, per the spec — this data never changes at runtime except
   EWS ack state, which lives in its own service). All values are
   fabricated/illustrative, same as the source — not real ministry statistics.
@@ -105,6 +106,9 @@ Everything below lives under `src/app/dashboard/`.
   - `geospasial` — see "Geospasial" below, the flagship module.
   - `profil` — KPI grid, sortable kawasan table (`dgt-data-table`), detail
     panel, stage-distribution donut.
+  - `demografi` — asal-daerah bar chart, pembauran gauge, populasi-per-kawasan
+    bar chart.
+  - `infrastruktur` — infra-category progress bars, K/L collaboration table.
   - `monitoring` — KPI grid, `dgt-dual-line-chart` Kurva S, anggaran bar chart.
   - `ekonomi` — komoditas bar chart, hilirisasi stepper, investment table
     (last two ported as the original's own hard-coded static rows).
@@ -112,20 +116,6 @@ Everything below lives under `src/app/dashboard/`.
     `EwsService`, see above).
   - `intelijen` — KPI grid, disabled "Laporan Strategis" action buttons
     (ported as `disabled`, matching the original), full `ChatPanelComponent`.
-
-**Removed on request**: the `demografi` (Demografi & Pembauran) and
-`infrastruktur` (Infrastruktur & Kolaborasi K/L) modules — DGT.md's original
-spec had 8 modules, this port now has 6. Removed: the two `components/`
-folders, their nav-rail entries and routes, their `config/module-icons.ts`
-icon paths, and their dedicated `DashboardDataService` backing data
-(`InfraKategori`/`KlCollab`/`AsalDaerah` interfaces + `getInfraKategori()`/
-`getKlCollab()`/`getAsalDaerah()`, none of which anything else read). Also
-removed from `legacy-static/dashboard/index.html` (its `MODULES`/
-`ICON_PATHS`/`RENDERERS` entries, `renderDemografi()`/`renderInfrastruktur()`,
-and the now-unused `infraKategori`/`klCollab`/`asalDaerah` data arrays) so
-the two stay in sync per root `CLAUDE.md`'s "still the file to edit for
-anything dashboard-behavior-related" note — this wasn't left as a
-port-vs-source drift.
 
 ## Geospasial — what's in, what's deliberately different
 

@@ -4,6 +4,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { DashboardShellComponent } from './dashboard-shell.component';
 import { GeospasialComponent } from './components/geospasial/geospasial.component';
 import { ProfilComponent } from './components/profil/profil.component';
+import { DemografiComponent } from './components/demografi/demografi.component';
+import { InfrastrukturComponent } from './components/infrastruktur/infrastruktur.component';
 import { MonitoringComponent } from './components/monitoring/monitoring.component';
 import { EkonomiComponent } from './components/ekonomi/ekonomi.component';
 import { AnalitikComponent } from './components/analitik/analitik.component';
@@ -22,6 +24,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'geospasial', pathMatch: 'full' },
       { path: 'geospasial', component: GeospasialComponent, data: { navId: 'geospasial' } },
       { path: 'profil', component: ProfilComponent, data: { navId: 'profil' } },
+      { path: 'demografi', component: DemografiComponent, data: { navId: 'demografi' } },
+      { path: 'infrastruktur', component: InfrastrukturComponent, data: { navId: 'infrastruktur' } },
       { path: 'monitoring', component: MonitoringComponent, data: { navId: 'monitoring' } },
       { path: 'ekonomi', component: EkonomiComponent, data: { navId: 'ekonomi' } },
       { path: 'analitik', component: AnalitikComponent, data: { navId: 'analitik' } },
