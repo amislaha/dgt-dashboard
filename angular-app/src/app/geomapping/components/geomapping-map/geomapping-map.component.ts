@@ -330,7 +330,11 @@ export class GeomappingMapComponent implements AfterViewInit, OnChanges, OnDestr
         icon: L.divIcon({ className: 'vhandle', iconSize: [16, 16] })
       });
       m.on('drag', ev => this.editService.setLiveLatLngs([toLL((ev.target as L.Marker).getLatLng())]));
-      m.on('dragend', ev => this.editService.commitVertices([toLL((ev.target as L.Marker).getLatLng())]));
+      m.on('dragend', ev => {
+        const ll = [toLL((ev.target as L.Marker).getLatLng())];
+        // Deferred to a fresh task — see renderHandles()'s dragend handler doc comment.
+        setTimeout(() => this.editService.commitVertices(ll), 0);
+      });
       m.addTo(this.map!);
       this.editLayer = m;
     } else if (e.type === 'LineString') {
@@ -383,7 +387,20 @@ export class GeomappingMapComponent implements AfterViewInit, OnChanges, OnDestr
         (this.editLayer as L.Polyline).setLatLngs(latlngs.map(q => [q.lat, q.lng]));
         this.editService.setLiveLatLngs(latlngs);
       });
-      m.on('dragend', () => this.editService.commitVertices(latlngs));
+      m.on('dragend', () => {
+        // Deferred to a fresh task (setTimeout 0) rather than committed synchronously: this
+        // handler runs *inside* Leaflet's own Draggable._onUp → Marker._onDragEnd → fire('dragend')
+        // call stack. `commitVertices()` triggers `editing$`, which GeomappingMapComponent's own
+        // subscription answers by rebuilding this whole handleLayer (`clearLayers()` + fresh
+        // markers) — doing that *while Leaflet is still unwinding its own drag-end handling for
+        // the very marker being cleared* corrupted Leaflet's internal drag state in testing
+        // (an orphaned marker DOM node left outside the map, not cleaned up by `clearLayers()`
+        // because Leaflet no longer had a consistent reference to it) and the commit itself
+        // silently lost the drag (the save picked up the pre-drag coordinates). Deferring one
+        // macrotask lets Leaflet finish unwinding first.
+        const ll = latlngs;
+        setTimeout(() => this.editService.commitVertices(ll), 0);
+      });
       m.on('click', ev => {
         L.DomEvent.stopPropagation(ev as any);
         if (mode !== 'delete') {

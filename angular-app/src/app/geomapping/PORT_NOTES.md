@@ -109,6 +109,17 @@ The biggest phase by far — "bagian tersulit" as flagged going in. New pieces:
   every live-draft change would wipe whatever the user had just typed into Judul/Deskripsi, since
   those (like the source, which reads them straight from the DOM only at Simpan) are local
   component fields, not stored on the draft until save.
+- **Bug found and fixed during live testing**: a vertex/shape drag's `commitVertices()` call was
+  originally made synchronously from the marker's own `dragend` handler. That handler runs *inside*
+  Leaflet's own `Draggable._onUp` → `Marker._onDragEnd` → `fire('dragend')` call stack;
+  `commitVertices()` triggers `editing$`, which `GeomappingMapComponent` answers by rebuilding the
+  whole handle layer (`clearLayers()` + fresh markers) — doing that while Leaflet is still unwinding
+  its own drag-end handling for the very marker being torn down corrupted Leaflet's internal drag
+  state (an orphaned marker DOM node left outside the map) and silently dropped the drag itself (the
+  vertex reverted to its pre-drag position on save, even though the live readout had shown the
+  dragged numbers correctly during the drag). Fixed by deferring the `commitVertices()` call one
+  macrotask (`setTimeout(…, 0)`) so Leaflet finishes unwinding before the layer gets rebuilt — same
+  fix in both the vertex-handle and the Point-marker `dragend` handlers.
 - **`GeomappingMapComponent`** (extended): now also owns every Edit Mode Leaflet layer — the manual-
   draw dashed preview + point handles (`refreshDrawPreview`), the shape actually being edited
   (`mountEditShape`/`renderHandles`, including vertex/move/add-vertex/delete-vertex mode handling),
