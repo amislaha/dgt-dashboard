@@ -31,8 +31,6 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
   readonly navItems: NavItem[] = [
     { id: 'geospasial', label: 'Geospasial & Legalitas Lahan', sub: 'HPL · SHM · Trans Tuntas', icon: moduleIconSvg('geospasial') },
     { id: 'profil', label: 'Data Induk & Profil Kawasan', sub: '5T · SKP / KPB', icon: moduleIconSvg('profil') },
-    { id: 'demografi', label: 'Demografi & Pembauran', sub: 'Transmigran · Masyarakat Lokal', icon: moduleIconSvg('demografi') },
-    { id: 'infrastruktur', label: 'Infrastruktur & Kolaborasi K/L', sub: 'Trans Gotong Royong', icon: moduleIconSvg('infrastruktur') },
     { id: 'monitoring', label: 'Monitoring Program & Anggaran', sub: 'Timeline · Kurva S', icon: moduleIconSvg('monitoring') },
     { id: 'ekonomi', label: 'Ekonomi & Investasi Kawasan', sub: 'Trans Karya Nusa', icon: moduleIconSvg('ekonomi') },
     { id: 'analitik', label: 'Analitik, Skoring & EWS', sub: 'Prioritas · Peringatan Dini', icon: moduleIconSvg('analitik') },

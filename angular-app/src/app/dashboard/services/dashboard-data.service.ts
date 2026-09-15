@@ -3,9 +3,11 @@ import { Injectable } from '@angular/core';
 /**
  * All data below is fabricated/illustrative — ported verbatim in shape and
  * spirit from dashboard/index.html's mock dataset (`kawasan`, `provinces`,
- * `sCurve`, `komoditas`, `infraKategori`, `klCollab`, `asalDaerah`,
- * `nationalKPI`, `ikuList`). None of it is real ministry data. See
- * CLAUDE.md "Data layer" and PORT_NOTES.md for what was ported vs. trimmed.
+ * `sCurve`, `komoditas`, `nationalKPI`, `ikuList`). None of it is real
+ * ministry data. See CLAUDE.md "Data layer" and PORT_NOTES.md for what was
+ * ported vs. trimmed. (`infraKategori`/`klCollab`/`asalDaerah` backed the
+ * Infrastruktur & Kolaborasi K/L and Demografi & Pembauran modules, removed
+ * on request — see PORT_NOTES.md.)
  */
 
 export type Tahap = 'Rintisan' | 'Tumbuh' | 'Berkembang' | 'Mandiri';
@@ -45,23 +47,6 @@ export interface SCurve {
 export interface Komoditas {
   nama: string;
   nilai: number;
-}
-
-export interface InfraKategori {
-  nama: string;
-  capaian: number;
-}
-
-export interface KlCollab {
-  kl: string;
-  program: string;
-  kawasanCount: number;
-  status: string;
-}
-
-export interface AsalDaerah {
-  asal: string;
-  jml: number;
 }
 
 export interface IkuItem {
@@ -182,27 +167,6 @@ const KOMODITAS: Komoditas[] = [
   { nama: 'Perikanan Tambak', nilai: 39 }, { nama: 'Rumput Laut', nilai: 28 }
 ];
 
-const INFRA_KATEGORI: InfraKategori[] = [
-  { nama: 'Jalan Poros & Jembatan', capaian: 71 },
-  { nama: 'Sarana Ibadah', capaian: 88 },
-  { nama: 'Sekolah & PAUD', capaian: 64 },
-  { nama: 'Fasilitas Kesehatan', capaian: 57 },
-  { nama: 'Air Bersih & Sanitasi', capaian: 49 }
-];
-
-const KL_COLLAB: KlCollab[] = [
-  { kl: 'Kementerian PU', program: 'Jalan Poros Kawasan', kawasanCount: 6, status: 'Berjalan' },
-  { kl: 'Kementerian Kesehatan', program: 'Puskesmas Pembantu', kawasanCount: 4, status: 'Berjalan' },
-  { kl: 'Kementerian Pendidikan', program: 'Rehabilitasi Sekolah', kawasanCount: 5, status: 'Perencanaan' },
-  { kl: 'Kementerian Pertanian', program: 'Optimalisasi Lahan Sawah', kawasanCount: 3, status: 'Berjalan' },
-  { kl: 'Kementerian ESDM', program: 'Elektrifikasi Desa', kawasanCount: 7, status: 'Selesai' }
-];
-
-const ASAL_DAERAH: AsalDaerah[] = [
-  { asal: 'Jawa Tengah', jml: 3120 }, { asal: 'Jawa Timur', jml: 2870 },
-  { asal: 'Jawa Barat', jml: 2140 }, { asal: 'NTB', jml: 1380 }, { asal: 'Bali', jml: 690 }
-];
-
 /** All 17 IKU (Renstra Kementerian Transmigrasi) — previously ported as a representative 7-item
  *  subset (see PORT_NOTES.md); the full list is needed for a 1:1 IKU-chip strip. */
 const IKU_LIST: IkuItem[] = [
@@ -255,18 +219,6 @@ export class DashboardDataService {
 
   getKomoditas(): Komoditas[] {
     return KOMODITAS;
-  }
-
-  getInfraKategori(): InfraKategori[] {
-    return INFRA_KATEGORI;
-  }
-
-  getKlCollab(): KlCollab[] {
-    return KL_COLLAB;
-  }
-
-  getAsalDaerah(): AsalDaerah[] {
-    return ASAL_DAERAH;
   }
 
   getIkuList(): IkuItem[] {

@@ -9,8 +9,6 @@ import { ChatPanelComponent } from './components/chat-panel/chat-panel.component
 import { KawasanMapComponent } from './components/geospasial/kawasan-map.component';
 import { GeospasialComponent } from './components/geospasial/geospasial.component';
 import { ProfilComponent } from './components/profil/profil.component';
-import { DemografiComponent } from './components/demografi/demografi.component';
-import { InfrastrukturComponent } from './components/infrastruktur/infrastruktur.component';
 import { MonitoringComponent } from './components/monitoring/monitoring.component';
 import { EkonomiComponent } from './components/ekonomi/ekonomi.component';
 import { AnalitikComponent } from './components/analitik/analitik.component';
@@ -21,7 +19,9 @@ import { IntelijenComponent } from './components/intelijen/intelijen.component';
  * CLAUDE.md "Architecture of dashboard/index.html"). Lazy-loaded from
  * app-routing.module.ts at the `/dashboard` path. Entry point:
  * DashboardShellComponent (rail + topbar via ShellModule's `<dgt-app-shell>`,
- * wrapping a `<router-outlet>` for the 8 module routes below).
+ * wrapping a `<router-outlet>` for the 6 module routes below — DGT.md's
+ * original spec had 8; Demografi & Pembauran and Infrastruktur & Kolaborasi
+ * K/L were removed on request, see dashboard/PORT_NOTES.md).
  */
 @NgModule({
   declarations: [
@@ -30,8 +30,6 @@ import { IntelijenComponent } from './components/intelijen/intelijen.component';
     KawasanMapComponent,
     GeospasialComponent,
     ProfilComponent,
-    DemografiComponent,
-    InfrastrukturComponent,
     MonitoringComponent,
     EkonomiComponent,
     AnalitikComponent,
