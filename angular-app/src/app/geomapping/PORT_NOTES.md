@@ -119,7 +119,19 @@ The biggest phase by far — "bagian tersulit" as flagged going in. New pieces:
   vertex reverted to its pre-drag position on save, even though the live readout had shown the
   dragged numbers correctly during the drag). Fixed by deferring the `commitVertices()` call one
   macrotask (`setTimeout(…, 0)`) so Leaflet finishes unwinding before the layer gets rebuilt — same
-  fix in both the vertex-handle and the Point-marker `dragend` handlers.
+  fix in both the vertex-handle and the Point-marker `dragend` handlers. With the fix, re-tested
+  drags correctly reflect the moved vertex in the live readout, the committed `editing$` state, and
+  the persisted feature after Simpan, with no leftover/orphaned marker DOM nodes.
+  **Caveat**: this was tested by dispatching synthetic `MouseEvent`s at a marker/`document` (this
+  sandbox has no real pointer input, and this session's browser-automation tool could not drive a
+  reliable genuine mouse drag either), not a real mouse/touchscreen drag. Those synthetic tests
+  still logged an uncaught Leaflet-internal exception (`TypeError: Cannot read properties of
+  undefined (reading 'baseVal')`, inside minified `Draggable.finishDrag`/`Draggable.disable`) even
+  after the fix, without visibly affecting the outcome (state and DOM both ended up correct in every
+  retest) — plausibly an artifact of synthetic events skipping timing/pointer-capture details a real
+  drag has, but not confirmed either way. Worth a real-device pass before relying on this deeply;
+  if the same exception reproduces there, treat this fix as necessary-but-not-sufficient and dig
+  further into `Draggable`'s internals rather than assuming the deferral alone is the whole story.
 - **`GeomappingMapComponent`** (extended): now also owns every Edit Mode Leaflet layer — the manual-
   draw dashed preview + point handles (`refreshDrawPreview`), the shape actually being edited
   (`mountEditShape`/`renderHandles`, including vertex/move/add-vertex/delete-vertex mode handling),
