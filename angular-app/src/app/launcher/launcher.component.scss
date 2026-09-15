@@ -30,107 +30,179 @@
   justify-content: center;
   padding: 3.5rem 1.5rem 3rem;
   overflow-x: hidden;
+
+  // The launcher view (post-login) is a full-bleed top-to-bottom page, not the
+  // login view's single centered card — undo the centering wrapper for it.
+  &.auth { align-items: stretch; justify-content: flex-start; padding: 0; }
 }
 
 a { color: inherit; text-decoration: none; }
 :focus-visible { outline: 2px dashed var(--primary); outline-offset: 2px; }
 
-// ---------- header (launcher view) ----------
-.header { position: relative; text-align: center; max-width: 640px; margin: 0 auto 2.6rem; z-index: 1; }
-.header-glow {
-  position: absolute; inset: -60px -40px auto -40px; height: 220px; z-index: -1;
-  background:
-    radial-gradient(closest-side, rgba(22, 59, 84, 0.16), transparent),
-    radial-gradient(closest-side, rgba(51, 128, 156, 0.14), transparent);
-  background-repeat: no-repeat;
-  background-position: 20% 30%, 80% 60%;
-  background-size: 55% 100%, 55% 100%;
-  filter: blur(10px);
-  animation: driftGlow 14s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-@keyframes driftGlow {
-  from { transform: translate(-6%, 0) scale(1); }
-  to { transform: translate(6%, 4%) scale(1.08); }
-}
-.mark {
-  width: 52px; height: 52px; margin: 0 auto 1.1rem;
-  display: block; object-fit: contain;
-  animation: markIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-@keyframes markIn {
-  from { opacity: 0; transform: scale(0.7) translateY(-8px); }
-  to { opacity: 1; transform: none; }
-}
-.eyebrow {
-  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--series-2); margin-bottom: 0.5rem;
-}
-.header h1 { margin: 0 0 0.6rem; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.01em; }
-.header p { margin: 0; color: var(--text-dim); font-size: 0.92rem; line-height: 1.6; }
+// ============================================================================
+// launcher view (post-login) — matches the "Pusdatin Transmigrasi" mockup:
+// a white top nav, a split navy/photo hero with a warm accent bar, and a
+// numbered 4-card tool grid. Deliberately not the original static launcher's
+// dark glow header + centered card grid (see this component's own top
+// comment) — kept fully custom markup/CSS here too, same reasoning as the
+// login view just below it.
+// ============================================================================
+.launcher-view { display: flex; flex-direction: column; min-height: 100vh; }
 
-// ---------- cards (launcher view) ----------
+// ---------- top nav ----------
+.topnav {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.85rem 1.75rem; background: var(--card);
+  border-bottom: 3px solid var(--gold);
+  box-shadow: 0 1px 0 var(--border);
+}
+.brand { display: flex; align-items: center; gap: 0.7rem; }
+.brand-mark { width: 34px; height: 34px; object-fit: contain; border-radius: 50%; }
+.brand-name {
+  font-size: 0.98rem; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase;
+  color: var(--primary);
+}
+.topnav-actions { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; }
+.user-chip-wrap { position: relative; }
+.user-chip {
+  display: flex; align-items: center; gap: 0.55rem; background: none; border: none;
+  padding: 0.2rem 0.3rem; border-radius: var(--radius-sm); cursor: pointer; font-family: inherit;
+
+  &:hover { background: var(--muted); }
+}
+.user-chip .avatar {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--primary); color: #f4f8fa;
+  display: grid; place-items: center; font-size: 0.78rem; font-weight: 700; flex: 0 0 auto;
+}
+.user-chip .user-name { font-size: 0.86rem; font-weight: 600; color: var(--text); }
+.user-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); min-width: 140px; z-index: 20;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  box-shadow: 0 16px 40px -20px rgba(15, 25, 34, 0.5); padding: 0.3rem;
+
+  button {
+    width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+    font-family: inherit; font-size: 0.82rem; color: var(--text-dim);
+    padding: 0.45rem 0.6rem; border-radius: 6px;
+
+    &:hover { background: var(--muted); color: var(--text); }
+  }
+}
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--card);
+  color: var(--text-dim); cursor: pointer; display: grid; place-items: center; flex: 0 0 auto;
+
+  svg { width: 17px; height: 17px; }
+  &:hover { color: var(--primary); border-color: var(--primary-line); }
+}
+
+// ---------- hero ----------
+.hero {
+  position: relative; display: flex; flex-wrap: wrap; min-height: 380px;
+  background: linear-gradient(160deg, var(--primary) 0%, #0f2c40 55%, var(--sidebar) 100%);
+}
+.hero-text {
+  flex: 1 1 420px; padding: 3.2rem clamp(1.5rem, 5vw, 4.5rem); color: #eaf1f5;
+  display: flex; flex-direction: column; justify-content: center; gap: 1rem;
+}
+.hero-text .eyebrow {
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(234, 241, 245, 0.62); margin: 0;
+}
+.hero-text h1 {
+  margin: 0; font-size: clamp(1.6rem, 3vw, 2.3rem); font-weight: 800; line-height: 1.2;
+  letter-spacing: -0.01em; color: #fff; max-width: 16ch;
+}
+.hero-text .tagline {
+  margin: 0; font-size: 1rem; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--gold);
+}
+.guide-btn {
+  align-self: flex-start; margin-top: 0.6rem; background: #fff; color: var(--text);
+  border: none; border-radius: var(--radius-sm); padding: 0.65rem 1.3rem;
+  font-size: 0.86rem; font-weight: 700; font-family: inherit; cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.45); }
+}
+.hero-photo {
+  // Background image is set from the component (`[style.background-image]`), not a CSS `url()`
+  // here — a relative `url()` in this file would have webpack try to resolve/bundle a file that
+  // doesn't exist yet (build failure), and an absolute `/assets/...` one would ignore the app's
+  // `<base href>` (wrong origin-relative path once deployed under /dgt-dashboard/). Binding it as
+  // a plain string from the template resolves exactly like `<img src="assets/...">` does elsewhere
+  // in this app. `--sidebar` is the fallback tone shown until the real photo is dropped in.
+  flex: 1 1 420px; min-height: 260px; background-color: var(--sidebar);
+  background-size: cover; background-position: center;
+}
+.hero-accent {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 5px;
+  background: linear-gradient(90deg, var(--critical), var(--gold));
+}
+
+@media (max-width: 760px) {
+  .hero { flex-direction: column; }
+  .hero-photo { min-height: 200px; }
+}
+
+// ---------- tool cards ----------
+.tools { flex: 1 1 auto; padding: 2.8rem 1.5rem 2rem; }
 .cards {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem; width: 100%; max-width: 900px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.1rem; width: 100%; max-width: 1180px; margin: 0 auto;
 }
 .card {
   position: relative; overflow: hidden;
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 1.7rem 1.5rem 1.5rem; display: flex; flex-direction: column;
-  align-items: center; text-align: center;
-  opacity: 0; transform: translateY(14px);
-  animation: cardIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  animation-delay: calc(var(--i, 0) * 90ms + 150ms);
+  padding: 1.5rem 1.4rem 1.4rem; display: flex; flex-direction: column; align-items: flex-start;
+  text-align: left; min-height: 230px;
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
-  &.accent-primary { --accent: var(--primary); --accent-soft: var(--primary-soft); }
-  &.accent-series2 { --accent: var(--series-2); --accent-soft: var(--series-2-soft); }
+  &.accent-dark { --accent: var(--text); --accent-soft: var(--muted); }
+  &.accent-blue { --accent: var(--series-2); --accent-soft: var(--series-2-soft); }
   &.accent-gold { --accent: var(--gold); --accent-soft: var(--gold-soft); }
-  &.accent-geo { --accent: var(--geo); --accent-soft: var(--geo-soft); }
-}
-@keyframes cardIn { to { opacity: 1; transform: none; } }
-.card::before {
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
-  background: var(--accent, var(--primary));
-  transform: scaleX(0); transform-origin: center;
-  transition: transform 0.25s ease;
+  &.accent-green { --accent: var(--geo); --accent-soft: var(--geo-soft); }
 }
 .card:hover {
   border-color: var(--primary-line); transform: translateY(-3px);
   box-shadow: 0 12px 28px -18px rgba(15, 25, 34, 0.35);
 }
-.card:hover::before { transform: scaleX(1); }
+.card .num {
+  position: absolute; top: 0.85rem; right: 1rem;
+  font-size: 0.7rem; font-weight: 700; color: var(--text-faint);
+}
 .card-icon {
   width: 46px; height: 46px; border-radius: var(--radius-sm); flex: 0 0 auto;
-  margin-bottom: 0.9rem;
-  background: var(--accent-soft, var(--primary-soft)); color: var(--accent, var(--primary));
+  margin-bottom: 1.1rem;
+  background: var(--accent-soft, var(--muted)); color: var(--accent, var(--text));
   display: flex; align-items: center; justify-content: center;
   transition: transform 0.2s ease;
 }
 .card:hover .card-icon { transform: scale(1.08) rotate(-4deg); }
 .card-icon svg { width: 22px; height: 22px; }
-.card-body { min-width: 0; }
-.card h2 { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; }
+.card h2 { margin: 0 0 0.4rem; font-size: 1.02rem; font-weight: 700; color: var(--text); }
+.card-desc { margin: 0; font-size: 0.82rem; line-height: 1.5; color: var(--text-dim); flex: 1 1 auto; }
 .card .go {
-  display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
-  font-size: 0.78rem; font-weight: 600; color: var(--accent, var(--primary));
+  display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 1rem;
+  font-size: 0.82rem; font-weight: 700; color: var(--accent, var(--text));
 }
 .card .go svg { width: 14px; height: 14px; transition: transform 0.15s ease; }
 .card:hover .go svg { transform: translateX(3px); }
-.card .num {
-  position: absolute; top: 0.7rem; right: 0.9rem;
-  font-size: 0.65rem; font-weight: 700; color: var(--text-faint);
-}
 
-footer {
-  margin: 2.8rem auto 0; text-align: center; font-size: 0.72rem; color: var(--text-faint);
-  max-width: 640px; line-height: 1.6;
+.launcher-footer {
+  margin-top: auto; text-align: center; padding: 1.5rem 1.5rem 2.2rem;
+}
+.logout-link {
+  font-size: 0.8rem; color: var(--series-2); background: none; border: none; cursor: pointer;
+  font-family: inherit; text-decoration: underline; text-underline-offset: 2px;
+}
+.logout-link:hover { color: var(--primary); }
+.launcher-footer .copyright {
+  margin: 0.5rem 0 0; font-size: 0.72rem; color: var(--text-faint);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .header-glow, .login-visual-glow, .mark, .card { animation: none !important; }
-  .card { opacity: 1; transform: none; }
+  .login-visual-glow, .mark { animation: none !important; }
   * { transition: none !important; }
 }
 
@@ -170,6 +242,18 @@ footer {
   pointer-events: none;
 }
 .login-visual-top, .login-visual-body { position: relative; z-index: 1; }
+.eyebrow {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--series-2); margin-bottom: 0.5rem;
+}
+.mark {
+  width: 52px; height: 52px; display: block; object-fit: contain;
+  animation: markIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes markIn {
+  from { opacity: 0; transform: scale(0.7) translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
 .mark-visual { margin: 0 0 1rem; }
 .eyebrow-visual { color: rgba(234, 241, 245, 0.75); }
 .login-visual-body h2 { margin: 0 0 0.8rem; font-size: 1.5rem; line-height: 1.3; font-weight: 800; letter-spacing: -0.01em; }
@@ -219,10 +303,3 @@ footer {
   .login-visual-points { display: none; }
   .login-form-panel { padding: 2rem 1.7rem; }
 }
-
-.logout-link {
-  margin-top: 2rem; font-size: 0.72rem; color: var(--text-faint);
-  background: none; border: none; cursor: pointer; font-family: inherit;
-  text-decoration: underline; text-underline-offset: 2px;
-}
-.logout-link:hover { color: var(--text-dim); }

@@ -10,21 +10,35 @@ import { Injectable } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class AuthGateService {
   private readonly storageKey = 'dgt-auth';
+  private readonly usernameKey = 'dgt-auth-user';
 
   isAuthenticated(): boolean {
     return sessionStorage.getItem(this.storageKey) === '1';
   }
 
-  /** Accepts any non-empty username/password, matching the original prototype. */
+  /** Accepts any non-empty username/password, matching the original prototype. Remembers the
+   *  typed username (session-only) so the post-login launcher can greet the user by name. */
   signIn(username: string, password: string): boolean {
     if (!username || !password) {
       return false;
     }
     sessionStorage.setItem(this.storageKey, '1');
+    sessionStorage.setItem(this.usernameKey, username);
     return true;
+  }
+
+  /** The name entered at sign-in, or a generic fallback if this session never went through the
+   *  login form (e.g. a deep link straight into an authenticated route). */
+  getUsername(): string {
+    try {
+      return sessionStorage.getItem(this.usernameKey) || 'Pengguna';
+    } catch (e) {
+      return 'Pengguna';
+    }
   }
 
   signOut(): void {
     sessionStorage.removeItem(this.storageKey);
+    sessionStorage.removeItem(this.usernameKey);
   }
 }
