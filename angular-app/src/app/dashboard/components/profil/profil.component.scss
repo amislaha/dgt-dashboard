@@ -4,3 +4,188 @@
   height: 10px;
   border-radius: var(--radius-full);
 }
+
+.badge-stage-rintisan { color: #fff; background: var(--critical); }
+.badge-stage-tumbuh { color: #fff; background: var(--warn); }
+.badge-stage-berkembang { color: #fff; background: var(--series-2); }
+.badge-stage-mandiri { color: #fff; background: var(--good); }
+
+.mono { font-family: var(--font-mono); }
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  &:hover, &:focus { color: var(--primary); }
+}
+
+.profil-detail-source {
+  display: inline-flex;
+  align-items: center;
+  font-size: .78rem;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: .4rem .8rem;
+}
+
+.subtab-row {
+  display: flex;
+  gap: 1.4rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.subtab-btn {
+  background: none;
+  border: none;
+  padding: .15rem 0 .7rem;
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+
+  &:hover { color: var(--foreground); }
+  &.active { color: var(--primary); border-bottom-color: var(--primary); }
+}
+
+.stat-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.8rem;
+}
+.stat-col {
+  .k-value { font-size: 1.6rem; }
+  .k-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; margin-top: .2rem; }
+}
+
+.pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+
+  .pill {
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .22rem .6rem;
+    border-radius: var(--radius-full);
+    background: var(--muted);
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+  }
+}
+
+.doc-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: .5rem 0;
+  border-bottom: 1px dashed var(--border-soft);
+  font-size: .84rem;
+
+  &:last-child { border-bottom: none; }
+}
+.doc-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .7rem;
+  font-weight: 700;
+  padding: .16rem .55rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+
+  &::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  &.ok { background: var(--good-soft); color: var(--good); }
+  &.missing { background: var(--critical-soft); color: var(--critical); }
+}
+
+.rekom-block {
+  margin-bottom: 1.1rem;
+  &:last-child { margin-bottom: 0; }
+
+  h3 { margin-bottom: .5rem; }
+  ul { padding-left: 1.1rem; font-size: .84rem; color: var(--muted-foreground); line-height: 1.65; }
+}
+
+.kesehatan-note {
+  font-size: .78rem;
+  color: var(--muted-foreground);
+  margin-top: .75rem;
+  padding-top: .65rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.placeholder-panel {
+  padding: 2.2rem 1rem;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: .84rem;
+}
+
+/* ---------- "Profil Investasi Kawasan" — appended to the Ekonomi tab, linked to from the
+   Ekonomi & Investasi Kawasan module rather than duplicated as a third kawasan-profile page ---------- */
+.investasi-hero {
+  width: 100%;
+  height: 220px;
+  border-radius: var(--radius);
+  overflow: hidden;
+
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+}
+.investasi-desc-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.investasi-desc-head {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: .82rem;
+  padding: .6rem .9rem;
+
+  &.teal { background: var(--series-2); }
+}
+.investasi-desc-body { padding: .9rem 1rem; background: var(--muted); }
+.investasi-desc-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: .4rem 0;
+  font-size: .8rem;
+
+  .lbl { color: var(--muted-foreground); }
+  b { color: var(--foreground); font-weight: 700; text-align: right; white-space: nowrap; }
+}
+.investasi-minimap {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  height: 100%;
+  min-height: 220px;
+
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .loc-dot {
+    position: absolute; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff;
+    transform: translate(-50%, -50%); box-shadow: 0 0 0 4px rgba(0, 0, 0, .18);
+  }
+}
+.investasi-desc-text { padding: .9rem 1rem; font-size: .82rem; color: var(--muted-foreground); line-height: 1.7; }
+.investasi-placeholder-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; padding: .9rem; }
+.investasi-placeholder-box { aspect-ratio: 3 / 4; background: var(--muted); border-radius: var(--radius-sm, .375rem); }

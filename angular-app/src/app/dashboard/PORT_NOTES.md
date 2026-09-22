@@ -104,18 +104,99 @@ Everything below lives under `src/app/dashboard/`.
   `dgt-severity-badge` in place of the original's hand-rolled
   `.panel`/`.badge`/`.table-wrap`/SVG-builder markup:
   - `geospasial` — see "Geospasial" below, the flagship module.
-  - `profil` — KPI grid, sortable kawasan table (`dgt-data-table`), detail
-    panel, stage-distribution donut.
+  - `profil` — **rebuilt** (per a later wireframe, "Data Induk & Profil
+    Kawasan Transmigrasi") from a single KPI-grid/sortable-table/drawer page
+    into a two-level view: a landing page (national provinsi/kabupaten/
+    kecamatan/desa KPI tiles, two Mandiri/Berkembang/Tertinggal classification
+    donuts — "Indeks Intrans" bucketed off `indeks5t`, "Indeks Kinerja Utama"
+    off `tahap`, see `profilBucketIndeks`/`profilBucketTahap` — and a
+    searchable/filterable kawasan list) plus a per-kawasan drill-down
+    (`view`/`selectedId`/`detailTab` state in `ProfilComponent`) with
+    Ekonomi/Sosial/Perencanaan tabs built out and Patriot/Media stubbed (no
+    wireframe exists for those two yet). The drill-down's numbers
+    (population density, produk unggulan, sarana/kelembagaan ekonomi, usia/
+    pendidikan/kesehatan/IDM-desa breakdowns, SHM certification share) are
+    computed on demand by `profilDetailData()` in `dashboard-data.service.ts`
+    from the existing `Kawasan` fields plus `seededRandom(k.id)`, the same
+    approach `kawasanAreaLatLngs()` already uses — not stored as extra
+    hand-authored literals per kawasan. `dgt-kpi-tile` gained optional
+    `color`/`chip`/`sub` inputs for the drill-down's four solid-colour Ekonomi
+    KPI cards; every other caller is unaffected (all three inputs default to
+    unset). Mirrors the same rebuild in `legacy-static/dashboard/index.html`'s
+    `renderProfil()` — see that file's own comment block for the full data-
+    derivation rationale. Like the original's Ubah/Hapus buttons on the
+    Produk Unggulan Kawasan table, this stays a read-only dashboard: those
+    buttons are present but non-functional (no data-manager write-back).
+    The Ekonomi tab later gained a "Profil Investasi Kawasan" block (hero
+    image, a Deskripsi-kawasan stat panel, a static-basemap locator reusing
+    `basemapPct()`, a generated description paragraph, and Infografis/Galeri
+    placeholder grids) — added here rather than as a 6th tab or a separate
+    page, since `ekonomi`'s own "Lihat Detail" cards and map pins link
+    straight to it via `?kawasan=<id>` (read in `ngOnInit`), see that
+    module's own bullet below. No per-kawasan photo assets were ported for
+    Angular (see this file's earlier "Simplifications" note), so the hero
+    image is the one generic `assets/hero-kawasan.jpg` for every kawasan.
   - `demografi` — asal-daerah bar chart, pembauran gauge, populasi-per-kawasan
-    bar chart.
+    bar chart. **Hidden from the rail** per request ("make demografi &
+    pembauran hidden but dont delete") — `DashboardShellComponent.navItems`
+    carries a new optional `NavItem.hidden` flag; the route
+    (`dashboard-routing.module.ts`) and this component are untouched and
+    still directly reachable at `/dashboard/demografi`, just not linked to
+    from the rail (`visibleNavItems` filters it out). A prior full removal of
+    this module (and `infrastruktur`) was reverted, hence a visibility toggle
+    this time rather than deleting it again — flip `hidden` back off on that
+    entry to restore it.
   - `infrastruktur` — infra-category progress bars, K/L collaboration table.
-  - `monitoring` — KPI grid, `dgt-dual-line-chart` Kurva S, anggaran bar chart.
-  - `ekonomi` — komoditas bar chart, hilirisasi stepper, investment table
-    (last two ported as the original's own hard-coded static rows).
+  - `monitoring` — **KPI tiles adjusted** (per a later wireframe) from a
+    generic Realisasi Fisik/Realisasi Anggaran/Program Berjalan/Tenggat
+    Terlewat set to budget-specific Total Anggaran/Realisasi Anggaran/
+    Persentase/Sisa Tahun Anggaran, plus an Area filter in the page-head
+    toolbar (same field-inline pattern as `profil`'s) that narrows the
+    Realisasi Anggaran per Kawasan bar chart only — the national KPI tiles
+    and Kurva S stay unfiltered. Total/Realisasi/Persentase are derived
+    together from one fixed illustrative `ANGGARAN_TOTAL_RP` and the same
+    per-kawasan `anggaranPct` the bar chart already plots, see that constant's
+    own comment for why (the wireframe's own figures were internally
+    inconsistent). Mirrors the same change in `legacy-static/dashboard/
+    index.html`'s `renderMonitoring()`.
+  - `ekonomi` — **rebuilt** (per a later wireframe, "Ekonomi & Investasi
+    Kawasan") from a bar-chart/stepper/static-table page into a national
+    investment-discovery portal: 5 commodity shortcut cards (derived from
+    every kawasan's `produkUnggulan`, not hand-authored — see
+    `EkonomiComponent.komoditasFreq()`), a filter sidebar (Wilayah/Provinsi/
+    Kategori Sektor are real filters; Peluang Investasi/Detil Peluang
+    Investasi/Tahun are `disabled` single-option selects — no backing field
+    exists for those three, same "don't fake a working control" call as the
+    original's Site/Periode chips) plus a `dgt-kawasan-map` coloured by
+    wilayah region instead of tahap, national productivity bars (derived from
+    `komoditas`), and two summary tables, then a per-commodity kawasan card
+    grid. `KawasanMapComponent` gained optional `fillColorOf`/`popupOf`
+    inputs (default to the original tahap-based colouring/popup) so this
+    module could reuse it rather than hand-rolling a second Leaflet wrapper.
+    No separate "kawasan investment profile" page — a card or map-pin click
+    navigates to `profil`'s Ekonomi tab via `?kawasan=<id>` (`ProfilComponent`
+    reads it in `ngOnInit`); see that module's own bullet above for what was
+    added there. Mirrors the same rebuild in `legacy-static/dashboard/
+    index.html`'s `renderEkonomi()`.
   - `analitik` — priority-scoring table + the second EWS list (via
     `EwsService`, see above).
-  - `intelijen` — KPI grid, disabled "Laporan Strategis" action buttons
-    (ported as `disabled`, matching the original), full `ChatPanelComponent`.
+  - `intelijen` — **replaced** (per request) with the "Buat Laporan"
+    report-generator hub: a Pilih Periode/Pilih Kawasan toolbar (Periode is a
+    static `.info-chip`, same non-functional-context-chip precedent as
+    Geospasial's Site/Periode; Pilih Kawasan is a real `<select>` over
+    `DashboardDataService.getKawasan()` that drives each card's "N Kawasan"
+    count), 5 report-type cards (cosmetic — `title` attribute, no click
+    handler, same "present but non-functional" treatment as the Ubah/Hapus
+    buttons elsewhere, since there's no backend to actually export a report
+    from), a toggleable "History ekspor laporan" note, and an Asisten AI
+    panel — this last piece is the one thing carried over from the old
+    "Executive Intelligence & AI" module it replaced: same
+    `<dgt-chat-panel>`, switched from `mode="full"` to `mode="compact"` to
+    match the new wireframe's shorter welcome copy. Route id and component
+    class are both kept as `intelijen` to keep the diff small — see
+    `DashboardShellComponent.navItems`' own comment. Mirrors the same
+    replacement in `legacy-static/dashboard/index.html`'s `renderLaporan()`
+    (which, unlike here, did rename the id to `"laporan"`).
 
 ## Geospasial — what's in, what's deliberately different
 

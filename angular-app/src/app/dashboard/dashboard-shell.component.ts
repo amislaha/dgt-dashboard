@@ -31,13 +31,26 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
   readonly navItems: NavItem[] = [
     { id: 'geospasial', label: 'Geospasial & Legalitas Lahan', sub: 'HPL · SHM · Trans Tuntas', icon: moduleIconSvg('geospasial') },
     { id: 'profil', label: 'Data Induk & Profil Kawasan', sub: '5T · SKP / KPB', icon: moduleIconSvg('profil') },
-    { id: 'demografi', label: 'Demografi & Pembauran', sub: 'Transmigran · Masyarakat Lokal', icon: moduleIconSvg('demografi') },
+    /* hidden per request ("make demografi & pembauran hidden but dont delete") — route and
+       component both stay fully intact (see dashboard-routing.module.ts), just filtered out of
+       the rendered rail below. A prior full removal of this module (and Infrastruktur & Kolaborasi
+       K/L) was reverted, so this is a visibility toggle, not a deletion — flip `hidden` back off to
+       restore it to the rail. */
+    { id: 'demografi', label: 'Demografi & Pembauran', sub: 'Transmigran · Masyarakat Lokal', icon: moduleIconSvg('demografi'), hidden: true },
     { id: 'infrastruktur', label: 'Infrastruktur & Kolaborasi K/L', sub: 'Trans Gotong Royong', icon: moduleIconSvg('infrastruktur') },
     { id: 'monitoring', label: 'Monitoring Program & Anggaran', sub: 'Timeline · Kurva S', icon: moduleIconSvg('monitoring') },
     { id: 'ekonomi', label: 'Ekonomi & Investasi Kawasan', sub: 'Trans Karya Nusa', icon: moduleIconSvg('ekonomi') },
     { id: 'analitik', label: 'Analitik, Skoring & EWS', sub: 'Prioritas · Peringatan Dini', icon: moduleIconSvg('analitik') },
-    { id: 'intelijen', label: 'Executive Intelligence & AI', sub: 'Statistik · AI Assistant', icon: moduleIconSvg('intelijen') }
+    /* was "Executive Intelligence & AI" (IntelijenComponent) — replaced per request with the "Buat
+       Laporan" report-generator hub. Route path/id and the component class are both kept as
+       "intelijen" internally to keep this diff small; only the visible label/sub and the
+       component's own content changed. */
+    { id: 'intelijen', label: 'Laporan', sub: 'Statistik', icon: moduleIconSvg('laporan') }
   ];
+
+  get visibleNavItems(): NavItem[] {
+    return this.navItems.filter(item => !item.hidden);
+  }
 
   activeId: string | null = 'geospasial';
 

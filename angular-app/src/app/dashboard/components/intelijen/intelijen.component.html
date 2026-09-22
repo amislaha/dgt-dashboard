@@ -1,46 +1,35 @@
-<dgt-page-head
-  title="Executive Intelligence, Pelaporan Strategis &amp; AI Assistant"
-  description="Konsolidasi statistik sektoral transmigrasi tingkat nasional dan asisten AI untuk pertanyaan cepat pimpinan.">
-</dgt-page-head>
+<dgt-page-head title="BUAT LAPORAN"></dgt-page-head>
 
-<div class="row mb-4">
-  <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Kawasan Mandiri" [value]="mandiriCount" [delta]="'dari ' + kawasan.length + ' kawasan'" dir="flat"></dgt-kpi-tile>
+<div class="lap-toolbar d-flex flex-wrap justify-content-between align-items-center mb-2">
+  <div class="d-flex flex-wrap align-items-center" style="gap: .6rem">
+    <span class="lap-toolbar-label">Pilih Periode</span>
+    <span class="info-chip">Periode: 2026 &middot; TW1</span>
+    <span class="lap-toolbar-label ml-2">Pilih Kawasan</span>
+    <select class="form-control form-control-sm" style="width: auto" [(ngModel)]="kawasanFilter">
+      <option value="Semua">Semua Kawasan</option>
+      <option *ngFor="let k of kawasan" [value]="k.id">{{ k.nama }}</option>
+    </select>
   </div>
-  <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Luas HPL Nasional" [value]="hplRb + 'rb Ha'" delta="seluruh kawasan terpantau" dir="flat"></dgt-kpi-tile>
-  </div>
-  <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Luas SHM Terbit" [value]="shmRb + 'rb Ha'" [delta]="shmPctOfHpl + '% dari HPL'" dir="up"></dgt-kpi-tile>
-  </div>
-  <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Peringatan Aktif" [value]="activeAlerts" delta="perlu tindak lanjut" dir="down" [alert]="activeAlerts > 0"></dgt-kpi-tile>
+  <button type="button" class="lap-history-link" (click)="toggleHistoryNote()">History ekspor laporan</button>
+</div>
+<p class="small text-muted" *ngIf="showHistoryNote">Belum ada riwayat ekspor laporan pada prototipe ini.</p>
+
+<div class="lap-card-grid mb-4">
+  <div class="lap-card" *ngFor="let c of cards" title="Ekspor laporan belum tersedia pada prototipe ini.">
+    <img src="assets/hero-kawasan.jpg" alt="" />
+    <div class="lap-card-overlay">
+      <span class="lap-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>
+        </svg>
+      </span>
+      <div class="lap-card-title">{{ c.title }}</div>
+      <div class="lap-card-sub">{{ kawasanCount }} Kawasan</div>
+    </div>
   </div>
 </div>
 
-<div class="row">
-  <div class="col-lg-6 mb-4">
-    <div class="card h-100">
-      <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Laporan Strategis</h2></div>
-      <div class="card-body">
-        <p class="text-muted">Ringkasan otomatis kondisi seluruh kawasan untuk bahan rapat pimpinan, disusun dari data 8 modul di atas.</p>
-        <div class="d-flex flex-wrap" style="gap: var(--space-2)">
-          <button type="button" class="btn btn-primary btn-sm" disabled>Unduh Ringkasan PDF</button>
-          <button type="button" class="btn btn-outline-secondary btn-sm" disabled>Jadwalkan Laporan Mingguan</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-6 mb-4">
-    <div class="card h-100">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h6 font-weight-bold mb-0">AI Assistant</h2>
-        <span class="small text-muted">tanya cepat seputar data kawasan</span>
-      </div>
-      <div class="card-body">
-        <dgt-chat-panel mode="full"></dgt-chat-panel>
-      </div>
-    </div>
-  </div>
+<div class="lap-ai-panel">
+  <h2 class="h6 font-weight-bold mb-3">Asisten AI</h2>
+  <dgt-chat-panel mode="compact"></dgt-chat-panel>
 </div>

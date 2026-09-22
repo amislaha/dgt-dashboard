@@ -22,4 +22,12 @@ export class KpiTileComponent {
   /** true flips the trend colour to critical even on an "up" arrow — used by
    *  the "Peringatan Aktif" tile when EWS alerts are active. */
   @Input() alert = false;
+  /** Solid colour variant used by the Data Induk & Profil Kawasan detail page's Ekonomi tab
+   *  (Jumlah Penduduk/Luas Kawasan/Potensi Daya Tampung/Nilai Intrans cards). Omit for the default
+   *  plain white tile every other module uses. */
+  @Input() color?: 'good' | 'series2' | 'primary' | 'warn';
+  /** Small pill shown below the value on a coloured tile, e.g. "5 kecamatan · 9 desa". */
+  @Input() chip?: string;
+  /** Secondary line below the chip, e.g. "Kepadatan: 0.67 jiwa/ha". */
+  @Input() sub?: string;
 }

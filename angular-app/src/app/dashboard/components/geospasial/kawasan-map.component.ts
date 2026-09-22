@@ -25,6 +25,15 @@ import { Kawasan, STAGE_COLOR_HEX, kawasanAreaLatLngs } from '../../services/das
 export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() kawasan: Kawasan[] = [];
   @Input() selectedId: string | null = null;
+  /** Overrides the polygon fill colour per kawasan — defaults to STAGE_COLOR_HEX[k.tahap] (the
+   *  Geospasial legality-status colouring). Ekonomi & Investasi Kawasan passes a wilayah-region
+   *  colour function instead so the same map component can double as its Barat/Tengah/Timur view. */
+  @Input() fillColorOf: (k: Kawasan) => string = k => STAGE_COLOR_HEX[k.tahap];
+  /** Overrides the popup HTML per kawasan — defaults to the Geospasial tahap/populasi/HPL summary. */
+  @Input() popupOf: (k: Kawasan) => string = k =>
+    `<b>${k.nama}</b><br/>${k.provinsi}<br/>Tahap: ${k.tahap}` +
+    `<br/>Populasi: ${k.populasi.toLocaleString('id-ID')} jiwa` +
+    `<br/>Luas HPL: ${k.hplHa.toLocaleString('id-ID')} ha`;
   @Output() select = new EventEmitter<Kawasan>();
 
   @ViewChild('mapEl', { static: true }) mapElRef!: ElementRef<HTMLDivElement>;
@@ -105,14 +114,10 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
         color: '#0a0f1c',
         weight: 1.3,
         opacity: 0.85,
-        fillColor: STAGE_COLOR_HEX[k.tahap],
+        fillColor: this.fillColorOf(k),
         fillOpacity: 0.42
       }).addTo(this.map!);
-      area.bindPopup(
-        `<b>${k.nama}</b><br/>${k.provinsi}<br/>Tahap: ${k.tahap}` +
-          `<br/>Populasi: ${k.populasi.toLocaleString('id-ID')} jiwa` +
-          `<br/>Luas HPL: ${k.hplHa.toLocaleString('id-ID')} ha`
-      );
+      area.bindPopup(this.popupOf(k));
       area.on('click', () => this.select.emit(k));
       this.areas[k.id] = area;
     });

@@ -1,20 +1,27 @@
 <dgt-page-head
   title="Monitoring 5T: Program, Kinerja, Anggaran &amp; Tindak Lanjut"
   description="Pelacakan linimasa program (Kurva S) dan realisasi penyerapan anggaran program unggulan 5T secara real-time.">
+  <div class="d-flex align-items-center" style="gap: .4rem">
+    <label class="small text-muted mb-0" for="monAreaSelect">Area</label>
+    <select id="monAreaSelect" class="form-control form-control-sm" [(ngModel)]="areaFilter">
+      <option value="Semua">Semua Provinsi</option>
+      <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
+    </select>
+  </div>
 </dgt-page-head>
 
 <div class="row mb-4">
   <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Realisasi Fisik" value="74%" delta="vs. rencana 80%" dir="down"></dgt-kpi-tile>
+    <dgt-kpi-tile label="Total Anggaran" [value]="anggaranTotalRp | number:'1.0-0'"></dgt-kpi-tile>
   </div>
   <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Realisasi Anggaran" value="68%" delta="▲ 5% bulan ini" dir="up"></dgt-kpi-tile>
+    <dgt-kpi-tile label="Realisasi Anggaran" [value]="realisasiRp | number:'1.0-0'"></dgt-kpi-tile>
   </div>
   <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Program Berjalan" value="18" delta="dari 24 program aktif" dir="flat"></dgt-kpi-tile>
+    <dgt-kpi-tile label="Persentase" [value]="avgPct + '%'"></dgt-kpi-tile>
   </div>
   <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Tenggat Terlewat" value="3" delta="perlu tindak lanjut" dir="down"></dgt-kpi-tile>
+    <dgt-kpi-tile label="Sisa Tahun Anggaran" value="180/365"></dgt-kpi-tile>
   </div>
 </div>
 

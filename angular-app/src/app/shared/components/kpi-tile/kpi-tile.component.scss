@@ -18,3 +18,42 @@
 .k-delta {
   font-size: var(--text-xs, .75rem);
 }
+
+.kpi-tile-color {
+  border: none;
+  color: #fff;
+
+  .k-label { color: rgba(255, 255, 255, .82); }
+  .k-value { color: #fff; }
+}
+.kpi-tile-good { background: var(--good); }
+.kpi-tile-series2 { background: var(--series-2); }
+.kpi-tile-primary { background: var(--primary); }
+.kpi-tile-warn { background: var(--warn); }
+
+.kpi-tile-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: var(--text-xs, .75rem);
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, .18);
+  border-radius: var(--radius-full);
+  padding: .2rem .55rem;
+  margin-top: .55rem;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+  }
+}
+
+.kpi-tile-sub {
+  font-size: var(--text-xs, .75rem);
+  color: rgba(255, 255, 255, .85);
+  margin-top: .4rem;
+}

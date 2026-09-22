@@ -1,54 +1,49 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { DashboardDataService, Kawasan, NationalKPI } from '../../services/dashboard-data.service';
-import { EwsService } from '../../services/ews.service';
+import { Component, OnInit } from '@angular/core';
+import { DashboardDataService, Kawasan } from '../../services/dashboard-data.service';
 
-/**
- * Ports `renderIntelijen()` (dashboard/index.html:2165) — "Executive
- * Intelligence & AI". Its chat panel is `<dgt-chat-panel mode="full">`, the
- * SAME shared component as Geospasial's embedded mini chat (see
- * ChatPanelComponent doc comment) — both call AiMockService, but each keeps
- * its own local chat log.
- */
+interface LaporanCard {
+  title: string;
+}
+
+/** Ports `renderLaporan()` (legacy-static/dashboard/index.html) — "Buat Laporan", which replaced
+ *  the old "Executive Intelligence & AI" module (was `renderIntelijen()`) per request. The route
+ *  id/component class are both kept as "intelijen" to keep this diff small; only the visible
+ *  label/sub (see DashboardShellComponent.navItems) and this module's own content changed.
+ *  Its Asisten AI panel reuses `<dgt-chat-panel mode="compact">` — the SAME shared component (and
+ *  welcome text) as Geospasial's embedded mini chat — rather than the old module's `mode="full"`
+ *  instance, matching the shorter welcome copy in the new wireframe. The 5 report cards are
+ *  cosmetic/non-functional on this static prototype, same treatment as the Ubah/Hapus buttons
+ *  elsewhere — there's no backend to actually generate or export a report from. */
 @Component({
   selector: 'dgt-intelijen',
   templateUrl: './intelijen.component.html',
   styleUrls: ['./intelijen.component.scss']
 })
-export class IntelijenComponent implements OnInit, OnDestroy {
+export class IntelijenComponent implements OnInit {
   kawasan: Kawasan[] = [];
-  nationalKPI!: NationalKPI;
-  activeAlerts = 0;
 
-  private ewsSub?: Subscription;
+  readonly cards: LaporanCard[] = [
+    { title: 'Laporan Kawasan' },
+    { title: 'Laporan Investasi' },
+    { title: 'Laporan Anggaran' },
+    { title: 'Laporan Kinerja' },
+    { title: 'Laporan 5T' }
+  ];
 
-  constructor(private readonly data: DashboardDataService, private readonly ews: EwsService) {}
+  kawasanFilter = 'Semua';
+  showHistoryNote = false;
+
+  constructor(private readonly data: DashboardDataService) {}
 
   ngOnInit(): void {
     this.kawasan = this.data.getKawasan();
-    this.nationalKPI = this.data.getNationalKPI();
-    this.ewsSub = this.ews.alerts$.subscribe(() => (this.activeAlerts = this.ews.getActiveCount()));
   }
 
-  ngOnDestroy(): void {
-    if (this.ewsSub) {
-      this.ewsSub.unsubscribe();
-    }
+  get kawasanCount(): number {
+    return this.kawasanFilter === 'Semua' ? this.kawasan.length : 1;
   }
 
-  get mandiriCount(): number {
-    return this.kawasan.filter(k => k.tahap === 'Mandiri').length;
-  }
-
-  get hplRb(): string {
-    return (this.nationalKPI.hplTotal / 1000).toFixed(1);
-  }
-
-  get shmRb(): string {
-    return (this.nationalKPI.shmTotal / 1000).toFixed(1);
-  }
-
-  get shmPctOfHpl(): number {
-    return Math.round((this.nationalKPI.shmTotal / this.nationalKPI.hplTotal) * 100);
+  toggleHistoryNote(): void {
+    this.showHistoryNote = !this.showHistoryNote;
   }
 }

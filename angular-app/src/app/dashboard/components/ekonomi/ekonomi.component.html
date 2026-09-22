@@ -1,55 +1,180 @@
-<dgt-page-head
-  title="Potensi Ekonomi, Komoditas, Hilirisasi &amp; Investasi Kawasan"
-  description="Dasbor komoditas unggulan, rantai pasok hulu-hilir, dan peta peluang investasi — Trans Karya Nusa.">
-</dgt-page-head>
+<ng-container *ngIf="view === 'landing'; else gridTpl">
+  <dgt-page-head title="Ekonomi &amp; Investasi Kawasan">
+    <div class="d-flex align-items-center" style="gap: .4rem">
+      <label class="small text-muted mb-0" for="ekAreaSelect">Area</label>
+      <select id="ekAreaSelect" class="form-control form-control-sm" [(ngModel)]="areaFilter">
+        <option value="Semua">Semua Provinsi</option>
+        <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
+      </select>
+    </div>
+  </dgt-page-head>
 
-<div class="row mb-4">
-  <div class="col-lg-6 mb-4">
-    <div class="card h-100">
-      <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Indeks Komoditas Unggulan</h2></div>
+  <div class="komoditas-card-grid mb-4">
+    <div class="komoditas-card" *ngFor="let kom of komoditasCards" (click)="openKomoditas(kom.nama)">
+      <span class="kat-badge">{{ kom.kategori }}</span>
+      <div class="kom-nama">{{ kom.nama }}</div>
+      <div class="kom-sub">{{ kom.ids.length }} Kawasan</div>
+    </div>
+    <p class="text-muted mb-0" *ngIf="!komoditasCards.length">Tidak ada komoditas pada kategori sektor ini.</p>
+  </div>
+
+  <div class="inv-layout mb-4">
+    <div class="card">
       <div class="card-body">
-        <dgt-bar-chart [data]="komoditasBarData" [height]="200"></dgt-bar-chart>
+        <div class="inv-filter-field">
+          <input type="text" class="form-control form-control-sm" placeholder="Masukkan kata kunci.." [(ngModel)]="search" />
+        </div>
+        <div class="inv-filter-field">
+          <label>Wilayah</label>
+          <select class="form-control form-control-sm" [(ngModel)]="wilayahFilter">
+            <option value="Semua">Semua Wilayah</option>
+            <option value="Barat">Wilayah Indonesia Bagian Barat</option>
+            <option value="Tengah">Wilayah Indonesia Bagian Tengah</option>
+            <option value="Timur">Wilayah Indonesia Bagian Timur</option>
+          </select>
+        </div>
+        <div class="inv-filter-field">
+          <label>Provinsi</label>
+          <select class="form-control form-control-sm" [(ngModel)]="areaFilter">
+            <option value="Semua">Semua Provinsi</option>
+            <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
+          </select>
+        </div>
+        <div class="inv-filter-field">
+          <label>Kategori Sektor</label>
+          <select class="form-control form-control-sm" [(ngModel)]="kategoriFilter" (ngModelChange)="rebuildKomoditasCards()">
+            <option value="Semua">Semua Kategori Sektor</option>
+            <option value="Pangan">Pangan</option>
+            <option value="Peternakan">Peternakan</option>
+            <option value="Perkebunan">Perkebunan</option>
+            <option value="Pertambangan">Pertambangan</option>
+          </select>
+        </div>
+        <div class="inv-filter-field">
+          <label>Peluang Investasi</label>
+          <select class="form-control form-control-sm" disabled><option>Semua Peluang Investasi</option></select>
+        </div>
+        <div class="inv-filter-field">
+          <label>Detil Peluang Investasi</label>
+          <select class="form-control form-control-sm" disabled><option>Semua Detil Peluang Investasi</option></select>
+        </div>
+        <div class="inv-filter-field mb-0">
+          <label>Tahun</label>
+          <select class="form-control form-control-sm" disabled><option>2026</option></select>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="col-lg-6 mb-4">
-    <div class="card h-100">
-      <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Rantai Hilirisasi — Kelapa Sawit</h2></div>
+
+    <div class="card">
       <div class="card-body">
-        <div class="stepper d-flex flex-wrap justify-content-between">
-          <div class="step text-center" *ngFor="let s of hilirisasiSteps">
-            <div class="s-icon mx-auto mb-2">{{ s.no }}</div>
-            <div class="s-label small">{{ s.label }}</div>
-          </div>
+        <div class="inv-map-wrap">
+          <dgt-kawasan-map [kawasan]="filteredKawasan" [fillColorOf]="fillColorOf" [popupOf]="popupOf" (select)="goToKawasanProfile($event.id)"></dgt-kawasan-map>
+        </div>
+        <div class="inv-wilayah-legend">
+          <span class="sw"><span class="chip" [style.background]="wilayahColor.Barat"></span>Wilayah Indonesia Bagian Barat</span>
+          <span class="sw"><span class="chip" [style.background]="wilayahColor.Tengah"></span>Wilayah Indonesia Bagian Tengah</span>
+          <span class="sw"><span class="chip" [style.background]="wilayahColor.Timur"></span>Wilayah Indonesia Bagian Timur</span>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h2 class="h6 font-weight-bold mb-0">Peluang Investasi Terbuka</h2>
-    <span class="small text-muted">siap diakses calon mitra</span>
+  <div class="card mb-4">
+    <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Produktivitas komoditas nasional</h2></div>
+    <div class="card-body">
+      <div class="prod-bar-row" *ngFor="let r of productivityRows">
+        <span class="pb-label">{{ r.nama }}</span>
+        <div class="prod-bar-track"><div class="prod-bar-fill" [style.width.%]="r.pct" [style.background]="r.color"></div></div>
+        <span class="prod-bar-val mono">{{ r.val.toFixed(1) }} t/Ha</span>
+        <span class="prod-bar-delta">{{ r.delta >= 0 ? '+' : '' }}{{ r.delta.toFixed(1) }} t/Ha dari rata-rata nasional</span>
+      </div>
+    </div>
   </div>
-  <div class="table-responsive">
-    <table class="table mb-0">
-      <thead>
-        <tr>
-          <th>Kawasan</th>
-          <th>Sektor</th>
-          <th>Estimasi Nilai</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let r of investasiRows">
-          <td>{{ r.kawasan }}</td>
-          <td>{{ r.sektor }}</td>
-          <td class="mono">{{ r.nilai }}</td>
-          <td><span class="badge" [ngClass]="r.statusClass">{{ r.status }}</span></td>
-        </tr>
-      </tbody>
-    </table>
+
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h2 class="h6 font-weight-bold mb-0">Kawasan dengan Produksi Terbesar</h2>
+          <span class="doc-status-pill ok">{{ kategoriFilter === 'Semua' ? 'Semua Sektor' : kategoriFilter }}</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Detail Kawasan</th><th></th></tr></thead>
+            <tbody>
+              <tr *ngFor="let row of topProduksi" (click)="goToKawasanProfile(row.k.id)" style="cursor:pointer">
+                <td>{{ row.k.nama }}</td>
+                <td class="text-right mono">{{ row.d.produksiTon | number:'1.0-0' }} ton &ndash; {{ row.d.produkUnggulan[2].komoditas }}</td>
+              </tr>
+              <tr *ngIf="!topProduksi.length"><td colspan="2" class="text-center text-muted py-4">Tidak ada kawasan yang cocok dengan filter.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Ketersediaan infrastruktur produksi</h2></div>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Jenis Infrastruktur</th><th></th></tr></thead>
+            <tbody>
+              <tr *ngFor="let nm of infrastrukturList">
+                <td>{{ nm }}</td>
+                <td class="text-right"><span class="doc-status-pill ok">Tersedia</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+</ng-container>
+
+<ng-template #gridTpl>
+  <button type="button" class="back-link mb-2" (click)="backToLanding()">&larr; Kembali</button>
+  <dgt-page-head title="Ekonomi &amp; Investasi Kawasan">
+    <div class="d-flex align-items-center" style="gap: .4rem">
+      <label class="small text-muted mb-0" for="ekGridAreaSelect">Area</label>
+      <select id="ekGridAreaSelect" class="form-control form-control-sm" [(ngModel)]="areaFilter">
+        <option value="Semua">Semua Provinsi</option>
+        <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
+      </select>
+    </div>
+  </dgt-page-head>
+  <p class="text-muted" style="margin-top: -.6rem">{{ selectedKomoditas?.nama }} &middot; {{ gridKawasan.length }} kawasan</p>
+
+  <div class="inv-card-grid">
+    <div class="inv-kawasan-card" *ngFor="let k of gridKawasan" (click)="goToKawasanProfile(k.id)">
+      <div class="ikc-photo"><img src="assets/hero-kawasan.jpg" alt="Foto {{ k.nama }}" /></div>
+      <div class="ikc-body">
+        <div class="ikc-nama">{{ k.nama }}</div>
+        <div class="ikc-prov">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 21s7-7.58 7-12a7 7 0 1 0-14 0c0 4.42 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>
+          </svg>
+          {{ k.provinsi }}
+        </div>
+        <div class="ikc-stats">
+          <div class="ikc-stat">
+            <span class="ic good">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v18"/><path d="M5 21h14"/><path d="M5 7l-3 6a4 4 0 0 0 8 0z"/><path d="M19 7l-3 6a4 4 0 0 0 8 0z"/><path d="M5 7h14"/>
+              </svg>
+            </span>
+            <span><span class="st-label d-block">Produksi</span><b>{{ detailFor(k).produksiTon | number:'1.0-0' }} ton</b></span>
+          </div>
+          <div class="ikc-stat">
+            <span class="ic warn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21a9 9 0 1 1 9-9"/><path d="M12 12l4-4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>
+              </svg>
+            </span>
+            <span><span class="st-label d-block">IDI</span><b>{{ detailFor(k).indeksDukungan }}</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="text-muted mb-0" *ngIf="!gridKawasan.length">Tidak ada kawasan yang cocok dengan filter.</p>
+  </div>
+</ng-template>

@@ -17,8 +17,7 @@ export const MODULE_ICON_PATHS: { [id: string]: string } = {
     '<ellipse cx="12" cy="6" rx="7" ry="2.4"/><path d="M5 6v5c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4V6"/><path d="M5 11v5c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4v-5"/>',
   analitik:
     '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.7" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
-  intelijen:
-    '<rect x="6" y="6" width="12" height="12" rx="2.2"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/><circle cx="9.5" cy="10.2" r="1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="10.2" r="1" fill="currentColor" stroke="none"/><path d="M9 14.3c1 .8 3 .8 4 0"/>'
+  laporan: '<path d="M6 9V4h12v5"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v4H6z"/><circle cx="17" cy="12.2" r="0.6" fill="currentColor" stroke="none"/>'
 };
 
 export function moduleIconSvg(id: string): string {

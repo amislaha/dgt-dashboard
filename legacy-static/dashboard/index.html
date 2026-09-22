@@ -240,6 +240,7 @@
   }
   select:hover, .btn:hover { border-color: var(--primary-line); }
   .btn.primary { background: var(--primary-soft); border-color: var(--primary-line); color: var(--primary); }
+  .btn.danger { background: var(--critical-soft); border-color: transparent; color: var(--critical); }
   .btn.small { padding: 0.3rem 0.55rem; font-size: 0.7rem; }
   .btn[aria-pressed="true"] { background: var(--primary-soft); border-color: var(--primary-line); color: var(--primary); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -763,6 +764,188 @@
   .ews-body .d { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.1rem; }
   .ews-meta { font-size: 0.66rem; color: var(--text-faint); margin-top: 0.25rem; }
 
+  /* ---------- Data Induk & Profil Kawasan: list + per-kawasan drill-down detail ---------- */
+  .profil-kpi-color { border: none; }
+  .profil-kpi-color .k-label { color: rgba(255, 255, 255, 0.82); }
+  .profil-kpi-color .k-value { color: #fff; }
+  .profil-kpi-color.c-good { background: var(--good); }
+  .profil-kpi-color.c-series2 { background: var(--series-2); }
+  .profil-kpi-color.c-primary { background: var(--primary); }
+  .profil-kpi-color.c-warn { background: var(--warn); }
+  .profil-kpi-chip {
+    display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; font-weight: 600;
+    color: #fff; background: rgba(255, 255, 255, 0.18); border-radius: 999px; padding: 0.2rem 0.55rem; margin-top: 0.55rem;
+  }
+  .profil-kpi-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+  .profil-kpi-sub { font-size: 0.68rem; color: rgba(255, 255, 255, 0.85); margin-top: 0.4rem; }
+
+  .subtab-row { display: flex; gap: 1.4rem; border-bottom: 1px solid var(--border); margin-bottom: 1.1rem; flex-wrap: wrap; }
+  .subtab-btn {
+    background: none; border: none; padding: 0.15rem 0 0.7rem; font-size: 0.84rem; font-weight: 600;
+    color: var(--text-faint); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .subtab-btn:hover { color: var(--text-dim); }
+  .subtab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  .stat-cols { display: flex; flex-wrap: wrap; gap: 1.8rem; }
+  .stat-col .k-value { font-size: 1.8rem; font-weight: 700; }
+  .stat-col .k-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+
+  .pill-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .pill-list .pill {
+    font-size: 0.7rem; font-weight: 600; padding: 0.22rem 0.6rem; border-radius: 999px;
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text-dim);
+  }
+
+  .doc-status-row {
+    display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--border-soft); font-size: 0.8rem; gap: 0.6rem;
+  }
+  .doc-status-row:last-child { border-bottom: none; }
+  .doc-status-pill {
+    display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; font-weight: 700;
+    padding: 0.16rem 0.55rem; border-radius: 999px; white-space: nowrap;
+  }
+  .doc-status-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .doc-status-pill.ok { background: var(--good-soft); color: var(--good); }
+  .doc-status-pill.missing { background: var(--critical-soft); color: var(--critical); }
+
+  .rekom-block { margin-bottom: 1.1rem; }
+  .rekom-block:last-child { margin-bottom: 0; }
+  .rekom-block h3 { display: flex; align-items: center; gap: 0.4rem; font-size: 0.86rem; margin: 0 0 0.5rem; }
+  .rekom-block h3 svg { width: 16px; height: 16px; color: var(--primary); flex: 0 0 auto; }
+  .rekom-block ul { margin: 0; padding-left: 1.1rem; font-size: 0.8rem; color: var(--text-dim); line-height: 1.65; }
+
+  .kesehatan-note { font-size: 0.76rem; color: var(--text-faint); margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px solid var(--border-soft); }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; font-weight: 600;
+    color: var(--text-dim); cursor: pointer; background: none; border: none; padding: 0; margin-bottom: 0.7rem;
+  }
+  .back-link:hover { color: var(--primary); }
+  .back-link svg { width: 14px; height: 14px; }
+
+  .profil-detail-source {
+    display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.74rem; color: var(--text-faint);
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 0.4rem 0.8rem;
+    margin-bottom: 1.1rem;
+  }
+  .profil-detail-source svg { width: 13px; height: 13px; flex: 0 0 auto; }
+
+  .placeholder-panel { padding: 2.2rem 1rem; text-align: center; color: var(--text-faint); font-size: 0.82rem; }
+
+  /* ---------- Ekonomi & Investasi Kawasan + "Profil Investasi Kawasan" (Data Induk Ekonomi tab) ---------- */
+  .investasi-hero { width: 100%; height: 220px; border-radius: var(--radius); overflow: hidden; margin-bottom: 0.9rem; }
+  .investasi-hero img, .investasi-hero svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .investasi-desc-panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .investasi-desc-head { background: var(--primary); color: #fff; font-weight: 700; font-size: 0.82rem; padding: 0.6rem 0.9rem; }
+  .investasi-desc-head.teal { background: var(--series-2); }
+  .investasi-desc-body { padding: 0.9rem 1rem; background: var(--panel-2); }
+  .investasi-desc-row { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.4rem 0; font-size: 0.8rem; }
+  .investasi-desc-row svg { width: 15px; height: 15px; color: var(--primary); flex: 0 0 auto; margin-top: 0.15rem; }
+  .investasi-desc-row .lbl { color: var(--text-dim); flex: 1 1 auto; }
+  .investasi-desc-row b { color: var(--text); font-weight: 700; white-space: nowrap; }
+  .investasi-minimap { position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border-soft); min-height: 260px; }
+  .investasi-minimap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .investasi-minimap .loc-dot {
+    position: absolute; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff;
+    transform: translate(-50%, -50%); box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.18);
+  }
+  .investasi-desc-text { padding: 0.9rem 1rem; font-size: 0.82rem; color: var(--text-dim); line-height: 1.7; }
+  .investasi-placeholder-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; padding: 0.9rem; }
+  .investasi-placeholder-box { aspect-ratio: 3 / 4; background: var(--panel-3); border-radius: var(--radius-sm); }
+  @media (max-width: 760px) { .investasi-desc-grid { grid-template-columns: 1fr !important; } }
+
+  /* ---- commodity shortcut cards ---- */
+  .komoditas-card {
+    background: var(--good); color: #fff; border-radius: var(--radius); padding: 1rem 1.1rem;
+    position: relative; cursor: pointer; min-height: 92px; display: flex; flex-direction: column; justify-content: flex-end;
+    border: 2px solid transparent; transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .komoditas-card:hover { transform: translateY(-2px); }
+  .komoditas-card.active { border-color: #fff; }
+  .komoditas-card .kat-badge {
+    position: absolute; top: 0.7rem; right: 0.7rem; background: rgba(255, 255, 255, 0.18);
+    font-size: 0.66rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 999px;
+  }
+  .komoditas-card .kom-nama { font-size: 1rem; font-weight: 700; }
+  .komoditas-card .kom-sub { font-size: 0.72rem; opacity: 0.85; margin-top: 0.15rem; }
+  .komoditas-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.7rem; margin-bottom: 1rem; }
+  @media (max-width: 980px) { .komoditas-card-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ---- filter sidebar + map ---- */
+  .inv-layout { display: grid; grid-template-columns: 260px 1fr; gap: 0.9rem; align-items: start; }
+  @media (max-width: 980px) { .inv-layout { grid-template-columns: 1fr; } }
+  .inv-filter-field { margin-bottom: 0.8rem; }
+  .inv-filter-field label { display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-dim); margin-bottom: 0.3rem; }
+  .inv-filter-field select, .inv-filter-field input { width: 100%; }
+  .inv-map-wrap { position: relative; height: 460px; border-radius: var(--radius); overflow: hidden; }
+  .inv-map-wrap .basemap-el, .inv-map-wrap .basemap-wrap { height: 100%; }
+  .inv-wilayah-legend { display: flex; gap: 1.2rem; flex-wrap: wrap; font-size: 0.76rem; color: var(--text-dim); margin-top: 0.7rem; }
+  .inv-wilayah-legend .sw { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .inv-wilayah-legend .chip { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  /* ---- productivity bars ---- */
+  .prod-bar-row { display: flex; align-items: center; gap: 0.9rem; padding: 0.55rem 0; }
+  .prod-bar-row .pb-label { width: 90px; flex: 0 0 auto; font-size: 0.82rem; font-weight: 600; }
+  .prod-bar-track { flex: 1 1 auto; height: 9px; border-radius: 999px; background: var(--panel-3); overflow: hidden; }
+  .prod-bar-fill { height: 100%; border-radius: 999px; }
+  .prod-bar-val { flex: 0 0 auto; font-size: 0.8rem; font-weight: 700; width: 56px; text-align: right; }
+  .prod-bar-delta {
+    flex: 0 0 auto; font-size: 0.68rem; font-weight: 700; color: var(--warn); background: var(--warn-soft);
+    padding: 0.16rem 0.5rem; border-radius: 999px; white-space: nowrap;
+  }
+
+  /* ---- kawasan investment card grid (per-komoditas drill-down) ---- */
+  .inv-card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  @media (max-width: 1200px) { .inv-card-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .inv-card-grid { grid-template-columns: 1fr; } }
+  .inv-kawasan-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .inv-kawasan-card:hover { transform: translateY(-2px); box-shadow: 0 10px 22px -16px rgba(15, 25, 34, 0.35); }
+  .inv-kawasan-card .ikc-photo { height: 140px; background: var(--panel-3); }
+  .inv-kawasan-card .ikc-photo img, .inv-kawasan-card .ikc-photo svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .inv-kawasan-card .ikc-body { padding: 0.8rem 0.9rem; }
+  .inv-kawasan-card .ikc-nama { font-size: 0.92rem; font-weight: 700; color: var(--primary); }
+  .inv-kawasan-card .ikc-prov { display: flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; color: var(--text-dim); margin-top: 0.2rem; }
+  .inv-kawasan-card .ikc-prov svg { width: 12px; height: 12px; flex: 0 0 auto; }
+  .inv-kawasan-card .ikc-stats { display: flex; gap: 1.1rem; margin-top: 0.7rem; }
+  .inv-kawasan-card .ikc-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.76rem; }
+  .inv-kawasan-card .ikc-stat .ic {
+    width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: #fff; flex: 0 0 auto;
+  }
+  .inv-kawasan-card .ikc-stat .ic svg { width: 13px; height: 13px; }
+  .inv-kawasan-card .ikc-stat .ic.good { background: var(--good); }
+  .inv-kawasan-card .ikc-stat .ic.warn { background: var(--warn); }
+  .inv-kawasan-card .ikc-stat b { display: block; color: var(--text); }
+  .inv-kawasan-card .ikc-stat .st-label { color: var(--text-faint); font-size: 0.66rem; }
+
+  /* ---------- Laporan ---------- */
+  .lap-toolbar-label { font-size: 0.76rem; font-weight: 700; color: var(--text-dim); }
+  .lap-history-link {
+    background: none; border: none; padding: 0; color: var(--primary); font-size: 0.78rem;
+    font-weight: 600; text-decoration: underline; cursor: pointer;
+  }
+  .lap-card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin-bottom: 1.3rem; }
+  @media (max-width: 1100px) { .lap-card-grid { grid-template-columns: repeat(2, 1fr); } }
+  .lap-card {
+    position: relative; height: 150px; border-radius: var(--radius); overflow: hidden;
+    background-size: cover; background-position: center; padding: 0.85rem;
+    display: flex; flex-direction: column; justify-content: space-between; cursor: default;
+    border: 1px solid var(--border);
+  }
+  .lap-card-icon { width: 26px; height: 26px; color: #fff; opacity: 0.92; align-self: flex-end; }
+  .lap-card-icon svg { width: 100%; height: 100%; }
+  .lap-card-title { color: #fff; font-weight: 700; font-size: 0.92rem; }
+  .lap-card-sub { color: rgba(255, 255, 255, 0.82); font-size: 0.7rem; margin-top: 0.1rem; }
+  .lap-ai-panel {
+    background: var(--panel); border: 1.5px solid var(--primary-line); border-radius: var(--radius);
+    padding: 1.1rem 1.2rem; box-shadow: 0 0 0 4px var(--primary-soft);
+  }
+
   @media (max-width: 760px) {
     .rail { position: fixed; left: -240px; top: 0; bottom: 0; z-index: 30; transition: left 0.2s ease; background: var(--bg-2); }
     .rail.open { left: 0; }
@@ -919,16 +1102,16 @@
   }
 
   var kawasan = [
-    { id: "k1", nama: "SKP Salor", provinsi: "Papua Selatan", tipe: "SKP", tahap: "Berkembang", populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: "med", mapX: 840, mapY: 320, lat: -8.40, lon: 140.40, foto: "assets/kawasan/skp-salor/Lahan-Transmigran.jpg" },
-    { id: "k2", nama: "KPB Rambutan", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Mandiri", populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: "low", mapX: 212, mapY: 231, lat: -3.05, lon: 104.75, foto: "assets/kawasan/kpb-rambutan/623840349e326.jpg" },
-    { id: "k3", nama: "SKP Towuti", provinsi: "Sulawesi Tengah", tipe: "SKP", tahap: "Tumbuh", populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: "high", mapX: 498, mapY: 199, lat: -1.50, lon: 120.70, foto: "assets/kawasan/skp-towuti/transmigrasi-ant-basri-marzuki-msl.webp" },
-    { id: "k4", nama: "KPB Malinau", provinsi: "Kalimantan Utara", tipe: "KPB", tahap: "Berkembang", populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: "med", mapX: 423, mapY: 102, lat: 3.58, lon: 116.63, foto: "assets/kawasan/kpb-malinau/50_infrastruktur-sebagai-kunci-keberhasilan-program-transmigrasi_2026-06-28-23-08-26.jpg" },
-    { id: "k5", nama: "SKP Tobadak", provinsi: "Sulawesi Barat", tipe: "SKP", tahap: "Rintisan", populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: "high", mapX: 460, mapY: 225, lat: -2.32, lon: 119.15, foto: "assets/kawasan/skp-tobadak/transmigrasi-mutiara.jpg" },
-    { id: "k6", nama: "KPB Bathin III", provinsi: "Jambi", tipe: "KPB", tahap: "Mandiri", populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: "low", mapX: 181, mapY: 202, lat: -1.60, lon: 102.10, foto: "assets/kawasan/kpb-bathin-iii/2024-08-01-110703-kecamatan-bathin-solapan1.jpg" },
-    { id: "k7", nama: "SKP Bina Buay", provinsi: "Bengkulu", tipe: "SKP", tahap: "Tumbuh", populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: "med", mapX: 169, mapY: 248, lat: -3.80, lon: 102.30, foto: "assets/kawasan/skp-bina-buay/21c90dc1-9cb4-4fa6-a9d9-df1a8470433d_w1080_h608_s.avif" },
-    { id: "k8", nama: "KPB Pulau Rimau", provinsi: "Sumatera Selatan", tipe: "KPB", tahap: "Berkembang", populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: "low", mapX: 235, mapY: 210, lat: -2.85, lon: 104.55, foto: "assets/kawasan/kpb-pulau-rimau/Picsart_25-08-05_09-20-34-780-1024x575.webp" },
-    { id: "k9", nama: "SKP Kobisonta", provinsi: "Maluku Utara", tipe: "SKP", tahap: "Rintisan", populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: "high", mapX: 618, mapY: 136, lat: -0.35, lon: 127.95, foto: "assets/kawasan/skp-kobisonta/WhatsApp-Image-2022-10-03-at-07.10.40.jpeg" },
-    { id: "k10", nama: "KPB Air Terang", provinsi: "Kalimantan Tengah", tipe: "KPB", tahap: "Tumbuh", populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: "med", mapX: 369, mapY: 199, lat: -1.50, lon: 113.50, foto: "assets/kawasan/kpb-air-terang/Sigulai_Simeulue.jpg" }
+    { id: "k1", nama: "SKP Salor", provinsi: "Papua Selatan", kabupaten: "Kabupaten Merauke", kecamatan: 5, desa: 9, tipe: "SKP", tahap: "Berkembang", populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: "med", mapX: 840, mapY: 320, lat: -8.40, lon: 140.40, foto: "assets/kawasan/skp-salor/Lahan-Transmigran.jpg" },
+    { id: "k2", nama: "KPB Rambutan", provinsi: "Sumatera Selatan", kabupaten: "Kabupaten Banyuasin", kecamatan: 8, desa: 14, tipe: "KPB", tahap: "Mandiri", populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: "low", mapX: 212, mapY: 231, lat: -3.05, lon: 104.75, foto: "assets/kawasan/kpb-rambutan/623840349e326.jpg" },
+    { id: "k3", nama: "SKP Towuti", provinsi: "Sulawesi Tengah", kabupaten: "Kabupaten Morowali", kecamatan: 4, desa: 7, tipe: "SKP", tahap: "Tumbuh", populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: "high", mapX: 498, mapY: 199, lat: -1.50, lon: 120.70, foto: "assets/kawasan/skp-towuti/transmigrasi-ant-basri-marzuki-msl.webp" },
+    { id: "k4", nama: "KPB Malinau", provinsi: "Kalimantan Utara", kabupaten: "Kabupaten Malinau", kecamatan: 6, desa: 10, tipe: "KPB", tahap: "Berkembang", populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: "med", mapX: 423, mapY: 102, lat: 3.58, lon: 116.63, foto: "assets/kawasan/kpb-malinau/50_infrastruktur-sebagai-kunci-keberhasilan-program-transmigrasi_2026-06-28-23-08-26.jpg" },
+    { id: "k5", nama: "SKP Tobadak", provinsi: "Sulawesi Barat", kabupaten: "Kabupaten Mamuju Tengah", kecamatan: 3, desa: 5, tipe: "SKP", tahap: "Rintisan", populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: "high", mapX: 460, mapY: 225, lat: -2.32, lon: 119.15, foto: "assets/kawasan/skp-tobadak/transmigrasi-mutiara.jpg" },
+    { id: "k6", nama: "KPB Bathin III", provinsi: "Jambi", kabupaten: "Kabupaten Bungo", kecamatan: 9, desa: 15, tipe: "KPB", tahap: "Mandiri", populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: "low", mapX: 181, mapY: 202, lat: -1.60, lon: 102.10, foto: "assets/kawasan/kpb-bathin-iii/2024-08-01-110703-kecamatan-bathin-solapan1.jpg" },
+    { id: "k7", nama: "SKP Bina Buay", provinsi: "Bengkulu", kabupaten: "Kabupaten Kaur", kecamatan: 4, desa: 6, tipe: "SKP", tahap: "Tumbuh", populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: "med", mapX: 169, mapY: 248, lat: -3.80, lon: 102.30, foto: "assets/kawasan/skp-bina-buay/21c90dc1-9cb4-4fa6-a9d9-df1a8470433d_w1080_h608_s.avif" },
+    { id: "k8", nama: "KPB Pulau Rimau", provinsi: "Sumatera Selatan", kabupaten: "Kabupaten Musi Banyuasin", kecamatan: 7, desa: 12, tipe: "KPB", tahap: "Berkembang", populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: "low", mapX: 235, mapY: 210, lat: -2.85, lon: 104.55, foto: "assets/kawasan/kpb-pulau-rimau/Picsart_25-08-05_09-20-34-780-1024x575.webp" },
+    { id: "k9", nama: "SKP Kobisonta", provinsi: "Maluku Utara", kabupaten: "Kabupaten Halmahera Tengah", kecamatan: 3, desa: 4, tipe: "SKP", tahap: "Rintisan", populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: "high", mapX: 618, mapY: 136, lat: -0.35, lon: 127.95, foto: "assets/kawasan/skp-kobisonta/WhatsApp-Image-2022-10-03-at-07.10.40.jpeg" },
+    { id: "k10", nama: "KPB Air Terang", provinsi: "Kalimantan Tengah", kabupaten: "Kabupaten Seruyan", kecamatan: 5, desa: 8, tipe: "KPB", tahap: "Tumbuh", populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: "med", mapX: 369, mapY: 199, lat: -1.50, lon: 113.50, foto: "assets/kawasan/kpb-air-terang/Sigulai_Simeulue.jpg" }
   ];
 
   var provinces = [];
@@ -1021,8 +1204,21 @@
     totalPopulasi: kawasan.reduce(function (s, k) { return s + k.populasi; }, 0),
     avgIndeks: Math.round(kawasan.reduce(function (s, k) { return s + k.indeks5t; }, 0) / kawasan.length),
     hplTotal: kawasan.reduce(function (s, k) { return s + k.hplHa; }, 0),
-    shmTotal: kawasan.reduce(function (s, k) { return s + k.shmHa; }, 0)
+    shmTotal: kawasan.reduce(function (s, k) { return s + k.shmHa; }, 0),
+    /* Kabupaten/kota is deduped across kawasan (several kawasan can share one kabupaten, same
+       pattern as `provinces` below); kecamatan/desa are summed since each kawasan's count is its
+       own share of that province's administrative units, not an overlapping set. */
+    totalProvinsi: 0,
+    totalKabupaten: 0,
+    totalKecamatan: kawasan.reduce(function (s, k) { return s + k.kecamatan; }, 0),
+    totalDesa: kawasan.reduce(function (s, k) { return s + k.desa; }, 0)
   };
+  (function () {
+    var provSet = {}, kabSet = {};
+    kawasan.forEach(function (k) { provSet[k.provinsi] = 1; kabSet[k.kabupaten] = 1; });
+    nationalKPI.totalProvinsi = Object.keys(provSet).length;
+    nationalKPI.totalKabupaten = Object.keys(kabSet).length;
+  })();
 
   /* ============ svg chart helpers ============ */
   var SVGNS = "http://www.w3.org/2000/svg";
@@ -1184,7 +1380,7 @@
     monitoring: '<path d="M3 20h18"/><path d="M4 16l5-6 4 3 6-8"/><path d="M15 5h5v5"/>',
     ekonomi: '<ellipse cx="12" cy="6" rx="7" ry="2.4"/><path d="M5 6v5c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4V6"/><path d="M5 11v5c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4v-5"/>',
     analitik: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.7" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
-    intelijen: '<rect x="6" y="6" width="12" height="12" rx="2.2"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/><circle cx="9.5" cy="10.2" r="1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="10.2" r="1" fill="currentColor" stroke="none"/><path d="M9 14.3c1 .8 3 .8 4 0"/>'
+    laporan: '<path d="M6 9V4h12v5"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17h12v4H6z"/><circle cx="17" cy="12.2" r="0.6" fill="currentColor" stroke="none"/>'
   };
 
   function railIcon(id) {
@@ -1194,12 +1390,20 @@
   var MODULES = [
     { id: "geospasial", label: "Geospasial & Legalitas Lahan", sub: "HPL · SHM · Trans Tuntas" },
     { id: "profil", label: "Data Induk & Profil Kawasan", sub: "5T · SKP / KPB" },
-    { id: "demografi", label: "Demografi & Pembauran", sub: "Transmigran · Masyarakat Lokal" },
+    /* hidden per request ("make demografi & pembauran hidden but dont delete") — module id, renderer
+       and route all stay fully intact below, just filtered out of the visible rail (see
+       railItemsEl.appendChild loop) rather than removed. A prior full removal of this module (and
+       Infrastruktur & Kolaborasi K/L) was reverted, so this time it's a visibility toggle, not a
+       deletion — flip `hidden` back off to restore it to the rail. */
+    { id: "demografi", label: "Demografi & Pembauran", sub: "Transmigran · Masyarakat Lokal", hidden: true },
     { id: "infrastruktur", label: "Infrastruktur & Kolaborasi K/L", sub: "Trans Gotong Royong" },
     { id: "monitoring", label: "Monitoring Program & Anggaran", sub: "Timeline · Kurva S" },
     { id: "ekonomi", label: "Ekonomi & Investasi Kawasan", sub: "Trans Karya Nusa" },
     { id: "analitik", label: "Analitik, Skoring & EWS", sub: "Prioritas · Peringatan Dini" },
-    { id: "intelijen", label: "Executive Intelligence & AI", sub: "Statistik · AI Assistant" }
+    /* was "Executive Intelligence & AI" (renderIntelijen) — replaced per request with the "Buat
+       Laporan" report-generator hub (renderLaporan); its own Asisten AI panel reuses the same
+       aiAnswer() the old module's chat did, so that piece carries over rather than being dropped. */
+    { id: "laporan", label: "Laporan", sub: "Statistik" }
   ];
 
   var state = {
@@ -1213,11 +1417,22 @@
     selectedProv: null,
     geoView: "dasar",
     geoArea: "Semua",
-    geoDetailTab: "profil"
+    geoDetailTab: "profil",
+    profilView: "list",
+    profilDetailTab: "ekonomi",
+    profilSearch: "",
+    profilStatusFilter: "Semua",
+    monArea: "Semua",
+    invView: "landing",
+    invKomoditas: null,
+    invWilayah: "Semua",
+    invProvFilter: "Semua",
+    invKategori: "Semua",
+    invSearch: ""
   };
 
   var railItemsEl = document.getElementById("railItems");
-  MODULES.forEach(function (m) {
+  MODULES.filter(function (m) { return !m.hidden; }).forEach(function (m) {
     var b = document.createElement("button");
     b.className = "rail-item" + (m.id === state.tab ? " active" : "");
     b.dataset.tab = m.id;
@@ -1275,102 +1490,479 @@
     return "Saya belum memiliki jawaban spesifik untuk itu. Coba tanyakan tentang: kawasan mandiri, risiko tinggi, realisasi anggaran, atau indeks 5T.";
   }
 
-  /* ---------- render: 01 Profil Kawasan ---------- */
-  function renderProfil() {
-    var wrap = h(
-      pageHead("Data Induk & Profil Kawasan Transmigrasi", "Repositori tunggal status perkembangan kawasan (SKP/KPB) berbasis indikator program unggulan 5T.",
-        '<select id="provFilter"><option>Semua Provinsi</option></select>') +
-      '<div class="kpi-grid">' +
-        kpiTile("Total Kawasan", nationalKPI.totalKawasan, "Seluruh Indonesia", "flat") +
-        kpiTile("SKP / KPB", nationalKPI.totalSKP + " / " + nationalKPI.totalKPB, "Satuan Kawasan · Kawasan Pembangunan", "flat") +
-        kpiTile("Populasi Transmigran", nationalKPI.totalPopulasi.toLocaleString("id-ID"), "▲ 3.2% dari kuartal lalu", "up") +
-        kpiTile("Rata-rata Indeks 5T", nationalKPI.avgIndeks, "▲ 4 poin", "up") +
+  /* ---------- render: 01 Profil Kawasan (Data Induk & Profil Kawasan) ----------
+     Per-kawasan Ekonomi/Sosial/Perencanaan detail is computed on demand by profilDetailData()
+     rather than stored as ~15 extra hand-authored literals per kawasan entry: it derives
+     everything from the base fields already on `kawasan` (populasi, indeks5t, hplHa, shmHa,
+     tahap, kecamatan, desa) plus seededRandom(k.id) for per-kawasan variation — the same helper
+     cityIllustration() already uses. This keeps numbers internally consistent (e.g. the SHM
+     certified-share donut ties back to the same hplHa/shmHa pair Geospasial's legality layer
+     uses) instead of risking a second, disconnected land-legality dataset. */
+  var PRODUK_POOL = {
+    "Pangan": ["Padi Sawah", "Jagung", "Ubi Kayu", "Kedelai"],
+    "Peternakan": ["Sapi Potong", "Ayam Petelur", "Kambing", "Itik"],
+    "Perkebunan": ["Kelapa Sawit", "Karet", "Kopi", "Kakao"],
+    "Pertambangan": ["Batu Gamping", "Pasir Kuarsa", "Nikel Laterit", "Emas Rakyat"]
+  };
+  var MATA_PENCAHARIAN_POOL = ["Petani", "Peternak", "Pekebun", "Nelayan", "Pedagang", "Pengrajin"];
+  var FASKES_POOL = ["Rumah Sakit", "Posyandu", "Klinik", "Apotik", "Posbindu", "Polindes"];
+
+  /* "Indeks Intrans"/"Indeks Kinerja Utama" on the landing page bucket every kawasan into the same
+     Mandiri/Berkembang/Tertinggal 3-way classification used nationally for transmigration areas —
+     distinct from the finer 4-stage `tahap` field (Rintisan/Tumbuh/Berkembang/Mandiri) used
+     elsewhere, so two different source fields are bucketed into it for two donuts that read as
+     related but not identical. */
+  function profilBucketIndeks(v) { return v >= 75 ? "Mandiri" : (v >= 45 ? "Berkembang" : "Tertinggal"); }
+  function profilBucketTahap(t) { return t === "Mandiri" ? "Mandiri" : (t === "Berkembang" ? "Berkembang" : "Tertinggal"); }
+
+  function profilDetailData(k) {
+    var rnd = seededRandom(k.id);
+    var totalJiwa = k.populasi;
+    var produktifPct = 60 + Math.round(rnd() * 8);
+    var tuaPct = 2 + Math.round(rnd() * 3);
+    var mudaPct = 100 - produktifPct - tuaPct;
+    var produktifJiwa = Math.round(totalJiwa * produktifPct / 100);
+    var tuaJiwa = Math.round(totalJiwa * tuaPct / 100);
+    var mudaJiwa = totalJiwa - produktifJiwa - tuaJiwa;
+
+    var bidangTotal = Math.max(20, Math.round(k.populasi / 40));
+    var bidangTerbit = Math.round(bidangTotal * (k.shmHa / k.hplHa));
+    var bidangMenunggu = bidangTotal - bidangTerbit;
+
+    var maju = Math.max(0, Math.round(k.desa * (k.tahap === "Mandiri" ? 0.2 : 0.05)));
+    var berkembang = Math.round(k.desa * (k.tahap === "Rintisan" ? 0.35 : 0.55));
+    var tertinggal = Math.max(0, k.desa - maju - berkembang);
+
+    var produkUnggulan = ["Pangan", "Peternakan", "Perkebunan", "Pertambangan"].map(function (kat) {
+      var pool = PRODUK_POOL[kat];
+      return { kategori: kat, komoditas: pool[Math.floor(rnd() * pool.length)], perHa: (6 + rnd() * 24).toFixed(1), tahun: 2026 };
+    });
+
+    var mpShuffled = MATA_PENCAHARIAN_POOL.slice().sort(function () { return rnd() - 0.5; });
+    var mataPencaharian = mpShuffled.slice(0, 3).map(function (jenis, i) {
+      return { jenis: jenis, jumlah: Math.max(5, Math.round(k.populasi * [0.16, 0.06, 0.03][i])) };
+    });
+
+    var faskesMissingCount = k.indeks5t >= 70 ? 2 : (k.indeks5t >= 45 ? 4 : 6);
+
+    /* ---- investment-profile fields (Ekonomi & Investasi Kawasan module) ---- */
+    var tahapBase = { "Mandiri": 4.2, "Berkembang": 3.2, "Tumbuh": 2.2, "Rintisan": 1.2 }[k.tahap];
+    var indeksInfra = Math.min(5, Math.max(1, k.indeks5t / 100 * 4 + rnd() * 1)).toFixed(2);
+    var indeksKelembagaan = Math.min(5, Math.max(1, tahapBase + rnd() * 0.8)).toFixed(2);
+    var indeksDukungan = Math.min(5, Math.max(1, (Number(indeksInfra) + Number(indeksKelembagaan)) / 2 + (rnd() * 0.6 - 0.3))).toFixed(2);
+    var dukunganLabel = indeksDukungan >= 3.5 ? "sangat mendukung" : indeksDukungan >= 2 ? "mendukung" : indeksDukungan >= 1 ? "netral" : "kurang mendukung";
+    var produksiTon = Math.round(800 + rnd() * 9000);
+    var top2 = produkUnggulan.slice(0, 2);
+    var lahan1 = Math.round(k.hplHa * 0.18), lahan2 = Math.round(k.hplHa * 0.12);
+    var produksi1 = produksiTon, produksi2 = Math.round(produksiTon * 0.35 + rnd() * 500);
+    var deskripsiInvestasi = "Komoditas unggulan yang dicantumkan adalah " + top2[0].komoditas.toLowerCase() + " dan " + top2[1].komoditas.toLowerCase() + ". " +
+      top2[0].komoditas + " menghasilkan produksi sebesar " + produksi1.toLocaleString("id-ID") + " ton per tahun dari luas lahan " + lahan1.toLocaleString("id-ID") + " hektare. " +
+      "Sementara itu, " + top2[1].komoditas + " mencatatkan produksi sebesar " + produksi2.toLocaleString("id-ID") + " ton per tahun dengan luas lahan " + lahan2.toLocaleString("id-ID") + " hektare.";
+
+    return {
+      pendudukJiwa: totalJiwa,
+      luasHa: k.hplHa,
+      dayaTampungKK: Math.max(20, Math.round(k.populasi * 0.028)),
+      nilaiIntrans: (k.indeks5t + (rnd() * 4 - 2)).toFixed(2),
+      kepadatan: (totalJiwa / k.hplHa).toFixed(2),
+      kategoriIntrans: profilBucketIndeks(k.indeks5t),
+      produkUnggulan: produkUnggulan,
+      pasar: Math.max(1, Math.round(k.desa / 3)),
+      kios: Math.round(k.populasi / 45),
+      bumdes: k.desa,
+      lembagaLain: Math.round(k.populasi / 220),
+      pendapatanPerKapita: 700000 + k.indeks5t * 6200 + Math.round(rnd() * 40000),
+      mataPencaharian: mataPencaharian,
+      strukturUsia: { produktif: produktifJiwa, produktifPct: produktifPct, muda: mudaJiwa, mudaPct: mudaPct, tua: tuaJiwa, tuaPct: tuaPct },
+      pendidikan: { sd: k.desa + Math.round(rnd() * 3), smp: Math.round(k.desa * 0.6) + 1, sma: Math.round(k.desa * 0.35) + 1 },
+      kesehatan: { puskesmas: Math.max(1, k.kecamatan - Math.round(rnd() * 2)), pustu: Math.round(k.desa * 0.85), mandiri: Math.round(rnd() * 3) },
+      faskesMissing: FASKES_POOL.slice(0, faskesMissingCount),
+      statusDesa: { maju: maju, berkembang: berkembang, tertinggal: tertinggal },
+      dokumen: { rkt: true, rtsp: k.tahap === "Mandiri" || k.tahap === "Berkembang", rskp: k.tahap === "Mandiri" },
+      statusLahan: "HPL",
+      konektivitas: k.risiko === "high" ? "Belum ada" : "Internet",
+      sertifikasi: { total: bidangTotal, terbit: bidangTerbit, menunggu: bidangMenunggu, pct: Math.round(bidangTerbit / bidangTotal * 100) },
+      indeksInfra: indeksInfra,
+      indeksKelembagaan: indeksKelembagaan,
+      indeksDukungan: indeksDukungan,
+      dukunganLabel: dukunganLabel,
+      produksiTon: produksiTon,
+      deskripsiInvestasi: deskripsiInvestasi
+    };
+  }
+
+  /* ---------- Ekonomi & Investasi Kawasan: national wilayah grouping ----------
+     "Wilayah Indonesia Bagian Barat/Tengah/Timur" is a standard 3-way regional classification
+     (Sumatra+Jawa+Kalimantan Barat / rest of Kalimantan+Sulawesi+Bali-Nusra / Maluku+Papua) — looked
+     up by provinsi rather than derived from raw longitude, since a couple of these provinces
+     (Kalimantan Tengah especially) sit at a longitude that would otherwise misclassify them. */
+  var WILAYAH_BY_PROVINSI = {
+    "Sumatera Selatan": "Barat", "Jambi": "Barat", "Bengkulu": "Barat",
+    "Sulawesi Tengah": "Tengah", "Sulawesi Barat": "Tengah", "Kalimantan Utara": "Tengah", "Kalimantan Tengah": "Tengah",
+    "Papua Selatan": "Timur", "Maluku Utara": "Timur"
+  };
+  var WILAYAH_COLOR_HEX = { "Barat": "#c09546", "Tengah": "#8e3b96", "Timur": "#6b7a3a" };
+  function wilayahOf(k) { return WILAYAH_BY_PROVINSI[k.provinsi] || "Tengah"; }
+
+  /* "Profil Investasi Kawasan" — appended to the Data Induk detail page's Ekonomi tab rather than
+     built as a third, separate kawasan-profile surface (the Ekonomi & Investasi Kawasan module's
+     own "Lihat Detail" cards link straight here, see renderEkonomi() below). Reuses the same
+     static-basemap locator asset/projection math as Geospasial's inset rather than attempting a
+     fake zoomed street map — there's no real per-kawasan cadastral data behind this dataset (see
+     CLAUDE.md "Data layer") to draw one from. */
+  function investasiProfileHtml(k, d) {
+    var icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + ICON_PATHS.ekonomi + '</svg>';
+    function row(label, value) { return '<div class="investasi-desc-row">' + icon + '<span class="lbl">' + label + '</span><b>' + value + '</b></div>'; }
+    var pos = basemapPct(k.lon, k.lat);
+    var heroHtml = k.foto ? '<img src="' + k.foto + '" alt="Foto ' + k.nama + '" />' : cityIllustration(k, 1200, 300);
+
+    return (
+      '<div class="investasi-hero">' + heroHtml + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:0.9rem;margin-bottom:0.9rem" class="investasi-desc-grid">' +
+        '<div class="investasi-desc-panel">' +
+          '<div class="investasi-desc-head">Deskripsi kawasan</div>' +
+          '<div class="investasi-desc-body">' +
+            row("Luas kawasan", d.luasHa.toLocaleString("id-ID") + " ha") +
+            row("Jumlah desa dalam kawasan", k.desa) +
+            row("Total penduduk", d.pendudukJiwa.toLocaleString("id-ID") + " jiwa") +
+            row("Pendapatan per kapita", "Rp " + d.pendapatanPerKapita.toLocaleString("id-ID") + "/kapita/bulan") +
+            row("Indeks kesiapan infrastruktur", d.indeksInfra) +
+            row("Indeks kelembagaan", d.indeksKelembagaan) +
+            row("Indeks dukungan investasi", d.indeksDukungan + " (" + d.dukunganLabel + ")") +
+          '</div>' +
+        '</div>' +
+        '<div class="investasi-minimap">' +
+          '<img src="' + BASEMAP_STATIC_SRC + '" alt="Lokasi ' + k.nama + '" />' +
+          '<span class="loc-dot" style="left:' + pos.xPct.toFixed(2) + '%;top:' + pos.yPct.toFixed(2) + '%;background:' + STAGE_COLOR_HEX[k.tahap] + '"></span>' +
+        '</div>' +
       '</div>' +
-      '<div class="grid-2">' +
-        '<div class="panel"><div class="panel-header"><h2>Daftar Kawasan</h2><span class="hint">klik baris untuk detail</span></div>' +
-        '<div class="table-wrap"><table><thead><tr>' +
-          '<th data-k="nama">Kawasan<span class="arrow"></span></th>' +
-          '<th data-k="provinsi">Provinsi<span class="arrow"></span></th>' +
-          '<th data-k="tahap">Tahap<span class="arrow"></span></th>' +
-          '<th data-k="indeks5t">Indeks 5T<span class="arrow"></span></th>' +
-        '</tr></thead><tbody id="profilTbody"></tbody></table></div></div>' +
-        '<div class="panel"><div class="panel-header"><h2>Detail Kawasan</h2></div><div class="drawer" id="profilDrawer"></div>' +
-        '<div class="panel-header" style="margin-top:1rem"><h2>Distribusi Tahap Kawasan</h2></div>' +
-        '<div id="stageDonut" style="display:flex;justify-content:center"></div>' +
-        '<div class="map-legend" style="justify-content:center;margin-top:0.5rem" id="stageLegend"></div>' +
+      '<div class="investasi-desc-panel" style="margin-bottom:0.9rem">' +
+        '<div class="investasi-desc-head teal">Deskripsi kawasan</div>' +
+        '<div class="investasi-desc-text">' + d.deskripsiInvestasi + '</div>' +
+      '</div>' +
+      '<div class="investasi-desc-panel" style="margin-bottom:0.9rem">' +
+        '<div class="investasi-desc-head teal">Infografis dan Infomemo</div>' +
+        '<div class="investasi-placeholder-grid">' +
+          '<div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="investasi-desc-panel">' +
+        '<div class="investasi-desc-head teal">Galeri</div>' +
+        '<div class="investasi-placeholder-grid">' +
+          '<div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div>' +
         '</div>' +
       '</div>'
     );
+  }
 
-    var provSel = qs(wrap, "#provFilter");
-    ["Semua Provinsi"].concat(provinces.map(function (p) { return p.nama; })).forEach(function (p, i) {
-      if (i === 0) return;
-      var o = document.createElement("option"); o.textContent = p; provSel.appendChild(o);
-    });
-    provSel.value = state.provFilter === "Semua" ? "Semua Provinsi" : state.provFilter;
-    provSel.addEventListener("change", function () {
-      state.provFilter = provSel.value === "Semua Provinsi" ? "Semua" : provSel.value;
-      renderProfilTable();
-    });
+  function renderProfil() {
+    var ICON_BACK = '<path d="M15 18l-6-6 6-6"/>';
+    var ICON_SRC = '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>';
+    function svgIconP(paths, sw) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) + '" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
+    }
+    function searchFieldHtml(id, placeholder) {
+      return '<input type="text" id="' + id + '" placeholder="' + placeholder + '" style="flex:1 1 220px;background:var(--panel-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.42rem 0.7rem;font-size:0.78rem;color:var(--text)" />';
+    }
 
-    qsa(wrap, "th[data-k]").forEach(function (th) {
-      th.addEventListener("click", function () {
-        var k = th.dataset.k;
-        if (state.sortKey === k) state.sortDir *= -1; else { state.sortKey = k; state.sortDir = 1; }
-        renderProfilTable();
-      });
-    });
+    var root = document.createElement("div");
+    paint();
+    return root;
 
-    function renderProfilTable() {
-      var tbody = qs(wrap, "#profilTbody");
-      var rows = kawasan.filter(function (k) { return state.provFilter === "Semua" || k.provinsi === state.provFilter; });
-      rows.sort(function (a, b) {
-        var av = a[state.sortKey], bv = b[state.sortKey];
-        if (typeof av === "string") return av.localeCompare(bv) * state.sortDir;
-        return (av - bv) * state.sortDir;
-      });
-      tbody.innerHTML = rows.map(function (k) {
-        return '<tr data-id="' + k.id + '" class="' + (k.id === state.selectedKawasan ? "selected" : "") + '">' +
-          '<td>' + k.nama + '<div class="hint" style="color:var(--text-faint);font-size:0.66rem">' + k.tipe + '</div></td>' +
-          '<td>' + k.provinsi + '</td>' +
-          '<td><span class="badge ' + stageClass[k.tahap] + ' dot">' + k.tahap + '</span></td>' +
-          '<td><div class="bar-cell"><span class="mono">' + k.indeks5t + '</span><div class="bar-track"><div class="bar-fill" style="width:' + k.indeks5t + '%"></div></div></div></td>' +
+    function paint() {
+      root.innerHTML = "";
+      root.appendChild(state.profilView === "detail" ? buildDetail() : buildList());
+    }
+
+    function openDetail(id) {
+      state.selectedKawasan = id;
+      state.profilView = "detail";
+      state.profilDetailTab = "ekonomi";
+      paint();
+    }
+
+    /* ---- landing view: national KPIs, two classification donuts, searchable kawasan list ---- */
+    function buildList() {
+      var provOptionsHtml = '<option value="Semua">Semua Provinsi</option>' +
+        provinces.map(function (p) { return '<option value="' + p.nama + '">' + p.nama + '</option>'; }).join("");
+
+      var wrap = h(
+        pageHead("Data Induk & Profil Kawasan Transmigrasi", "Repositori tunggal status perkembangan kawasan (SKP/KPB) berbasis indikator program unggulan 5T.",
+          '<div class="field-inline"><label for="profilAreaSelect">Area</label><select id="profilAreaSelect">' + provOptionsHtml + '</select></div>') +
+        '<div class="kpi-grid">' +
+          kpiTile("Jumlah Provinsi", nationalKPI.totalProvinsi, null, "flat") +
+          kpiTile("Jumlah Kabupaten/Kota", nationalKPI.totalKabupaten, null, "flat") +
+          kpiTile("Jumlah Kecamatan", nationalKPI.totalKecamatan, null, "flat") +
+          kpiTile("Jumlah Desa", nationalKPI.totalDesa, null, "flat") +
+        '</div>' +
+        '<div class="grid-2">' +
+          '<div class="panel"><div class="panel-header"><h2>Indeks Intrans</h2></div>' +
+            '<div id="profilDonutIntrans" style="display:flex;justify-content:center"></div>' +
+            '<div class="map-legend" style="justify-content:center;margin-top:0.6rem" id="profilLegendIntrans"></div></div>' +
+          '<div class="panel"><div class="panel-header"><h2>Indeks Kinerja Utama</h2></div>' +
+            '<div id="profilDonutKinerja" style="display:flex;justify-content:center"></div>' +
+            '<div class="map-legend" style="justify-content:center;margin-top:0.6rem" id="profilLegendKinerja"></div></div>' +
+        '</div>' +
+        '<div class="panel"><div class="panel-header"><h2>Daftar Kawasan Transmigrasi</h2></div>' +
+          '<div class="toolbar" style="margin-bottom:0.8rem">' +
+            searchFieldHtml("profilSearchInput", "Cari kawasan atau komoditas..") +
+            '<select id="profilProvSelect">' + provOptionsHtml + '</select>' +
+            '<select id="profilStatusSelect"><option value="Semua">Semua status</option>' +
+              STAGES.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join("") +
+            '</select>' +
+          '</div>' +
+          '<div class="table-wrap"><table><thead><tr><th>Detail Kawasan</th><th>Kabupaten</th><th>Status</th><th></th></tr></thead><tbody id="profilListTbody"></tbody></table></div>' +
+        '</div>'
+      );
+
+      var areaSel = qs(wrap, "#profilAreaSelect");
+      var provSel = qs(wrap, "#profilProvSelect");
+      areaSel.value = state.provFilter; provSel.value = state.provFilter;
+      function syncArea(val) { state.provFilter = val; areaSel.value = val; provSel.value = val; renderDonuts(); renderTable(); }
+      areaSel.addEventListener("change", function () { syncArea(areaSel.value); });
+      provSel.addEventListener("change", function () { syncArea(provSel.value); });
+
+      var statusSel = qs(wrap, "#profilStatusSelect");
+      statusSel.value = state.profilStatusFilter;
+      statusSel.addEventListener("change", function () { state.profilStatusFilter = statusSel.value; renderTable(); });
+
+      var searchInput = qs(wrap, "#profilSearchInput");
+      searchInput.value = state.profilSearch;
+      searchInput.addEventListener("input", function () { state.profilSearch = searchInput.value; renderTable(); });
+
+      function renderDonuts() {
+        var pool = kawasan.filter(function (k) { return state.provFilter === "Semua" || k.provinsi === state.provFilter; });
+        var colors = { "Mandiri": "var(--good)", "Berkembang": "var(--series-2)", "Tertinggal": "var(--critical)" };
+        function paintDonut(bucketFn, mountSel, legendSel) {
+          var counts = { "Mandiri": 0, "Berkembang": 0, "Tertinggal": 0 };
+          pool.forEach(function (k) { counts[bucketFn(k)]++; });
+          var segs = ["Mandiri", "Tertinggal", "Berkembang"].map(function (s) { return { label: s, value: counts[s], color: colors[s] }; });
+          var mount = qs(wrap, mountSel);
+          mount.innerHTML = "";
+          mount.appendChild(donut(segs, { centerLabel: pool.length, centerSub: "kawasan" }));
+          qs(wrap, legendSel).innerHTML = ["Mandiri", "Tertinggal", "Berkembang"].map(function (s) {
+            return '<span class="sw"><span class="chip" style="background:' + colors[s] + '"></span>' + s + ' (' + counts[s] + ')</span>';
+          }).join("");
+        }
+        paintDonut(function (k) { return profilBucketIndeks(k.indeks5t); }, "#profilDonutIntrans", "#profilLegendIntrans");
+        paintDonut(function (k) { return profilBucketTahap(k.tahap); }, "#profilDonutKinerja", "#profilLegendKinerja");
+      }
+
+      function renderTable() {
+        var q = state.profilSearch.toLowerCase();
+        var rows = kawasan.filter(function (k) {
+          if (state.provFilter !== "Semua" && k.provinsi !== state.provFilter) return false;
+          if (state.profilStatusFilter !== "Semua" && k.tahap !== state.profilStatusFilter) return false;
+          if (q) {
+            var d = profilDetailData(k);
+            var hay = (k.nama + " " + k.provinsi + " " + d.produkUnggulan.map(function (p) { return p.komoditas; }).join(" ")).toLowerCase();
+            if (hay.indexOf(q) === -1) return false;
+          }
+          return true;
+        });
+        var tbody = qs(wrap, "#profilListTbody");
+        if (!rows.length) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-faint);padding:1.4rem 0">Tidak ada kawasan yang cocok dengan filter.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = rows.map(function (k) {
+          var d = profilDetailData(k);
+          return '<tr data-id="' + k.id + '">' +
+            '<td><b>' + k.nama + '</b><div class="hint" style="color:var(--text-faint);font-size:0.66rem">' + d.produkUnggulan[2].komoditas + '</div></td>' +
+            '<td>' + k.kabupaten + '</td>' +
+            '<td><span class="badge ' + stageClass[k.tahap] + ' dot">' + k.tahap + '</span></td>' +
+            '<td style="text-align:right"><button class="btn small primary profil-open-btn" data-id="' + k.id + '">Lihat detail</button></td>' +
           '</tr>';
-      }).join("");
-      qsa(wrap, "tbody#profilTbody tr").forEach(function (tr) {
-        tr.addEventListener("click", function () { state.selectedKawasan = tr.dataset.id; renderProfilTable(); renderDrawer(); });
+        }).join("");
+        qsa(wrap, ".profil-open-btn").forEach(function (btn) {
+          btn.addEventListener("click", function () { openDetail(btn.dataset.id); });
+        });
+      }
+
+      renderDonuts();
+      renderTable();
+      return wrap;
+    }
+
+    /* ---- per-kawasan detail: tabbed Ekonomi / Sosial / Perencanaan / Patriot / Media ---- */
+    function buildDetail() {
+      var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; }) || kawasan[0];
+      var d = profilDetailData(k);
+
+      var wrap = h(
+        '<button class="back-link" id="profilBackBtn">' + svgIconP(ICON_BACK, 2.2) + 'Kembali ke Daftar</button>' +
+        '<div class="page-head"><div><h1>' + k.nama + '</h1></div></div>' +
+        '<div class="profil-detail-source">' + svgIconP(ICON_SRC, 2) + '<span>Sumber: Ditjen PKP2Trans · Data IPKT 2023 · Terakhir diperbarui 24 Agustus 2026</span></div>' +
+        '<div class="subtab-row" id="profilSubtabs">' +
+          ["ekonomi", "sosial", "perencanaan", "patriot", "media"].map(function (t) {
+            var label = { ekonomi: "Ekonomi", sosial: "Sosial", perencanaan: "Perencanaan", patriot: "Patriot", media: "Media" }[t];
+            return '<button class="subtab-btn' + (state.profilDetailTab === t ? " active" : "") + '" data-t="' + t + '">' + label + '</button>';
+          }).join("") +
+        '</div>' +
+        '<div id="profilTabBody"></div>'
+      );
+
+      qs(wrap, "#profilBackBtn").addEventListener("click", function () { state.profilView = "list"; paint(); });
+      qsa(wrap, "#profilSubtabs .subtab-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () { state.profilDetailTab = btn.dataset.t; paint(); });
       });
+
+      var body = qs(wrap, "#profilTabBody");
+      if (state.profilDetailTab === "ekonomi") body.appendChild(buildEkonomiTab(k, d));
+      else if (state.profilDetailTab === "sosial") body.appendChild(buildSosialTab(k, d));
+      else if (state.profilDetailTab === "perencanaan") body.appendChild(buildPerencanaanTab(k, d));
+      else body.appendChild(buildStubTab(state.profilDetailTab === "patriot" ? "Patriot" : "Media"));
+
+      return wrap;
     }
 
-    function renderDrawer() {
-      var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; });
-      var d = qs(wrap, "#profilDrawer");
-      if (!k) { d.innerHTML = '<p class="empty">Pilih kawasan pada tabel.</p>'; return; }
-      d.innerHTML = '<h3>' + k.nama + '</h3>' +
-        row("Provinsi", k.provinsi) + row("Tipe", k.tipe) +
-        row("Tahap", '<span class="badge ' + stageClass[k.tahap] + '">' + k.tahap + '</span>') +
-        row("Populasi", k.populasi.toLocaleString("id-ID") + " jiwa") +
-        row("Indeks 5T", k.indeks5t + " / 100") +
-        row("HPL", k.hplHa.toLocaleString("id-ID") + " Ha") +
-        row("SHM Terbit", k.shmHa.toLocaleString("id-ID") + " Ha") +
-        row("Realisasi Anggaran", k.anggaranPct + "%") +
-        row("Tingkat Risiko", '<span class="sev ' + k.risiko + '">' + ({ high: "Tinggi", med: "Sedang", low: "Rendah" })[k.risiko] + '</span>');
+    function buildEkonomiTab(k, d) {
+      var chip = '<span class="profil-kpi-chip">' + k.kecamatan + ' kecamatan · ' + k.desa + ' desa</span>';
+      var wrap = h(
+        '<div class="kpi-grid">' +
+          '<div class="kpi-tile profil-kpi-color c-good"><div class="k-label">Jumlah Penduduk</div><div class="k-value mono">' + d.pendudukJiwa.toLocaleString("id-ID") + ' jiwa</div>' + chip + '<div class="profil-kpi-sub">Kepadatan: ' + d.kepadatan + ' jiwa/ha</div></div>' +
+          '<div class="kpi-tile profil-kpi-color c-series2"><div class="k-label">Luas Kawasan</div><div class="k-value mono">' + d.luasHa.toLocaleString("id-ID") + ' ha</div>' + chip + '<div class="profil-kpi-sub">Rata-rata: ' + Math.round(d.luasHa / k.kecamatan).toLocaleString("id-ID") + ' ha/kecamatan</div></div>' +
+          '<div class="kpi-tile profil-kpi-color c-primary"><div class="k-label">Potensi Daya Tampung</div><div class="k-value mono">' + d.dayaTampungKK.toLocaleString("id-ID") + ' KK</div>' + chip + '<div class="profil-kpi-sub">Sisa kapasitas lahan usaha</div></div>' +
+          '<div class="kpi-tile profil-kpi-color c-warn"><div class="k-label">Nilai Intrans</div><div class="k-value mono">' + d.nilaiIntrans + '</div>' + chip + '<div class="profil-kpi-sub">Kategori: ' + d.kategoriIntrans + '</div></div>' +
+        '</div>' +
+        '<div class="panel"><div class="panel-header"><h2>Produk Unggulan Kawasan</h2></div>' +
+          '<div class="toolbar" style="margin-bottom:0.8rem">' + searchFieldHtml("produkSearchInput", "Cari komoditas..") + '</div>' +
+          '<div class="table-wrap"><table><thead><tr><th>Kategori</th><th>Komoditas</th><th>/Ha</th><th>/Tahun</th><th>Aksi</th></tr></thead><tbody id="produkTbody"></tbody></table></div>' +
+        '</div>' +
+        '<div class="grid-2">' +
+          '<div class="panel"><div class="panel-header"><h2>Sarana &amp; Prasarana Ekonomi</h2></div>' +
+            '<div class="stat-cols"><div class="stat-col"><div class="k-value mono">' + d.pasar + '</div><div class="k-label">Pasar</div></div>' +
+            '<div class="stat-col"><div class="k-value mono">' + d.kios + '</div><div class="k-label">Kios</div></div></div></div>' +
+          '<div class="panel"><div class="panel-header"><h2>Kelembagaan Ekonomi</h2></div>' +
+            '<div class="stat-cols"><div class="stat-col"><div class="k-value mono">' + d.bumdes + '</div><div class="k-label">Bumdes</div></div>' +
+            '<div class="stat-col"><div class="k-value mono">' + d.lembagaLain + '</div><div class="k-label">Lain</div></div></div></div>' +
+        '</div>' +
+        '<div class="grid-2">' +
+          '<div class="panel"><div class="panel-header"><h2>Pendapatan per kapita</h2></div>' +
+            '<div class="stat-col"><div class="k-value mono">Rp ' + d.pendapatanPerKapita.toLocaleString("id-ID") + '</div><div class="k-label">Per bulan</div></div></div>' +
+          '<div class="panel"><div class="panel-header"><h2>Mata pencaharian</h2></div>' +
+            d.mataPencaharian.map(function (m) { return '<div class="detail-row"><span>Jumlah ' + m.jenis.toLowerCase() + '</span><b>' + m.jumlah.toLocaleString("id-ID") + '</b></div>'; }).join("") +
+            '<div class="pill-list" style="margin-top:0.7rem">' + d.mataPencaharian.map(function (m) { return '<span class="pill">' + m.jenis + '</span>'; }).join("") + '</div>' +
+          '</div>' +
+        '</div>' +
+        investasiProfileHtml(k, d)
+      );
+
+      function renderProduk(filter) {
+        var q = filter.toLowerCase();
+        var rows = d.produkUnggulan.filter(function (p) { return !q || (p.kategori + " " + p.komoditas).toLowerCase().indexOf(q) > -1; });
+        qs(wrap, "#produkTbody").innerHTML = rows.map(function (p) {
+          return '<tr><td>' + p.kategori + '</td><td>' + p.komoditas + '</td><td class="mono">' + p.perHa + ' ton/ha</td><td class="mono">' + p.tahun + '</td>' +
+            '<td><button class="btn small" title="Non-fungsional pada prototipe ini">Ubah</button> <button class="btn small danger" title="Non-fungsional pada prototipe ini">Hapus</button></td></tr>';
+        }).join("");
+      }
+      renderProduk("");
+      qs(wrap, "#produkSearchInput").addEventListener("input", function (e) { renderProduk(e.target.value); });
+
+      return wrap;
     }
-    function row(label, val) { return '<div class="row"><span>' + label + '</span><span>' + val + '</span></div>'; }
 
-    var counts = {};
-    STAGES.forEach(function (s) { counts[s] = 0; });
-    kawasan.forEach(function (k) { counts[k.tahap]++; });
-    var colors = { "Rintisan": "var(--critical)", "Tumbuh": "var(--warn)", "Berkembang": "var(--series-2)", "Mandiri": "var(--good)" };
-    var segs = STAGES.map(function (s) { return { label: s, value: counts[s], color: colors[s] }; });
-    qs(wrap, "#stageDonut").appendChild(donut(segs, { centerLabel: kawasan.length, centerSub: "kawasan" }));
-    qs(wrap, "#stageLegend").innerHTML = STAGES.map(function (s) {
-      return '<span class="sw"><span class="chip" style="background:' + colors[s] + '"></span>' + s + ' (' + counts[s] + ')</span>';
-    }).join("");
+    function buildSosialTab(k, d) {
+      var su = d.strukturUsia;
+      var usiaSegs = [
+        { label: "Usia produktif (15-65)", value: su.produktif, color: "var(--primary)" },
+        { label: "Usia < 15 tahun", value: su.muda, color: "var(--series-2)" },
+        { label: "Usia > 65 tahun", value: su.tua, color: "var(--warn)" }
+      ];
+      var sd = d.statusDesa;
+      var totalDesa = sd.maju + sd.berkembang + sd.tertinggal;
+      var desaSegs = [
+        { label: "Desa maju", value: sd.maju, color: "var(--good)" },
+        { label: "Berkembang", value: sd.berkembang, color: "var(--series-2)" },
+        { label: "Tertinggal", value: sd.tertinggal, color: "var(--warn)" }
+      ];
+      function pctOf(v, total) { return total ? Math.round(v / total * 100) : 0; }
 
-    renderProfilTable();
-    renderDrawer();
-    return wrap;
+      var wrap = h(
+        '<div class="grid-2">' +
+          '<div class="panel"><div class="panel-header"><div><h2>Struktur usia penduduk</h2><span class="hint">Terhadap total ' + d.pendudukJiwa.toLocaleString("id-ID") + ' jiwa</span></div></div>' +
+            '<div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap"><div id="profilUsiaDonut"></div>' +
+            '<div class="map-legend" style="flex-direction:column;align-items:flex-start;gap:0.5rem">' +
+              usiaSegs.map(function (s) { return '<span class="sw"><span class="chip" style="background:' + s.color + '"></span>' + s.label + ' &nbsp;<b>' + s.value.toLocaleString("id-ID") + ' · ' + pctOf(s.value, d.pendudukJiwa) + '%</b></span>'; }).join("") +
+            '</div></div></div>' +
+          '<div class="panel"><div class="panel-header"><h2>Pendidikan</h2><span class="hint">Jumlah satuan pendidikan</span></div>' +
+            '<div class="stat-cols">' +
+              '<div class="stat-col"><div class="k-value mono">' + d.pendidikan.sd + '</div><div class="k-label">SD</div></div>' +
+              '<div class="stat-col"><div class="k-value mono">' + d.pendidikan.smp + '</div><div class="k-label">SMP/setara</div></div>' +
+              '<div class="stat-col"><div class="k-value mono">' + d.pendidikan.sma + '</div><div class="k-label">SMA/setara</div></div>' +
+            '</div></div>' +
+        '</div>' +
+        '<div class="grid-2">' +
+          '<div class="panel"><div class="panel-header"><h2>Fasilitas kesehatan</h2></div>' +
+            '<div class="stat-cols">' +
+              '<div class="stat-col"><div class="k-value mono">' + d.kesehatan.puskesmas + '</div><div class="k-label">Puskesmas</div></div>' +
+              '<div class="stat-col"><div class="k-value mono">' + d.kesehatan.pustu + '</div><div class="k-label">Pustu</div></div>' +
+              '<div class="stat-col"><div class="k-value mono">' + d.kesehatan.mandiri + '</div><div class="k-label">Fasilitas mandiri</div></div>' +
+            '</div>' +
+            (d.faskesMissing.length ? '<div class="kesehatan-note">Belum tersedia di kawasan: ' + d.faskesMissing.join(", ") + '.</div>' : "") +
+          '</div>' +
+          '<div class="panel"><div class="panel-header"><div><h2>Status desa kawasan</h2><span class="hint">Komposisi IDM ' + totalDesa + ' desa</span></div></div>' +
+            '<div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap"><div id="profilDesaDonut"></div>' +
+            '<div class="map-legend" style="flex-direction:column;align-items:flex-start;gap:0.5rem">' +
+              desaSegs.map(function (s) { return '<span class="sw"><span class="chip" style="background:' + s.color + '"></span>' + s.label + ' &nbsp;<b>' + s.value + ' · ' + pctOf(s.value, totalDesa) + '%</b></span>'; }).join("") +
+            '</div></div></div>' +
+        '</div>'
+      );
+      qs(wrap, "#profilUsiaDonut").appendChild(donut(usiaSegs, { centerLabel: su.produktifPct + "%", centerSub: "usia produktif" }));
+      qs(wrap, "#profilDesaDonut").appendChild(donut(desaSegs, { centerLabel: totalDesa, centerSub: "desa" }));
+      return wrap;
+    }
+
+    function buildPerencanaanTab(k, d) {
+      var s = d.sertifikasi;
+      var segs = [
+        { label: "Sertifikat terbit (SHM)", value: s.terbit, color: "var(--good)" },
+        { label: "Menunggu penerbitan", value: s.menunggu, color: "var(--warn)" }
+      ];
+      var wrap = h(
+        '<div class="grid-2">' +
+          '<div class="panel">' +
+            '<div class="rekom-block"><h3>' + svgIconP(ICON_PATHS.ekonomi, 1.8) + 'Ekonomi</h3><ul>' +
+              '<li>Pengembangan komoditas unggulan kawasan strategis secara terpadu dari produksi, pengolahan sampai pemasaran dan berkaitan dengan sektor lain.</li>' +
+              '<li>Peningkatan peran BUM Desa dan/atau BUM Desa bersama untuk mendukung pengembangan komoditas unggulan secara terpadu.</li>' +
+              '<li>Sertifikasi/standarisasi produk yang dihasilkan baik secara nasional maupun internasional.</li>' +
+            '</ul></div>' +
+            '<div class="rekom-block"><h3>' + svgIconP(ICON_PATHS.geospasial, 1.8) + 'Sarana Prasarana</h3><ul>' +
+              '<li>Pembangunan jalan antara kawasan transmigrasi dan kota kecil/menengah.</li>' +
+              '<li>Pembangunan jalan antar SKP dan revitalisasi jalan.</li>' +
+              '<li>Penciptaan atau pengembangan lapangan pekerjaan untuk lulusan SMK di kawasan transmigrasi.</li>' +
+            '</ul></div>' +
+            '<div class="rekom-block"><h3>' + svgIconP(ICON_PATHS.demografi, 1.8) + 'Sosial Budaya</h3><ul>' +
+              '<li>Pelibatan pelaku seni dan budaya dalam pengembangan komoditas unggulan secara efektif.</li>' +
+              '<li>Pemanfaatan produk budaya masyarakat dalam pengembangan komoditas unggulan secara optimal.</li>' +
+              '<li>Pelibatan warga dalam pengelolaan institusi budaya, program dan acara, baik langsung maupun melalui organisasi masyarakat madani.</li>' +
+            '</ul></div>' +
+          '</div>' +
+          '<div>' +
+            '<div class="panel"><div class="panel-header"><h2>Dokumen perencanaan</h2></div>' +
+              '<div class="doc-status-row"><span>Dokumen RKT</span><span class="doc-status-pill ' + (d.dokumen.rkt ? "ok" : "missing") + '">' + (d.dokumen.rkt ? "Tersedia" : "Belum ada") + '</span></div>' +
+              '<div class="doc-status-row"><span>Dokumen RTSP</span><span class="doc-status-pill ' + (d.dokumen.rtsp ? "ok" : "missing") + '">' + (d.dokumen.rtsp ? "Tersedia" : "Belum ada") + '</span></div>' +
+              '<div class="doc-status-row"><span>Dokumen RSKP</span><span class="doc-status-pill ' + (d.dokumen.rskp ? "ok" : "missing") + '">' + (d.dokumen.rskp ? "Tersedia" : "Belum ada") + '</span></div>' +
+              '<div class="doc-status-row"><span>Status lahan kawasan</span><span class="badge dot berkembang">' + d.statusLahan + '</span></div>' +
+              '<div class="doc-status-row"><span>Konektivitas digital</span><span class="doc-status-pill ' + (d.konektivitas === "Internet" ? "ok" : "missing") + '">' + d.konektivitas + '</span></div>' +
+            '</div>' +
+            '<div class="panel"><div class="panel-header"><div><h2>Sertifikasi lahan (SHM)</h2><span class="hint">' + s.total.toLocaleString("id-ID") + ' bidang teridentifikasi</span></div></div>' +
+              '<div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap"><div id="profilShmDonut"></div>' +
+              '<div class="map-legend" style="flex-direction:column;align-items:flex-start;gap:0.5rem">' +
+                segs.map(function (seg) { return '<span class="sw"><span class="chip" style="background:' + seg.color + '"></span>' + seg.label + ' &nbsp;<b>' + seg.value.toLocaleString("id-ID") + ' bidang</b></span>'; }).join("") +
+              '</div></div>' +
+              '<div class="kesehatan-note">' + s.menunggu.toLocaleString("id-ID") + ' bidang masih menunggu penerbitan sertifikat hak milik.</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
+      qs(wrap, "#profilShmDonut").appendChild(donut(segs, { centerLabel: s.pct + "%", centerSub: "tersertifikasi" }));
+      return wrap;
+    }
+
+    function buildStubTab(label) {
+      return h('<div class="panel"><div class="placeholder-panel">Modul "' + label + '" belum tersedia pada versi prototipe ini.</div></div>');
+    }
   }
 
   /* ---------- render: 02 Geospasial ---------- */
@@ -2067,14 +2659,28 @@
   }
 
   /* ---------- render: 05 Monitoring ---------- */
+  /* Total/realisasi anggaran (Rp) aren't tracked as their own fields anywhere in the data layer —
+     only each kawasan's `anggaranPct` is. ANGGARAN_TOTAL_RP is one fixed illustrative national
+     envelope (matching the wireframe's "310.000.000.000" magnitude); realisasi and the top-line
+     percentage are both derived from it and from the *same* per-kawasan anggaranPct the bar chart
+     below plots, rather than being separately hand-picked numbers — the wireframe's own KPI tiles
+     didn't do this (its Realisasi figure was off by three orders of magnitude from Total/Persentase),
+     which reads as leftover placeholder text rather than a deliberate ratio worth matching. */
+  var ANGGARAN_TOTAL_RP = 310000000000;
   function renderMonitoring() {
+    var provOptionsHtml = '<option value="Semua">Semua Provinsi</option>' +
+      provinces.map(function (p) { return '<option value="' + p.nama + '">' + p.nama + '</option>'; }).join("");
+    var avgPct = Math.round(kawasan.reduce(function (s, k) { return s + k.anggaranPct; }, 0) / kawasan.length);
+    var realisasiRp = Math.round(ANGGARAN_TOTAL_RP * avgPct / 100);
+
     var wrap = h(
-      pageHead("Monitoring 5T: Program, Kinerja, Anggaran & Tindak Lanjut", "Pelacakan linimasa program (Kurva S) dan realisasi penyerapan anggaran program unggulan 5T secara real-time.") +
+      pageHead("Monitoring 5T: Program, Kinerja, Anggaran & Tindak Lanjut", "Pelacakan linimasa program (Kurva S) dan realisasi penyerapan anggaran program unggulan 5T secara real-time.",
+        '<div class="field-inline"><label for="monAreaSelect">Area</label><select id="monAreaSelect">' + provOptionsHtml + '</select></div>') +
       '<div class="kpi-grid">' +
-        kpiTile("Realisasi Fisik", "74%", "vs. rencana 80%", "down") +
-        kpiTile("Realisasi Anggaran", "68%", "▲ 5% bulan ini", "up") +
-        kpiTile("Program Berjalan", "18", "dari 24 program aktif", "flat") +
-        kpiTile("Tenggat Terlewat", "3", "perlu tindak lanjut", "down") +
+        kpiTile("Total Anggaran", ANGGARAN_TOTAL_RP.toLocaleString("id-ID"), null, "flat") +
+        kpiTile("Realisasi Anggaran", realisasiRp.toLocaleString("id-ID"), null, "flat") +
+        kpiTile("Persentase", avgPct + "%", null, "flat") +
+        kpiTile("Sisa Tahun Anggaran", "180/365", null, "flat") +
       '</div>' +
       '<div class="panel"><div class="panel-header"><h2>Kurva S — Rencana vs. Realisasi</h2>' +
         '<span class="map-legend"><span class="sw"><span class="chip" style="background:var(--series-2)"></span>Rencana</span><span class="sw"><span class="chip" style="background:var(--primary)"></span>Realisasi</span></span></div>' +
@@ -2084,39 +2690,295 @@
 
     qs(wrap, "#scurve").appendChild(lineChartDual(sCurve.labels, sCurve.rencana, sCurve.realisasi, { width: 900, height: 220 }));
 
-    var angData = kawasan.map(function (k) {
-      return { label: k.nama.replace(/^SKP |^KPB /, ""), value: k.anggaranPct, suffix: "%", color: k.anggaranPct < 35 ? "var(--critical)" : k.anggaranPct < 60 ? "var(--warn)" : "var(--good)" };
-    });
-    qs(wrap, "#anggaranBar").appendChild(barChart(angData, { height: 200, width: 900, suffix: "%", max: 100 }));
+    var areaSel = qs(wrap, "#monAreaSelect");
+    areaSel.value = state.monArea;
+    areaSel.addEventListener("change", function () { state.monArea = areaSel.value; renderAnggaranBar(); });
+
+    function renderAnggaranBar() {
+      var pool = kawasan.filter(function (k) { return state.monArea === "Semua" || k.provinsi === state.monArea; });
+      var angData = pool.map(function (k) {
+        return { label: k.nama.replace(/^SKP |^KPB /, ""), value: k.anggaranPct, suffix: "%", color: k.anggaranPct < 40 ? "var(--critical)" : k.anggaranPct < 60 ? "var(--warn)" : "var(--good)" };
+      });
+      var mount = qs(wrap, "#anggaranBar");
+      mount.innerHTML = "";
+      mount.appendChild(barChart(angData, { height: 200, width: 900, suffix: "%", max: 100 }));
+    }
+    renderAnggaranBar();
 
     return wrap;
   }
 
-  /* ---------- render: 06 Ekonomi ---------- */
+  /* ---------- render: 06 Ekonomi & Investasi Kawasan ----------
+     Rebuilt (per a later wireframe) from a bar-chart/stepper/static-table page into a national
+     investment-discovery portal: commodity shortcut cards, a filter sidebar + wilayah-colored map,
+     national productivity bars, and two summary tables, plus a per-commodity kawasan card grid.
+     There's no third, separate "kawasan investment profile" page — a card's "Lihat Detail" (and a
+     map pin click) jump straight into the Data Induk & Profil Kawasan detail page's Ekonomi tab
+     (see investasiProfileHtml(), appended there) via goToKawasanProfile(), rather than duplicating
+     luas/penduduk/pendapatan a third time. */
   function renderEkonomi() {
-    var wrap = h(
-      pageHead("Potensi Ekonomi, Komoditas, Hilirisasi & Investasi Kawasan", "Dasbor komoditas unggulan, rantai pasok hulu-hilir, dan peta peluang investasi — Trans Karya Nusa.") +
-      '<div class="grid-2">' +
-        '<div class="panel"><div class="panel-header"><h2>Indeks Komoditas Unggulan</h2></div><div id="komoditasBar"></div></div>' +
-        '<div class="panel"><div class="panel-header"><h2>Rantai Hilirisasi — Kelapa Sawit</h2></div>' +
-        '<div class="stepper">' +
-          step("1", "Kebun Rakyat") + step("2", "Pengumpul") + step("3", "Pabrik CPO") + step("4", "Refinery") + step("5", "Pasar Ekspor") +
-        '</div></div>' +
-      '</div>' +
-      '<div class="panel"><div class="panel-header"><h2>Peluang Investasi Terbuka</h2><span class="hint">siap diakses calon mitra</span></div>' +
-        '<div class="table-wrap"><table><thead><tr><th>Kawasan</th><th>Sektor</th><th>Estimasi Nilai</th><th>Status</th></tr></thead><tbody>' +
-        '<tr><td>KPB Rambutan</td><td>Pengolahan Karet</td><td class="mono">Rp 42 M</td><td><span class="badge mandiri">Siap Tawar</span></td></tr>' +
-        '<tr><td>SKP Salor</td><td>Pergudangan Pangan</td><td class="mono">Rp 18 M</td><td><span class="badge berkembang">Studi Kelayakan</span></td></tr>' +
-        '<tr><td>KPB Bathin III</td><td>Agroindustri Kelapa Sawit</td><td class="mono">Rp 65 M</td><td><span class="badge mandiri">Siap Tawar</span></td></tr>' +
-        '<tr><td>KPB Air Terang</td><td>Perikanan Tambak</td><td class="mono">Rp 9 M</td><td><span class="badge tumbuh">Perencanaan</span></td></tr>' +
-        '</tbody></table></div></div>'
-    );
-    function step(n, label) { return '<div class="step"><div class="s-icon">' + n + '</div><div class="s-label">' + label + '</div></div>'; }
+    var ICON_BACK_E = '<path d="M15 18l-6-6 6-6"/>';
+    var ICON_SCALE = '<path d="M12 3v18"/><path d="M5 21h14"/><path d="M5 7l-3 6a4 4 0 0 0 8 0z"/><path d="M19 7l-3 6a4 4 0 0 0 8 0z"/><path d="M5 7h14"/>';
+    var ICON_GAUGE = '<path d="M12 21a9 9 0 1 1 9-9"/><path d="M12 12l4-4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>';
+    function svgI(paths, sw) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) + '" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>'; }
+    function provOptionsHtml() {
+      return '<option value="Semua">Semua Provinsi</option>' + provinces.map(function (p) { return '<option value="' + p.nama + '">' + p.nama + '</option>'; }).join("");
+    }
 
-    var komData = komoditas.map(function (k) { return { label: k.nama, value: k.nilai, color: "var(--primary)" }; });
-    qs(wrap, "#komoditasBar").appendChild(barChart(komData, { height: 200 }));
+    var root = document.createElement("div");
+    paint();
+    return root;
 
-    return wrap;
+    function paint() {
+      if (activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
+      root.innerHTML = "";
+      root.appendChild(state.invView === "grid" ? buildGrid() : buildLanding());
+    }
+
+    function goToKawasanProfile(id) {
+      state.selectedKawasan = id;
+      state.profilView = "detail";
+      state.profilDetailTab = "ekonomi";
+      setTab("profil");
+    }
+
+    /* every kawasan's produkUnggulan (from profilDetailData(), shared with Data Induk) always has
+       one entry per of the 4 fixed categories — Kategori Sektor filters which commodities surface
+       as shortcut cards, not which kawasan appear (every kawasan "has" all 4 categories in this
+       fabricated model, so filtering the kawasan pool by sector would be a no-op either way). */
+    function komoditasFreq(kategoriFilter) {
+      var freq = {};
+      kawasan.forEach(function (k) {
+        profilDetailData(k).produkUnggulan.forEach(function (p) {
+          if (kategoriFilter && kategoriFilter !== "Semua" && p.kategori !== kategoriFilter) return;
+          if (!freq[p.komoditas]) freq[p.komoditas] = { nama: p.komoditas, kategori: p.kategori, ids: [] };
+          freq[p.komoditas].ids.push(k.id);
+        });
+      });
+      return freq;
+    }
+    function komoditasList(kategoriFilter) {
+      var freq = komoditasFreq(kategoriFilter);
+      return Object.keys(freq).map(function (nm) { return freq[nm]; }).sort(function (a, b) { return b.ids.length - a.ids.length; }).slice(0, 5);
+    }
+    function komoditasEntry(nama) {
+      var freq = komoditasFreq(null);
+      return freq[nama] || { nama: nama, kategori: "", ids: [] };
+    }
+
+    function filteredKawasan() {
+      var q = state.invSearch.trim().toLowerCase();
+      return kawasan.filter(function (k) {
+        if (state.invWilayah !== "Semua" && wilayahOf(k) !== state.invWilayah) return false;
+        if (state.invProvFilter !== "Semua" && k.provinsi !== state.invProvFilter) return false;
+        if (q && (k.nama + " " + k.provinsi + " " + k.kabupaten).toLowerCase().indexOf(q) === -1) return false;
+        return true;
+      });
+    }
+
+    /* ---- landing: commodity cards, filter sidebar + map, productivity bars, two tables ---- */
+    function buildLanding() {
+      var komList = komoditasList(state.invKategori);
+
+      var wrap = h(
+        pageHead("Ekonomi & Investasi Kawasan", "",
+          '<div class="field-inline"><label for="invAreaSelect">Area</label><select id="invAreaSelect">' + provOptionsHtml() + '</select></div>') +
+        '<div class="komoditas-card-grid">' +
+          (komList.length ? komList.map(function (kom) {
+            return '<div class="komoditas-card" data-nama="' + kom.nama + '">' +
+              '<span class="kat-badge">' + kom.kategori + '</span>' +
+              '<div class="kom-nama">' + kom.nama + '</div>' +
+              '<div class="kom-sub">' + kom.ids.length + ' Kawasan</div>' +
+            '</div>';
+          }).join("") : '<p class="empty" style="grid-column:1/-1;color:var(--text-faint)">Tidak ada komoditas pada kategori sektor ini.</p>') +
+        '</div>' +
+        '<div class="inv-layout">' +
+          '<div class="panel">' +
+            '<div class="inv-filter-field"><input type="text" id="invSearchInput" placeholder="Masukkan kata kunci.." style="background:var(--panel-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.42rem 0.7rem;font-size:0.78rem;color:var(--text)" /></div>' +
+            '<div class="inv-filter-field"><label>Wilayah</label><select id="invWilayahSelect">' +
+              '<option value="Semua">Semua Wilayah</option><option value="Barat">Wilayah Indonesia Bagian Barat</option>' +
+              '<option value="Tengah">Wilayah Indonesia Bagian Tengah</option><option value="Timur">Wilayah Indonesia Bagian Timur</option>' +
+            '</select></div>' +
+            '<div class="inv-filter-field"><label>Provinsi</label><select id="invProvSelect">' + provOptionsHtml() + '</select></div>' +
+            '<div class="inv-filter-field"><label>Kategori Sektor</label><select id="invKategoriSelect">' +
+              '<option value="Semua">Semua Kategori Sektor</option><option value="Pangan">Pangan</option>' +
+              '<option value="Peternakan">Peternakan</option><option value="Perkebunan">Perkebunan</option><option value="Pertambangan">Pertambangan</option>' +
+            '</select></div>' +
+            '<div class="inv-filter-field"><label>Peluang Investasi</label><select disabled><option>Semua Peluang Investasi</option></select></div>' +
+            '<div class="inv-filter-field"><label>Detil Peluang Investasi</label><select disabled><option>Semua Detil Peluang Investasi</option></select></div>' +
+            '<div class="inv-filter-field" style="margin-bottom:0"><label>Tahun</label><select disabled><option>2026</option></select></div>' +
+          '</div>' +
+          '<div class="panel">' +
+            '<div class="inv-map-wrap" id="invMapWrap"></div>' +
+            '<div class="inv-wilayah-legend">' +
+              '<span class="sw"><span class="chip" style="background:' + WILAYAH_COLOR_HEX.Barat + '"></span>Wilayah Indonesia Bagian Barat</span>' +
+              '<span class="sw"><span class="chip" style="background:' + WILAYAH_COLOR_HEX.Tengah + '"></span>Wilayah Indonesia Bagian Tengah</span>' +
+              '<span class="sw"><span class="chip" style="background:' + WILAYAH_COLOR_HEX.Timur + '"></span>Wilayah Indonesia Bagian Timur</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="panel" style="margin-top:0.9rem"><div class="panel-header"><h2>Produktivitas komoditas nasional</h2></div><div id="prodBarList"></div></div>' +
+        '<div class="grid-2" style="margin-top:0.9rem">' +
+          '<div class="panel"><div class="panel-header"><h2>Kawasan dengan Produksi Terbesar</h2>' +
+            '<span class="doc-status-pill ok" id="prodFilterPill" style="text-transform:none"></span></div>' +
+            '<div class="table-wrap"><table><thead><tr><th>Detail Kawasan</th><th></th></tr></thead><tbody id="topProduksiTbody"></tbody></table></div></div>' +
+          '<div class="panel"><div class="panel-header"><h2>Ketersediaan infrastruktur produksi</h2></div>' +
+            '<div class="table-wrap"><table><thead><tr><th>Jenis Infrastruktur</th><th></th></tr></thead><tbody>' +
+              ["Penggilingan", "Lumbung", "Combine harvester", "Grain dryer"].map(function (nm) {
+                return '<tr><td>' + nm + '</td><td style="text-align:right"><span class="doc-status-pill ok">Tersedia</span></td></tr>';
+              }).join("") +
+            '</tbody></table></div></div>' +
+        '</div>'
+      );
+
+      qsa(wrap, ".komoditas-card").forEach(function (card) {
+        card.addEventListener("click", function () {
+          state.invKomoditas = card.dataset.nama;
+          state.invView = "grid";
+          paint();
+        });
+      });
+
+      var areaSel = qs(wrap, "#invAreaSelect"), provSel = qs(wrap, "#invProvSelect");
+      areaSel.value = state.invProvFilter; provSel.value = state.invProvFilter;
+      function syncArea(val) { state.invProvFilter = val; areaSel.value = val; provSel.value = val; renderMap(); renderTopProduksi(); }
+      areaSel.addEventListener("change", function () { syncArea(areaSel.value); });
+      provSel.addEventListener("change", function () { syncArea(provSel.value); });
+
+      var wilayahSel = qs(wrap, "#invWilayahSelect");
+      wilayahSel.value = state.invWilayah;
+      wilayahSel.addEventListener("change", function () { state.invWilayah = wilayahSel.value; renderMap(); renderTopProduksi(); });
+
+      var kategoriSel = qs(wrap, "#invKategoriSelect");
+      kategoriSel.value = state.invKategori;
+      kategoriSel.addEventListener("change", function () { state.invKategori = kategoriSel.value; paint(); });
+
+      var searchInput = qs(wrap, "#invSearchInput");
+      searchInput.value = state.invSearch;
+      searchInput.addEventListener("input", function () { state.invSearch = searchInput.value; renderMap(); renderTopProduksi(); });
+
+      function renderMap() {
+        var mount = qs(wrap, "#invMapWrap");
+        if (activeLeafletMap) { activeLeafletMap.remove(); activeLeafletMap = null; }
+        var pool = filteredKawasan();
+        if (typeof L === "undefined") { buildMapStatic(mount, pool); return; }
+        mount.innerHTML = '<div class="basemap-wrap"><div class="basemap-el" id="invBasemapEl"></div></div>';
+        var map = L.map(qs(mount, "#invBasemapEl"), { scrollWheelZoom: false, attributionControl: false, zoomControl: false }).setView([-2.2, 118], 5);
+        L.control.zoom({ position: "topright" }).addTo(map);
+        L.control.attribution({ position: "bottomright" }).addTo(map);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 18,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        pool.forEach(function (k) {
+          var region = wilayahOf(k);
+          var area = L.polygon(kawasanAreaLatLngs(k), { color: "#0a0f1c", weight: 1.2, opacity: 0.85, fillColor: WILAYAH_COLOR_HEX[region], fillOpacity: 0.55 }).addTo(map);
+          area.bindPopup("<b>" + k.nama + "</b><br/>" + k.provinsi + "<br/>Wilayah: " + region);
+          area.on("click", function () { goToKawasanProfile(k.id); });
+        });
+        activeLeafletMap = map;
+        setTimeout(function () {
+          map.invalidateSize();
+          if (pool.length) map.fitBounds(L.latLngBounds(pool.map(function (k) { return [k.lat, k.lon]; })), { padding: [22, 22] });
+        }, 60);
+      }
+
+      function buildMapStatic(mount, pool) {
+        mount.innerHTML = '<div class="basemap-wrap basemap-static">' +
+            '<img src="' + BASEMAP_STATIC_SRC + '" alt="Peta dasar wilayah Indonesia" />' +
+            pool.map(function (k) {
+              var pos = basemapPct(k.lon, k.lat);
+              return '<span class="bm-pin" data-id="' + k.id + '" style="left:' + pos.xPct.toFixed(2) + '%;top:' + pos.yPct.toFixed(2) + '%;width:20px;height:20px;background:' + WILAYAH_COLOR_HEX[wilayahOf(k)] + ';clip-path:' + blobClipPath(k) + ';"></span>';
+            }).join("") +
+            '<span class="bm-attrib">&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></span>' +
+          '</div>';
+        qsa(mount, ".bm-pin").forEach(function (pin) {
+          pin.addEventListener("click", function () { goToKawasanProfile(pin.getAttribute("data-id")); });
+        });
+      }
+
+      function renderProdBars() {
+        var rows = komoditas.map(function (kmd) { return { nama: kmd.nama, val: Math.round(kmd.nilai / 15 * 10) / 10 }; });
+        var avg = rows.reduce(function (s, r) { return s + r.val; }, 0) / rows.length;
+        var maxVal = Math.max.apply(null, rows.map(function (r) { return r.val; }));
+        qs(wrap, "#prodBarList").innerHTML = rows.map(function (r) {
+          var delta = r.val - avg;
+          var color = delta >= 0.3 ? "var(--good)" : delta <= -0.3 ? "var(--critical)" : "var(--warn)";
+          return '<div class="prod-bar-row"><span class="pb-label">' + r.nama + '</span>' +
+            '<div class="prod-bar-track"><div class="prod-bar-fill" style="width:' + (r.val / maxVal * 100).toFixed(1) + '%;background:' + color + '"></div></div>' +
+            '<span class="prod-bar-val mono">' + r.val.toFixed(1) + ' t/Ha</span>' +
+            '<span class="prod-bar-delta">' + (delta >= 0 ? "+" : "") + delta.toFixed(1) + ' t/Ha dari rata-rata nasional</span></div>';
+        }).join("");
+      }
+      renderProdBars();
+
+      function renderTopProduksi() {
+        qs(wrap, "#prodFilterPill").textContent = state.invKategori === "Semua" ? "Semua Sektor" : state.invKategori;
+        var pool = filteredKawasan().map(function (k) { return { k: k, d: profilDetailData(k) }; });
+        pool.sort(function (a, b) { return b.d.produksiTon - a.d.produksiTon; });
+        var top = pool.slice(0, 4);
+        var tbody = qs(wrap, "#topProduksiTbody");
+        if (!top.length) { tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--text-faint);padding:1rem 0">Tidak ada kawasan yang cocok dengan filter.</td></tr>'; return; }
+        tbody.innerHTML = top.map(function (row) {
+          return '<tr data-id="' + row.k.id + '"><td>' + row.k.nama + '</td>' +
+            '<td style="text-align:right" class="mono">' + row.d.produksiTon.toLocaleString("id-ID") + ' ton &ndash; ' + row.d.produkUnggulan[2].komoditas + '</td></tr>';
+        }).join("");
+        qsa(tbody, "tr[data-id]").forEach(function (tr) {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", function () { goToKawasanProfile(tr.dataset.id); });
+        });
+      }
+
+      renderMap();
+      renderTopProduksi();
+      return wrap;
+    }
+
+    /* ---- per-commodity kawasan card grid ---- */
+    function buildGrid() {
+      var entry = komoditasEntry(state.invKomoditas);
+      var cards = entry.ids.map(function (id) { return kawasan.find(function (k) { return k.id === id; }); }).filter(Boolean);
+
+      var wrap = h(
+        '<button class="back-link" id="invBackBtn">' + svgI(ICON_BACK_E, 2.2) + 'Kembali</button>' +
+        pageHead("Ekonomi & Investasi Kawasan", "",
+          '<div class="field-inline"><label for="invGridAreaSelect">Area</label><select id="invGridAreaSelect">' + provOptionsHtml() + '</select></div>') +
+        '<p class="desc" style="margin:-0.6rem 0 1rem">' + (state.invKomoditas || "") + ' &middot; ' + cards.length + ' kawasan</p>' +
+        '<div class="inv-card-grid" id="invCardGrid"></div>'
+      );
+
+      qs(wrap, "#invBackBtn").addEventListener("click", function () { state.invView = "landing"; paint(); });
+      var areaSel = qs(wrap, "#invGridAreaSelect");
+      areaSel.value = state.invProvFilter;
+      areaSel.addEventListener("change", function () { state.invProvFilter = areaSel.value; renderCards(); });
+
+      function renderCards() {
+        var pool = state.invProvFilter === "Semua" ? cards : cards.filter(function (k) { return k.provinsi === state.invProvFilter; });
+        var grid = qs(wrap, "#invCardGrid");
+        if (!pool.length) { grid.innerHTML = '<p class="empty" style="color:var(--text-faint)">Tidak ada kawasan yang cocok dengan filter.</p>'; return; }
+        grid.innerHTML = pool.map(function (k) {
+          var d = profilDetailData(k);
+          var photo = k.foto ? '<img src="' + k.foto + '" alt="Foto ' + k.nama + '" />' : cityIllustration(k, 300, 180);
+          return '<div class="inv-kawasan-card" data-id="' + k.id + '">' +
+            '<div class="ikc-photo">' + photo + '</div>' +
+            '<div class="ikc-body">' +
+              '<div class="ikc-nama">' + k.nama + '</div>' +
+              '<div class="ikc-prov">' + svgI(ICON_PATHS.geospasial, 2) + k.provinsi + '</div>' +
+              '<div class="ikc-stats">' +
+                '<div class="ikc-stat"><span class="ic good">' + svgI(ICON_SCALE, 2) + '</span><span><span class="st-label">Produksi</span><b>' + d.produksiTon.toLocaleString("id-ID") + ' ton</b></span></div>' +
+                '<div class="ikc-stat"><span class="ic warn">' + svgI(ICON_GAUGE, 2) + '</span><span><span class="st-label">IDI</span><b>' + d.indeksDukungan + '</b></span></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }).join("");
+        qsa(grid, ".inv-kawasan-card").forEach(function (card) {
+          card.addEventListener("click", function () { goToKawasanProfile(card.dataset.id); });
+        });
+      }
+      renderCards();
+
+      return wrap;
+    }
   }
 
   /* ---------- render: 07 Analitik / EWS ---------- */
@@ -2162,24 +3024,37 @@
   }
 
   /* ---------- render: 08 Executive Intelligence / AI ---------- */
-  function renderIntelijen() {
+  /* ---------- render: 08 Laporan ----------
+     Replaces the old "Executive Intelligence & AI" module (renderIntelijen) per request — a report-
+     generator hub (5 report-type cards, all non-functional/cosmetic on this static prototype, same
+     treatment as the Ubah/Hapus buttons elsewhere) plus the Asisten AI panel, which keeps reusing
+     the shared aiAnswer() mock exactly as the old module's chat did. */
+  var LAPORAN_CARDS = [
+    { title: "Laporan Kawasan", icon: "grid" },
+    { title: "Laporan Investasi", icon: "grid" },
+    { title: "Laporan Anggaran", icon: "grid" },
+    { title: "Laporan Kinerja", icon: "grid" },
+    { title: "Laporan 5T", icon: "grid" }
+  ];
+  function renderLaporan() {
+    var ICON_GRID = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>';
+
     var wrap = h(
-      pageHead("Executive Intelligence, Pelaporan Strategis & AI Assistant", "Konsolidasi statistik sektoral transmigrasi tingkat nasional dan asisten AI untuk pertanyaan cepat pimpinan.") +
-      '<div class="kpi-grid">' +
-        kpiTile("Kawasan Mandiri", kawasan.filter(function (k) { return k.tahap === "Mandiri"; }).length, "dari " + kawasan.length + " kawasan", "flat") +
-        kpiTile("Luas HPL Nasional", (nationalKPI.hplTotal / 1000).toFixed(1) + "rb Ha", "seluruh kawasan terpantau", "flat") +
-        kpiTile("Luas SHM Terbit", (nationalKPI.shmTotal / 1000).toFixed(1) + "rb Ha", Math.round(nationalKPI.shmTotal / nationalKPI.hplTotal * 100) + "% dari HPL", "up") +
-        kpiTile("Peringatan Aktif", ewsAlerts.filter(function (a) { return !a.ack; }).length, "perlu tindak lanjut", "down") +
+      pageHead("BUAT LAPORAN", "") +
+      '<div class="toolbar" style="justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap">' +
+        '<div class="toolbar">' +
+          '<span class="lap-toolbar-label">Pilih Periode</span><span class="info-chip">Periode: 2026 · TW1</span>' +
+          '<span class="lap-toolbar-label" style="margin-left:0.6rem">Pilih Kawasan</span>' +
+          '<select id="lapKawasanSelect"><option value="Semua">Semua Kawasan</option>' +
+            kawasan.map(function (k) { return '<option value="' + k.id + '">' + k.nama + '</option>'; }).join("") +
+          '</select>' +
+        '</div>' +
+        '<button class="lap-history-link" id="lapHistoryBtn">History ekspor laporan</button>' +
       '</div>' +
-      '<div class="grid-2">' +
-        '<div class="panel"><div class="panel-header"><h2>Laporan Strategis</h2></div>' +
-        '<p class="desc">Ringkasan otomatis kondisi seluruh kawasan untuk bahan rapat pimpinan, disusun dari data 8 modul di atas.</p>' +
-        '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.6rem">' +
-          '<button class="btn primary small" disabled>Unduh Ringkasan PDF</button>' +
-          '<button class="btn small" disabled>Jadwalkan Laporan Mingguan</button>' +
-        '</div>' +
-        '</div>' +
-        '<div class="panel"><div class="panel-header"><h2>AI Assistant</h2><span class="hint">tanya cepat seputar data kawasan</span></div>' +
+      '<p class="hint" id="lapHistoryNote" hidden style="margin:-0.6rem 0 1rem">Belum ada riwayat ekspor laporan pada prototipe ini.</p>' +
+      '<div class="lap-card-grid" id="lapCardGrid"></div>' +
+      '<div class="lap-ai-panel">' +
+        '<div class="panel-header"><h2>Asisten AI</h2></div>' +
         '<div class="chat-log" id="chatLog"></div>' +
         '<div class="chat-input-row"><input id="chatInput" type="text" placeholder="Contoh: kawasan mana yang paling berisiko?" />' +
         '<button class="btn primary" id="chatSend">Kirim</button></div>' +
@@ -2187,11 +3062,32 @@
           '<button class="btn small" data-q="kawasan mandiri">kawasan mandiri</button>' +
           '<button class="btn small" data-q="risiko tinggi">risiko tinggi</button>' +
           '<button class="btn small" data-q="realisasi anggaran">realisasi anggaran</button>' +
-        '</div></div>' +
+        '</div>' +
       '</div>'
     );
 
-    var log = [{ role: "ai", text: "Selamat datang. Saya dapat merangkum status kawasan, risiko, dan anggaran dari data pada dashboard ini." }];
+    function renderCards() {
+      var kawasanSel = qs(wrap, "#lapKawasanSelect").value;
+      var count = kawasanSel === "Semua" ? kawasan.length : 1;
+      var pool = kawasan.filter(function (k) { return kawasanSel === "Semua" || k.id === kawasanSel; });
+      qs(wrap, "#lapCardGrid").innerHTML = LAPORAN_CARDS.map(function (c, i) {
+        var bg = pool[i % pool.length] || kawasan[i % kawasan.length];
+        var bgStyle = bg.foto ? "background-image:linear-gradient(180deg, rgba(8,15,26,0.35), rgba(8,15,26,0.82)), url('" + bg.foto + "')" : "background:var(--sidebar)";
+        return '<div class="lap-card" style="' + bgStyle + '" title="Ekspor laporan belum tersedia pada prototipe ini.">' +
+          '<span class="lap-card-icon">' + ICON_GRID + '</span>' +
+          '<div class="lap-card-title">' + c.title + '</div>' +
+          '<div class="lap-card-sub">' + count + ' Kawasan</div>' +
+        '</div>';
+      }).join("");
+    }
+
+    qs(wrap, "#lapKawasanSelect").addEventListener("change", renderCards);
+    qs(wrap, "#lapHistoryBtn").addEventListener("click", function () {
+      qs(wrap, "#lapHistoryNote").hidden = !qs(wrap, "#lapHistoryNote").hidden;
+    });
+    renderCards();
+
+    var log = [{ role: "ai", text: "Selamat datang. Tanya cepat seputar kawasan, risiko, atau anggaran." }];
 
     function renderLog() {
       qs(wrap, "#chatLog").innerHTML = log.map(function (m) {
@@ -2224,7 +3120,7 @@
   var RENDERERS = {
     profil: renderProfil, geospasial: renderGeospasial, demografi: renderDemografi,
     infrastruktur: renderInfrastruktur, monitoring: renderMonitoring, ekonomi: renderEkonomi,
-    analitik: renderAnalitik, intelijen: renderIntelijen
+    analitik: renderAnalitik, laporan: renderLaporan
   };
 
   function render() {

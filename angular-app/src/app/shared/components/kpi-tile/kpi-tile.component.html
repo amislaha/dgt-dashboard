@@ -1,7 +1,9 @@
-<div class="kpi-tile card">
+<div class="kpi-tile card" [ngClass]="color ? 'kpi-tile-color kpi-tile-' + color : null">
   <div class="card-body py-3 px-3">
     <div class="k-label text-muted">{{ label }}</div>
     <div class="k-value font-weight-bold">{{ value }}</div>
+    <span class="kpi-tile-chip" *ngIf="chip">{{ chip }}</span>
+    <div class="kpi-tile-sub" *ngIf="sub">{{ sub }}</div>
     <div
       class="k-delta"
       *ngIf="delta"

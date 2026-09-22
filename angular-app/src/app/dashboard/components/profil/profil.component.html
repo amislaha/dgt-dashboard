@@ -1,79 +1,388 @@
-<dgt-page-head
-  title="Data Induk &amp; Profil Kawasan Transmigrasi"
-  description="Repositori tunggal status perkembangan kawasan (SKP/KPB) berbasis indikator program unggulan 5T.">
-  <select class="form-control form-control-sm" [(ngModel)]="provFilter">
-    <option value="Semua">Semua Provinsi</option>
-    <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
-  </select>
-</dgt-page-head>
-
-<div class="row mb-4">
-  <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Total Kawasan" [value]="nationalKPI.totalKawasan" delta="Seluruh Indonesia" dir="flat"></dgt-kpi-tile>
-  </div>
-  <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="SKP / KPB" [value]="nationalKPI.totalSKP + ' / ' + nationalKPI.totalKPB" delta="Satuan Kawasan &middot; Kawasan Pembangunan" dir="flat"></dgt-kpi-tile>
-  </div>
-  <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Populasi Transmigran" [value]="nationalKPI.totalPopulasi | number:'1.0-0'" delta="▲ 3.2% dari kuartal lalu" dir="up"></dgt-kpi-tile>
-  </div>
-  <div class="col-6 col-md-3 mb-3">
-    <dgt-kpi-tile label="Rata-rata Indeks 5T" [value]="nationalKPI.avgIndeks" delta="▲ 4 poin" dir="up"></dgt-kpi-tile>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-lg-7 mb-4">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h6 font-weight-bold mb-0">Daftar Kawasan</h2>
-        <span class="small text-muted">klik baris untuk detail</span>
-      </div>
-      <dgt-data-table
-        [columns]="columns"
-        [rows]="rows"
-        [sortKey]="sortKey"
-        [sortDir]="sortDir"
-        (sortChange)="onSortChange($event)"
-        (rowClick)="onRowClick($event)">
-      </dgt-data-table>
+<ng-container *ngIf="view === 'list'; else detailTpl">
+  <dgt-page-head
+    title="Data Induk &amp; Profil Kawasan Transmigrasi"
+    description="Repositori tunggal status perkembangan kawasan (SKP/KPB) berbasis indikator program unggulan 5T.">
+    <div class="d-flex align-items-center" style="gap: .4rem">
+      <label class="small text-muted mb-0" for="profilAreaSelect">Area</label>
+      <select id="profilAreaSelect" class="form-control form-control-sm" [(ngModel)]="areaFilter" (ngModelChange)="onAreaChange()">
+        <option value="Semua">Semua Provinsi</option>
+        <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
+      </select>
     </div>
+  </dgt-page-head>
+
+  <div class="row mb-4">
+    <div class="col-6 col-md-3 mb-3"><dgt-kpi-tile label="Jumlah Provinsi" [value]="nationalKPI.totalProvinsi"></dgt-kpi-tile></div>
+    <div class="col-6 col-md-3 mb-3"><dgt-kpi-tile label="Jumlah Kabupaten/Kota" [value]="nationalKPI.totalKabupaten"></dgt-kpi-tile></div>
+    <div class="col-6 col-md-3 mb-3"><dgt-kpi-tile label="Jumlah Kecamatan" [value]="nationalKPI.totalKecamatan"></dgt-kpi-tile></div>
+    <div class="col-6 col-md-3 mb-3"><dgt-kpi-tile label="Jumlah Desa" [value]="nationalKPI.totalDesa"></dgt-kpi-tile></div>
   </div>
 
-  <div class="col-lg-5 mb-4">
-    <div class="card mb-4">
-      <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Detail Kawasan</h2></div>
-      <div class="card-body">
-        <ng-container *ngIf="selected as k; else noSel">
-          <h3 class="h6 font-weight-bold">{{ k.nama }}</h3>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="text-muted">Provinsi</span><span>{{ k.provinsi }}</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="text-muted">Tipe</span><span>{{ k.tipe }}</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="text-muted">Tahap</span><span class="badge badge-secondary">{{ k.tahap }}</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="text-muted">Populasi</span><span>{{ k.populasi | number:'1.0-0' }} jiwa</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="text-muted">Indeks 5T</span><span>{{ k.indeks5t }} / 100</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="text-muted">HPL</span><span>{{ k.hplHa | number:'1.0-0' }} Ha</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="text-muted">SHM Terbit</span><span>{{ k.shmHa | number:'1.0-0' }} Ha</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="text-muted">Realisasi Anggaran</span><span>{{ k.anggaranPct }}%</span></div>
-          <div class="d-flex justify-content-between align-items-center py-1">
-            <span class="text-muted">Tingkat Risiko</span>
-            <dgt-severity-badge [severity]="riskSeverity(k.risiko)" [label]="riskLabel(k.risiko)"></dgt-severity-badge>
+  <div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Indeks Intrans</h2></div>
+        <div class="card-body d-flex flex-column align-items-center">
+          <dgt-donut-chart [segments]="intransSegments" [centerLabel]="donutTotal" centerSub="kawasan"></dgt-donut-chart>
+          <div class="d-flex flex-wrap justify-content-center mt-3" style="gap: var(--space-3)">
+            <span *ngFor="let b of bucketOrder" class="small d-flex align-items-center">
+              <span class="legend-chip mr-1" [style.background]="bucketColor(b)"></span>{{ b }} ({{ intransCounts[b] }})
+            </span>
           </div>
-        </ng-container>
-        <ng-template #noSel><p class="text-muted mb-0">Pilih kawasan pada tabel.</p></ng-template>
+        </div>
       </div>
     </div>
-
-    <div class="card">
-      <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Distribusi Tahap Kawasan</h2></div>
-      <div class="card-body d-flex flex-column align-items-center">
-        <dgt-donut-chart [segments]="segments" [centerLabel]="kawasan.length" centerSub="kawasan"></dgt-donut-chart>
-        <div class="d-flex flex-wrap justify-content-center mt-3" style="gap: var(--space-3)">
-          <span *ngFor="let s of stages" class="small d-flex align-items-center">
-            <span class="legend-chip mr-1" [style.background]="stageColor(s)"></span>
-            {{ s }} ({{ stageCounts[s] }})
-          </span>
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Indeks Kinerja Utama</h2></div>
+        <div class="card-body d-flex flex-column align-items-center">
+          <dgt-donut-chart [segments]="kinerjaSegments" [centerLabel]="donutTotal" centerSub="kawasan"></dgt-donut-chart>
+          <div class="d-flex flex-wrap justify-content-center mt-3" style="gap: var(--space-3)">
+            <span *ngFor="let b of bucketOrder" class="small d-flex align-items-center">
+              <span class="legend-chip mr-1" [style.background]="bucketColor(b)"></span>{{ b }} ({{ kinerjaCounts[b] }})
+            </span>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+
+  <div class="card">
+    <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Daftar Kawasan Transmigrasi</h2></div>
+    <div class="card-body">
+      <div class="d-flex flex-wrap mb-3" style="gap: .5rem">
+        <input type="text" class="form-control form-control-sm" style="flex: 1 1 220px" placeholder="Cari kawasan atau komoditas.." [(ngModel)]="search" />
+        <select class="form-control form-control-sm" style="max-width: 200px" [(ngModel)]="areaFilter" (ngModelChange)="onAreaChange()">
+          <option value="Semua">Semua Provinsi</option>
+          <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
+        </select>
+        <select class="form-control form-control-sm" style="max-width: 180px" [(ngModel)]="statusFilter">
+          <option value="Semua">Semua status</option>
+          <option *ngFor="let s of stages" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead><tr><th>Detail Kawasan</th><th>Kabupaten</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let k of filteredRows">
+              <td><b>{{ k.nama }}</b><div class="small text-muted">{{ rowSubLabel(k) }}</div></td>
+              <td>{{ k.kabupaten }}</td>
+              <td><span class="badge" [ngClass]="'badge-stage-' + stageBadgeClass[k.tahap]">{{ k.tahap }}</span></td>
+              <td class="text-right"><button type="button" class="btn btn-sm btn-primary" (click)="openDetail(k.id)">Lihat detail</button></td>
+            </tr>
+            <tr *ngIf="filteredRows.length === 0">
+              <td colspan="4" class="text-center text-muted py-4">Tidak ada kawasan yang cocok dengan filter.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #detailTpl>
+  <ng-container *ngIf="selected as k">
+    <button type="button" class="back-link mb-2" (click)="backToList()">&larr; Kembali ke Daftar</button>
+    <div class="page-head mb-2"><h1 class="h4 font-weight-bold mb-1">{{ k.nama }}</h1></div>
+    <div class="profil-detail-source mb-3">Sumber: Ditjen PKP2Trans &middot; Data IPKT 2023 &middot; Terakhir diperbarui 24 Agustus 2026</div>
+
+    <div class="subtab-row mb-4">
+      <button type="button" class="subtab-btn" [class.active]="detailTab === 'ekonomi'" (click)="setDetailTab('ekonomi')">Ekonomi</button>
+      <button type="button" class="subtab-btn" [class.active]="detailTab === 'sosial'" (click)="setDetailTab('sosial')">Sosial</button>
+      <button type="button" class="subtab-btn" [class.active]="detailTab === 'perencanaan'" (click)="setDetailTab('perencanaan')">Perencanaan</button>
+      <button type="button" class="subtab-btn" [class.active]="detailTab === 'patriot'" (click)="setDetailTab('patriot')">Patriot</button>
+      <button type="button" class="subtab-btn" [class.active]="detailTab === 'media'" (click)="setDetailTab('media')">Media</button>
+    </div>
+
+    <ng-container *ngIf="detail as d">
+      <!-- ---------- Ekonomi ---------- -->
+      <ng-container *ngIf="detailTab === 'ekonomi'">
+        <div class="row mb-4">
+          <div class="col-6 col-lg-3 mb-3">
+            <dgt-kpi-tile label="Jumlah Penduduk" [value]="(d.pendudukJiwa | number:'1.0-0') + ' jiwa'" color="good"
+              [chip]="k.kecamatan + ' kecamatan · ' + k.desa + ' desa'" [sub]="'Kepadatan: ' + d.kepadatan + ' jiwa/ha'"></dgt-kpi-tile>
+          </div>
+          <div class="col-6 col-lg-3 mb-3">
+            <dgt-kpi-tile label="Luas Kawasan" [value]="(d.luasHa | number:'1.0-0') + ' ha'" color="series2"
+              [chip]="k.kecamatan + ' kecamatan · ' + k.desa + ' desa'" [sub]="'Rata-rata: ' + (d.luasHa / k.kecamatan | number:'1.0-0') + ' ha/kecamatan'"></dgt-kpi-tile>
+          </div>
+          <div class="col-6 col-lg-3 mb-3">
+            <dgt-kpi-tile label="Potensi Daya Tampung" [value]="(d.dayaTampungKK | number:'1.0-0') + ' KK'" color="primary"
+              [chip]="k.kecamatan + ' kecamatan · ' + k.desa + ' desa'" sub="Sisa kapasitas lahan usaha"></dgt-kpi-tile>
+          </div>
+          <div class="col-6 col-lg-3 mb-3">
+            <dgt-kpi-tile label="Nilai Intrans" [value]="d.nilaiIntrans" color="warn"
+              [chip]="k.kecamatan + ' kecamatan · ' + k.desa + ' desa'" [sub]="'Kategori: ' + d.kategoriIntrans"></dgt-kpi-tile>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Produk Unggulan Kawasan</h2></div>
+          <div class="card-body">
+            <input type="text" class="form-control form-control-sm mb-3" style="max-width: 320px" placeholder="Cari komoditas.." [(ngModel)]="produkFilter" />
+            <div class="table-responsive">
+              <table class="table mb-0">
+                <thead><tr><th>Kategori</th><th>Komoditas</th><th>/Ha</th><th>/Tahun</th><th>Aksi</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let p of produkRows">
+                    <td>{{ p.kategori }}</td>
+                    <td>{{ p.komoditas }}</td>
+                    <td class="mono">{{ p.perHa }} ton/ha</td>
+                    <td class="mono">{{ p.tahun }}</td>
+                    <td>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" title="Non-fungsional pada prototipe ini">Ubah</button>
+                      <button type="button" class="btn btn-sm btn-outline-danger" title="Non-fungsional pada prototipe ini">Hapus</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Sarana &amp; Prasarana Ekonomi</h2></div>
+              <div class="card-body stat-cols">
+                <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.pasar }}</div><div class="k-label text-muted">Pasar</div></div>
+                <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.kios }}</div><div class="k-label text-muted">Kios</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Kelembagaan Ekonomi</h2></div>
+              <div class="card-body stat-cols">
+                <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.bumdes }}</div><div class="k-label text-muted">Bumdes</div></div>
+                <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.lembagaLain }}</div><div class="k-label text-muted">Lain</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Pendapatan per kapita</h2></div>
+              <div class="card-body">
+                <div class="k-value font-weight-bold mono" style="font-size: 1.6rem">Rp {{ d.pendapatanPerKapita | number:'1.0-0' }}</div>
+                <div class="k-label text-muted">Per bulan</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Mata pencaharian</h2></div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between border-bottom py-1" *ngFor="let m of d.mataPencaharian">
+                  <span class="text-muted">Jumlah {{ m.jenis.toLowerCase() }}</span><b>{{ m.jumlah | number:'1.0-0' }}</b>
+                </div>
+                <div class="pill-list mt-3">
+                  <span class="pill" *ngFor="let m of d.mataPencaharian">{{ m.jenis }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="investasi-hero mb-3">
+          <img src="assets/hero-kawasan.jpg" alt="Foto kawasan" />
+        </div>
+        <div class="row mb-3">
+          <div class="col-lg-5 mb-3">
+            <div class="investasi-desc-panel h-100">
+              <div class="investasi-desc-head">Deskripsi kawasan</div>
+              <div class="investasi-desc-body">
+                <div class="investasi-desc-row"><span class="lbl">Luas kawasan</span><b>{{ d.luasHa | number:'1.0-0' }} ha</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Jumlah desa dalam kawasan</span><b>{{ k.desa }}</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Total penduduk</span><b>{{ d.pendudukJiwa | number:'1.0-0' }} jiwa</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Pendapatan per kapita</span><b>Rp {{ d.pendapatanPerKapita | number:'1.0-0' }}/kapita/bulan</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Indeks kesiapan infrastruktur</span><b>{{ d.indeksInfra }}</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Indeks kelembagaan</span><b>{{ d.indeksKelembagaan }}</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Indeks dukungan investasi</span><b>{{ d.indeksDukungan }} ({{ d.dukunganLabel }})</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-7 mb-3">
+            <div class="investasi-minimap">
+              <img src="assets/basemap-indonesia.jpg" alt="Lokasi {{ k.nama }}" />
+              <span class="loc-dot" [style.left.%]="locatorPos(k).xPct" [style.top.%]="locatorPos(k).yPct" [style.background]="stageColor(k.tahap)"></span>
+            </div>
+          </div>
+        </div>
+        <div class="investasi-desc-panel mb-3">
+          <div class="investasi-desc-head teal">Deskripsi kawasan</div>
+          <div class="investasi-desc-text">{{ d.deskripsiInvestasi }}</div>
+        </div>
+        <div class="investasi-desc-panel mb-3">
+          <div class="investasi-desc-head teal">Infografis dan Infomemo</div>
+          <div class="investasi-placeholder-grid">
+            <div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div>
+          </div>
+        </div>
+        <div class="investasi-desc-panel">
+          <div class="investasi-desc-head teal">Galeri</div>
+          <div class="investasi-placeholder-grid">
+            <div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ---------- Sosial ---------- -->
+      <ng-container *ngIf="detailTab === 'sosial'">
+        <div class="row mb-4">
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header">
+                <h2 class="h6 font-weight-bold mb-0">Struktur usia penduduk</h2>
+                <span class="small text-muted">Terhadap total {{ d.pendudukJiwa | number:'1.0-0' }} jiwa</span>
+              </div>
+              <div class="card-body d-flex align-items-center flex-wrap" style="gap: 1.2rem">
+                <dgt-donut-chart [segments]="usiaSegments" [centerLabel]="d.strukturUsia.produktifPct + '%'" centerSub="usia produktif"></dgt-donut-chart>
+                <div class="d-flex flex-column" style="gap: .5rem">
+                  <span class="small d-flex align-items-center" *ngFor="let s of usiaSegments">
+                    <span class="legend-chip mr-1" [style.background]="s.color"></span>{{ s.label }} &nbsp;<b>{{ s.value | number:'1.0-0' }} &middot; {{ pctOf(s.value, d.pendudukJiwa) }}%</b>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header">
+                <h2 class="h6 font-weight-bold mb-0">Pendidikan</h2>
+                <span class="small text-muted">Jumlah satuan pendidikan</span>
+              </div>
+              <div class="card-body stat-cols">
+                <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.pendidikan.sd }}</div><div class="k-label text-muted">SD</div></div>
+                <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.pendidikan.smp }}</div><div class="k-label text-muted">SMP/setara</div></div>
+                <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.pendidikan.sma }}</div><div class="k-label text-muted">SMA/setara</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Fasilitas kesehatan</h2></div>
+              <div class="card-body">
+                <div class="stat-cols mb-0">
+                  <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.kesehatan.puskesmas }}</div><div class="k-label text-muted">Puskesmas</div></div>
+                  <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.kesehatan.pustu }}</div><div class="k-label text-muted">Pustu</div></div>
+                  <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.kesehatan.mandiri }}</div><div class="k-label text-muted">Fasilitas mandiri</div></div>
+                </div>
+                <div class="kesehatan-note" *ngIf="d.faskesMissing.length">Belum tersedia di kawasan: {{ d.faskesMissing.join(', ') }}.</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header">
+                <h2 class="h6 font-weight-bold mb-0">Status desa kawasan</h2>
+                <span class="small text-muted">Komposisi IDM {{ totalDesaIdm }} desa</span>
+              </div>
+              <div class="card-body d-flex align-items-center flex-wrap" style="gap: 1.2rem">
+                <dgt-donut-chart [segments]="desaSegments" [centerLabel]="totalDesaIdm" centerSub="desa"></dgt-donut-chart>
+                <div class="d-flex flex-column" style="gap: .5rem">
+                  <span class="small d-flex align-items-center" *ngFor="let s of desaSegments">
+                    <span class="legend-chip mr-1" [style.background]="s.color"></span>{{ s.label }} &nbsp;<b>{{ s.value }} &middot; {{ pctOf(s.value, totalDesaIdm) }}%</b>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ---------- Perencanaan ---------- -->
+      <ng-container *ngIf="detailTab === 'perencanaan'">
+        <div class="row">
+          <div class="col-lg-6 mb-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="rekom-block">
+                  <h3 class="h6 font-weight-bold">Ekonomi</h3>
+                  <ul>
+                    <li>Pengembangan komoditas unggulan kawasan strategis secara terpadu dari produksi, pengolahan sampai pemasaran dan berkaitan dengan sektor lain.</li>
+                    <li>Peningkatan peran BUM Desa dan/atau BUM Desa bersama untuk mendukung pengembangan komoditas unggulan secara terpadu.</li>
+                    <li>Sertifikasi/standarisasi produk yang dihasilkan baik secara nasional maupun internasional.</li>
+                  </ul>
+                </div>
+                <div class="rekom-block">
+                  <h3 class="h6 font-weight-bold">Sarana Prasarana</h3>
+                  <ul>
+                    <li>Pembangunan jalan antara kawasan transmigrasi dan kota kecil/menengah.</li>
+                    <li>Pembangunan jalan antar SKP dan revitalisasi jalan.</li>
+                    <li>Penciptaan atau pengembangan lapangan pekerjaan untuk lulusan SMK di kawasan transmigrasi.</li>
+                  </ul>
+                </div>
+                <div class="rekom-block mb-0">
+                  <h3 class="h6 font-weight-bold">Sosial Budaya</h3>
+                  <ul class="mb-0">
+                    <li>Pelibatan pelaku seni dan budaya dalam pengembangan komoditas unggulan secara efektif.</li>
+                    <li>Pemanfaatan produk budaya masyarakat dalam pengembangan komoditas unggulan secara optimal.</li>
+                    <li>Pelibatan warga dalam pengelolaan institusi budaya, program dan acara, baik langsung maupun melalui organisasi masyarakat madani.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-4">
+            <div class="card mb-4">
+              <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Dokumen perencanaan</h2></div>
+              <div class="card-body">
+                <div class="doc-status-row">
+                  <span>Dokumen RKT</span>
+                  <span class="doc-status-pill" [class.ok]="d.dokumen.rkt" [class.missing]="!d.dokumen.rkt">{{ d.dokumen.rkt ? 'Tersedia' : 'Belum ada' }}</span>
+                </div>
+                <div class="doc-status-row">
+                  <span>Dokumen RTSP</span>
+                  <span class="doc-status-pill" [class.ok]="d.dokumen.rtsp" [class.missing]="!d.dokumen.rtsp">{{ d.dokumen.rtsp ? 'Tersedia' : 'Belum ada' }}</span>
+                </div>
+                <div class="doc-status-row">
+                  <span>Dokumen RSKP</span>
+                  <span class="doc-status-pill" [class.ok]="d.dokumen.rskp" [class.missing]="!d.dokumen.rskp">{{ d.dokumen.rskp ? 'Tersedia' : 'Belum ada' }}</span>
+                </div>
+                <div class="doc-status-row">
+                  <span>Status lahan kawasan</span>
+                  <span class="badge badge-stage-berkembang">{{ d.statusLahan }}</span>
+                </div>
+                <div class="doc-status-row">
+                  <span>Konektivitas digital</span>
+                  <span class="doc-status-pill" [class.ok]="d.konektivitas === 'Internet'" [class.missing]="d.konektivitas !== 'Internet'">{{ d.konektivitas }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="h6 font-weight-bold mb-0">Sertifikasi lahan (SHM)</h2>
+                <span class="small text-muted">{{ d.sertifikasi.total | number:'1.0-0' }} bidang teridentifikasi</span>
+              </div>
+              <div class="card-body">
+                <div class="d-flex align-items-center flex-wrap" style="gap: 1.2rem">
+                  <dgt-donut-chart [segments]="shmSegments" [centerLabel]="d.sertifikasi.pct + '%'" centerSub="tersertifikasi"></dgt-donut-chart>
+                  <div class="d-flex flex-column" style="gap: .5rem">
+                    <span class="small d-flex align-items-center" *ngFor="let s of shmSegments">
+                      <span class="legend-chip mr-1" [style.background]="s.color"></span>{{ s.label }} &nbsp;<b>{{ s.value | number:'1.0-0' }} bidang</b>
+                    </span>
+                  </div>
+                </div>
+                <div class="kesehatan-note">{{ d.sertifikasi.menunggu | number:'1.0-0' }} bidang masih menunggu penerbitan sertifikat hak milik.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ---------- Patriot / Media (not yet designed — see CLAUDE.md) ---------- -->
+      <div class="card" *ngIf="detailTab === 'patriot' || detailTab === 'media'">
+        <div class="placeholder-panel">Modul "{{ detailTab === 'patriot' ? 'Patriot' : 'Media' }}" belum tersedia pada versi prototipe ini.</div>
+      </div>
+    </ng-container>
+  </ng-container>
+</ng-template>
