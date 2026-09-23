@@ -24,5 +24,12 @@
         </span>
       </button>
     </div>
+
+    <!-- Optional footer, projected by the consuming shell (e.g. DashboardShellComponent's
+         "Kelola Data Tabel"/"Kelola Data Spasial" links) — a sibling of .rail-body (not nested
+         inside it) so it's pinned below the scrollable nav list rather than scrolling with it.
+         Empty/omitted by default, so shells that don't project anything (data-manager) are
+         unaffected. -->
+    <ng-content select="[railFooter]"></ng-content>
   </nav>
 </ng-container>

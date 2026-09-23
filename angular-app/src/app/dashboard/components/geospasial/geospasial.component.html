@@ -8,16 +8,21 @@
      (see toolbarSlot below) via ngTemplateOutlet rather than physically moving DOM nodes. -->
 <ng-template #toolbarTpl>
   <div class="d-flex align-items-center flex-wrap geo-toolbar">
-    <span class="info-chip mr-2 mb-1">Site: Semua</span>
+    <div class="field-inline mr-2 mb-1">
+      <label for="geoSiteSelect">Site</label>
+      <select id="geoSiteSelect" class="form-control form-control-sm" [(ngModel)]="geoSite">
+        <option value="Semua">Semua</option>
+        <option value="KTPN">KTPN</option>
+        <option value="Kementerian">Kementerian</option>
+      </select>
+    </div>
     <div class="field-inline mr-2 mb-1">
       <label for="geoAreaSelect">Area</label>
-      <select
-        id="geoAreaSelect"
-        class="form-control form-control-sm"
-        [ngModel]="geoArea"
-        (ngModelChange)="onAreaChange($event)">
-        <option value="Semua">Semua Provinsi</option>
-        <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
+      <select id="geoAreaSelect" class="form-control form-control-sm" [(ngModel)]="geoArea">
+        <option value="Nasional">Nasional</option>
+        <option value="Pulau">Pulau</option>
+        <option value="Provinsi">Provinsi</option>
+        <option value="Semua kawasan">Semua kawasan</option>
       </select>
     </div>
     <span class="info-chip mr-2 mb-1">Periode: 2026 &middot; TW1</span>
@@ -139,7 +144,7 @@
               <ng-container *ngTemplateOutlet="toolbarTpl"></ng-container>
             </ng-container>
             <div class="btn-group btn-group-sm flex-wrap" role="group">
-              <button type="button" class="btn" [class.btn-primary]="geoView === 'dasar'" [class.btn-outline-secondary]="geoView !== 'dasar'" (click)="setView('dasar')">Peta OSM</button>
+              <button type="button" class="btn" [class.btn-primary]="geoView === 'dasar'" [class.btn-outline-secondary]="geoView !== 'dasar'" (click)="setView('dasar')">Peta</button>
               <button type="button" class="btn" [class.btn-primary]="geoView === 'grid'" [class.btn-outline-secondary]="geoView !== 'grid'" (click)="setView('grid')">Grid Provinsi</button>
               <button type="button" class="btn btn-outline-secondary" (click)="toggleSearch()">Cari</button>
               <button type="button" class="btn btn-outline-secondary" *ngIf="fullscreen" (click)="togglePanels()">{{ panelsHidden ? 'Tampilkan' : 'Sembunyikan' }}</button>

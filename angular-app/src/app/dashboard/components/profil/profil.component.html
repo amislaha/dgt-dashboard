@@ -83,9 +83,14 @@
 
 <ng-template #detailTpl>
   <ng-container *ngIf="selected as k">
-    <button type="button" class="back-link mb-2" (click)="backToList()">&larr; Kembali ke Daftar</button>
-    <div class="page-head mb-2"><h1 class="h4 font-weight-bold mb-1">{{ k.nama }}</h1></div>
-    <div class="profil-detail-source mb-3">Sumber: Ditjen PKP2Trans &middot; Data IPKT 2023 &middot; Terakhir diperbarui 24 Agustus 2026</div>
+    <div class="profil-detail-header mb-3">
+      <div class="profil-detail-header-text">
+        <button type="button" class="back-link mb-2" (click)="backToList()">&larr; Kembali ke Daftar</button>
+        <div class="page-head mb-2"><h1 class="h4 font-weight-bold mb-1">{{ k.nama }}</h1></div>
+        <div class="profil-detail-source">Sumber: Ditjen PKP2Trans &middot; Data IPKT 2023 &middot; Terakhir diperbarui 24 Agustus 2026</div>
+      </div>
+      <div class="profil-detail-photo"><img src="assets/hero-kawasan.jpg" alt="Foto {{ k.nama }}" /></div>
+    </div>
 
     <div class="subtab-row mb-4">
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'ekonomi'" (click)="setDetailTab('ekonomi')">Ekonomi</button>

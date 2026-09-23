@@ -35,7 +35,14 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   provinces: Province[] = [];
   ikuList: IkuItem[] = [];
 
-  geoArea = 'Semua';
+  /* Both Site and Area are plain selectable dropdowns per request, but neither has a real backing
+     field in the illustrative dataset (no per-kawasan "site" classification, and Area's options —
+     Nasional/Pulau/Provinsi/Semua kawasan — are grouping levels, not one specific place to filter
+     to), so like Periode they're decorative: selectable and remembered here, but don't filter
+     `filteredKawasan` below. Area used to really filter by province — see git history if that's
+     ever wanted back. */
+  geoSite = 'Semua';
+  geoArea = 'Nasional';
   selectedKawasanId: string | null = null;
   geoView: 'dasar' | 'grid' = 'dasar';
   geoDetailTab: DetailTab = 'profil';
@@ -106,7 +113,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   }
 
   get filteredSummary(): Kawasan[] {
-    return this.kawasan.filter(k => this.geoArea === 'Semua' || k.provinsi === this.geoArea);
+    return this.kawasan;
   }
 
   get summaryIsShort(): boolean {
@@ -154,10 +161,6 @@ export class GeospasialComponent implements OnInit, OnDestroy {
 
   get layerIndeterminate(): boolean {
     return !this.layerAllChecked && this.kawasan.some(k => this.layerVisible[k.id]);
-  }
-
-  onAreaChange(value: string): void {
-    this.geoArea = value;
   }
 
   toggleIkuDetail(i: number): void {

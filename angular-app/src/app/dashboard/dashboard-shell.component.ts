@@ -37,7 +37,8 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
        K/L) was reverted, so this is a visibility toggle, not a deletion — flip `hidden` back off to
        restore it to the rail. */
     { id: 'demografi', label: 'Demografi & Pembauran', sub: 'Transmigran · Masyarakat Lokal', icon: moduleIconSvg('demografi'), hidden: true },
-    { id: 'infrastruktur', label: 'Infrastruktur & Kolaborasi K/L', sub: 'Trans Gotong Royong', icon: moduleIconSvg('infrastruktur') },
+    /* hidden per request, same treatment as demografi above — route/component untouched. */
+    { id: 'infrastruktur', label: 'Infrastruktur & Kolaborasi K/L', sub: 'Trans Gotong Royong', icon: moduleIconSvg('infrastruktur'), hidden: true },
     { id: 'monitoring', label: 'Monitoring Program & Anggaran', sub: 'Timeline · Kurva S', icon: moduleIconSvg('monitoring') },
     { id: 'ekonomi', label: 'Ekonomi & Investasi Kawasan', sub: 'Trans Karya Nusa', icon: moduleIconSvg('ekonomi') },
     { id: 'analitik', label: 'Analitik, Skoring & EWS', sub: 'Prioritas · Peringatan Dini', icon: moduleIconSvg('analitik') },

@@ -17,6 +17,34 @@
   padding: var(--space-6, 1.5rem) var(--space-6, 1.5rem) 3rem;
 }
 
+// ---------- rail footer: links out to the two separate CRUD tools (DGT Data Manager, Geomapping)
+// projected into <dgt-rail-nav>'s [railFooter] slot, pinned below the scrollable nav list. ----------
+.rail-footer {
+  flex: 0 0 auto;
+  padding: var(--space-3, .75rem) var(--space-3, .75rem) var(--space-4, 1rem);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, .5rem);
+}
+.rail-footer-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, .5rem);
+  padding: var(--space-2, .5rem) var(--space-3, .75rem);
+  border-radius: var(--radius-md, .5rem);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: var(--text-sm, .8125rem);
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--muted);
+
+  svg { width: 16px; height: 16px; flex: 0 0 auto; }
+
+  &:hover { border-color: var(--primary-line); color: var(--primary); background: var(--primary-soft); }
+}
+
 // ---------- rail-fab (sidebar toggle) ----------
 // The only persistent chrome in this module (no header bar at all) — reveals
 // the collapsed-by-default rail on desktop, or opens the mobile off-canvas

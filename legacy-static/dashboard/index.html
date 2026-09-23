@@ -157,6 +157,7 @@
     overflow-y: auto;
     background: linear-gradient(180deg, rgba(15,25,34,0.015), transparent);
     transition: width 0.15s ease, padding 0.15s ease;
+    display: flex; flex-direction: column;
   }
   /* fully collapsed, not icon-only — width:0 hides it completely so .main gets the space back.
      The toggle lives in the fixed .rail-fab (not inside .rail) specifically so it stays reachable
@@ -175,6 +176,21 @@
     font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--text-faint); padding: 0.4rem 0.6rem 0.5rem;
   }
+
+  /* pinned to the bottom of the rail (.rail is a flex column, see above) — links out to the two
+     separate CRUD tools (DGT Data Manager, Geomapping), neither of which is part of this dashboard
+     SPA, hence target="_blank" so the dashboard's own in-memory state isn't lost. */
+  .rail-footer {
+    margin-top: auto; padding-top: 0.6rem; border-top: 1px solid var(--border-soft);
+    display: flex; flex-direction: column; gap: 0.35rem;
+  }
+  .rail-footer-btn {
+    display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.6rem;
+    border-radius: 8px; color: var(--text-dim); text-decoration: none;
+    font-size: 0.78rem; font-weight: 600; border: 1px solid var(--border); background: var(--panel-2);
+  }
+  .rail-footer-btn svg { width: 16px; height: 16px; flex: 0 0 auto; }
+  .rail-footer-btn:hover { border-color: var(--primary-line); color: var(--primary); background: var(--primary-soft); }
 
   .rail-item {
     position: relative; display: flex; align-items: center; gap: 0.65rem;
@@ -766,7 +782,7 @@
 
   /* ---------- Data Induk & Profil Kawasan: list + per-kawasan drill-down detail ---------- */
   .profil-kpi-color { border: none; }
-  .profil-kpi-color .k-label { color: rgba(255, 255, 255, 0.82); }
+  .profil-kpi-color .k-label { color: #fff; }
   .profil-kpi-color .k-value { color: #fff; }
   .profil-kpi-color.c-good { background: var(--good); }
   .profil-kpi-color.c-series2 { background: var(--series-2); }
@@ -831,6 +847,15 @@
     margin-bottom: 1.1rem;
   }
   .profil-detail-source svg { width: 13px; height: 13px; flex: 0 0 auto; }
+
+  .profil-detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.2rem; }
+  .profil-detail-header-text { flex: 1 1 auto; min-width: 0; }
+  .profil-detail-photo {
+    flex: 0 0 auto; width: 220px; height: 130px; border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .profil-detail-photo img, .profil-detail-photo svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (max-width: 760px) { .profil-detail-header { flex-direction: column; } .profil-detail-photo { width: 100%; height: 160px; } }
 
   .placeholder-panel { padding: 2.2rem 1rem; text-align: center; color: var(--text-faint); font-size: 0.82rem; }
 
@@ -971,6 +996,16 @@
     </div>
     <div class="rail-group-label">Modul Eksekutif</div>
     <div id="railItems"></div>
+    <div class="rail-footer">
+      <a class="rail-footer-btn" href="../data-manager/" target="_blank" rel="noopener" title="Buka DGT Data Manager">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18"/><path d="M9 4v16"/></svg>
+        <span>Kelola Data Tabel</span>
+      </a>
+      <a class="rail-footer-btn" href="../geomapping/" target="_blank" rel="noopener" title="Buka Geomapping">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.58 7-12a7 7 0 1 0-14 0c0 4.42 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg>
+        <span>Kelola Data Spasial</span>
+      </a>
+    </div>
   </nav>
   <button class="rail-fab" id="railFab" aria-label="Buka/tutup menu modul">☰</button>
   <main class="main" id="main"></main>
@@ -1396,7 +1431,9 @@
        Infrastruktur & Kolaborasi K/L) was reverted, so this time it's a visibility toggle, not a
        deletion — flip `hidden` back off to restore it to the rail. */
     { id: "demografi", label: "Demografi & Pembauran", sub: "Transmigran · Masyarakat Lokal", hidden: true },
-    { id: "infrastruktur", label: "Infrastruktur & Kolaborasi K/L", sub: "Trans Gotong Royong" },
+    /* hidden per request, same "hidden but not deleted" treatment as demografi above — route and
+       renderer both stay fully intact, just filtered out of the visible rail. */
+    { id: "infrastruktur", label: "Infrastruktur & Kolaborasi K/L", sub: "Trans Gotong Royong", hidden: true },
     { id: "monitoring", label: "Monitoring Program & Anggaran", sub: "Timeline · Kurva S" },
     { id: "ekonomi", label: "Ekonomi & Investasi Kawasan", sub: "Trans Karya Nusa" },
     { id: "analitik", label: "Analitik, Skoring & EWS", sub: "Prioritas · Peringatan Dini" },
@@ -1416,7 +1453,8 @@
     showSHM: true,
     selectedProv: null,
     geoView: "dasar",
-    geoArea: "Semua",
+    geoSite: "Semua",
+    geoArea: "Nasional",
     geoDetailTab: "profil",
     profilView: "list",
     profilDetailTab: "ekonomi",
@@ -1789,10 +1827,17 @@
       var k = kawasan.find(function (x) { return x.id === state.selectedKawasan; }) || kawasan[0];
       var d = profilDetailData(k);
 
+      var headerPhotoHtml = k.foto ? '<img src="' + k.foto + '" alt="Foto ' + k.nama + '" />' : cityIllustration(k, 220, 130);
+
       var wrap = h(
-        '<button class="back-link" id="profilBackBtn">' + svgIconP(ICON_BACK, 2.2) + 'Kembali ke Daftar</button>' +
-        '<div class="page-head"><div><h1>' + k.nama + '</h1></div></div>' +
-        '<div class="profil-detail-source">' + svgIconP(ICON_SRC, 2) + '<span>Sumber: Ditjen PKP2Trans · Data IPKT 2023 · Terakhir diperbarui 24 Agustus 2026</span></div>' +
+        '<div class="profil-detail-header">' +
+          '<div class="profil-detail-header-text">' +
+            '<button class="back-link" id="profilBackBtn">' + svgIconP(ICON_BACK, 2.2) + 'Kembali ke Daftar</button>' +
+            '<div class="page-head"><div><h1>' + k.nama + '</h1></div></div>' +
+            '<div class="profil-detail-source">' + svgIconP(ICON_SRC, 2) + '<span>Sumber: Ditjen PKP2Trans · Data IPKT 2023 · Terakhir diperbarui 24 Agustus 2026</span></div>' +
+          '</div>' +
+          '<div class="profil-detail-photo">' + headerPhotoHtml + '</div>' +
+        '</div>' +
         '<div class="subtab-row" id="profilSubtabs">' +
           ["ekonomi", "sosial", "perencanaan", "patriot", "media"].map(function (t) {
             var label = { ekonomi: "Ekonomi", sosial: "Sosial", perencanaan: "Perencanaan", patriot: "Patriot", media: "Media" }[t];
@@ -2024,17 +2069,21 @@
       '</div>' +
       '<div class="iku-detail" id="geoIkuDetail" hidden></div>';
 
-    /* ---- top control bar: Site/Area/Periode/Alert. "Area" really filters (reuses the provinces
-       array); "Site" and "Periode" have no backing field in the illustrative dataset, so they're
-       shown as static context chips rather than dropdowns that would silently do nothing. ---- */
-    var provOptionsHtml = '<option value="Semua">Semua Provinsi</option>' +
-      provinces.map(function (p) { return '<option value="' + p.nama + '">' + p.nama + '</option>'; }).join("");
+    /* ---- top control bar: Site/Area/Periode/Alert. Site and Area are both plain selectable
+       dropdowns per request, but neither has a real backing field in the illustrative dataset (no
+       per-kawasan "site" classification, and Area's options — Nasional/Pulau/Provinsi/Semua
+       kawasan — are grouping levels, not one specific place to filter to) so, like "Periode",
+       they're decorative: selectable and remembered in `state`, but don't filter the map/summary
+       below. This replaces Area's earlier behavior, which really did filter by province — see
+       state.geoArea's own history in git blame if that's ever wanted back. ---- */
+    var siteOptionsHtml = ["Semua", "KTPN", "Kementerian"].map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join("");
+    var areaOptionsHtml = ["Nasional", "Pulau", "Provinsi", "Semua kawasan"].map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join("");
     /* No page title/description here by request ("no header for dashboard app") — just the
        control row, unlike every other module's pageHead(). */
     var topBarHtml =
       '<div class="toolbar geo-toolbar">' +
-        '<span class="info-chip">Site: Semua</span>' +
-        '<div class="field-inline"><label for="geoAreaSelect">Area</label><select id="geoAreaSelect">' + provOptionsHtml + '</select></div>' +
+        '<div class="field-inline"><label for="geoSiteSelect">Site</label><select id="geoSiteSelect">' + siteOptionsHtml + '</select></div>' +
+        '<div class="field-inline"><label for="geoAreaSelect">Area</label><select id="geoAreaSelect">' + areaOptionsHtml + '</select></div>' +
         '<span class="info-chip">Periode: 2026 · TW1</span>' +
         '<button class="alert-chip' + (activeAlertsInit > 0 ? " warn" : "") + '" id="geoAlertChip">' + svgIcon(ICON_BELL, 2) +
           '<span id="geoAlertChipText">Alert (' + activeAlertsInit + ')</span></button>' +
@@ -2048,7 +2097,7 @@
             '<div class="panel geo-map-panel" id="geoMapPanel">' +
               '<div class="panel-header"><h2>Peta Sebaran Kawasan</h2>' +
                 '<div class="toolbar">' +
-                  '<button class="map-tool-btn" data-view="dasar" title="Peta OSM">' + miniIconSvg("dasar") + '</button>' +
+                  '<button class="map-tool-btn" data-view="dasar" title="Peta">' + miniIconSvg("dasar") + '</button>' +
                   '<button class="map-tool-btn" data-view="grid" title="Grid Provinsi">' + miniIconSvg("grid") + '</button>' +
                   '<button class="map-tool-btn" id="geoSearchToggle" title="Cari kawasan">' + svgIcon(ICON_SEARCH) + '</button>' +
                   '<button class="map-tool-btn panel-toggle-btn" id="geoPanelsToggle" title="Tampilkan panel" hidden>' + svgIcon(ICON_EYE) + '<span>Tampilkan</span></button>' +
@@ -2093,11 +2142,10 @@
       '</div>'
     );
 
+    qs(wrap, "#geoSiteSelect").value = state.geoSite;
+    qs(wrap, "#geoSiteSelect").addEventListener("change", function (e) { state.geoSite = e.target.value; });
     qs(wrap, "#geoAreaSelect").value = state.geoArea;
-    qs(wrap, "#geoAreaSelect").addEventListener("change", function (e) {
-      state.geoArea = e.target.value;
-      renderSummary();
-    });
+    qs(wrap, "#geoAreaSelect").addEventListener("change", function (e) { state.geoArea = e.target.value; });
     qs(wrap, "#geoAlertChip").addEventListener("click", function () {
       qs(wrap, "#geoEwsPanel").scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -2284,10 +2332,11 @@
       });
     }
 
-    /* ---- "Kawasan Teratas & Terendah" — ranks by Indeks 5T, respects the Area filter above ---- */
+    /* ---- "Kawasan Teratas & Terendah" — ranks by Indeks 5T. No longer filtered by the Area
+       dropdown above (see topBarHtml's own comment on why that's decorative now). ---- */
     function renderSummary() {
       var el = qs(wrap, "#geoSummary");
-      var pool = kawasan.filter(function (k) { return state.geoArea === "Semua" || k.provinsi === state.geoArea; });
+      var pool = kawasan;
       if (!pool.length) { el.innerHTML = '<p class="hint-note">Tidak ada kawasan pada area ini.</p>'; return; }
       var sorted = pool.slice().sort(function (a, b) { return b.indeks5t - a.indeks5t; });
       function rankRow(k, i, good) {
