@@ -34,12 +34,19 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     `<b>${k.nama}</b><br/>${k.provinsi}<br/>Tahap: ${k.tahap}` +
     `<br/>Populasi: ${k.populasi.toLocaleString('id-ID')} jiwa` +
     `<br/>Luas HPL: ${k.hplHa.toLocaleString('id-ID')} ha`;
+  /** "Batas HPL" — a dashed, unfilled outline traced over the same fabricated
+   *  kawasanAreaLatLngs() geometry as the status-coloured areas, so the legality boundary reads as
+   *  its own toggleable layer (ports DGT.md's "land legality (HPL/SHM geospatial overlay)" module
+   *  theme). Defaults off so components other than Geospasial that reuse this map (e.g. Ekonomi &
+   *  Investasi Kawasan's wilayah-coloured map) aren't affected unless they opt in. */
+  @Input() showHpl = false;
   @Output() select = new EventEmitter<Kawasan>();
 
   @ViewChild('mapEl', { static: true }) mapElRef!: ElementRef<HTMLDivElement>;
 
   private map: L.Map | null = null;
   private areas: { [id: string]: L.Polygon } = {};
+  private hplLayer: L.LayerGroup | null = null;
 
   ngAfterViewInit(): void {
     // zoomControl:false + a separate topright control (matching the original) frees up the
@@ -66,6 +73,24 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
     if (this.map && changes.selectedId && !changes.selectedId.firstChange) {
       this.panToSelected();
+    }
+    if (this.map && changes.showHpl && !changes.showHpl.firstChange) {
+      this.setHplVisible(this.showHpl);
+    }
+  }
+
+  /** Called by the parent's "Batas HPL" catalogue checkbox — same add/remove-layer pattern as
+   *  setAreaVisible(), just for the whole dashed-outline group at once. */
+  setHplVisible(visible: boolean): void {
+    if (!this.map || !this.hplLayer) {
+      return;
+    }
+    if (visible) {
+      if (!this.map.hasLayer(this.hplLayer)) {
+        this.hplLayer.addTo(this.map);
+      }
+    } else if (this.map.hasLayer(this.hplLayer)) {
+      this.map.removeLayer(this.hplLayer);
     }
   }
 
@@ -108,6 +133,10 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
     Object.keys(this.areas).forEach(id => this.map!.removeLayer(this.areas[id]));
     this.areas = {};
+    if (this.hplLayer) {
+      this.map.removeLayer(this.hplLayer);
+      this.hplLayer = null;
+    }
 
     this.kawasan.forEach(k => {
       const area = L.polygon(kawasanAreaLatLngs(k), {
@@ -121,6 +150,22 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       area.on('click', () => this.select.emit(k));
       this.areas[k.id] = area;
     });
+
+    this.hplLayer = L.layerGroup(
+      this.kawasan.map(k =>
+        L.polygon(kawasanAreaLatLngs(k), {
+          color: '#33809c', // var(--series-2)'s raw hex twin — Leaflet can't resolve CSS vars
+          weight: 2,
+          opacity: 0.9,
+          dashArray: '5 4',
+          fill: false,
+          interactive: false
+        })
+      )
+    );
+    if (this.showHpl) {
+      this.hplLayer.addTo(this.map);
+    }
 
     // Fit to every kawasan's own coordinates instead of the fixed setView center/zoom above —
     // ports a later fix for SKP Salor (lon 140.4°, Papua) sitting permanently off-screen at the

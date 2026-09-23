@@ -114,9 +114,12 @@
   &:hover { background: var(--muted); }
   input { accent-color: var(--primary); flex: 0 0 auto; }
   .map-layer-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; border: 1px solid rgba(0,0,0,0.15); }
+  .map-layer-dot.map-layer-dot-outline { background: transparent; border: 2px dashed var(--series-2); }
   .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 500; }
   .ct { flex: 0 0 auto; font-size: 0.64rem; color: var(--text-faint); max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+// separates "Batas HPL" (a boundary-outline overlay, not a kawasan) from the per-kawasan rows below it
+.map-layer-item.layer-divider { border-bottom: 1px solid var(--border-soft); padding-bottom: 0.4rem; margin-bottom: 0.15rem; }
 
 // ---------- "you are here" locator inset — a static basemap snapshot, dasar view only ----------
 .map-locator {

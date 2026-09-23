@@ -64,6 +64,10 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   // overlap the map toolbar/panels in the same crowded top corner").
   layerCollapsed = false;
   layerVisible: { [id: string]: boolean } = {};
+  /** "Batas HPL" — a dashed boundary-outline layer, its own catalogue row above the per-kawasan
+   *  list (see kawasan-map.component.ts's showHpl input). Included in the master "select all"
+   *  checkbox alongside the per-kawasan rows, same as the original. */
+  hplVisible = true;
 
   // Expandable IKU detail box — clicking the same chip's "i" button again closes it.
   activeIku: number | null = null;
@@ -156,11 +160,11 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   }
 
   get layerAllChecked(): boolean {
-    return this.kawasan.every(k => this.layerVisible[k.id]);
+    return this.hplVisible && this.kawasan.every(k => this.layerVisible[k.id]);
   }
 
   get layerIndeterminate(): boolean {
-    return !this.layerAllChecked && this.kawasan.some(k => this.layerVisible[k.id]);
+    return !this.layerAllChecked && (this.hplVisible || this.kawasan.some(k => this.layerVisible[k.id]));
   }
 
   toggleIkuDetail(i: number): void {
@@ -234,6 +238,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   }
 
   onLayerAllToggle(checked: boolean): void {
+    this.onHplToggle(checked);
     this.kawasan.forEach(k => this.onLayerToggle(k.id, checked));
   }
 
@@ -241,6 +246,13 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.layerVisible[id] = visible;
     if (this.kawasanMap) {
       this.kawasanMap.setAreaVisible(id, visible);
+    }
+  }
+
+  onHplToggle(visible: boolean): void {
+    this.hplVisible = visible;
+    if (this.kawasanMap) {
+      this.kawasanMap.setHplVisible(visible);
     }
   }
 

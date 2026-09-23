@@ -403,6 +403,10 @@
     border: 1.5px solid var(--bg); cursor: pointer; opacity: 0.82;
   }
   .basemap-static .bm-pin:hover, .basemap-static .bm-pin.selected { outline: 2px solid var(--primary); opacity: 1; }
+  /* "Batas HPL" toggle in the static (no-Leaflet) fallback — clip-path shapes can't take a real
+     outline that follows their silhouette, so this is a bounding-box ring instead; box-shadow
+     rather than outline/border so it doesn't fight the hover/selected outline above. */
+  .basemap-static .bm-pin.hpl-outline { box-shadow: 0 0 0 2px var(--series-2); }
   .basemap-static .bm-attrib {
     position: absolute; right: 4px; bottom: 3px; font-size: 0.6rem; color: rgba(255,255,255,0.85);
     background: rgba(10,15,28,0.55); padding: 0.05rem 0.4rem; border-radius: 4px;
@@ -470,8 +474,11 @@
   .map-layer-item:hover { background: var(--panel-2); }
   .map-layer-item input { accent-color: var(--primary); flex: 0 0 auto; }
   .map-layer-item .map-layer-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; border: 1px solid rgba(0,0,0,0.15); }
+  .map-layer-item .map-layer-dot.map-layer-dot-outline { background: transparent; border: 2px dashed var(--series-2); }
   .map-layer-item .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 500; }
   .map-layer-item .ct { flex: 0 0 auto; font-size: 0.64rem; color: var(--text-faint); max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* separates "Batas HPL" (a boundary-outline overlay, not a kawasan) from the per-kawasan rows below it */
+  .map-layer-item.layer-divider { border-bottom: 1px solid var(--border-soft); padding-bottom: 0.4rem; margin-bottom: 0.15rem; }
 
   /* ---------- geospasial: boxed "Executive DSS" layout (light panels, no full-bleed immersive HUD) ----------
      Replaced the earlier full-bleed map + dark glass HUD sidebars per a wireframe request ("Executive DSS
@@ -2511,6 +2518,17 @@
             '<button class="map-layer-collapse" id="geoLayerCollapse" title="Ciutkan daftar layer">' + svgIcon(ICON_CHEV_L, 2.2) + '</button>' +
           '</div>' +
           '<div class="map-layer-catalog-list" id="geoLayerList">' +
+            /* Batas HPL — a dashed boundary-outline overlay (no fill) drawn from the same fabricated
+               kawasanAreaLatLngs() geometry as the status-coloured kawasan areas below, so it reads
+               as a distinct legality-boundary layer rather than duplicating the same fill. Ports
+               DGT.md's "land legality (HPL/SHM geospatial overlay)" module theme, which the map
+               itself didn't otherwise surface as a toggleable layer. */
+            '<label class="map-layer-item layer-divider" data-id="hpl">' +
+              '<input type="checkbox" class="geo-layer-chk" data-id="hpl" checked />' +
+              '<span class="map-layer-dot map-layer-dot-outline" style="border-color:var(--series-2)"></span>' +
+              '<span class="nm">Batas HPL</span>' +
+              '<span class="ct">' + kawasan.length + ' bidang</span>' +
+            '</label>' +
             kawasan.map(function (k) {
               return '<label class="map-layer-item" data-id="' + k.id + '">' +
                 '<input type="checkbox" class="geo-layer-chk" data-id="' + k.id + '" checked />' +
@@ -2579,7 +2597,22 @@
         leafletMarkers[k.id] = area;
       });
 
+      /* "Batas HPL" layer — a dashed, unfilled outline traced over the same geometry, purely so the
+         legality boundary reads as its own layer in the catalogue rather than only ever being
+         visible bundled into the status-coloured fill above. */
+      var hplLayerGroup = L.layerGroup(kawasan.map(function (k) {
+        return L.polygon(kawasanAreaLatLngs(k), {
+          color: "#33809c" /* var(--series-2)'s raw hex twin — Leaflet can't resolve CSS vars, see STAGE_COLOR_HEX above */,
+          weight: 2, opacity: 0.9, dashArray: "5 4", fill: false, interactive: false
+        });
+      })).addTo(map);
+
       wireLayerCatalog(body, function (id, visible) {
+        if (id === "hpl") {
+          if (visible) { if (!map.hasLayer(hplLayerGroup)) hplLayerGroup.addTo(map); }
+          else if (map.hasLayer(hplLayerGroup)) { map.removeLayer(hplLayerGroup); }
+          return;
+        }
         var area = leafletMarkers[id];
         if (!area) return;
         if (visible) { if (!map.hasLayer(area)) area.addTo(map); }
@@ -2613,7 +2646,7 @@
           kawasan.map(function (k) {
             var pos = basemapPct(k.lon, k.lat);
             var size = 22 + (k.populasi / maxPop) * 20;
-            return '<span class="bm-pin' + (state.selectedKawasan === k.id ? " selected" : "") + '" data-id="' + k.id + '" ' +
+            return '<span class="bm-pin hpl-outline' + (state.selectedKawasan === k.id ? " selected" : "") + '" data-id="' + k.id + '" ' +
               'style="left:' + pos.xPct.toFixed(2) + '%;top:' + pos.yPct.toFixed(2) + '%;width:' + size + 'px;height:' + size + 'px;' +
               'background:' + STAGE_COLOR_HEX[k.tahap] + ';clip-path:' + blobClipPath(k) + ';"></span>';
           }).join("") +
@@ -2629,8 +2662,13 @@
         });
       });
 
-      /* no real Leaflet layer to add/remove here, so "toggling" a kawasan just hides its pin */
+      /* no real Leaflet layer to add/remove here, so "Batas HPL" toggles a dashed outline class on
+         every pin instead, and toggling a single kawasan just hides its pin. */
       wireLayerCatalog(body, function (id, visible) {
+        if (id === "hpl") {
+          qsa(body, ".bm-pin").forEach(function (p) { p.classList.toggle("hpl-outline", visible); });
+          return;
+        }
         var pin = qs(body, '.bm-pin[data-id="' + id + '"]');
         if (pin) pin.hidden = !visible;
       });

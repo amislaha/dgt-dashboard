@@ -168,6 +168,7 @@
               *ngIf="geoView === 'dasar'"
               [kawasan]="kawasan"
               [selectedId]="selectedKawasanId"
+              [showHpl]="hplVisible"
               (select)="selectKawasan($event)">
             </dgt-kawasan-map>
 
@@ -206,6 +207,15 @@
             </button>
           </div>
           <div class="map-layer-catalog-list">
+            <!-- "Batas HPL" — a dashed boundary-outline overlay (no fill), ports DGT.md's "land
+                 legality (HPL/SHM geospatial overlay)" module theme; see kawasan-map.component.ts
+                 showHpl input. Not a kawasan row, hence the divider under it. -->
+            <label class="map-layer-item layer-divider">
+              <input type="checkbox" [checked]="hplVisible" (change)="onHplToggle($any($event.target).checked)" />
+              <span class="map-layer-dot map-layer-dot-outline"></span>
+              <span class="nm">Batas HPL</span>
+              <span class="ct">{{ kawasan.length }} bidang</span>
+            </label>
             <label class="map-layer-item" *ngFor="let k of kawasan">
               <input type="checkbox" [checked]="layerVisible[k.id]" (change)="onLayerToggle(k.id, $any($event.target).checked)" />
               <span class="map-layer-dot" [style.background]="stageColorHex[k.tahap]"></span>
