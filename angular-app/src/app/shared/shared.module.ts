@@ -15,6 +15,7 @@ import { BarChartComponent } from './components/charts/bar-chart/bar-chart.compo
 import { DualLineChartComponent } from './components/charts/dual-line-chart/dual-line-chart.component';
 import { DonutChartComponent } from './components/charts/donut-chart/donut-chart.component';
 import { GaugeChartComponent } from './components/charts/gauge-chart/gauge-chart.component';
+import { ThemeToggleComponent } from './components/theme-toggle/theme-toggle.component';
 import { SafeHtmlPipe } from './pipes/safe-html.pipe';
 
 export const COMPONENTS = [
@@ -29,7 +30,8 @@ export const COMPONENTS = [
   BarChartComponent,
   DualLineChartComponent,
   DonutChartComponent,
-  GaugeChartComponent
+  GaugeChartComponent,
+  ThemeToggleComponent
 ];
 
 /**

@@ -7,6 +7,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    // Set the `.dark` class before the Angular bundle loads/bootstraps
+    // (ThemeService does the same thing on bootstrap, see app.component.ts)
+    // so there's no flash of the wrong theme while the app starts up.
+    (function () {
+      try {
+        if (window.localStorage.getItem('dgt-theme') === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <dgt-root>Loading DGT…</dgt-root>

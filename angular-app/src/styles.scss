@@ -15,6 +15,11 @@
 // its inline <style> block.
 @import 'styles/tokens-bridge';
 
+// Manual light/dark toggle — see core/services/theme.service.ts. Imported
+// last so its `html.dark` overrides win over the plain Bootstrap classes
+// compiled above.
+@import 'styles/dark-mode';
+
 html, body {
   height: 100%;
 }

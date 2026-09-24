@@ -1,0 +1,38 @@
+:host {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.theme-toggle {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  color: var(--text-dim, var(--muted-foreground));
+  cursor: pointer;
+  transition: background var(--duration-fast, 120ms) var(--ease-standard, ease),
+    color var(--duration-fast, 120ms) var(--ease-standard, ease),
+    border-color var(--duration-fast, 120ms) var(--ease-standard, ease);
+
+  svg { width: 16px; height: 16px; }
+
+  &:hover { color: var(--primary); border-color: var(--primary-line); }
+  &:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
+}
+
+// Standalone floating variant for shells with no topbar to sit in
+// (dashboard-shell — see its own doc comment for why it has none).
+.theme-toggle.fixed {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 1031;
+  width: 34px;
+  height: 34px;
+  background: var(--card);
+  box-shadow: 0 4px 14px -6px rgba(15, 25, 34, 0.25);
+}

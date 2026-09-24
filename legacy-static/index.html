@@ -15,6 +15,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script>
+  // Set the dark/light attribute before the <style> block below is parsed, so
+  // there's no flash of the wrong theme on load. See the toggle button script
+  // near the end of the file for the interactive half of this.
+  (function () {
+    try {
+      if (localStorage.getItem("dgt-theme") === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    } catch (e) {}
+  })();
+</script>
 <style>
   :root {
     --bg: #f7f9fa;
@@ -39,6 +51,34 @@
     --sidebar: #081826;
     --radius: 10px;
     --radius-sm: 8px;
+  }
+
+  /* Manual dark mode (see #themeToggle below) — not prefers-color-scheme, so
+     it doesn't silently follow the OS setting. Same derivation as the other
+     tools' dark palettes (design-system/tokens/colors.css .dark{} block /
+     angular-app's _tokens-bridge.scss), reconciled here to this file's own
+     variable names since there's no shared build step across the three
+     static tools + Angular port (see CLAUDE.md "Repository layout"). */
+  :root[data-theme="dark"] {
+    --bg: #081420;
+    --bg-2: #0c1c2c;
+    --panel: #0e1f2e;
+    --panel-2: #182c3c;
+    --panel-3: #12293a;
+    --border: rgba(255, 255, 255, 0.12);
+    --border-soft: rgba(255, 255, 255, 0.08);
+    --text: #e8eef3;
+    --text-dim: #c4d0d8;
+    --text-faint: #71818c;
+    --primary: #75b0c4;
+    --primary-soft: rgba(117, 176, 196, 0.16);
+    --primary-line: rgba(117, 176, 196, 0.45);
+    --series-2: #75b0c4;
+    --series-2-soft: rgba(117, 176, 196, 0.2);
+    --gold: #dfb87e;
+    --gold-soft: rgba(223, 184, 126, 0.18);
+    --geo: #4d9d7e;
+    --geo-soft: rgba(77, 157, 126, 0.18);
   }
 
   * { box-sizing: border-box; }
@@ -157,8 +197,12 @@
     background: var(--panel);
   }
   .login-visual {
+    /* Fixed navy brand gradient regardless of theme (like --sidebar
+       elsewhere) rather than var(--primary), which flips to a lighter teal
+       in dark mode for interactive-element contrast — this is artwork, not
+       UI chrome, so it stays put. */
     position: relative; flex: 0 0 44%; padding: 2.6rem 2.4rem;
-    background: linear-gradient(160deg, var(--primary) 0%, #0f2c40 55%, var(--sidebar) 100%);
+    background: linear-gradient(160deg, #163b54 0%, #0f2c40 55%, var(--sidebar) 100%);
     color: #eaf1f5; display: flex; flex-direction: column; justify-content: space-between;
     overflow: hidden;
   }
@@ -242,7 +286,25 @@
     text-decoration: underline; text-underline-offset: 2px;
   }
   .logout-link:hover { color: var(--text-dim); }
+
+  .theme-toggle-btn {
+    position: fixed; top: 1rem; right: 1rem; z-index: 50;
+    width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--panel); border: 1px solid var(--border); color: var(--text-dim);
+    cursor: pointer; box-shadow: 0 4px 14px -6px rgba(15, 25, 34, 0.25);
+  }
+  .theme-toggle-btn:hover { color: var(--primary); border-color: var(--primary-line); }
+  .theme-toggle-btn svg { width: 18px; height: 18px; }
+  .theme-toggle-btn .icon-moon { display: none; }
+  :root[data-theme="dark"] .theme-toggle-btn .icon-sun { display: none; }
+  :root[data-theme="dark"] .theme-toggle-btn .icon-moon { display: block; }
 </style>
+
+<button type="button" id="themeToggle" class="theme-toggle-btn" aria-label="Ganti mode gelap/terang" title="Ganti mode gelap/terang">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+</button>
 
 <div id="loginView" class="view">
   <div class="login-shell">
@@ -382,6 +444,16 @@
     document.getElementById("forgotBtn").addEventListener("click", function () {
       var hint = document.getElementById("forgotHint");
       hint.hidden = !hint.hidden;
+    });
+
+    document.getElementById("themeToggle").addEventListener("click", function () {
+      var dark = document.documentElement.getAttribute("data-theme") === "dark";
+      if (dark) {
+        document.documentElement.removeAttribute("data-theme");
+      } else {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+      try { localStorage.setItem("dgt-theme", dark ? "light" : "dark"); } catch (err) {}
     });
   })();
 </script>

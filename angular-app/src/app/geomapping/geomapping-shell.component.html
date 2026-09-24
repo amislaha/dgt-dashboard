@@ -22,6 +22,7 @@
       <button type="button" (click)="onResetClick($event)">{{ resetArmed ? 'Ketuk lagi untuk hapus semua data' : 'Setel ulang data lokal' }}</button>
     </div>
   </div>
+  <dgt-theme-toggle></dgt-theme-toggle>
   <button class="top-icon-btn" type="button" title="Bahasa" aria-label="Ganti bahasa" (click)="toastService.show('Antarmuka dwibahasa belum tersedia pada prototipe ini')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4.4-2.5 8-5 9M5 9c0 2.4 2.8 4.5 6 5"/><path d="m13 21 4-9 4 9M14.5 17h5"/></svg>
   </button>

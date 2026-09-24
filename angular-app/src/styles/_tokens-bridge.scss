@@ -76,15 +76,32 @@
   --ease-standard: #{$ease-standard};
 }
 
-// design-system/tokens/colors.css .dark{} block — not wired up as a theme
-// switch anywhere yet (the original prototype is deliberately single-theme,
-// see CLAUDE.md "Theming"); kept here as an opt-in class so a future dark
-// mode doesn't require re-deriving these values.
+// design-system/tokens/colors.css .dark{} block, now wired up to an actual
+// toggle (ThemeService adds/removes this class on <html> — see
+// core/services/theme.service.ts and shared/components/theme-toggle/).
+// Extended past the design-system source's own .dark block with the extra
+// semantic aliases this bridge defines above (--text-dim, --good-soft,
+// --primary-line, etc.) that colors.css doesn't have, since those aliases
+// are literal light-mode hex here rather than var() references and so don't
+// flip on their own — sidebar tokens are the one group deliberately left
+// alone, since --sidebar is already dark-navy in light mode too (the rail is
+// always dark-on-light-or-dark, see rail-nav.component.scss).
 .dark {
   --background: #081420; --foreground: #e8eef3; --card: #0e1f2e;
-  --primary: #{$teal-300}; --secondary: #182c3c; --muted: #182c3c;
-  --muted-foreground: #97a7b2; --accent: #12293a; --destructive: #e4566a;
-  --success: #4d9d7e; --warning: #{$emas-300}; --info: #{$teal-300};
-  --border: rgba(255, 255, 255, .12); --ring: #{$teal-300};
-  --sidebar: #050f19; --sidebar-foreground: #c2d3de;
+  --primary: #{$teal-300}; --primary-soft: #{rgba($teal-300, .16)}; --primary-line: #{rgba($teal-300, .45)};
+  --secondary: #182c3c; --muted: #182c3c; --muted-foreground: #97a7b2;
+  --accent: #12293a; --destructive: #e4566a;
+  --border: rgba(255, 255, 255, .12); --border-soft: rgba(255, 255, 255, .08); --ring: #{$teal-300};
+
+  --text: #e8eef3; --text-dim: #{$abu-300}; --text-faint: #{$abu-500};
+
+  --good: #4d9d7e; --good-soft: #{rgba(#4d9d7e, .18)};
+  --warn: #{$emas-300}; --warn-soft: #{rgba($emas-300, .16)};
+  --critical: #e4566a; --critical-soft: #{rgba(#e4566a, .18)};
+  --series-2: #{$teal-300}; --series-2-soft: #{rgba($teal-300, .2)};
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, .3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .35), 0 1px 2px rgba(0, 0, 0, .24);
+  --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, .4), 0 2px 4px -2px rgba(0, 0, 0, .28);
+  --shadow-lg: 0 12px 24px -6px rgba(0, 0, 0, .5), 0 4px 8px -4px rgba(0, 0, 0, .3);
 }
