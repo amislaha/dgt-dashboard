@@ -21,6 +21,13 @@
   --page-bg: #f7f9fa;
 }
 
+// --page-bg above is a literal light-mode hex, not a var() reference, so it
+// doesn't flip on its own when ThemeService toggles `.dark` on <html> — see
+// core/services/theme.service.ts. :host-context matches that ancestor class.
+:host-context(html.dark) {
+  --page-bg: var(--background);
+}
+
 .launcher-page {
   background: var(--page-bg);
   min-height: 100vh;
@@ -118,7 +125,10 @@ a { color: inherit; text-decoration: none; }
   color: var(--gold);
 }
 .guide-btn {
-  align-self: flex-start; margin-top: 0.6rem; background: #fff; color: var(--text);
+  // var(--card), not a literal #fff — flips to a dark fill in dark mode
+  // instead of staying a fixed white pill (identical to before in light
+  // mode, since --card is white there too).
+  align-self: flex-start; margin-top: 0.6rem; background: var(--card); color: var(--text);
   border: none; border-radius: var(--radius-sm); padding: 0.65rem 1.3rem;
   font-size: 0.86rem; font-weight: 700; font-family: inherit; cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
