@@ -80,6 +80,15 @@
   color: var(--text-faint);
 }
 
+// Marks a new rail section (e.g. data-manager's Persetujuan & Pengajuan group, distinct from its
+// CRUD entity list above) — a rule plus a second `.rail-group-label`, not a nested list, so it
+// keeps the same flat `.rail-item` markup/behaviour as every other entry.
+.rail-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--space-2) var(--space-2) var(--space-3);
+}
+
 // More breathing room between items (was a near-invisible 2px) and a bigger, more deliberate
 // click target — enlarged/spaced out on request as a deliberate exception to the source's own
 // tighter, denser rail-item spacing.

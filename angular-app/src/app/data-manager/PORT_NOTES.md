@@ -149,3 +149,34 @@ not something to launder away:
 - Search is a client-side substring match across every field of a row
   (`Object.keys(row).some(...)`), identical to the original's
   `filteredRows()`.
+
+## Persetujuan & Pengajuan (added later, not in `data-manager/index.html`)
+
+A second rail section — `Pengajuan Data` and `Approval` — added on request,
+sitting below the 8 entity items behind a divider (`NavItem.sectionLabel`,
+see `RailNavComponent`). No equivalent exists in the original static tool;
+this is new to the Angular port only.
+
+- `models/submission.model.ts` / `services/submission.service.ts`: a
+  `Submission` log (propose create/update/delete on one of the 8 entities,
+  optional photo evidence, PENDING/APPROVED/REJECTED status + history),
+  localStorage-backed under the same `dgt-data-manager:` prefix as the entity
+  services but *not* an `EntityCrudService` subclass — review is a status
+  transition (`review()`), not a field-by-field `update()`.
+- `submission/` (Pengajuan Data): create a submission (entity + create/
+  update/delete + target picker + summary + multi-image upload via
+  `FileReader`→data-URL, same encoding geomapping uses for its
+  `Feature.images`) and list the queue.
+- `submission-approval/` (Approval): filter by status, expand a row to see
+  the images/summary/history, approve/reject (rejection requires a note)/
+  reset to pending — the same shape as geomapping's `ApprovalComponent`
+  ported down to `Submission` instead of `GeomappingFeature`.
+- **Deliberately not "full" geomapping**, per the request: no map, no
+  drawing/GPS capture, no structured questionnaire — only the image-evidence
+  + approval-workflow slice. **Also deliberately not wired to auto-apply**:
+  approving a submission here does not call the target `EntityCrudService`
+  create/update/delete — it only records the decision. Wiring that up (so
+  "Setujui" actually mutates the entity) is a natural follow-up once someone
+  confirms that's wanted, since an auto-apply path needs to decide how to
+  turn `Submission.summary` (free text) into a typed `EntityConfig.fields`
+  payload.

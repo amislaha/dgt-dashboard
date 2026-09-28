@@ -1,0 +1,55 @@
+<dgt-page-head title="Approval" description="Tinjau pengajuan perubahan data master beserta foto pendukungnya, lalu setujui atau tolak.">
+  <span class="reviewer-field">
+    <label>Reviewer</label>
+    <input type="text" class="form-control form-control-sm" [(ngModel)]="reviewerDraft" placeholder="Nama Anda" />
+  </span>
+</dgt-page-head>
+
+<div class="panel">
+  <div class="seg">
+    <button type="button" *ngFor="let o of filterOptions" [class.sel]="filter === o[0]" (click)="setFilter(o[0])">{{ o[1] }} ({{ count(o[0]) }})</button>
+  </div>
+
+  <div class="list" *ngIf="pool.length; else emptyState">
+    <div class="appr-item" *ngFor="let s of pool" [class.open]="openId[s.id]">
+      <div class="appr-head" (click)="toggleOpen(s.id)">
+        <span class="li-body">
+          <span class="li-title">{{ entityLabel(s.entityKey) }} &middot; {{ modeLabel[s.mode] }} — {{ s.targetLabel }}</span>
+          <span class="li-meta">Diajukan oleh {{ s.submittedBy }} &middot; {{ fmtWhen(s.submittedAt) }}</span>
+        </span>
+        <dgt-severity-badge [severity]="statusMeta[s.status].severity" [label]="statusMeta[s.status].label"></dgt-severity-badge>
+        <span class="appr-caret">&#8250;</span>
+      </div>
+
+      <div class="appr-body" *ngIf="openId[s.id]">
+        <p class="summary-text">{{ s.summary }}</p>
+
+        <div class="image-preview" *ngIf="s.images.length">
+          <div class="image-thumb" *ngFor="let src of s.images"><img [src]="src" alt="" /></div>
+        </div>
+
+        <div class="qn-row"><span class="qn-k">Diajukan</span><span class="qn-v">{{ s.submittedBy }} &middot; {{ fmtWhen(s.submittedAt) }}</span></div>
+        <div class="qn-row"><span class="qn-k">Ditinjau</span><span class="qn-v">{{ s.reviewer ? (s.reviewer + ' &middot; ' + fmtWhen(s.reviewedAt)) : '—' }}</span></div>
+        <div class="qn-row" *ngIf="s.reviewNote"><span class="qn-k">Catatan</span><span class="qn-v">{{ s.reviewNote }}</span></div>
+
+        <details class="appr-hist">
+          <summary>Riwayat ({{ s.history.length }})</summary>
+          <div class="hist-list">
+            <div class="hist-item" *ngFor="let h of s.history">
+              <dgt-severity-badge [severity]="historyColor(h.action)" [label]="actionLabel[h.action]"></dgt-severity-badge>
+              <span>{{ h.by || '-' }}{{ h.note ? (' — ' + h.note) : '' }} &middot; {{ fmtWhen(h.at) }}</span>
+            </div>
+          </div>
+        </details>
+
+        <textarea class="appr-note" placeholder="Catatan reviewer (wajib untuk penolakan)" [(ngModel)]="noteDraft[s.id]"></textarea>
+        <div class="appr-actions">
+          <button class="btn btn-success btn-sm" type="button" *ngIf="s.status !== 'APPROVED'" (click)="act(s, 'APPROVED')">Setujui</button>
+          <button class="btn btn-danger btn-sm" type="button" *ngIf="s.status !== 'REJECTED'" (click)="act(s, 'REJECTED')">Tolak</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" *ngIf="s.status !== 'PENDING'" (click)="act(s, 'PENDING')">Kembalikan ke Menunggu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template #emptyState><div class="muted p-4">Tidak ada pengajuan pada status ini.</div></ng-template>
+</div>

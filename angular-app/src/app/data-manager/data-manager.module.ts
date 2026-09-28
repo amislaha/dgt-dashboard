@@ -5,6 +5,8 @@ import { DataManagerRoutingModule } from './data-manager-routing.module';
 import { DataManagerShellComponent } from './data-manager-shell/data-manager-shell.component';
 import { EntityFormComponent } from './entity-form/entity-form.component';
 import { EntityListComponent } from './entity-list/entity-list.component';
+import { SubmissionApprovalComponent } from './submission-approval/submission-approval.component';
+import { SubmissionComponent } from './submission/submission.component';
 
 /**
  * Feature module for the "DGT Data Manager" CRUD tool (see CLAUDE.md
@@ -14,7 +16,7 @@ import { EntityListComponent } from './entity-list/entity-list.component';
  * independence (CLAUDE.md: "not connected to it at runtime").
  */
 @NgModule({
-  declarations: [DataManagerShellComponent, EntityListComponent, EntityFormComponent],
+  declarations: [DataManagerShellComponent, EntityListComponent, EntityFormComponent, SubmissionComponent, SubmissionApprovalComponent],
   imports: [SharedModule, ShellModule, DataManagerRoutingModule]
 })
 export class DataManagerModule {}

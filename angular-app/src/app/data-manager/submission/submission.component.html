@@ -1,0 +1,69 @@
+<dgt-page-head title="Pengajuan Data" description="Ajukan penambahan, perubahan, atau penghapusan data master untuk ditinjau tim approval.">
+  <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">+ Ajukan Perubahan</button>
+</dgt-page-head>
+
+<div class="panel">
+  <dgt-data-table
+    [columns]="columns"
+    [rows]="rows"
+    emptyLabel='Belum ada pengajuan. Klik "+ Ajukan Perubahan" untuk membuat yang pertama.'>
+  </dgt-data-table>
+</div>
+
+<dgt-drawer [open]="drawerOpen" title="Ajukan Perubahan Data" (closed)="closeDrawer()">
+  <form *ngIf="drawerOpen">
+    <div class="form-row">
+      <div class="form-group col-6">
+        <label>Entitas</label>
+        <select class="form-control form-control-sm" [(ngModel)]="draftEntityKey" name="entityKey">
+          <option *ngFor="let opt of entityOptions" [value]="opt.key">{{ opt.label }}</option>
+        </select>
+      </div>
+      <div class="form-group col-6">
+        <label>Jenis Pengajuan</label>
+        <select class="form-control form-control-sm" [(ngModel)]="draftMode" name="mode">
+          <option *ngFor="let opt of modeOptions" [value]="opt[0]">{{ opt[1] }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group" *ngIf="needsTargetPicker">
+      <label>Data Target</label>
+      <select class="form-control form-control-sm" [(ngModel)]="draftTargetId" name="targetId">
+        <option value="" disabled>— pilih —</option>
+        <option *ngFor="let opt of targetOptions" [value]="opt.id">{{ opt.label }}</option>
+      </select>
+    </div>
+
+    <div class="form-group" *ngIf="!needsTargetPicker">
+      <label>Nama/Judul Usulan</label>
+      <input type="text" class="form-control form-control-sm" [(ngModel)]="draftTargetLabel" name="targetLabel" placeholder="cth. WPT Lunang Silaut" />
+    </div>
+
+    <div class="form-group">
+      <label>Ringkasan Perubahan <span class="text-danger">*</span></label>
+      <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="draftSummary" name="summary" placeholder="Jelaskan data apa yang diusulkan/diubah dan alasannya"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Foto Pendukung (opsional)</label>
+      <input type="file" class="form-control-file" accept="image/*" multiple (change)="onFiles($event)" />
+      <div class="image-preview" *ngIf="draftImages.length">
+        <div class="image-thumb" *ngFor="let src of draftImages; let i = index">
+          <img [src]="src" alt="" />
+          <button type="button" class="remove-btn" (click)="removeImage(i)">&times;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Diajukan oleh <span class="text-danger">*</span></label>
+      <input type="text" class="form-control form-control-sm" [(ngModel)]="draftSubmittedBy" name="submittedBy" placeholder="Nama petugas" />
+    </div>
+  </form>
+
+  <div drawer-footer class="d-flex justify-content-end w-100">
+    <button type="button" class="btn btn-secondary btn-sm mr-2" (click)="closeDrawer()">Batal</button>
+    <button type="button" class="btn btn-primary btn-sm" (click)="submitDraft()">Kirim Pengajuan</button>
+  </div>
+</dgt-drawer>

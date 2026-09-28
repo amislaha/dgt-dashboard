@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DataManagerShellComponent } from './data-manager-shell/data-manager-shell.component';
 import { EntityListComponent } from './entity-list/entity-list.component';
+import { SubmissionApprovalComponent } from './submission-approval/submission-approval.component';
+import { SubmissionComponent } from './submission/submission.component';
 
 /**
  * One route per entity, all rendered by the same generic `EntityListComponent`
@@ -29,7 +31,11 @@ export const routes: Routes = [
       { path: 'program', component: EntityListComponent, data: { entityKey: 'program' } },
       { path: 'satker', component: EntityListComponent, data: { entityKey: 'satker' } },
       { path: 'personel', component: EntityListComponent, data: { entityKey: 'personel' } },
-      { path: 'iku', component: EntityListComponent, data: { entityKey: 'iku' } }
+      { path: 'iku', component: EntityListComponent, data: { entityKey: 'iku' } },
+      // "Persetujuan & Pengajuan" rail section — a separate group from the 8 entity routes above,
+      // so `data.navId` (not `entityKey`) is what DataManagerShellComponent matches against.
+      { path: 'pengajuan', component: SubmissionComponent, data: { navId: 'pengajuan' } },
+      { path: 'approval', component: SubmissionApprovalComponent, data: { navId: 'approval' } }
     ]
   }
 ];

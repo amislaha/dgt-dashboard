@@ -11,18 +11,21 @@
 
     <div class="rail-body">
       <span class="rail-group-label">{{ groupLabel }}</span>
-      <button
-        *ngFor="let item of items"
-        type="button"
-        class="rail-item"
-        [class.active]="item.id === activeId"
-        (click)="onSelect(item.id)">
-        <span class="rail-icon" *ngIf="item.icon" [innerHTML]="item.icon | safeHtml"></span>
-        <span class="rail-text">
-          <span class="rail-label">{{ item.label }}</span>
-          <span class="rail-sub" *ngIf="item.sub">{{ item.sub }}</span>
-        </span>
-      </button>
+      <ng-container *ngFor="let item of items">
+        <hr class="rail-divider" *ngIf="item.sectionLabel" />
+        <span class="rail-group-label" *ngIf="item.sectionLabel">{{ item.sectionLabel }}</span>
+        <button
+          type="button"
+          class="rail-item"
+          [class.active]="item.id === activeId"
+          (click)="onSelect(item.id)">
+          <span class="rail-icon" *ngIf="item.icon" [innerHTML]="item.icon | safeHtml"></span>
+          <span class="rail-text">
+            <span class="rail-label">{{ item.label }}</span>
+            <span class="rail-sub" *ngIf="item.sub">{{ item.sub }}</span>
+          </span>
+        </button>
+      </ng-container>
     </div>
 
     <!-- Optional footer, projected by the consuming shell (e.g. DashboardShellComponent's
