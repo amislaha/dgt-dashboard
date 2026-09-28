@@ -290,6 +290,33 @@ is gone now; see above for what replaced it.
   module's scope), so grouping separators render in the runtime's default
   locale rather than Indonesian style. Cosmetic only.
 
+## Discovered while building the Geospasial full-bleed rewrite (pre-existing, out of scope here)
+
+- **Leaflet's animated zoom is very slow/unreliable app-wide.** Calling `map.zoomIn()`/
+  `setZoom()`/`fitBounds()` without `{ animate: false }` visibly does nothing for several seconds
+  (`getZoom()` empirically stayed at the pre-call value for 2+ seconds in a live check) before the
+  zoom finally lands. Leaflet's animated zoom finalizes on a CSS `transitionend` from its internal
+  pane transform — something in this app's global CSS cascade appears to interfere with that
+  transition's timing. Geospasial's own new toolbar zoom buttons route around it with
+  `{ animate: false }` (see `KawasanMapComponent.zoomIn()`/`zoomOut()`/`resetView()`'s own comments),
+  but the pre-existing topright Leaflet zoom control (used by Ekonomi's map, and previously by
+  Geospasial's own map before this rewrite) still uses the default animated path and is presumably
+  still affected — nobody may have noticed since a slow zoom control easily reads as "the map is
+  just laggy" rather than "zoom is broken." Worth a real investigation (start with whatever sets a
+  global `transition` on a broad selector) rather than patching every call site with
+  `animate: false` piecemeal.
+- **`RailNavComponent`'s collapsed `.rail` inflates page height on every dashboard route.**
+  `.rail.collapsed` goes to `width: 0` but doesn't hide its label text (only `overflow: hidden`),
+  which wraps into a very tall single-character column at zero available width. That makes `.shell`'s
+  flex-row height (and `.main`, stretched to match it via default `align-items: stretch`) taller than
+  the viewport on every dashboard page — empirically ~1018px measured on a ~660–730px-tall window,
+  regardless of window size. Invisible everywhere else since those pages already scroll normally for
+  legitimate reasons; only became visible while building Geospasial's `height: 100vh` full-bleed page
+  (worked around locally with `position: fixed; inset: 0`, see that component's own SCSS comment).
+  The real fix belongs in `RailNavComponent` itself — likely hiding collapsed labels via
+  `white-space: nowrap` (so they clip instead of wrapping) rather than relying on `overflow: hidden`
+  alone, or hiding them outright when collapsed.
+
 ## Explicit TODOs for the team
 
 - Update CLAUDE.md's "Architecture of dashboard/index.html" section — it

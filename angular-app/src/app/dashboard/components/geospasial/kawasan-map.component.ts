@@ -155,27 +155,36 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   /** Backs the Geospasial page's own floating bottom-toolbar zoom buttons (used instead of
-   *  Leaflet's built-in control when `showZoomControl` is false). */
+   *  Leaflet's built-in control when `showZoomControl` is false). `animate: false` is deliberate,
+   *  not a style choice: Leaflet's default animated zoom finalizes on a CSS `transitionend` from
+   *  its internal pane transform, and something in this app's global CSS cascade makes that
+   *  transition take several seconds to fire (or never, observed empirically — `getZoom()` stayed
+   *  at the pre-click value for 2+ seconds after an animated `zoomIn()`/`setZoom()` before finally
+   *  landing). The old topright Leaflet zoom control (Ekonomi's map, `showZoomControl` default true)
+   *  still uses Leaflet's normal animated zoom and is unaffected by this change — only the
+   *  Geospasial toolbar's own zoom buttons, which need to feel immediate against a live readout,
+   *  are switched to the instant, non-animated path. */
   zoomIn(): void {
     if (this.map) {
-      this.map.zoomIn();
+      this.map.zoomIn(1, { animate: false });
     }
   }
 
   zoomOut(): void {
     if (this.map) {
-      this.map.zoomOut();
+      this.map.zoomOut(1, { animate: false });
     }
   }
 
   /** Re-fits the view to every plotted kawasan — same bounds calculation `plotAreas()` uses on
-   *  load, callable again later from a "recenter" toolbar button. */
+   *  load, callable again later from a "recenter" toolbar button. `animate: false` for the same
+   *  reason as `zoomIn()`/`zoomOut()` above. */
   resetView(): void {
     if (!this.map || !this.kawasan.length) {
       return;
     }
     const bounds = L.latLngBounds(this.kawasan.map(k => [k.lat, k.lon] as [number, number]));
-    this.map.fitBounds(bounds, { padding: [22, 22] });
+    this.map.fitBounds(bounds, { padding: [22, 22], animate: false });
   }
 
   getZoom(): number {
