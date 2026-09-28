@@ -1,34 +1,33 @@
-// Map-first layout (on request): the map fills the whole page instead of sitting in a fixed-height
-// box above the entity table, and the record list/search/"+ Tambah" panel (`<dgt-entity-list>`,
-// unmodified) floats on the right over it instead of stacking below — its own create/edit
-// `<dgt-drawer>` still slides over everything from the right on top of this, unchanged.
+// True edge-to-edge layout (on request): the map fills the entire viewport below the header with
+// no gutter at all — `.wilayah-shell` cancels `.dm-content`'s own page padding via a negative
+// margin rather than that padding being removed globally (every other entity route still wants
+// it) — and the record list/search/"+ Tambah" panel (`<dgt-entity-list>`, unmodified) is a flush
+// full-height sidebar on the right, not a floating card with margins on every side. Its own
+// create/edit `<dgt-drawer>` still slides over everything from the right on top of this, unchanged.
 .wilayah-shell {
   position: relative;
+  margin: calc(var(--page-px, 1.5rem) * -1);
+  // Approximate on a header that has wrapped to two lines (narrow viewports) — same tradeoff
+  // every other fixed-height map panel in this codebase already accepts.
+  height: calc(100vh - var(--topbar-h, 56px));
+  overflow: hidden;
 }
 
 .wilayah-map-panel {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  // Fills the viewport below the header (accounting for .dm-content's own top/bottom padding) —
-  // approximate on a header that has wrapped to two lines (narrow viewports), same tradeoff every
-  // other fixed-height map panel in this codebase already accepts.
-  height: calc(100vh - var(--topbar-h, 56px) - (var(--page-px, 1.5rem) * 2));
-  min-height: 480px;
+  width: 100%;
+  height: 100%;
 }
 
 .wilayah-side-panel {
   position: absolute;
-  top: var(--space-4, 1rem);
-  right: var(--space-4, 1rem);
-  bottom: var(--space-4, 1rem);
-  width: min(420px, calc(100% - 2rem));
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100%);
   overflow-y: auto;
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-left: 1px solid var(--border);
   box-shadow: var(--shadow-lg, 0 12px 32px rgba(0, 0, 0, .18));
-  padding: var(--space-3, .75rem);
+  padding: var(--space-4, 1rem);
   z-index: 5;
 }

@@ -1,3 +1,32 @@
+// Same full-bleed shell + flush right sidebar as wilayah.component.scss (on request, "like for
+// wilayah") — there's no map to show behind it, so the main area left of the sidebar is just open
+// background, but the shell/positioning mechanics are identical: `.submission-shell` cancels
+// `.dm-content`'s own page padding via a negative margin (every other entity route still wants that
+// padding, so it isn't removed globally), and `.submission-side-panel` is an absolutely-positioned,
+// full-height panel flush to the right edge rather than a floating card with margins on every side.
+.submission-shell {
+  position: relative;
+  margin: calc(var(--page-px, 1.5rem) * -1);
+  height: calc(100vh - var(--topbar-h, 56px));
+  overflow: hidden;
+  background: var(--background);
+}
+
+.submission-side-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  // Wider than Wilayah's 420px: the submission table (6 columns) and approval list need more room.
+  width: min(640px, 100%);
+  overflow-y: auto;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0, 0, 0, .18));
+  padding: var(--space-4, 1rem);
+  z-index: 5;
+}
+
 // Same `.seg` pill-tab treatment as submission-approval.component.scss's status filter — kept as
 // its own copy rather than a shared class, matching this module's existing per-component convention.
 .seg {
