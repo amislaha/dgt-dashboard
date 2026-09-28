@@ -56,7 +56,7 @@ type SubmissionFormTab = 'umum' | 'data' | 'lokasi';
   styleUrls: ['./submission.component.scss']
 })
 export class SubmissionComponent implements OnDestroy {
-  @ViewChild(EntityFormComponent) entityFormRef?: EntityFormComponent;
+  @ViewChild(EntityFormComponent, { static: false }) entityFormRef?: EntityFormComponent;
 
   readonly entityOptions = SUBMITTABLE_ENTITY_ORDER.map(key => ({ key, label: ENTITY_CONFIGS[key].label }));
   readonly modeOptions: [SubmissionMode, string][] = [
