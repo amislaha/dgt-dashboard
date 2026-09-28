@@ -130,7 +130,10 @@ export function seededRandom(seed: string): () => number {
  *  layers don't trace an identical outline just scaled) and sized by whichever hectare figure is
  *  passed in. Longitude is corrected by cos(latitude) so the ring isn't visibly stretched east-west. */
 function kawasanRing(k: Kawasan, hectares: number, seedSuffix: string): [number, number][] {
-  const rnd = seededRandom(k.id + seedSuffix);
+  // `k.nama` mixed in for the same reason `deriveKawasan()` does — `k.id` alone ('k1'..'k45') is too
+  // short/sequential for seededRandom()'s hash to diffuse well, which would otherwise make every
+  // kawasan's polygon come out a similarly-shaped blob instead of a distinct one.
+  const rnd = seededRandom(k.id + '-' + k.nama + seedSuffix);
   const points = 10;
   const baseDeg = 0.5 + Math.sqrt(hectares) / 350;
   const lonScale = 1 / Math.max(0.15, Math.cos((k.lat * Math.PI) / 180));
@@ -264,7 +267,12 @@ const KAWASAN_SEEDS: KawasanSeed[] = [
  *  consistent with each other, the same property `profilDetailData()` maintains elsewhere in this
  *  file. */
 function deriveKawasan(seed: KawasanSeed): Kawasan {
-  const rnd = seededRandom(seed.id);
+  // `seed.id` alone ('k1'..'k45') isn't enough entropy to seed with — seededRandom()'s hash has weak
+  // avalanche behaviour for short, near-sequential keys, so every kawasan's *first* rnd() draw came
+  // out within the same ~0.2-wide band (empirically verified: all 45 landed in the same `tahap`
+  // bucket). Mixing in the kawasan's own name fixes this without changing seededRandom() itself
+  // (which is also used elsewhere with longer/varied seeds where this was never an issue).
+  const rnd = seededRandom(seed.id + '-' + seed.nama);
   const tahapRoll = rnd();
   const tahap: Tahap = tahapRoll < 0.22 ? 'Rintisan' : tahapRoll < 0.52 ? 'Tumbuh' : tahapRoll < 0.82 ? 'Berkembang' : 'Mandiri';
   const t = STAGES.indexOf(tahap);
@@ -454,8 +462,8 @@ export class DashboardDataService {
 
 /* ---------- Data Induk & Profil Kawasan: per-kawasan Ekonomi/Sosial/Perencanaan detail ----------
    Ports profilDetailData() (legacy-static/dashboard/index.html) — computed on demand from the base
-   Kawasan fields plus seededRandom(k.id) rather than stored as extra hand-authored literals per
-   kawasan, so the numbers stay internally consistent (e.g. the SHM-certified share ties back to the
+   Kawasan fields plus seededRandom(k.id + '-' + k.nama) rather than stored as extra hand-authored
+   literals per kawasan, so the numbers stay internally consistent (e.g. the SHM-certified share ties back to the
    same hplHa/shmHa pair the Geospasial legality layer already uses) and vary deterministically. */
 export type ProfilKategori = 'Pangan' | 'Peternakan' | 'Perkebunan' | 'Pertambangan';
 
@@ -523,7 +531,11 @@ export function profilBucketTahap(t: Tahap): string {
 }
 
 export function profilDetailData(k: Kawasan): ProfilDetail {
-  const rnd = seededRandom(k.id);
+  // `k.id` alone mixed in with `k.nama` for the same reason `deriveKawasan()`/`kawasanRing()` do —
+  // seededRandom()'s hash doesn't diffuse well for short, near-sequential ids like 'k1'..'k45', which
+  // otherwise clusters every kawasan's early rnd() draws (produktifPct/tuaPct here) into the same
+  // narrow band instead of spreading them out.
+  const rnd = seededRandom(k.id + '-' + k.nama);
   const totalJiwa = k.populasi;
   const produktifPct = 60 + Math.round(rnd() * 8);
   const tuaPct = 2 + Math.round(rnd() * 3);
