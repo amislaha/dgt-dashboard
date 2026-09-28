@@ -1,5 +1,9 @@
-<div class="panel wilayah-map-panel mb-4">
-  <dgt-wilayah-map [wilayah]="wilayah" [selectedId]="selectedId" (select)="onSelect($event)"></dgt-wilayah-map>
-</div>
+<div class="wilayah-shell">
+  <div class="panel wilayah-map-panel">
+    <dgt-wilayah-map [wilayah]="wilayah" [selectedId]="selectedId" (select)="onSelect($event)"></dgt-wilayah-map>
+  </div>
 
-<dgt-entity-list></dgt-entity-list>
+  <div class="wilayah-side-panel">
+    <dgt-entity-list></dgt-entity-list>
+  </div>
+</div>
