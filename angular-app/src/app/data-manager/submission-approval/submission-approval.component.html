@@ -28,6 +28,8 @@
           <div class="image-thumb" *ngFor="let src of s.images"><img [src]="src" alt="" /></div>
         </div>
 
+        <div class="qn-row" *ngIf="s.geometry"><span class="qn-k">Lokasi</span><span class="qn-v">Ditampilkan di peta sebelah kiri ({{ s.geometry.type }}).</span></div>
+
         <div class="qn-row"><span class="qn-k">Diajukan</span><span class="qn-v">{{ s.submittedBy }} &middot; {{ fmtWhen(s.submittedAt) }}</span></div>
         <div class="qn-row"><span class="qn-k">Ditinjau</span><span class="qn-v">{{ s.reviewer ? (s.reviewer + ' &middot; ' + fmtWhen(s.reviewedAt)) : '—' }}</span></div>
         <div class="qn-row" *ngIf="s.reviewNote"><span class="qn-k">Catatan</span><span class="qn-v">{{ s.reviewNote }}</span></div>

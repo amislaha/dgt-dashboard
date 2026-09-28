@@ -1,15 +1,18 @@
 // Same full-bleed shell + flush right sidebar as wilayah.component.scss (on request, "like for
-// wilayah") — there's no map to show behind it, so the main area left of the sidebar is just open
-// background, but the shell/positioning mechanics are identical: `.submission-shell` cancels
-// `.dm-content`'s own page padding via a negative margin (every other entity route still wants that
-// padding, so it isn't removed globally), and `.submission-side-panel` is an absolutely-positioned,
-// full-height panel flush to the right edge rather than a floating card with margins on every side.
+// wilayah") — now also the same map behind it (on a later request, "put the same map for
+// submission & approval"). `.submission-shell`/`.submission-side-panel` cancel `.dm-content`'s own
+// page padding via a negative margin, same as `.wilayah-shell` (every other entity route still
+// wants that padding, so it isn't removed globally).
 .submission-shell {
   position: relative;
   margin: calc(var(--page-px, 1.5rem) * -1);
   height: calc(100vh - var(--topbar-h, 56px));
   overflow: hidden;
-  background: var(--background);
+}
+
+.submission-map-panel {
+  width: 100%;
+  height: 100%;
 }
 
 .submission-side-panel {

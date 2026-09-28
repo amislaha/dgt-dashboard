@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { DrawnGeometry } from '../models/drawn-geometry.model';
 import { EntityKey } from '../models/entity-key.model';
 import { Submission, SubmissionHistoryEntry, SubmissionMode, SubmissionStatus } from '../models/submission.model';
 import { STORAGE_PREFIX } from './entity-crud.service';
@@ -13,6 +14,7 @@ export interface SubmissionInput {
   targetLabel: string;
   summary: string;
   images: string[];
+  geometry?: DrawnGeometry | null;
   submittedBy: string;
 }
 
@@ -45,6 +47,7 @@ export class SubmissionService {
       targetLabel: input.targetLabel,
       summary: input.summary,
       images: input.images,
+      geometry: input.geometry || null,
       submittedBy: input.submittedBy,
       submittedAt: now,
       status: 'PENDING',

@@ -10,6 +10,7 @@ import {
   SUBMISSION_MODE_LABEL,
   SUBMISSION_STATUS_META
 } from '../models/submission.model';
+import { MapDrawService } from '../services/map-draw.service';
 import { SubmissionService } from '../services/submission.service';
 
 type ApprFilter = 'all' | SubmissionStatus;
@@ -18,7 +19,10 @@ type ApprFilter = 'all' | SubmissionStatus;
  * "Approval" — reviews pending/approved/rejected Submissions with their photo evidence. Ports the
  * shape of geomapping's ApprovalComponent (status filter chips, expandable rows, approve/reject/
  * reset with a required rejection note, history log) but against Submission instead of
- * GeomappingFeature, and with no "buka di editor" link — there is no map here, just the queue.
+ * GeomappingFeature, and with no "buka di editor" link — there's no separate editor to jump to, but
+ * expanding a row that has a `geometry` does show it on the shared map (`SubmissionHubComponent`'s
+ * `<dgt-wilayah-map>`) via `MapDrawService.showPreview()`, the same mediator `SubmissionComponent`
+ * uses to draw one in the first place.
  */
 @Component({
   selector: 'dgt-submission-approval',
@@ -45,12 +49,13 @@ export class SubmissionApprovalComponent implements OnDestroy {
 
   private readonly sub: Subscription;
 
-  constructor(private readonly submissions: SubmissionService, private readonly toast: ToastService) {
+  constructor(private readonly submissions: SubmissionService, private readonly mapDraw: MapDrawService, private readonly toast: ToastService) {
     this.sub = this.submissions.changes.subscribe(list => (this.items = list));
   }
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
+    this.mapDraw.clearPreview();
   }
 
   count(status: ApprFilter): number {
@@ -69,6 +74,12 @@ export class SubmissionApprovalComponent implements OnDestroy {
 
   toggleOpen(id: string): void {
     this.openId[id] = !this.openId[id];
+    if (this.openId[id]) {
+      const submission = this.items.find(s => s.id === id);
+      this.mapDraw.showPreview((submission && submission.geometry) || null);
+    } else {
+      this.mapDraw.clearPreview();
+    }
   }
 
   fmtWhen(iso: string | null): string {

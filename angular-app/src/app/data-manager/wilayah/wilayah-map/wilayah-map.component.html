@@ -1,1 +1,16 @@
-<div class="wilayah-map" #mapEl></div>
+<div class="wilayah-map-wrapper">
+  <div class="wilayah-map" #mapEl></div>
+
+  <div class="draw-toolbar" *ngIf="activeDrawType">
+    <span class="draw-hint">{{ drawHintText }}</span>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelDraw()">Batal</button>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      *ngIf="activeDrawType !== 'Point'"
+      [disabled]="!canFinishDraw"
+      (click)="finishDraw()">
+      Selesai
+    </button>
+  </div>
+</div>

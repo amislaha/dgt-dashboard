@@ -3,9 +3,11 @@ import { Subscription } from 'rxjs';
 import { DataTableColumn } from '../../shared/components/data-table/data-table.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { ENTITY_CONFIGS } from '../config/entity-configs';
+import { DrawGeometryType, DrawnGeometry } from '../models/drawn-geometry.model';
 import { EntityKey, MASTER_DATA_ORDER } from '../models/entity-key.model';
 import { Submission, SubmissionMode, SUBMISSION_MODE_LABEL, SUBMISSION_STATUS_META } from '../models/submission.model';
 import { EntityRegistryService } from '../services/entity-registry.service';
+import { MapDrawService } from '../services/map-draw.service';
 import { SubmissionService } from '../services/submission.service';
 
 /** Mirrors the header nav's "Wilayah" + "Data Master" grouping (`wpt` first, then
@@ -17,8 +19,13 @@ const SUBMITTABLE_ENTITY_ORDER: EntityKey[] = ['wpt', ...MASTER_DATA_ORDER];
 
 /**
  * "Pengajuan Data" — lets anyone propose a create/update/delete on a master-data entity, attach
- * photo evidence, and see the resulting queue. Review/approve lives on the separate Approval tab
- * (submission-approval.component.ts); this page only creates and lists.
+ * photo evidence, optionally draw a location/boundary on the shared map, and see the resulting
+ * queue. Review/approve lives on the separate Approval tab (submission-approval.component.ts); this
+ * page only creates and lists.
+ *
+ * The map lives in the sibling `SubmissionHubComponent`, not here — drawing is mediated through
+ * `MapDrawService` (`start()` from this form's buttons, `result$` completes the shape) rather than
+ * an `@Input`/`@Output` chain, since this component and the map are siblings, not parent/child.
  */
 @Component({
   selector: 'dgt-submission',
@@ -56,15 +63,30 @@ export class SubmissionComponent implements OnDestroy {
   draftSummary = '';
   draftSubmittedBy = '';
   draftImages: string[] = [];
+  draftGeometry: DrawnGeometry | null = null;
 
-  private readonly sub: Subscription;
+  private readonly subs: Subscription[] = [];
 
-  constructor(private readonly submissions: SubmissionService, private readonly registry: EntityRegistryService, private readonly toast: ToastService) {
-    this.sub = this.submissions.changes.subscribe(list => (this.rows = list));
+  constructor(
+    private readonly submissions: SubmissionService,
+    private readonly registry: EntityRegistryService,
+    private readonly mapDraw: MapDrawService,
+    private readonly toast: ToastService
+  ) {
+    this.subs.push(this.submissions.changes.subscribe(list => (this.rows = list)));
+    // Only accepted while the create/edit drawer is actually open — the map is shared with the
+    // Approval tab's read-only preview, but that never calls `mapDraw.start()`, so in practice a
+    // result only ever arrives here when this form asked for it.
+    this.subs.push(this.mapDraw.result$.subscribe(geometry => {
+      if (this.drawerOpen) {
+        this.draftGeometry = geometry;
+      }
+    }));
   }
 
   ngOnDestroy(): void {
-    this.sub.unsubscribe();
+    this.subs.forEach(s => s.unsubscribe());
+    this.mapDraw.cancel();
   }
 
   get targetOptions(): Array<{ id: string; label: string }> {
@@ -84,11 +106,35 @@ export class SubmissionComponent implements OnDestroy {
     this.draftSummary = '';
     this.draftSubmittedBy = '';
     this.draftImages = [];
+    this.draftGeometry = null;
     this.drawerOpen = true;
   }
 
   closeDrawer(): void {
     this.drawerOpen = false;
+    this.mapDraw.cancel();
+  }
+
+  startDraw(type: DrawGeometryType): void {
+    this.mapDraw.start(type);
+  }
+
+  clearGeometry(): void {
+    this.draftGeometry = null;
+    this.mapDraw.cancel();
+  }
+
+  get geometrySummary(): string {
+    if (!this.draftGeometry) {
+      return '';
+    }
+    if (this.draftGeometry.type === 'Point') {
+      return 'Titik ditandai di peta.';
+    }
+    if (this.draftGeometry.type === 'LineString') {
+      return `Garis digambar (${this.draftGeometry.coordinates.length} titik).`;
+    }
+    return `Area digambar (${this.draftGeometry.coordinates[0].length - 1} titik).`;
   }
 
   onFiles(event: Event): void {
@@ -129,6 +175,7 @@ export class SubmissionComponent implements OnDestroy {
       targetLabel,
       summary,
       images: this.draftImages,
+      geometry: this.draftGeometry,
       submittedBy
     });
     this.toast.show('Pengajuan dikirim, menunggu persetujuan.', 'success');

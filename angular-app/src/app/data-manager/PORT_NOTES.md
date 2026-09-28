@@ -288,3 +288,51 @@ government data, not the earlier 10-row illustrative placeholder.
   Flow) — not sensible things to propose a create/update/delete against, so
   now excluded from that one dropdown specifically (they're still fully
   reachable/editable from the header's own Settings menu).
+
+## Wilayah and Submission & Approval share one map, with manual draw tools
+
+Two more requests, layered on the full-bleed shell above: put the exact same
+map behind both pages ("so only the sidebar is different"), and add "drawing
+tools like geomapping" to Submission & Approval.
+
+- **Shared map.** `SubmissionHubComponent` now renders the identical
+  `<dgt-wilayah-map [wilayah]="wilayah" ...>` `WilayahComponent` does,
+  including its own duplicate `registry.get('wpt').service.changes`
+  subscription (small and self-contained enough that a shared base
+  class/service felt like more machinery than the 4 lines it would save —
+  each page stays independent). `WilayahMapComponent` itself didn't need to
+  change for this — it was already a plain `@Input()`-driven component with
+  no assumptions baked in about which page hosts it.
+- **`MapDrawService`** (`services/map-draw.service.ts`) mediates manual
+  drawing between the shared map and whichever sidebar is using it — the
+  same mediator role as geomapping's `GeomappingEditService`, scoped way
+  down: `start(type)`/`cancel()`/`result$` for actively drawing a new
+  Point/LineString/Polygon, plus a separate `showPreview()`/`clearPreview()`
+  for read-only display of an already-submitted shape. No GPS tracking, no
+  vertex editing/addvertex/delete modes, no questionnaire — those are
+  geomapping's Edit Mode proper (see its own `PORT_NOTES.md`), which is a
+  survey tool's feature set, not a fit for a master-data submission form.
+  What *was* ported is geomapping's core manual-draw mechanic almost
+  verbatim: `WilayahMapComponent.renderDrawPreview()` mirrors
+  `refreshDrawPreview()` (dashed shape + small circle markers per point
+  placed so far), a click places a point (or completes immediately for
+  Point), and double-click/a "Selesai" button completes a Line/Polygon
+  (`doubleClickZoom` is disabled while drawing, same reason geomapping
+  disables it — dblclick means "finish shape," not "zoom in").
+- **`Submission.geometry?: DrawnGeometry`** (`models/drawn-geometry.model.ts`
+  — a tiny GeoJSON-shaped type, same coordinate order/shape as geomapping's
+  `GeomappingGeometry` so the two could interop later) is optional: not every
+  proposal needs a location. `SubmissionComponent`'s create form has 3
+  buttons (Tandai Titik/Gambar Garis/Gambar Area) that call
+  `mapDraw.start(type)` — the map lives in the sibling
+  `SubmissionHubComponent`, so this goes through the service rather than an
+  `@Input`/`@Output` chain, same reasoning as the rest of this section.
+  `SubmissionApprovalComponent` calls `mapDraw.showPreview(s.geometry)` when
+  expanding a row that has one (`clearPreview()` on collapse/destroy) so a
+  reviewer can see what was drawn without any drawing tools active.
+- The create-drawer (`<dgt-drawer>`, fixed to the right, ~480px) sits inside
+  the wider (640px) `submission-side-panel` but doesn't cover the map to its
+  left — that's what makes drawing while the form is open work at all, and
+  wasn't a deliberate width calculation, just how the two already-existing
+  fixed-width/positioned elements happen to overlap. Don't shrink the side
+  panel below the drawer's width without re-checking this.

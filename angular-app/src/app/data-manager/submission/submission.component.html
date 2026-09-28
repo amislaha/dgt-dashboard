@@ -46,6 +46,20 @@
     </div>
 
     <div class="form-group">
+      <label>Lokasi/Geometri (opsional)</label>
+      <div class="draw-actions">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startDraw('Point')">Tandai Titik</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startDraw('LineString')">Gambar Garis</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startDraw('Polygon')">Gambar Area</button>
+      </div>
+      <div class="draw-summary" *ngIf="draftGeometry">
+        <span>{{ geometrySummary }}</span>
+        <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="clearGeometry()">Hapus</button>
+      </div>
+      <small class="form-text text-muted">Klik salah satu tombol, lalu gambar langsung di peta pada panel sebelah kiri.</small>
+    </div>
+
+    <div class="form-group">
       <label>Foto Pendukung (opsional)</label>
       <input type="file" class="form-control-file" accept="image/*" multiple (change)="onFiles($event)" />
       <div class="image-preview" *ngIf="draftImages.length">
