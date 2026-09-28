@@ -118,6 +118,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 0.75rem 0.85rem;
 }
 
@@ -199,7 +200,7 @@
   margin-bottom: 0.6rem;
 }
 .ews-summary-cell {
-  display: flex; align-items: center; gap: 0.4rem;
+  display: flex; align-items: center; gap: 0.4rem; min-width: 0;
   border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.35rem 0.5rem;
 }
 .ews-summary-label { font-size: 0.7rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

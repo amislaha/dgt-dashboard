@@ -81,6 +81,17 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
     this.map.on('moveend', () => this.emitView());
     this.emitView();
+
+    // Leaflet reads its container's size once at construction and caches it — a CSS-driven layout
+    // that isn't fully settled yet at this point (e.g. Geospasial's full-bleed negative-margin
+    // trick, or Google Fonts still reflowing) leaves the container div at its final size but
+    // Leaflet still painting tiles/panes for a smaller, stale one. Same invalidate-after-layout
+    // safety net the old fullscreen toggle used, just run once unconditionally after creation
+    // instead of only after a later resize transition.
+    const invalidate = () => this.map && this.map.invalidateSize();
+    requestAnimationFrame(() => requestAnimationFrame(invalidate));
+    setTimeout(invalidate, 210);
+    setTimeout(invalidate, 500);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
