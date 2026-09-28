@@ -3,15 +3,22 @@ import { Subscription } from 'rxjs';
 import { DataTableColumn } from '../../shared/components/data-table/data-table.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { ENTITY_CONFIGS } from '../config/entity-configs';
-import { EntityKey, ENTITY_ORDER } from '../models/entity-key.model';
+import { EntityKey, MASTER_DATA_ORDER } from '../models/entity-key.model';
 import { Submission, SubmissionMode, SUBMISSION_MODE_LABEL, SUBMISSION_STATUS_META } from '../models/submission.model';
 import { EntityRegistryService } from '../services/entity-registry.service';
 import { SubmissionService } from '../services/submission.service';
 
+/** Mirrors the header nav's "Wilayah" + "Data Master" grouping (`wpt` first, then
+ *  `MASTER_DATA_ORDER` — see entity-key.model.ts), not the raw `ENTITY_ORDER`: the 3 Settings-group
+ *  entities (Profil Measure, Application Settings, Approval Flow) aren't sensible things to propose
+ *  a create/update/delete against, so they're excluded here even though they're still real,
+ *  independently-manageable `EntityConfig`s reachable from the header's Settings dropdown. */
+const SUBMITTABLE_ENTITY_ORDER: EntityKey[] = ['wpt', ...MASTER_DATA_ORDER];
+
 /**
- * "Pengajuan Data" — lets anyone propose a create/update/delete on one of the 8 master-data
- * entities, attach photo evidence, and see the resulting queue. Review/approve lives on the
- * separate Approval page (submission-approval.component.ts); this page only creates and lists.
+ * "Pengajuan Data" — lets anyone propose a create/update/delete on a master-data entity, attach
+ * photo evidence, and see the resulting queue. Review/approve lives on the separate Approval tab
+ * (submission-approval.component.ts); this page only creates and lists.
  */
 @Component({
   selector: 'dgt-submission',
@@ -19,7 +26,7 @@ import { SubmissionService } from '../services/submission.service';
   styleUrls: ['./submission.component.scss']
 })
 export class SubmissionComponent implements OnDestroy {
-  readonly entityOptions = ENTITY_ORDER.map(key => ({ key, label: ENTITY_CONFIGS[key].label }));
+  readonly entityOptions = SUBMITTABLE_ENTITY_ORDER.map(key => ({ key, label: ENTITY_CONFIGS[key].label }));
   readonly modeOptions: [SubmissionMode, string][] = [
     ['create', SUBMISSION_MODE_LABEL.create],
     ['update', SUBMISSION_MODE_LABEL.update],
@@ -42,7 +49,7 @@ export class SubmissionComponent implements OnDestroy {
   rows: Submission[] = [];
 
   drawerOpen = false;
-  draftEntityKey: EntityKey = ENTITY_ORDER[0];
+  draftEntityKey: EntityKey = SUBMITTABLE_ENTITY_ORDER[0];
   draftMode: SubmissionMode = 'create';
   draftTargetId = '';
   draftTargetLabel = '';
@@ -70,7 +77,7 @@ export class SubmissionComponent implements OnDestroy {
   }
 
   openCreate(): void {
-    this.draftEntityKey = ENTITY_ORDER[0];
+    this.draftEntityKey = SUBMITTABLE_ENTITY_ORDER[0];
     this.draftMode = 'create';
     this.draftTargetId = '';
     this.draftTargetLabel = '';

@@ -218,11 +218,11 @@ more master-data entities:
   `lat`/`lon` fields (illustrative real-world-approximate coordinates, same
   fabrication convention as the dashboard's `kawasan` array — seeded in
   `data/seed-data.ts`) for the map to plot; a record missing either is simply
-  not pinned. The WPT entity itself, its config, its service, and its
-  `skp`/`sp` children are otherwise completely unchanged — only its rail
-  label became "Wilayah" and it moved off the "Data Master" dropdown onto the
-  header directly (see entity-key.model.ts's `MASTER_DATA_ORDER`, which
-  excludes `wpt`).
+  not pinned. The WPT entity's config/service/`skp`/`sp` children were
+  unchanged at first — only its rail label became "Wilayah" and it moved off
+  the "Data Master" dropdown onto the header directly (see
+  entity-key.model.ts's `MASTER_DATA_ORDER`, which excludes `wpt`) — **see
+  "Real Wilayah data" below for a later, bigger change to its actual data.**
 - **16 new master entities**, for the "Data Master"/"Settings" dropdowns:
   Wilayah Status/Category/Target, Project, Satker Type, Strategic Target, IKU
   Definition/NKO/Status, Produk Jenis, Recommendation Category, Profil
@@ -250,3 +250,41 @@ more master-data entities:
   entity" (used for the aggregate total); `MASTER_DATA_ORDER`/
   `SETTINGS_ORDER` are the two new orderings the header's dropdowns actually
   render, both excluding `wpt`.
+
+## Real Wilayah data (Matriks 45 Kawasan Transmigrasi, replacing the fabricated seed)
+
+`WPT_SEED` (`data/seed-data.ts`) was replaced wholesale with the user-provided
+"Matriks 45 Kawasan Transmigrasi Prioritas Nasional Tahun 2025" spreadsheet
+(45 rows: NO/KAWASAN/KABUPATEN/PROVINSI/WPT/SKP/SP/KPB?/Pusat SKP?) — real
+government data, not the earlier 10-row illustrative placeholder.
+
+- `Wpt` (models/wpt.model.ts) gained `kawasan`/`skpRingkasan`/`spRingkasan`/
+  `kpb`/`pusatSkp` — one field per remaining sheet column, added the same
+  field-for-field way `geo` already was for the original ERD. `nama`
+  transcribes the sheet's "WPT" column verbatim, inconsistent casing and all
+  ("Mahalona" next to "RASAU JAYA") — same transcribe-as-is policy as
+  `IKU_SEED`. A sheet cell of "-" (its "no data" convention) was normalized to
+  `undefined`, the one liberty taken.
+- `lat`/`lon` are **not** from the source (it has no coordinates) — still
+  illustrative per-kabupaten approximations, same convention as before and as
+  the dashboard's `kawasan` array, added only so `WilayahMapComponent` has
+  something to plot. Treat them as roughly-the-right-area, not surveyed.
+- **`SKP_SEED`/`SP_SEED` were cleared to `[]`**, not remapped. The old
+  fabricated SKP/SP sub-units (e.g. "SKP A Lunang", "SP 1 Lunang") were
+  invented for the old 10-WPT placeholder and don't correspond to anything in
+  the new source, which only has free-text summaries at the WPT level
+  (`Wpt.skpRingkasan`/`spRingkasan`), not structured per-record SKP/SP data.
+  Leaving the old rows in place with their old `indukWptId`s would have just
+  produced 22 rows of "⚠ tidak ditemukan" broken-FK warnings against the new
+  ids — an empty list (same honest-placeholder pattern as the 16 masters'
+  `EMPTY_SIMPLE_MASTER_SEED`) reads as "no data yet", not "something broke".
+  Real SKP/SP-level data for these 45 kawasan, if it turns up, is a natural
+  follow-up.
+- **Submission's entity picker was curated to match**, on the same request:
+  `submission/submission.component.ts`'s `SUBMITTABLE_ENTITY_ORDER` is
+  `['wpt', ...MASTER_DATA_ORDER]` (mirroring the header's Wilayah + Data
+  Master grouping) instead of the raw `ENTITY_ORDER`, which also listed the 3
+  Settings-group entities (Profil Measure, Application Settings, Approval
+  Flow) — not sensible things to propose a create/update/delete against, so
+  now excluded from that one dropdown specifically (they're still fully
+  reachable/editable from the header's own Settings menu).

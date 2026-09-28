@@ -24,21 +24,27 @@ import { Wpt } from '../models/wpt.model';
 const WPT_CONFIG: EntityConfig<Wpt> = {
   key: 'wpt',
   label: 'Wilayah',
-  sub: 'Wilayah Pengembangan Transmigrasi (WPT) — kawasan induk tingkat tertinggi, ditampilkan di peta Wilayah',
+  sub: '45 Kawasan Transmigrasi Prioritas Nasional 2025 — kawasan induk tingkat tertinggi, ditampilkan di peta Wilayah',
   idPrefix: 'wpt',
   titleField: 'nama',
   columns: [
     { key: 'nama', label: 'Nama WPT', sortable: true },
+    { key: 'kawasan', label: 'Kawasan', sortable: true },
     { key: 'provinsi', label: 'Provinsi', sortable: true },
     { key: 'kabupaten', label: 'Kabupaten/Kota', sortable: true }
   ],
   fields: [
-    { name: 'nama', label: 'Nama WPT', type: 'text', required: true, placeholder: 'cth. WPT Lunang Silaut' },
+    { name: 'nama', label: 'Nama WPT', type: 'text', required: true, placeholder: 'cth. LUNANG SILAUT' },
+    { name: 'kawasan', label: 'Nama Kawasan', type: 'text', required: false, hint: 'Nama umum/singkat dari Matriks 45 Kawasan — kadang beda penulisan dari Nama WPT di atas.' },
     { name: 'provinsi', label: 'Provinsi', type: 'text', required: true },
     { name: 'kabupaten', label: 'Kabupaten/Kota', type: 'text', required: true },
     { name: 'lat', label: 'Latitude (untuk peta)', type: 'number', required: false, row: 'geo' },
     { name: 'lon', label: 'Longitude (untuk peta)', type: 'number', required: false, row: 'geo' },
-    { name: 'geo', label: 'Koordinat/Geo (opsional, teks bebas dari ERD)', type: 'text', required: false, hint: 'Kolom ini ada di ERD sumber tapi belum berisi data pada baris manapun.' }
+    { name: 'geo', label: 'Koordinat/Geo (opsional, teks bebas dari ERD)', type: 'text', required: false, hint: 'Kolom ini ada di ERD sumber tapi belum berisi data pada baris manapun.' },
+    { name: 'skpRingkasan', label: 'Ringkasan SKP', type: 'textarea', required: false, hint: 'Ringkasan bebas teks dari Matriks 45 Kawasan — bukan daftar SKP yang tertaut (lihat menu SKP untuk data SKP yang sebenarnya).' },
+    { name: 'spRingkasan', label: 'Ringkasan SP', type: 'textarea', required: false, hint: 'Ringkasan bebas teks dari Matriks 45 Kawasan — bukan daftar SP yang tertaut (lihat menu SP untuk data SP yang sebenarnya).' },
+    { name: 'kpb', label: 'KPB? (isi "Y" jika ya)', type: 'text', required: false, row: 'flags' },
+    { name: 'pusatSkp', label: 'Pusat SKP? (isi "Y" jika ya)', type: 'text', required: false, row: 'flags' }
   ]
 };
 

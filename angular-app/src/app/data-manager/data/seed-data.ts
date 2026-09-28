@@ -18,52 +18,79 @@ import { Wpt } from '../models/wpt.model';
  * to the original so cross-referencing against the source file is easy.
  */
 
-// lat/lon are illustrative real-world approximate coordinates for each region's own kabupaten
-// (same fabrication convention as the dashboard's `kawasan` array), added so the Wilayah map page
-// (WilayahMapComponent) has something to plot — not surveyed points.
+/**
+ * Replaced with the real "Matriks 45 Kawasan Transmigrasi Prioritas Nasional Tahun 2025" source
+ * spreadsheet (user-provided .xlsx, 45 rows: NO/KAWASAN/KABUPATEN/PROVINSI/WPT/SKP/SP/KPB?/Pusat
+ * SKP?) — this is real government data, not the earlier 10-row illustrative placeholder. `nama`
+ * transcribes the sheet's own "WPT" column verbatim (inconsistent casing and all — e.g. "Mahalona"
+ * vs "RASAU JAYA" — same "transcribe as-is" policy as IKU_SEED below); a sheet cell of "-" (meaning
+ * "no data") is normalized to `undefined` rather than kept as a literal dash, the one presentation
+ * liberty taken.
+ *
+ * `lat`/`lon` are NOT from the source (it has no coordinates) — they're illustrative per-kabupaten
+ * approximations added only so WilayahMapComponent's pins have somewhere to sit, same fabrication
+ * convention as the dashboard's `kawasan` array. Treat them as roughly-the-right-area, not surveyed.
+ */
 export const WPT_SEED: Wpt[] = [
-  { id: 'wpt1', nama: 'WPT Lunang Silaut', provinsi: 'Sumatera Barat', kabupaten: 'Pesisir Selatan', lat: -1.99, lon: 101.28 },
-  { id: 'wpt2', nama: 'WPT Mesuji', provinsi: 'Lampung', kabupaten: 'Mesuji', lat: -4.05, lon: 105.35 },
-  { id: 'wpt3', nama: 'WPT Rasau Jaya', provinsi: 'Kalimantan Barat', kabupaten: 'Kubu Raya', lat: -0.28, lon: 109.35 },
-  { id: 'wpt4', nama: 'WPT Teluk Dalam', provinsi: 'Kalimantan Timur', kabupaten: 'Kutai Kartanegara', lat: 0.1, lon: 117.1 },
-  { id: 'wpt5', nama: 'WPT Batulicin', provinsi: 'Kalimantan Selatan', kabupaten: 'Tanah Bumbu', lat: -3.45, lon: 115.63 },
-  { id: 'wpt6', nama: 'WPT Maluku Tengah', provinsi: 'Maluku', kabupaten: 'Maluku Tengah', lat: -3.25, lon: 129.35 },
-  { id: 'wpt7', nama: 'WPT Tobadak', provinsi: 'Sulawesi Barat', kabupaten: 'Mamuju Tengah', lat: -1.9, lon: 119.35 },
-  { id: 'wpt8', nama: 'WPT Salor / Merauke', provinsi: 'Papua Selatan', kabupaten: 'Merauke', lat: -8.47, lon: 140.4 },
-  { id: 'wpt9', nama: 'WPT Timika / SP-Jagamin', provinsi: 'Papua Tengah', kabupaten: 'Mimika', lat: -4.55, lon: 136.89 },
-  { id: 'wpt10', nama: 'WPT Labuan Uki', provinsi: 'Sulawesi Utara', kabupaten: 'Bolaang Mongondow', lat: 0.5, lon: 124.1 }
+  { id: 'wpt1', nama: 'RASAU JAYA', kawasan: 'Rasau Jaya', provinsi: 'Kalimantan Barat', kabupaten: 'Kubu Raya', skpRingkasan: 'SKP (A, B, C, D), KPB', spRingkasan: 'Sei bulan c (SKP A)', kpb: 'Y', lat: -0.05, lon: 109.35 },
+  { id: 'wpt2', nama: 'LAGITA', kawasan: 'Lagita', provinsi: 'Bengkulu', kabupaten: 'Bengkulu Utara', skpRingkasan: 'SKP I, II, III, KPB', kpb: 'Y', lat: -3.5, lon: 102.25 },
+  { id: 'wpt3', nama: 'CAHAYA BARU', kawasan: 'Cahaya Baru', provinsi: 'Kalimantan Selatan', kabupaten: 'Barito Kuala', skpRingkasan: 'SKP 1, 2, 3, 4, 5, Pengembangan', spRingkasan: 'Jejangkit timur (SKP 1)', lat: -3.15, lon: 114.6 },
+  { id: 'wpt4', nama: 'Mahalona', kawasan: 'Mahalona', provinsi: 'Sulawesi Selatan', kabupaten: 'Luwu Timur', skpRingkasan: 'SKP (A,B,C)', spRingkasan: 'Mahalona SKP c1, SP 2 Mahalona, SP 3 MAHALONA, SP 4 Mahalona', lat: -2.55, lon: 121.2 },
+  { id: 'wpt5', nama: 'TOBADAK', kawasan: 'Tobadak', provinsi: 'Sulawesi Barat', kabupaten: 'Mamuju Tengah', skpRingkasan: 'SKP (A,B,C)', lat: -1.9, lon: 119.35 },
+  { id: 'wpt6', nama: 'LUNANG SILAUT', kawasan: 'Lunang Silaut', provinsi: 'Sumatera Barat', kabupaten: 'Pesisir Selatan', skpRingkasan: 'SKP I, II, III, KPB', kpb: 'Y', lat: -1.99, lon: 101.28 },
+  { id: 'wpt7', nama: 'TELANG', kawasan: 'Telang', provinsi: 'Sumatera Selatan', kabupaten: 'Banyuasin', lat: -2.75, lon: 104.75 },
+  { id: 'wpt8', nama: 'SALOR', kawasan: 'Salor', provinsi: 'Papua Selatan', kabupaten: 'Merauke', skpRingkasan: 'SKP (A,B,C,D,E)', spRingkasan: 'SP 4 SALOR', lat: -8.47, lon: 140.4 },
+  { id: 'wpt9', nama: 'JELAI', kawasan: 'Jelai (Pulau Nibung)', provinsi: 'Kalimantan Tengah', kabupaten: 'Sukamara', skpRingkasan: 'SKP (A,B,C)', spRingkasan: 'Jelai (SKP B)', lat: -2.63, lon: 111.15 },
+  { id: 'wpt10', nama: 'PITURIASE', kawasan: 'Pituriase', provinsi: 'Sulawesi Selatan', kabupaten: 'Sidenreng Rappang', skpRingkasan: 'SKP (A,B,C), KPB', kpb: 'Y', lat: -3.75, lon: 119.75 },
+  { id: 'wpt11', nama: 'PETATA', kawasan: 'Petata', provinsi: 'Sumatera Selatan', kabupaten: 'PALI', skpRingkasan: 'SKP (A/KPB, B,C,D,E)', kpb: 'Y', lat: -3.35, lon: 103.85 },
+  { id: 'wpt12', nama: 'PARIT RAMBUTAN', kawasan: 'Parit Rambutan', provinsi: 'Sumatera Selatan', kabupaten: 'Ogan Ilir', skpRingkasan: 'SKP (I,II,III)', spRingkasan: 'SP 3 PARIT RAMBUTAN', lat: -3.3, lon: 104.65 },
+  { id: 'wpt13', nama: 'Tasifeto - Mandeu', kawasan: 'Tasifeto - Mandeu', provinsi: 'NTT', kabupaten: 'Belu', skpRingkasan: 'SKP (A,B,C,D), KPB', kpb: 'Y', lat: -9.15, lon: 124.95 },
+  { id: 'wpt14', nama: 'SELAUT', kawasan: 'Selaut', provinsi: 'Aceh', kabupaten: 'Simeulue', skpRingkasan: 'SKP (A,B,C), KPB', spRingkasan: 'SIGULAI SKP D (SKP A)', kpb: 'Y', lat: 2.6, lon: 96.1 },
+  { id: 'wpt15', nama: 'SELAPARANG', kawasan: 'Selaparang', provinsi: 'NTB', kabupaten: 'Lombok Timur', skpRingkasan: 'SKP (1,2,3), KPB', spRingkasan: 'SP 1 JERINGO (SKP 1)', kpb: 'Y', lat: -8.55, lon: 116.55 },
+  { id: 'wpt16', nama: 'BATU BETUMPANG', kawasan: 'Batu Betumpang', provinsi: 'Bangka Belitung', kabupaten: 'Bangka Selatan', skpRingkasan: 'SKP PAYUNG, AIR GEGAS, SIMPANG RIMBA, KPB', lat: -2.8, lon: 106.4 },
+  { id: 'wpt17', nama: 'SARUDU BARAS', kawasan: 'Sarudu Baras', provinsi: 'Sulawesi Barat', kabupaten: 'Mamuju Utara', skpRingkasan: 'SKP (A,B,C,D), KPB', spRingkasan: 'TANJUNG CINA (KPB), SP 11 BARAS, SP 12 BARAS)', kpb: 'Y', lat: 0.7, lon: 119.65 },
+  { id: 'wpt18', nama: 'BUNGKU', kawasan: 'Bungku', provinsi: 'Sulawesi Tengah', kabupaten: 'Morowali', skpRingkasan: 'SKP (I,II,III,IV)', spRingkasan: 'UMPANGA,KABERA', lat: -2.3, lon: 121.7 },
+  { id: 'wpt19', nama: 'MUTIARA', kawasan: 'Mutiara', provinsi: 'Sulawesi Tenggara', kabupaten: 'Muna', skpRingkasan: 'SKP (I,II,III), ENCLAVE, KPB', spRingkasan: 'LANKORONI, RAIMUNA, POHORUA', kpb: 'Y', pusatSkp: 'Y', lat: -4.9, lon: 122.7 },
+  { id: 'wpt20', nama: 'SUMALATA', kawasan: 'Sumalata', provinsi: 'Gorontalo', kabupaten: 'Gorontalo Utara', skpRingkasan: 'SKP (A, B/KPB, C,D)', spRingkasan: 'MOTIHELUMO, SUMALATA IV/DS. BOLONTIO', kpb: 'Y', lat: 0.9, lon: 122.4 },
+  { id: 'wpt21', nama: 'SALIM BATU', kawasan: 'Salim Batu', provinsi: 'Kalimantan Utara', kabupaten: 'Bulungan', skpRingkasan: 'SKP (A,B,C)', spRingkasan: 'SEPUNGGUR, SP 3 TANJUNG BUKA, SP 5 TANJUNG BUKA, SP 5A TANJUNG BUKA, SP 6 TANJUNG BUKA, SP 8 TANJUNG BUKA, SP 9 TANJUNG BUKA', lat: 3.05, lon: 117.3 },
+  { id: 'wpt22', nama: 'PALOLO', kawasan: 'Palolo', provinsi: 'Sulawesi Tengah', kabupaten: 'Sigi', skpRingkasan: 'SKP (A,B,C,), KPB', spRingkasan: 'SP 1 LEMBAN TONGOA, SP 2 LEMBAN TONGOA', kpb: 'Y', lat: -1.35, lon: 120.0 },
+  { id: 'wpt23', nama: 'Gerbang Masperkasa', kawasan: 'Gerbang Masperkasa', provinsi: 'Kalimantan Barat', kabupaten: 'Sambas', skpRingkasan: 'SKP (A,B,C,D)', spRingkasan: 'SP 1 SEBUNGA', kpb: 'Y', pusatSkp: 'Y', lat: 1.35, lon: 109.3 },
+  { id: 'wpt24', nama: 'Asinua/Routa', kawasan: 'Asinua/Routa', provinsi: 'Sulawesi Tenggara', kabupaten: 'Konawe', skpRingkasan: 'SKP (A, B/KPB ,C,D)', spRingkasan: 'SP 1 PARUDONGKA, WATUTINAU, AWUA JAYA', kpb: 'Y', lat: -3.7, lon: 122.15 },
+  { id: 'wpt25', nama: 'TAMPOLERE', kawasan: 'Tampolere', provinsi: 'Sulawesi Tengah', kabupaten: 'Poso', skpRingkasan: 'SKP (A,B,C)', spRingkasan: 'SP 2 WATUTAU(GARKIM), TALABOSA/WATUTAU', lat: -1.4, lon: 120.75 },
+  { id: 'wpt26', nama: 'KIKIM', kawasan: 'Kikim', provinsi: 'Sumatera Selatan', kabupaten: 'Lahat', skpRingkasan: 'SKP (A,B,C,D,E)', spRingkasan: 'KEBAN AGUNG', lat: -3.8, lon: 103.55 },
+  { id: 'wpt27', nama: 'PONU', kawasan: 'Ponu', provinsi: 'NTT', kabupaten: 'Timor Tengah Utara', skpRingkasan: 'SKP (1,2,3,4)', lat: -9.2, lon: 124.35 },
+  { id: 'wpt28', nama: 'PULAU MOROTAI', kawasan: 'Pulau Morotai', provinsi: 'Maluku Utara', kabupaten: 'Morotai', skpRingkasan: 'SKP (A,B,C,D), KPB', spRingkasan: 'SP 3 DARUBA, SP 4 DEHEGILA', kpb: 'Y', lat: 2.35, lon: 128.35 },
+  { id: 'wpt29', nama: 'Kobalima Timur', kawasan: 'Kobalima Timur', provinsi: 'NTT', kabupaten: 'Malaka', skpRingkasan: 'SKP (A,B, C/KPB, D,E,F) ENCLAVE', spRingkasan: 'ULUKLUBUK, KAPITAN MEO', kpb: 'Y', lat: -9.55, lon: 124.85 },
+  { id: 'wpt30', nama: 'KERANG', kawasan: 'Kerang', provinsi: 'Kalimantan Timur', kabupaten: 'Paser', skpRingkasan: 'SKP (A,B,C,D,E)', spRingkasan: 'KELADEN', lat: -1.9, lon: 116.1 },
+  { id: 'wpt31', nama: 'MUTING', kawasan: 'Muting', provinsi: 'Papua Selatan', kabupaten: 'Merauke', skpRingkasan: 'SKP (A,B, C/KPB, D,E)', spRingkasan: 'SP 12 MUTING', kpb: 'Y', lat: -7.8, lon: 139.6 },
+  { id: 'wpt32', nama: 'SENGGI', kawasan: 'Senggi', provinsi: 'Papua', kabupaten: 'Keerom', skpRingkasan: 'SKP (A,B,C,D)', spRingkasan: 'SP 1 SENGGI, SP 2 SENGGI', lat: -3.05, lon: 140.75 },
+  { id: 'wpt33', nama: 'Tubbi Taramanu', kawasan: 'Tubbi Taramanu', provinsi: 'Sulawesi Barat', kabupaten: 'Polewali Mandar', skpRingkasan: 'SKP (A,B,C,D,)', spRingkasan: 'PIRIAN TIPIKO', lat: -3.35, lon: 119.3 },
+  { id: 'wpt34', nama: 'ANAWUA', kawasan: 'Anawua', provinsi: 'Sulawesi Tenggara', kabupaten: 'Kolaka', skpRingkasan: 'SKP (A/KPB, B,C,D)', spRingkasan: 'ANAWUA', kpb: 'Y', lat: -4.05, lon: 121.6 },
+  { id: 'wpt35', nama: 'Lamunti - Dadahup', kawasan: 'Lamunti - Dadahup', provinsi: 'Kalimantan Tengah', kabupaten: 'Kapuas', skpRingkasan: 'SKP (L1,L2,L3,D1,D2,D3/KPB, D4,D5), KPB L', spRingkasan: 'DADAHUP B4, C4, C3, A6', kpb: 'Y', lat: -2.5, lon: 114.35 },
+  { id: 'wpt36', nama: 'ULUMANDA', kawasan: 'Ulumanda', provinsi: 'Sulawesi Barat', kabupaten: 'Majene', skpRingkasan: 'SKP (A,B,C), KPB', spRingkasan: 'TANDEALLO ULUMANDA,', kpb: 'Y', lat: -3.3, lon: 118.85 },
+  { id: 'wpt37', nama: 'PATLEAN', kawasan: 'Patlean', provinsi: 'Maluku Utara', kabupaten: 'Halmahera Timur', skpRingkasan: 'SKP (A,B,C/KPB), ENCLAVE', spRingkasan: 'SP 4 PATLEAN, SP 5 PATLEAN,', kpb: 'Y', lat: 0.9, lon: 128.3 },
+  { id: 'wpt38', nama: 'Mambi Mehalaan', kawasan: 'Mambi Mehalaan', provinsi: 'Sulawesi Barat', kabupaten: 'Mamasa', skpRingkasan: 'SKP (A,B,C,D), KPB', spRingkasan: 'BOTTENG PASEMBUK', lat: -2.95, lon: 119.35 },
+  { id: 'wpt39', nama: 'SEKAYAM-ENTIKONG', kawasan: 'Sekayam - Entikong', provinsi: 'Kalimantan Barat', kabupaten: 'Sanggau', skpRingkasan: 'SKP (A,B,C)', lat: 0.05, lon: 110.6 },
+  { id: 'wpt40', nama: 'KETUNGAU HULU', kawasan: 'Ketungau Hulu', provinsi: 'Kalimantan Barat', kabupaten: 'Sintang', skpRingkasan: 'SKP (A,B,C,D)', spRingkasan: 'SEBETUNG PALUK', lat: 0.05, lon: 111.65 },
+  { id: 'wpt41', nama: 'SAGEA WALEH', kawasan: 'Sagea Waleh', provinsi: 'Maluku Utara', kabupaten: 'Halmahera Tengah', skpRingkasan: 'SKP (A,B,C,D)', spRingkasan: 'SP 2 WALEH, SP 3 WALEH', lat: -0.05, lon: 128.05 },
+  { id: 'wpt42', nama: 'MUARA TAKUNG-KAMANG BARU', kawasan: 'Muara Takung - Kamang Baru', provinsi: 'Sumatera Barat', kabupaten: 'Sijunjung', skpRingkasan: 'KPB, SKP (A,B,C,D)', spRingkasan: 'SP 1 PADANG TAROK', lat: -0.6, lon: 100.95 },
+  { id: 'wpt43', nama: 'PULAU BACAN', kawasan: 'Pulau Bacan', provinsi: 'Maluku Utara', kabupaten: 'Halmahera Selatan', skpRingkasan: 'KPB, SKP (A,B,C)', lat: -0.9, lon: 127.6 },
+  { id: 'wpt44', nama: 'KLAMONO-SEGUN', kawasan: 'Klamono - Segun', provinsi: 'Papua Barat Daya', kabupaten: 'Sorong', skpRingkasan: 'KPB, SKP (A,B,C,D,E,F,G)', lat: -0.95, lon: 131.7 },
+  { id: 'wpt45', nama: 'ARSEL KOLAM', kawasan: 'Arut Selatan dan Kota Waringin Lama', provinsi: 'Kalimantan Tengah', kabupaten: 'Kota Waringin Barat', skpRingkasan: 'SKP A RANGDA, SKP B RUNGUN, SKP C TANJUNG PUTRI', lat: -2.55, lon: 111.65 }
 ];
 
-export const SKP_SEED: Skp[] = [
-  { id: 'skp1', nama: 'SKP A Lunang', provinsi: 'Sumatera Barat', kabupaten: 'Pesisir Selatan', indukWptId: 'wpt1', cakupanSp: 'SP 1 Lunang, SP 2 Lunang, SP 3 Lunang' },
-  { id: 'skp2', nama: 'SKP B Silaut', provinsi: 'Sumatera Barat', kabupaten: 'Pesisir Selatan', indukWptId: 'wpt1', cakupanSp: 'SP 1 Silaut, SP 2 Silaut, SP 3 Silaut' },
-  { id: 'skp3', nama: 'SKP C Mesuji Pusat', provinsi: 'Lampung', kabupaten: 'Mesuji', indukWptId: 'wpt2', cakupanSp: 'SP 1 Mesuji, SP 2 Mesuji, SP Kota Terpadu Mandiri' },
-  { id: 'skp4', nama: 'SKP A Rasau', provinsi: 'Kalimantan Barat', kabupaten: 'Kubu Raya', indukWptId: 'wpt3', cakupanSp: 'SP 1 Rasau Jaya I, SP 2 Rasau Jaya II' },
-  { id: 'skp5', nama: 'SKP B Sungai Raya', provinsi: 'Kalimantan Barat', kabupaten: 'Kubu Raya', indukWptId: 'wpt3', cakupanSp: 'SP 3 Rasau Jaya III, SP 4 Sungai Raya' },
-  { id: 'skp6', nama: 'SKP A Tenggarong', provinsi: 'Kalimantan Timur', kabupaten: 'Kutai Kartanegara', indukWptId: 'wpt4', cakupanSp: 'SP 1 Tenggarong Seberang, SP 2 Tenggarong Seberang' },
-  { id: 'skp7', nama: 'SKP B Sebulu', provinsi: 'Kalimantan Timur', kabupaten: 'Kutai Kartanegara', indukWptId: 'wpt4', cakupanSp: 'SP 1 Sebulu, SP 2 Sebulu' },
-  { id: 'skp8', nama: 'SKP A Tobadak', provinsi: 'Sulawesi Barat', kabupaten: 'Mamuju Tengah', indukWptId: 'wpt7', cakupanSp: 'SP 1 Tobadak, SP 2 Tobadak, SP 3 Tobadak' },
-  { id: 'skp9', nama: 'SKP A Salor', provinsi: 'Papua Selatan', kabupaten: 'Merauke', indukWptId: 'wpt8', cakupanSp: 'SP 1 Salor, SP 2 Salor' },
-  { id: 'skp10', nama: 'SKP B Kurik', provinsi: 'Papua Selatan', kabupaten: 'Merauke', indukWptId: 'wpt8', cakupanSp: 'SP 3 Kurik, SP 4 Kurik' }
-];
+/**
+ * Cleared rather than kept alongside the real WPT_SEED above: these were fully fabricated
+ * illustrative sub-units (see git history) invented for the old 10-WPT placeholder, and none of
+ * them correspond to any real SKP/SP in the Matriks 45 Kawasan source (which only has free-text
+ * summaries — see Wpt.skpRingkasan/spRingkasan — not structured per-record data). Leaving them in
+ * place with their old `indukWptId`s would just show as broken-FK rows against the new ids; an
+ * empty list (same as the 16 placeholder masters' `EMPTY_SIMPLE_MASTER_SEED`) is the honest state
+ * until someone provides real SKP/SP-level source data.
+ */
+export const SKP_SEED: Skp[] = [];
 
-export const SP_SEED: Sp[] = [
-  { id: 'sp1', nama: 'SP 1 Lunang', jenisStatus: 'SP Bina / PUG', provinsi: 'Sumatera Barat', kabupaten: 'Pesisir Selatan', indukSkpId: 'skp1', indukWptId: 'wpt1', kk: 500 },
-  { id: 'sp2', nama: 'SP 2 Silaut', jenisStatus: 'SP Mandiri', provinsi: 'Sumatera Barat', kabupaten: 'Pesisir Selatan', indukSkpId: 'skp2', indukWptId: 'wpt1' },
-  { id: 'sp3', nama: 'SP 1 Mesuji', jenisStatus: 'SP Bina', provinsi: 'Lampung', kabupaten: 'Mesuji', indukSkpId: 'skp3', indukWptId: 'wpt2' },
-  { id: 'sp4', nama: 'SP KTM Mesuji', jenisStatus: 'SP Kota Terpadu', provinsi: 'Lampung', kabupaten: 'Mesuji', indukSkpId: 'skp3', indukWptId: 'wpt2' },
-  { id: 'sp5', nama: 'SP 1 Rasau Jaya I', jenisStatus: 'SP Swakarsa', provinsi: 'Kalimantan Barat', kabupaten: 'Kubu Raya', indukSkpId: 'skp4', indukWptId: 'wpt3' },
-  { id: 'sp6', nama: 'SP 2 Rasau Jaya II', jenisStatus: 'SP Mandiri', provinsi: 'Kalimantan Barat', kabupaten: 'Kubu Raya', indukSkpId: 'skp4', indukWptId: 'wpt3' },
-  { id: 'sp7', nama: 'SP 1 Tenggarong Seberang', jenisStatus: 'SP Mandiri', provinsi: 'Kalimantan Timur', kabupaten: 'Kutai Kartanegara', indukSkpId: 'skp6', indukWptId: 'wpt4' },
-  { id: 'sp8', nama: 'SP 2 Sebulu', jenisStatus: 'SP Bina', provinsi: 'Kalimantan Timur', kabupaten: 'Kutai Kartanegara', indukSkpId: 'skp7', indukWptId: 'wpt4' },
-  { id: 'sp9', nama: 'SP 1 Tobadak', jenisStatus: 'SP Bina', provinsi: 'Sulawesi Barat', kabupaten: 'Mamuju Tengah', indukSkpId: 'skp8', indukWptId: 'wpt7' },
-  { id: 'sp10', nama: 'SP 1 Salor', jenisStatus: 'SP Mandiri', provinsi: 'Papua Selatan', kabupaten: 'Merauke', indukSkpId: 'skp9', indukWptId: 'wpt8' },
-  { id: 'sp11', nama: 'SP 3 Kurik', jenisStatus: 'SP Bina', provinsi: 'Papua Selatan', kabupaten: 'Merauke', indukSkpId: 'skp10', indukWptId: 'wpt8' },
-  // Dangling in the source ERD: references "SKP A Timika" / "WPT Timika", neither of which exists
-  // as a record (the WPT sheet only has "WPT Timika / SP-Jagamin" = wpt9). Left null rather than
-  // guessed — see Sp.indukSkpId doc comment and data-manager/README.md.
-  { id: 'sp12', nama: 'SP 1 Timika', jenisStatus: 'SP Bina', provinsi: 'Papua Tengah', kabupaten: 'Mimika', indukSkpId: null, indukWptId: null }
-];
+export const SP_SEED: Sp[] = [];
 
 export const KOMODITI_SEED: Komoditi[] = [
   { id: 'kom1', nama: 'Padi' },
