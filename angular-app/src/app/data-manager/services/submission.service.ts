@@ -15,6 +15,7 @@ export interface SubmissionInput {
   summary: string;
   images: string[];
   geometry?: DrawnGeometry | null;
+  fieldValues?: { [key: string]: any } | null;
   submittedBy: string;
 }
 
@@ -48,6 +49,7 @@ export class SubmissionService {
       summary: input.summary,
       images: input.images,
       geometry: input.geometry || null,
+      fieldValues: input.fieldValues || null,
       submittedBy: input.submittedBy,
       submittedAt: now,
       status: 'PENDING',

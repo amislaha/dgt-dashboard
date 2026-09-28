@@ -377,3 +377,45 @@ Four more requests on the same header/sidebar system:
   `.wilayah-side-panel`/`.submission-side-panel` could go back to
   `overflow: visible` (needed so the toggle button, which sits partly
   outside that box, isn't clipped by it).
+
+## Submission form: full entity fields, split into tabs
+
+On request ("adjust form to all fields in data induk, create tab so it's not
+too long and user friendly") — until now a submission only ever carried a
+free-text `summary` plus a `targetLabel`, never the target entity's actual
+field values.
+
+- **`Submission.fieldValues?: { [key: string]: any }`** (models/
+  submission.model.ts) is the target entity's own `EntityConfig.fields`
+  values — undefined for `mode: 'delete'`. `SubmissionComponent`'s create
+  form now embeds the *same* generic `<dgt-entity-form>` every entity CRUD
+  screen already uses, driven by `selectedConfig` (`registry.get(draftEntityKey)
+  .config`) and `prefillRecord` (the target's current values in update mode,
+  `null` for create). Submitted via `@ViewChild(EntityFormComponent)` +
+  `entityFormRef.submit()`, the exact same pattern `EntityListComponent`
+  already uses for its own create/edit drawer — `(saved)` emits the built,
+  type-coerced value object, which becomes `fieldValues` on the `Submission`.
+  For `create` mode, `targetLabel` is now derived from
+  `fieldValues[config.titleField]` instead of a separate free-text "Nama/
+  Judul Usulan" input (removed — it was redundant with the entity form's own
+  title field once the full form existed).
+- **3 tabs** (`activeTab: 'umum' | 'data' | 'lokasi'`) — Informasi Umum
+  (Entitas/Jenis Pengajuan/Data Target/Ringkasan/Diajukan oleh), Data Induk
+  (the embedded `<dgt-entity-form>` — hidden entirely, not just its tab
+  button, when `mode: 'delete'`), Lokasi & Lampiran (draw tools + foto).
+  Switching tabs uses `[class.d-none]`, **not** `*ngIf` — `*ngIf` would
+  destroy and recreate `<dgt-entity-form>` (losing whatever the user had
+  typed into it) every time they navigated away from "Data Induk" and back.
+  The whole Data Induk pane *is* still behind `*ngIf="showEntityForm"`
+  (mode-driven): switching to "Hapus data" should drop stale field values,
+  not just hide them.
+  `submitDraft()` switches to whichever tab has the failing validation
+  (`umum` for missing summary/submittedBy/target, `data` for an invalid
+  entity form) before that field's own toast fires, so the user doesn't have
+  to go hunting for what's wrong.
+- **Approval-side display.** `SubmissionApprovalComponent.fieldEntries()`
+  renders `fieldValues` as label/value rows in a submission's expanded view,
+  resolving `fk`-typed fields to their referenced record's display label
+  (same logic as `EntityListComponent.resolveFkLabel()`) so a reviewer sees
+  "Kubu Raya", not `wpt1`. Without this the newly-captured structured data
+  would be invisible to whoever has to actually approve the change.

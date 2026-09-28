@@ -114,6 +114,16 @@
   margin: .6rem 0;
 }
 
+// The target entity's own field values (see SubmissionComponent's embedded <dgt-entity-form>) —
+// visually grouped in their own box so they read as "what's being proposed", distinct from the
+// Diajukan/Ditinjau/Catatan meta rows below (same .qn-row styling, just boxed).
+.field-values {
+  background: var(--muted);
+  border-radius: var(--radius-sm, .375rem);
+  padding: .5rem .65rem;
+  margin-bottom: .6rem;
+}
+
 .image-preview {
   display: flex;
   flex-wrap: wrap;

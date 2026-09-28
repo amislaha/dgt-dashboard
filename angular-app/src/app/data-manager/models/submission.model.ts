@@ -35,6 +35,12 @@ export interface Submission {
    *  same concept as geomapping's `Feature.geometry` but optional, since not every submission needs
    *  a location (e.g. a Satker or Program proposal doesn't). */
   geometry?: DrawnGeometry | null;
+  /** The target entity's own `EntityConfig.fields` values, captured via the same generic
+   *  `EntityFormComponent` the entity CRUD screens use (create: a full proposed record; update: the
+   *  proposed new values, prefilled from the current record) — undefined for `mode: 'delete'`, which
+   *  doesn't need field edits. This is what makes a submission's "Ringkasan Perubahan" free text a
+   *  supplement rather than the only record of what's being proposed. */
+  fieldValues?: { [key: string]: any } | null;
   submittedBy: string;
   submittedAt: string;
   status: SubmissionStatus;

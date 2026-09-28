@@ -2,6 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
 import { ENTITY_CONFIGS } from '../config/entity-configs';
+import { FieldConfig } from '../models/field-config.model';
 import {
   Submission,
   SubmissionHistoryEntry,
@@ -10,6 +11,7 @@ import {
   SUBMISSION_MODE_LABEL,
   SUBMISSION_STATUS_META
 } from '../models/submission.model';
+import { EntityRegistryService } from '../services/entity-registry.service';
 import { MapDrawService } from '../services/map-draw.service';
 import { SubmissionService } from '../services/submission.service';
 
@@ -23,6 +25,11 @@ type ApprFilter = 'all' | SubmissionStatus;
  * expanding a row that has a `geometry` does show it on the shared map (`SubmissionHubComponent`'s
  * `<dgt-wilayah-map>`) via `MapDrawService.showPreview()`, the same mediator `SubmissionComponent`
  * uses to draw one in the first place.
+ *
+ * `fieldEntries()` renders a submission's `fieldValues` (the target entity's own fields, captured
+ * via `<dgt-entity-form>` on the submitting side — see SubmissionComponent) as label/value pairs,
+ * resolving `fk`-typed fields to their referenced record's display label the same way
+ * `EntityListComponent.resolveFkLabel()` does, so a reviewer sees names, not raw ids.
  */
 @Component({
   selector: 'dgt-submission-approval',
@@ -49,7 +56,12 @@ export class SubmissionApprovalComponent implements OnDestroy {
 
   private readonly sub: Subscription;
 
-  constructor(private readonly submissions: SubmissionService, private readonly mapDraw: MapDrawService, private readonly toast: ToastService) {
+  constructor(
+    private readonly submissions: SubmissionService,
+    private readonly registry: EntityRegistryService,
+    private readonly mapDraw: MapDrawService,
+    private readonly toast: ToastService
+  ) {
     this.sub = this.submissions.changes.subscribe(list => (this.items = list));
   }
 
@@ -84,6 +96,25 @@ export class SubmissionApprovalComponent implements OnDestroy {
 
   fmtWhen(iso: string | null): string {
     return iso ? new Date(iso).toLocaleString('id-ID') : '-';
+  }
+
+  fieldEntries(s: Submission): Array<{ label: string; value: string }> {
+    if (!s.fieldValues) {
+      return [];
+    }
+    const config = ENTITY_CONFIGS[s.entityKey];
+    return config.fields
+      .filter(f => s.fieldValues![f.name] != null && s.fieldValues![f.name] !== '')
+      .map(f => ({ label: f.label, value: this.formatFieldValue(f, s.fieldValues![f.name]) }));
+  }
+
+  private formatFieldValue(field: FieldConfig, value: any): string {
+    if (field.type === 'fk' && field.fkEntity) {
+      const entry = this.registry.get(field.fkEntity);
+      const record = entry.service.get(value);
+      return record ? String(record[entry.config.titleField]) : `⚠ tidak ditemukan (${value})`;
+    }
+    return String(value);
   }
 
   historyColor(action: SubmissionHistoryEntry['action']): 'good' | 'warn' | 'critical' | 'neutral' {

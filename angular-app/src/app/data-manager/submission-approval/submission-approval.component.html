@@ -24,6 +24,10 @@
       <div class="appr-body" *ngIf="openId[s.id]">
         <p class="summary-text">{{ s.summary }}</p>
 
+        <div class="field-values" *ngIf="fieldEntries(s).length">
+          <div class="qn-row" *ngFor="let entry of fieldEntries(s)"><span class="qn-k">{{ entry.label }}</span><span class="qn-v">{{ entry.value }}</span></div>
+        </div>
+
         <div class="image-preview" *ngIf="s.images.length">
           <div class="image-thumb" *ngFor="let src of s.images"><img [src]="src" alt="" /></div>
         </div>

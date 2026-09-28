@@ -18,40 +18,55 @@
     <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeDrawer()" aria-label="Tutup">✕</button>
   </div>
 
+  <div class="seg mb-3">
+    <button type="button" [class.sel]="activeTab === 'umum'" (click)="setTab('umum')">Informasi Umum</button>
+    <button type="button" [class.sel]="activeTab === 'data'" *ngIf="showEntityForm" (click)="setTab('data')">Data Induk</button>
+    <button type="button" [class.sel]="activeTab === 'lokasi'" (click)="setTab('lokasi')">Lokasi &amp; Lampiran</button>
+  </div>
+
   <form>
-    <div class="form-row">
-      <div class="form-group col-6">
-        <label>Entitas</label>
-        <select class="form-control form-control-sm" [(ngModel)]="draftEntityKey" name="entityKey">
-          <option *ngFor="let opt of entityOptions" [value]="opt.key">{{ opt.label }}</option>
+    <div [class.d-none]="activeTab !== 'umum'">
+      <div class="form-row">
+        <div class="form-group col-6">
+          <label>Entitas</label>
+          <select class="form-control form-control-sm" [(ngModel)]="draftEntityKey" name="entityKey" (ngModelChange)="onEntityChange()">
+            <option *ngFor="let opt of entityOptions" [value]="opt.key">{{ opt.label }}</option>
+          </select>
+        </div>
+        <div class="form-group col-6">
+          <label>Jenis Pengajuan</label>
+          <select class="form-control form-control-sm" [(ngModel)]="draftMode" name="mode" (ngModelChange)="onModeChange()">
+            <option *ngFor="let opt of modeOptions" [value]="opt[0]">{{ opt[1] }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="needsTargetPicker">
+        <label>Data Target</label>
+        <select class="form-control form-control-sm" [(ngModel)]="draftTargetId" name="targetId">
+          <option value="" disabled>— pilih —</option>
+          <option *ngFor="let opt of targetOptions" [value]="opt.id">{{ opt.label }}</option>
         </select>
       </div>
-      <div class="form-group col-6">
-        <label>Jenis Pengajuan</label>
-        <select class="form-control form-control-sm" [(ngModel)]="draftMode" name="mode">
-          <option *ngFor="let opt of modeOptions" [value]="opt[0]">{{ opt[1] }}</option>
-        </select>
+
+      <div class="form-group">
+        <label>Ringkasan Perubahan <span class="text-danger">*</span></label>
+        <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="draftSummary" name="summary" placeholder="Jelaskan data apa yang diusulkan/diubah dan alasannya"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Diajukan oleh <span class="text-danger">*</span></label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="draftSubmittedBy" name="submittedBy" placeholder="Nama petugas" />
       </div>
     </div>
+  </form>
 
-    <div class="form-group" *ngIf="needsTargetPicker">
-      <label>Data Target</label>
-      <select class="form-control form-control-sm" [(ngModel)]="draftTargetId" name="targetId">
-        <option value="" disabled>— pilih —</option>
-        <option *ngFor="let opt of targetOptions" [value]="opt.id">{{ opt.label }}</option>
-      </select>
-    </div>
+  <div [class.d-none]="activeTab !== 'data'" *ngIf="showEntityForm">
+    <p class="tab-hint">{{ draftMode === 'update' ? 'Ubah field di bawah sesuai usulan perubahan — nilai awal diambil dari data saat ini.' : 'Isi field di bawah sesuai data yang diusulkan.' }}</p>
+    <dgt-entity-form [config]="selectedConfig" [record]="prefillRecord" (saved)="onEntityFormSaved($event)"></dgt-entity-form>
+  </div>
 
-    <div class="form-group" *ngIf="!needsTargetPicker">
-      <label>Nama/Judul Usulan</label>
-      <input type="text" class="form-control form-control-sm" [(ngModel)]="draftTargetLabel" name="targetLabel" placeholder="cth. LUNANG SILAUT" />
-    </div>
-
-    <div class="form-group">
-      <label>Ringkasan Perubahan <span class="text-danger">*</span></label>
-      <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="draftSummary" name="summary" placeholder="Jelaskan data apa yang diusulkan/diubah dan alasannya"></textarea>
-    </div>
-
+  <div [class.d-none]="activeTab !== 'lokasi'">
     <div class="form-group">
       <label>Lokasi/Geometri (opsional)</label>
       <div class="draw-actions">
@@ -76,12 +91,7 @@
         </div>
       </div>
     </div>
-
-    <div class="form-group">
-      <label>Diajukan oleh <span class="text-danger">*</span></label>
-      <input type="text" class="form-control form-control-sm" [(ngModel)]="draftSubmittedBy" name="submittedBy" placeholder="Nama petugas" />
-    </div>
-  </form>
+  </div>
 
   <div class="inline-form-actions d-flex justify-content-end">
     <button type="button" class="btn btn-secondary btn-sm mr-2" (click)="closeDrawer()">Batal</button>
