@@ -153,9 +153,11 @@ not something to launder away:
 ## Persetujuan & Pengajuan (added later, not in `data-manager/index.html`)
 
 A second rail section — `Pengajuan Data` and `Approval` — added on request,
-sitting below the 8 entity items behind a divider (`NavItem.sectionLabel`,
-see `RailNavComponent`). No equivalent exists in the original static tool;
-this is new to the Angular port only.
+sitting ABOVE the 8 entity items (moved there on request; originally shipped
+below them), each group separated by its own divider (`NavItem.sectionLabel`,
+see `RailNavComponent`) — "Persetujuan & Pengajuan" leads the rail, "Data
+Master" heads the entity list below it. No equivalent exists in the original
+static tool; this is new to the Angular port only.
 
 - `models/submission.model.ts` / `services/submission.service.ts`: a
   `Submission` log (propose create/update/delete on one of the 8 entities,

@@ -14,14 +14,16 @@ import { SubmissionService } from '../services/submission.service';
  * Routed wrapper around `<dgt-app-shell>` for the data-manager feature module
  * (see the port spec's "DataManagerShellComponent"). Builds the rail's
  * `NavItem[]` from the 8 entity configs (ports `renderRail()`'s per-entity
- * button + live entry-count badge from the original data-manager/index.html),
- * plus a second "Persetujuan & Pengajuan" section (Pengajuan Data/Approval,
- * marked off with a `sectionLabel` divider — see RailNavComponent) that isn't
- * part of that CRUD tool's original spec. Translates `(select)` into a
- * child-route navigation, and derives the active rail id from the current
- * child route's `data.entityKey` (entities) or `data.navId` (the two
- * submission routes) instead of keeping separate state — there is exactly one
- * `state.tab`-equivalent, the router.
+ * button + live entry-count badge from the original data-manager/index.html)
+ * plus a "Persetujuan & Pengajuan" section (Pengajuan Data/Approval) that
+ * isn't part of that CRUD tool's original spec — placed FIRST, above the 8
+ * entities, with the entity list following its own "Data Master" divider (on
+ * request; each group's lead item carries the `sectionLabel` that draws its
+ * divider — see RailNavComponent). Translates `(select)` into a child-route
+ * navigation, and derives the active rail id from the current child route's
+ * `data.entityKey` (entities) or `data.navId` (the two submission routes)
+ * instead of keeping separate state — there is exactly one `state.tab`-
+ * equivalent, the router.
  */
 @Component({
   selector: 'dgt-data-manager-shell',
@@ -55,11 +57,13 @@ export class DataManagerShellComponent implements OnInit, OnDestroy {
           id: entry.config.key,
           label: entry.config.label,
           sub: `${lists[i].length} entri`,
-          icon: entityIconSvg(entry.config.key)
+          icon: entityIconSvg(entry.config.key),
+          // First entity item opens the divider back to "Data Master", since the Persetujuan &
+          // Pengajuan section above now leads the rail (moved to the top on request).
+          ...(i === 0 ? { sectionLabel: 'Data Master' } : {})
         }));
 
         this.navItems = [
-          ...entityItems,
           {
             id: 'pengajuan',
             label: 'Pengajuan Data',
@@ -72,7 +76,8 @@ export class DataManagerShellComponent implements OnInit, OnDestroy {
             label: 'Approval',
             sub: pendingCount ? `${pendingCount} menunggu` : 'Tidak ada yang menunggu',
             icon: APPROVAL_ICON_SVG
-          }
+          },
+          ...entityItems
         ];
 
         const total = lists.reduce((sum, list) => sum + list.length, 0);
