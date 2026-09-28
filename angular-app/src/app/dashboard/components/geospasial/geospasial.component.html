@@ -1,14 +1,24 @@
 <!--
-  Ports the CURRENT dashboard/index.html Geospasial module (see the component's own doc comment
-  for how this diverges from CLAUDE.md's still-older "Architecture" section). No dgt-page-head
-  here by design, matching the source's own "no header for dashboard app" — just the toolbar row.
+  Full-bleed map with floating panels — rewritten from the previous 2-column card layout to match
+  a "DGT DSS" reference mockup (see the component's own doc comment for what was dropped/adapted
+  and why). No dgt-page-head, matching the source's own "no header for dashboard app".
 -->
+<div class="geo-shell">
 
-<!-- Filter toolbar — lives here normally, relocates into the map panel's own header in fullscreen
-     (see toolbarSlot below) via ngTemplateOutlet rather than physically moving DOM nodes. -->
-<ng-template #toolbarTpl>
-  <div class="d-flex align-items-center flex-wrap geo-toolbar">
-    <div class="field-inline mr-2 mb-1">
+  <div class="geo-map-layer">
+    <dgt-kawasan-map
+      [kawasan]="visibleKawasan"
+      [selectedId]="selectedKawasanId"
+      [showHpl]="hplVisible"
+      [showZoomControl]="false"
+      (select)="selectKawasan($event)"
+      (viewChange)="onMapView($event)">
+    </dgt-kawasan-map>
+  </div>
+
+  <!-- Top filter toolbar -->
+  <div class="geo-top-toolbar">
+    <div class="field-inline">
       <label for="geoSiteSelect">Site</label>
       <select id="geoSiteSelect" class="form-control form-control-sm" [(ngModel)]="geoSite">
         <option value="Semua">Semua</option>
@@ -16,280 +26,141 @@
         <option value="Kementerian">Kementerian</option>
       </select>
     </div>
-    <div class="field-inline mr-2 mb-1">
-      <label for="geoAreaSelect">Area</label>
-      <select id="geoAreaSelect" class="form-control form-control-sm" [(ngModel)]="geoArea">
-        <option value="Nasional">Nasional</option>
-        <option value="Pulau">Pulau</option>
-        <option value="Provinsi">Provinsi</option>
-        <option value="Semua kawasan">Semua kawasan</option>
+    <div class="field-inline">
+      <label for="geoProvSelect">Provinsi</label>
+      <select id="geoProvSelect" class="form-control form-control-sm" [ngModel]="selectedProvinsi" (ngModelChange)="selectedProvinsi = $event; onProvinsiChange()">
+        <option [ngValue]="null">Semua provinsi</option>
+        <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
       </select>
     </div>
-    <span class="info-chip mr-2 mb-1">Periode: 2026 &middot; TW1</span>
-    <button type="button" class="alert-chip mb-1" [class.warn]="tickerItems.length > 0" (click)="scrollToEws()">
-      Alert ({{ tickerItems.length }})
+    <span class="info-chip">Periode: 2026 &middot; TW1</span>
+    <button type="button" class="alert-chip" [class.warn]="activeAlertsCount > 0" (click)="scrollToEws()">
+      Peringatan ({{ activeAlertsCount }})
     </button>
   </div>
-</ng-template>
 
-<!-- Detail Kawasan panel — lives in the left column normally, joins Summary/EWS/AI in the right
-     column in fullscreen (see detailSlot below), same relocation technique as the toolbar. -->
-<ng-template #detailPanelTpl>
-  <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-      <h2 class="h6 font-weight-bold mb-0">Detail Kawasan</h2>
-      <div class="btn-group btn-group-sm" role="group">
-        <button type="button" class="btn" [class.btn-primary]="geoDetailTab === 'profil'" [class.btn-outline-secondary]="geoDetailTab !== 'profil'" (click)="setDetailTab('profil')">Profil</button>
-        <button type="button" class="btn" [class.btn-primary]="geoDetailTab === 'tabel'" [class.btn-outline-secondary]="geoDetailTab !== 'tabel'" (click)="setDetailTab('tabel')">Tabel</button>
-        <button type="button" class="btn" [class.btn-primary]="geoDetailTab === 'grafik'" [class.btn-outline-secondary]="geoDetailTab !== 'grafik'" (click)="setDetailTab('grafik')">Grafik</button>
-        <button type="button" class="btn" [class.btn-primary]="geoDetailTab === 'foto'" [class.btn-outline-secondary]="geoDetailTab !== 'foto'" (click)="setDetailTab('foto')">Foto</button>
+  <!-- Left floating panel: Manajemen Lapisan -->
+  <div class="geo-panel geo-panel-left" [class.collapsed]="leftPanelCollapsed">
+    <div class="geo-panel-head">
+      <h2 class="geo-panel-title">Manajemen Lapisan</h2>
+      <button type="button" class="geo-panel-collapse" [attr.title]="leftPanelCollapsed ? 'Buka panel' : 'Ciutkan panel'" (click)="toggleLeftPanel()">
+        <svg class="chev" [class.rotated]="leftPanelCollapsed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+    </div>
+
+    <div class="geo-panel-body" *ngIf="!leftPanelCollapsed">
+      <input
+        type="text"
+        class="form-control form-control-sm geo-layer-search"
+        placeholder="Cari lapisan atau kawasan..."
+        [(ngModel)]="layerSearchQuery" />
+
+      <div class="layer-group">
+        <div class="layer-group-head">
+          <span class="nm">Kawasan Transmigrasi</span>
+          <span class="ct">{{ typeVisibleCount }}/2</span>
+        </div>
+        <div class="layer-group-list">
+          <label class="map-layer-item" *ngFor="let g of typeGroups">
+            <input type="checkbox" [checked]="typeVisible[g.tipe] !== false" (change)="toggleType(g.tipe, $any($event.target).checked)" />
+            <span class="map-layer-dot" [style.background]="'var(--primary)'"></span>
+            <span class="nm">{{ g.tipe }}</span>
+            <span class="ct">{{ g.count }}</span>
+          </label>
+          <label class="map-layer-item sub-item" *ngFor="let k of kawasanRows" [class.selected]="k.id === selectedKawasanId">
+            <input type="checkbox" [checked]="typeVisible[k.tipe] !== false" disabled />
+            <span class="map-layer-dot" [style.background]="stageColorHex[k.tahap]"></span>
+            <span class="nm nm-link" role="button" (click)="selectKawasan(k)">{{ k.nama }}</span>
+            <span class="ct">{{ k.provinsi }}</span>
+          </label>
+          <p class="layer-empty" *ngIf="!kawasanRows.length">Tidak ada kawasan yang cocok.</p>
+        </div>
+      </div>
+
+      <div class="layer-group">
+        <div class="layer-group-head">
+          <span class="nm">Batas HPL</span>
+          <span class="ct">{{ hplVisible ? 1 : 0 }}/1</span>
+        </div>
+        <div class="layer-group-list">
+          <label class="map-layer-item">
+            <input type="checkbox" [checked]="hplVisible" (change)="toggleHpl($any($event.target).checked)" />
+            <span class="map-layer-dot map-layer-dot-outline"></span>
+            <span class="nm">Batas bidang HPL</span>
+            <span class="ct">{{ kawasan.length }} bidang</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="layer-group">
+        <div class="layer-group-head">
+          <span class="nm">Peringatan Dini (EWS)</span>
+          <span class="ct">{{ ewsCategoryVisibleCount }}/{{ ewsCategories.length }}</span>
+        </div>
+        <div class="layer-group-list">
+          <label class="map-layer-item" *ngFor="let c of ewsCategories">
+            <input type="checkbox" [checked]="ewsCategoryVisible[c.category] !== false" (change)="toggleEwsCategory(c.category, $any($event.target).checked)" />
+            <span class="map-layer-dot" [style.background]="sevColorVar(c.sev)"></span>
+            <span class="nm">{{ c.category }}</span>
+            <span class="ct">{{ c.count }}</span>
+          </label>
+        </div>
       </div>
     </div>
-    <div class="card-body">
-      <ng-container [ngSwitch]="geoDetailTab">
-
-        <div *ngSwitchCase="'profil'">
-          <ng-container *ngIf="selectedKawasan as k; else noSelProfil">
-            <div class="detail-title h5 font-weight-bold mb-3">{{ k.nama }}</div>
-            <div class="detail-row d-flex justify-content-between border-bottom py-1"><span class="text-muted">Provinsi</span><b>{{ k.provinsi }}</b></div>
-            <div class="detail-row d-flex justify-content-between border-bottom py-1"><span class="text-muted">Tipe</span><b>{{ k.tipe }}</b></div>
-            <div class="detail-row d-flex justify-content-between align-items-center border-bottom py-1">
-              <span class="text-muted">Tahap</span>
-              <span class="badge" [ngClass]="'badge-stage-' + stageBadgeClass[k.tahap]">{{ k.tahap }}</span>
-            </div>
-            <div class="detail-row d-flex justify-content-between border-bottom py-1"><span class="text-muted">Populasi transmigran</span><b>{{ k.populasi | number:'1.0-0' }} jiwa</b></div>
-            <div class="detail-row d-flex justify-content-between border-bottom py-1"><span class="text-muted">Indeks 5T</span><b>{{ k.indeks5t }} / 100</b></div>
-            <div class="detail-row d-flex justify-content-between border-bottom py-1"><span class="text-muted">Realisasi anggaran</span><b>{{ k.anggaranPct }}%</b></div>
-            <div class="detail-row d-flex justify-content-between align-items-center border-bottom py-1">
-              <span class="text-muted">Risiko</span>
-              <dgt-severity-badge [severity]="severityOf(k.risiko)" [label]="severityLabel(k.risiko)"></dgt-severity-badge>
-            </div>
-            <div class="detail-legal mt-3">
-              <div class="d-flex justify-content-between small mb-1"><span>Legalitas lahan (SHM/HPL)</span><b>{{ legalPct(k) }}%</b></div>
-              <div class="progress" style="height: 6px">
-                <div class="progress-bar" role="progressbar" [style.width.%]="legalPct(k)"></div>
-              </div>
-            </div>
-          </ng-container>
-          <ng-template #noSelProfil><p class="text-muted mb-0">Pilih kawasan pada peta, tabel, atau ringkasan.</p></ng-template>
-        </div>
-
-        <div *ngSwitchCase="'tabel'">
-          <dgt-data-table
-            [columns]="tabelColumns"
-            [rows]="tabelRows"
-            emptyLabel="Belum ada data kawasan."
-            (rowClick)="onTabelRowClick($event)">
-          </dgt-data-table>
-        </div>
-
-        <div *ngSwitchCase="'grafik'">
-          <dgt-bar-chart [data]="grafikData" [height]="190" ariaLabel="Indeks 5T per kawasan"></dgt-bar-chart>
-        </div>
-
-        <div *ngSwitchCase="'foto'">
-          <ng-container *ngIf="selectedKawasan as k; else noSelFoto">
-            <div class="photo-thumb position-relative d-flex align-items-center justify-content-center" style="height:200px">
-              <img *ngIf="k.foto" [src]="k.foto" [alt]="'Foto ' + k.nama" class="w-100 h-100" style="object-fit:cover" />
-              <span *ngIf="!k.foto" class="text-white-50">Belum ada foto untuk {{ k.nama }}</span>
-              <span class="pt-label">{{ k.nama }}</span>
-            </div>
-          </ng-container>
-          <ng-template #noSelFoto><p class="text-muted mb-0">Pilih kawasan pada peta, tabel, atau ringkasan.</p></ng-template>
-        </div>
-
-      </ng-container>
-    </div>
   </div>
-</ng-template>
 
-<div class="geo-overlay-panels" [class.geo-fullscreen]="fullscreen" [class.panels-hidden]="panelsHidden">
+  <!-- Right floating panel: Ringkasan Seluruh Kawasan -->
+  <div class="geo-panel geo-panel-right" [class.collapsed]="rightPanelCollapsed">
+    <div class="geo-panel-head">
+      <h2 class="geo-panel-title">Ringkasan Seluruh Kawasan</h2>
+      <button type="button" class="geo-panel-collapse" [attr.title]="rightPanelCollapsed ? 'Buka panel' : 'Ciutkan panel'" (click)="toggleRightPanel()">
+        <svg class="chev" [class.rotated]="!rightPanelCollapsed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
 
-  <ng-container *ngIf="!fullscreen">
-    <ng-container *ngTemplateOutlet="toolbarTpl"></ng-container>
-  </ng-container>
+    <div class="geo-panel-body" *ngIf="!rightPanelCollapsed">
+      <div class="ringkasan-stat" *ngIf="nationalKPI as nk">
+        <div class="ringkasan-stat-total">
+          <span class="v">{{ nk.totalKawasan }}</span>
+          <span class="l">Total Kawasan</span>
+        </div>
+        <div class="ringkasan-stat-chips">
+          <span class="stat-chip"><b>{{ nk.totalSKP }}</b> SKP</span>
+          <span class="stat-chip"><b>{{ nk.totalKPB }}</b> KPB</span>
+          <span class="stat-chip"><b>{{ nk.avgIndeks }}</b> Rata² Indeks 5T</span>
+        </div>
+      </div>
 
-  <!-- 17 IKU chips (replaces the older 7-tile executive-summary strip, see the component's doc
-       comment) — a single horizontally-scrolling row with a shared expandable detail box below. -->
-  <div class="stg-strip-row">
-    <div class="stg-strip">
-      <div class="iku-chip" *ngFor="let k of ikuList; let i = index" [class.active]="activeIku === i">
-        <span class="iku-no">IKU {{ k.no }}</span>
-        <span class="iku-val">
-          {{ k.nilai }}{{ k.satuan === 'Persen' ? '%' : '' }}
-          <span class="iku-trend" *ngIf="k.trend !== null" [class.up]="k.trend >= 0" [class.down]="k.trend < 0" title="Perubahan dari kuartal lalu">
-            {{ k.trend >= 0 ? '▲' : '▼' }} {{ (k.trend >= 0 ? k.trend : -k.trend).toFixed(1) }}
+      <div class="ringkasan-section">
+        <div class="ringkasan-section-title">Tahap Pengembangan</div>
+        <div class="stage-bar">
+          <span *ngFor="let s of stageBreakdown" [style.width.%]="s.pct" [style.background]="stageColorHex[s.stage]" [title]="s.stage + ': ' + s.count"></span>
+        </div>
+        <div class="stage-legend">
+          <span class="stage-legend-item" *ngFor="let s of stageBreakdown">
+            <i [style.background]="stageColorHex[s.stage]"></i>{{ s.stage }} <b>{{ s.count }}</b>
           </span>
-        </span>
-        <button type="button" class="iku-info-btn" [class.active]="activeIku === i" [attr.aria-label]="'Penjelasan IKU ' + k.no" title="Penjelasan" (click)="toggleIkuDetail(i)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div class="iku-detail" *ngIf="activeIku !== null">
-    <ng-container *ngIf="ikuList[activeIku] as k">
-      <b>IKU {{ k.no }}</b> &mdash; {{ k.satuan }}: {{ k.nilai }}{{ k.satuan === 'Persen' ? '%' : '' }}<br />
-      {{ k.indikator }}<br /><span class="hint text-muted">PIC: {{ k.pic }}</span>
-    </ng-container>
-  </div>
-
-  <div class="row">
-    <div class="col-lg-8 mb-4">
-      <div class="card mb-4 geo-map-panel">
-        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-          <h2 class="h6 font-weight-bold mb-0">Peta Sebaran Kawasan</h2>
-          <div class="d-flex align-items-center flex-wrap">
-            <ng-container *ngIf="fullscreen">
-              <ng-container *ngTemplateOutlet="toolbarTpl"></ng-container>
-            </ng-container>
-            <div class="btn-group btn-group-sm flex-wrap" role="group">
-              <button type="button" class="btn" [class.btn-primary]="geoView === 'dasar'" [class.btn-outline-secondary]="geoView !== 'dasar'" (click)="setView('dasar')">Peta</button>
-              <button type="button" class="btn" [class.btn-primary]="geoView === 'grid'" [class.btn-outline-secondary]="geoView !== 'grid'" (click)="setView('grid')">Grid Provinsi</button>
-              <button type="button" class="btn btn-outline-secondary" (click)="toggleSearch()">Cari</button>
-              <button type="button" class="btn btn-outline-secondary" *ngIf="fullscreen" (click)="togglePanels()">{{ panelsHidden ? 'Tampilkan' : 'Sembunyikan' }}</button>
-              <button type="button" class="btn btn-outline-secondary" (click)="toggleFullscreen()">{{ fullscreen ? 'Kecilkan' : 'Perbesar' }}</button>
-            </div>
-          </div>
-        </div>
-        <div class="map-search-row p-2 border-bottom d-flex" *ngIf="searchOpen">
-          <input
-            type="text"
-            class="form-control form-control-sm mr-2"
-            placeholder="Cari nama kawasan atau provinsi..."
-            [(ngModel)]="searchQuery"
-            (keydown.enter)="doSearch()" />
-          <button type="button" class="btn btn-sm btn-primary" (click)="doSearch()">Cari</button>
-        </div>
-        <p class="text-danger small px-3 pt-2 mb-0" *ngIf="searchMiss">Tidak ditemukan — coba nama lain.</p>
-        <div class="card-body p-0">
-          <div class="sebaran-body">
-            <dgt-kawasan-map
-              *ngIf="geoView === 'dasar'"
-              [kawasan]="kawasan"
-              [selectedId]="selectedKawasanId"
-              [showHpl]="hplVisible"
-              (select)="selectKawasan($event)">
-            </dgt-kawasan-map>
-
-            <div class="geo-grid-pad p-3" *ngIf="geoView === 'grid'">
-              <div class="mb-3">
-                <button type="button" class="btn btn-sm mr-2" [class.btn-secondary]="showHPL" [class.btn-outline-secondary]="!showHPL" (click)="showHPL = !showHPL">Layer HPL</button>
-                <button type="button" class="btn btn-sm" [class.btn-secondary]="showSHM" [class.btn-outline-secondary]="!showSHM" (click)="showSHM = !showSHM">Layer SHM</button>
-              </div>
-              <div class="province-grid">
-                <div
-                  class="prov-tile"
-                  *ngFor="let p of provinces"
-                  [class.selected]="selectedProv === p.nama"
-                  (click)="selectProv(p)"
-                  role="button">
-                  <div class="p-name font-weight-bold">{{ p.nama }}</div>
-                  <div class="p-count text-muted small mb-2">{{ p.count }} kawasan</div>
-                  <div class="layer hpl" *ngIf="showHPL" [style.width.%]="provHplPct(p)"></div>
-                  <div class="layer shm" *ngIf="showSHM" [style.width.%]="provShmPct(p)"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Per-kawasan layer catalogue, overlaid on the map only (dasar view) — collapsible,
-             "select all" master checkbox, one row per kawasan toggling its polygon on the map. -->
-        <div class="map-layer-catalog" *ngIf="geoView === 'dasar'" [class.collapsed]="layerCollapsed">
-          <div class="map-layer-catalog-head">
-            <label class="map-layer-item map-layer-all">
-              <input type="checkbox" [checked]="layerAllChecked" [indeterminate]="layerIndeterminate" (change)="onLayerAllToggle($any($event.target).checked)" />
-              <span class="nm">Layer Kawasan</span><span class="ct">{{ kawasan.length }}</span>
-            </label>
-            <button type="button" class="map-layer-collapse" title="Ciutkan daftar layer" (click)="toggleLayerCollapse()">
-              <svg class="chev" [class.rotated]="layerCollapsed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-          </div>
-          <div class="map-layer-catalog-list">
-            <!-- "Batas HPL" — a dashed boundary-outline overlay (no fill), ports DGT.md's "land
-                 legality (HPL/SHM geospatial overlay)" module theme; see kawasan-map.component.ts
-                 showHpl input. Not a kawasan row, hence the divider under it. -->
-            <label class="map-layer-item layer-divider">
-              <input type="checkbox" [checked]="hplVisible" (change)="onHplToggle($any($event.target).checked)" />
-              <span class="map-layer-dot map-layer-dot-outline"></span>
-              <span class="nm">Batas HPL</span>
-              <span class="ct">{{ kawasan.length }} bidang</span>
-            </label>
-            <label class="map-layer-item" *ngFor="let k of kawasan">
-              <input type="checkbox" [checked]="layerVisible[k.id]" (change)="onLayerToggle(k.id, $any($event.target).checked)" />
-              <span class="map-layer-dot" [style.background]="stageColorHex[k.tahap]"></span>
-              <span class="nm">{{ k.nama }}</span>
-              <span class="ct">{{ k.provinsi }}</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- "you are here" locator inset — a static basemap snapshot, dasar view only. -->
-        <div class="map-locator" *ngIf="geoView === 'dasar'">
-          <img src="assets/basemap-indonesia.jpg" alt="Peta lokasi Indonesia" />
-          <span class="loc-dot" *ngIf="locatorPos as pos" [style.left.%]="pos.xPct" [style.top.%]="pos.yPct"></span>
         </div>
       </div>
 
-      <ng-container *ngIf="!fullscreen">
-        <ng-container *ngTemplateOutlet="detailPanelTpl"></ng-container>
-      </ng-container>
-    </div>
-
-    <div class="col-lg-4 mb-4" *ngIf="!(fullscreen && panelsHidden)">
-      <ng-container *ngIf="fullscreen">
-        <ng-container *ngTemplateOutlet="detailPanelTpl"></ng-container>
-      </ng-container>
-
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h2 class="h6 font-weight-bold mb-0">Kawasan Teratas &amp; Terendah</h2>
-          <span class="small text-muted">indeks 5T</span>
-        </div>
-        <div class="card-body">
-          <ng-container *ngIf="filteredSummary.length; else noSummary">
-            <ng-container *ngIf="summaryIsShort; else splitSummary">
-              <div class="rank-divider small text-muted font-weight-bold mb-2">Peringkat</div>
-              <div class="rank-row d-flex justify-content-between align-items-center py-1" *ngFor="let k of summaryAll; let i = index" (click)="selectKawasan(k)" role="button">
-                <span class="text-muted mr-2">#{{ i + 1 }}</span>
-                <span class="flex-grow-1">
-                  <span class="d-block">{{ k.nama }}</span>
-                  <span class="d-block small text-muted">{{ k.provinsi }}</span>
-                </span>
-                <span class="font-weight-bold" [class.text-success]="k.indeks5t >= 60" [class.text-danger]="k.indeks5t < 60">{{ k.indeks5t }}</span>
-              </div>
-            </ng-container>
-            <ng-template #splitSummary>
-              <div class="rank-divider small text-muted font-weight-bold mb-2">Teratas</div>
-              <div class="rank-row d-flex justify-content-between align-items-center py-1" *ngFor="let k of summaryTop" (click)="selectKawasan(k)" role="button">
-                <span class="flex-grow-1">
-                  <span class="d-block">{{ k.nama }}</span>
-                  <span class="d-block small text-muted">{{ k.provinsi }}</span>
-                </span>
-                <span class="font-weight-bold text-success">{{ k.indeks5t }}</span>
-              </div>
-              <div class="rank-divider small text-muted font-weight-bold mt-3 mb-2">Terendah</div>
-              <div class="rank-row d-flex justify-content-between align-items-center py-1" *ngFor="let k of summaryBottom" (click)="selectKawasan(k)" role="button">
-                <span class="flex-grow-1">
-                  <span class="d-block">{{ k.nama }}</span>
-                  <span class="d-block small text-muted">{{ k.provinsi }}</span>
-                </span>
-                <span class="font-weight-bold text-danger">{{ k.indeks5t }}</span>
-              </div>
-            </ng-template>
-          </ng-container>
-          <ng-template #noSummary><p class="text-muted mb-0">Tidak ada kawasan pada area ini.</p></ng-template>
-        </div>
+      <div class="ringkasan-section" *ngIf="sCurve as sc">
+        <div class="ringkasan-section-title">Kurva S &mdash; Rencana vs Realisasi Anggaran</div>
+        <dgt-dual-line-chart [labels]="sc.labels" [s1]="sc.rencana" [s2]="sc.realisasi" [width]="300" [height]="150"></dgt-dual-line-chart>
       </div>
 
-      <div class="card mb-4" id="geoEwsPanel">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h2 class="h6 font-weight-bold mb-0">Peringatan Dini (EWS)</h2>
-          <span class="small text-muted">{{ tickerItems.length }} aktif</span>
+      <div class="ringkasan-section" id="geoEwsSummary">
+        <div class="ringkasan-section-title d-flex justify-content-between">
+          <span>Peringatan Dini (EWS)</span>
+          <span class="text-muted">{{ visibleAlerts.length }} total</span>
         </div>
-        <div class="card-body">
-          <div class="ews-item d-flex mb-3" *ngFor="let a of alerts" [class.ack]="a.ack">
+        <div class="ews-summary-grid">
+          <div class="ews-summary-cell" *ngFor="let c of ewsCategories">
+            <dgt-severity-badge [severity]="severityOf(c.sev)" [label]="c.count.toString()"></dgt-severity-badge>
+            <span class="ews-summary-label">{{ c.category }}</span>
+          </div>
+        </div>
+        <div class="ews-list">
+          <div class="ews-item d-flex" *ngFor="let a of visibleAlerts" [class.ack]="a.ack">
             <dgt-severity-badge class="mr-2" [severity]="severityOf(a.sev)" [label]="severityLabel(a.sev)"></dgt-severity-badge>
             <div class="ews-body flex-grow-1">
               <div class="t font-weight-bold small">{{ a.title }}</div>
@@ -298,30 +169,27 @@
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary align-self-start ml-2" (click)="toggleAck(a.id)">{{ a.ack ? 'Dibuka' : 'Tandai' }}</button>
           </div>
-          <p class="text-muted mb-0" *ngIf="!alerts.length">Tidak ada peringatan aktif.</p>
-        </div>
-      </div>
-
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h2 class="h6 font-weight-bold mb-0">Asisten AI</h2>
-          <span class="small text-muted">tanya cepat</span>
-        </div>
-        <div class="card-body">
-          <dgt-chat-panel mode="compact"></dgt-chat-panel>
+          <p class="text-muted mb-0" *ngIf="!visibleAlerts.length">Tidak ada peringatan pada kategori terpilih.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="ticker-bar mt-2 py-2 px-2">
-    <div class="ticker-track">
-      <ng-container *ngIf="tickerItems.length; else allClear">
-        <span *ngFor="let a of tickerItems; let last = last">
-          <b>[{{ a.sev === 'high' ? 'TINGGI' : (a.sev === 'med' ? 'SEDANG' : 'RENDAH') }}]</b> {{ a.title }} — {{ a.detail }}<span *ngIf="!last">&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp;</span>
-        </span>
-      </ng-container>
-      <ng-template #allClear>Tidak ada peringatan dini aktif saat ini — seluruh kawasan dalam kondisi terpantau normal.</ng-template>
-    </div>
+  <!-- Bottom floating toolbar: recenter + live zoom controls only — no dead icons for features
+       this app doesn't have (3D, settings, etc. — see the component's doc comment). -->
+  <div class="geo-bottom-toolbar">
+    <button type="button" class="geo-tool-btn" title="Kembalikan tampilan ke seluruh kawasan" (click)="resetView()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+    </button>
+    <span class="geo-tool-sep"></span>
+    <button type="button" class="geo-tool-btn" title="Perkecil" (click)="zoomOut()">&minus;</button>
+    <span class="geo-zoom-readout">{{ mapZoom.toFixed(1) }}</span>
+    <button type="button" class="geo-tool-btn" title="Perbesar" (click)="zoomIn()">+</button>
+  </div>
+
+  <!-- Bottom status bar: live map center — no fabricated "sumber peta"/agency attribution beyond
+       what Leaflet's own OpenStreetMap control already shows in the map's corner. -->
+  <div class="geo-status-bar">
+    <span>Lat: {{ mapCenter.lat.toFixed(4) }} &middot; Long: {{ mapCenter.lng.toFixed(4) }}</span>
   </div>
 </div>

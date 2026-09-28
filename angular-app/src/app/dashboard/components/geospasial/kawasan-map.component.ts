@@ -7,10 +7,12 @@ import { Kawasan, STAGE_COLOR_HEX, kawasanAreaLatLngs } from '../../services/das
  * `renderDasar()` live-map branch of dashboard/index.html (search `L.map(`)
  * as a standalone child component. The CSP static-basemap fallback
  * (`renderDasarStatic()`) is still NOT ported here — it was specifically a
- * Claude-Artifact-preview workaround, irrelevant to a real deployment — but
- * the same static image now backs the separate locator inset (see
- * `GeospasialComponent`/`assets/basemap-indonesia.jpg`), which IS part of
- * the live UI regardless of Leaflet availability.
+ * Claude-Artifact-preview workaround, irrelevant to a real deployment. The
+ * "you are here" static-image locator inset that used to reuse this same
+ * basemap snapshot (`assets/basemap-indonesia.jpg`) was dropped when
+ * `GeospasialComponent` went full-bleed (see its own PORT_NOTES.md /
+ * doc comment) — this map now fills the whole page, so a locator inset no
+ * longer serves a purpose.
  *
  * Each kawasan is drawn as an actual irregular polygon area
  * (`kawasanAreaLatLngs()`), not a point marker — ports a later revision of
@@ -40,7 +42,16 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
    *  theme). Defaults off so components other than Geospasial that reuse this map (e.g. Ekonomi &
    *  Investasi Kawasan's wilayah-coloured map) aren't affected unless they opt in. */
   @Input() showHpl = false;
+  /** Leaflet's own topright +/− control — on by default (unchanged behaviour for the Ekonomi &
+   *  Investasi Kawasan module, which also uses this component). The redesigned Geospasial page sets
+   *  this false and drives zoom from its own floating bottom toolbar instead, via `zoomIn()`/
+   *  `zoomOut()`/`resetView()` below. */
+  @Input() showZoomControl = true;
   @Output() select = new EventEmitter<Kawasan>();
+  /** Fires once after the initial view is set, then again on every pan/zoom (Leaflet's 'moveend') —
+   *  a plain object, not `L.LatLng`, so a consumer doesn't need its own Leaflet import just to read
+   *  this. */
+  @Output() viewChange = new EventEmitter<{ zoom: number; center: { lat: number; lng: number } }>();
 
   @ViewChild('mapEl', { static: true }) mapElRef!: ElementRef<HTMLDivElement>;
 
@@ -56,7 +67,9 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       attributionControl: false,
       zoomControl: false
     }).setView([-2.2, 118], 5);
-    L.control.zoom({ position: 'topright' }).addTo(this.map);
+    if (this.showZoomControl) {
+      L.control.zoom({ position: 'topright' }).addTo(this.map);
+    }
     L.control.attribution({ position: 'bottomright' }).addTo(this.map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -65,6 +78,9 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }).addTo(this.map);
 
     this.plotAreas();
+
+    this.map.on('moveend', () => this.emitView());
+    this.emitView();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -125,6 +141,42 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       this.map.remove();
       this.map = null;
     }
+  }
+
+  /** Backs the Geospasial page's own floating bottom-toolbar zoom buttons (used instead of
+   *  Leaflet's built-in control when `showZoomControl` is false). */
+  zoomIn(): void {
+    if (this.map) {
+      this.map.zoomIn();
+    }
+  }
+
+  zoomOut(): void {
+    if (this.map) {
+      this.map.zoomOut();
+    }
+  }
+
+  /** Re-fits the view to every plotted kawasan — same bounds calculation `plotAreas()` uses on
+   *  load, callable again later from a "recenter" toolbar button. */
+  resetView(): void {
+    if (!this.map || !this.kawasan.length) {
+      return;
+    }
+    const bounds = L.latLngBounds(this.kawasan.map(k => [k.lat, k.lon] as [number, number]));
+    this.map.fitBounds(bounds, { padding: [22, 22] });
+  }
+
+  getZoom(): number {
+    return this.map ? this.map.getZoom() : 0;
+  }
+
+  private emitView(): void {
+    if (!this.map) {
+      return;
+    }
+    const center = this.map.getCenter();
+    this.viewChange.emit({ zoom: this.map.getZoom(), center: { lat: center.lat, lng: center.lng } });
   }
 
   private plotAreas(): void {

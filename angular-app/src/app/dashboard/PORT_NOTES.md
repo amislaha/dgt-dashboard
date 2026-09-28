@@ -200,60 +200,86 @@ Everything below lives under `src/app/dashboard/`.
 
 ## Geospasial — what's in, what's deliberately different
 
-**Update**: `GeospasialComponent` now ports the **current**
-`dashboard/index.html` Geospasial module, not the older layout CLAUDE.md's
-own "Architecture" section still describes — that section is itself stale
-(see the flag it already carries). CLAUDE.md should be updated to match,
-but as of this pass it has not been (out of scope for this component).
+**Update (latest)**: `GeospasialComponent` was rewritten a second time, from
+the card/two-column layout described further below to a full-bleed map with
+floating panels — on request, from a "DGT DSS" reference mockup. This is a
+**structural** rewrite only; no data model changes. CLAUDE.md's own
+"Architecture of dashboard/index.html" section is now stale for Geospasial in
+two independent ways (see its own already-acknowledged staleness note) —
+neither this pass nor the previous one has updated it; still an open TODO.
 
-DSS toolbar (Site/Periode context chips + a real Area `<select>` + an alert
-chip that scrolls to the EWS panel — no page title/description above it, per
-the source's own "no header for dashboard app"), a horizontally-scrolling
-**17-item IKU chip row** (`.stg-strip`/`.stg-strip-row` class names kept from
-the older STG-tile strip, same as the source) with a shared expandable
-detail box, a two-column `row`/`col-lg-8`+`col-lg-4` layout with the map
-panel + tabbed "Detail Kawasan" (Profil/Tabel/Grafik/Foto) + a collapsible
-per-kawasan **layer catalogue** overlay on the left, and
-Summary/EWS/AI-chat panels (no more Komoditas panel — removed in the source)
-on the right, plus a `.ticker-bar` marquee of unacknowledged alerts.
+What the new layout keeps from the reference: a full-bleed `KawasanMapComponent`
+(`showZoomControl=false`, its own bottom-toolbar zoom buttons drive it instead
+via new `zoomIn()`/`zoomOut()`/`resetView()`/`getZoom()` methods and a
+`(viewChange)` output added for this), a floating top filter toolbar, a
+floating left "Manajemen Lapisan" layer panel, a floating right "Ringkasan
+Seluruh Kawasan" summary panel, and a floating bottom toolbar + status bar.
 
-**Fullscreen mode** ("Perbesar panel peta"): the map panel takes over the
-viewport; the filter toolbar and the Detail Kawasan panel need to appear in
-a different spot while it's active. The original does this via direct DOM
-manipulation (`insertBefore`/`appendChild` on raw nodes). This port achieves
-the same visual result the idiomatic Angular way instead: `toolbarTpl` and
-`detailPanelTpl` are each declared once (`<ng-template>`) and instantiated
-in whichever of two spots is active via `*ngTemplateOutlet`, gated by the
-`fullscreen` flag — no manual DOM reparenting. Layering (the fixed map panel
-vs. everything floating on top of it) is done with the same z-index-context
-approach as the original, just expressed over Bootstrap's `.row`/`.card`
-instead of the hand-rolled `.grid-2`/`.panel`.
+What was **adapted rather than faked**, since the reference assumes data this
+app doesn't have:
+- The reference groups kawasan into 4 types (WPT/SKP/SP/KTM) and shows a
+  6-category EWS breakdown. The real `Kawasan.tipe` union only has 2 values
+  (SKP/KPB), and there are only 5 `EwsAlert`s total. The left/right panels
+  group by whatever's real instead — 2 type toggles, and EWS categories
+  derived by splitting each alert's own title on its em dash
+  (`ewsCategoryOf()` in the component), which happens to yield 5 distinct
+  one-alert-each categories from the current 5 alerts (adding more alerts
+  with a shared prefix would naturally group them for real).
+- The reference's map is a 3D photorealistic satellite render with marker
+  clustering; this is still the existing 2D Leaflet + OSM polygon-area map,
+  just filling the page instead of sitting in a bordered card panel — no
+  paid 3D/satellite tile provider is wired into this repo.
+- The reference's bottom toolbar has several icons with no obvious real
+  feature behind them in this app (a 3D toggle, a settings gear, a clock, an
+  images icon, a theme toggle — the shell already has its own global
+  `<dgt-theme-toggle>`). Left out rather than shipped as dead buttons, same
+  "don't fake a working control" precedent already used elsewhere in this
+  module (Site/Periode) and in `ekonomi` (see that module's own bullet). The
+  bottom toolbar here only has a recenter button and zoom −/+ with a live
+  zoom-level readout.
+- The reference's bottom status bar shows a fixed "408 km" distance and a
+  named-agency map/data source attribution this app can't honestly claim.
+  Replaced with the map's actual live center lat/long (from `(viewChange)`).
 
-The map itself now draws each kawasan as a real irregular polygon area
-(`kawasanAreaLatLngs()`, ported to `DashboardDataService`) instead of a
-point marker, colored by `STAGE_COLOR_HEX` — see `KawasanMapComponent`.
-`fitBounds()` to every kawasan's coordinates on load (fixing SKP Salor,
-Papua, previously off-screen at a fixed center/zoom) and a `topright`
-zoom control (clearing space for the layer catalogue) are ported too.
+What was **dropped outright** (not shown in the reference, and this was an
+explicit "change layout completely" request): the 17-item IKU chip strip, the
+fullscreen/expand toggle (`toggleFullscreen()`/`panelsHidden`/`toolbarTpl`/
+`detailPanelTpl` `ngTemplateOutlet` relocation — "without expand button life
+before"), the tabbed Detail Kawasan card (Profil/Tabel/Grafik/Foto), the
+Kawasan Teratas & Terendah ranking card, the embedded `<dgt-chat-panel>`, the
+Grid Provinsi map view, the `.ticker-bar` marquee, and the static-basemap
+"you are here" locator inset (see `KawasanMapComponent`'s own doc comment —
+it no longer makes sense once the map itself is full-bleed). Selecting a
+kawasan is now done by clicking its name in the left layer list or its
+polygon on the map; a real Provinsi `<select>` in the top toolbar now
+actually filters which kawasan are plotted (previously only Ekonomi's
+already-separate map had a real region filter).
 
-The "you are here" **locator inset** is also now ported — previously
-skipped because it depended on the CSP-only static-basemap fallback image.
-That image (`BASEMAP_STATIC_SRC`, a real OSM zoom-5 mosaic baked into the
-original as base64) was extracted and committed as a real file,
-`src/assets/basemap-indonesia.jpg`, rather than inlined as a giant base64
-string in a component — same pixels, more usable in an editor/diff. The
-`mercatorPx()`/`basemapPct()` projection math that places the dot on it
-lives in `DashboardDataService` alongside `BASEMAP_BBOX`.
+The map's own polygon-per-kawasan drawing (`kawasanAreaLatLngs()`,
+`STAGE_COLOR_HEX` fill, `fitBounds()` on load) is unchanged — see the
+"pre-rewrite" paragraphs below, still accurate for that part.
+
+### Pre-rewrite layout (superseded, kept for history)
+
+The previous version had a DSS toolbar (Site/Periode context chips + a real
+Area `<select>` + an alert chip that scrolls to the EWS panel), a
+horizontally-scrolling 17-item IKU chip row with a shared expandable detail
+box, a two-column `row`/`col-lg-8`+`col-lg-4` layout with the map panel +
+tabbed "Detail Kawasan" + a collapsible per-kawasan layer catalogue overlay
+on the left, and Summary/EWS/AI-chat panels on the right, plus a ticker
+marquee — and a fullscreen mode built via `*ngTemplateOutlet` template
+relocation rather than the original's direct DOM manipulation. All of this
+is gone now; see above for what replaced it.
 
 ## Simplifications vs. the source (beyond the Geospasial note above)
 
-- **Photos** (`kawasan.foto`, `assets/kawasan/`, `cityIllustration()`):
-  the `Kawasan` interface keeps an optional `foto` field and the Geospasial
-  "Foto" detail tab renders it when present, but no `foto` values or asset
-  files were carried over, and the SVG-skyline `cityIllustration()` fallback
-  was not ported (the tab shows a plain "no photo" placeholder instead). Low
-  priority to backfill since the real asset files live outside this Angular
-  workspace.
+- **Photos** (`kawasan.foto`, `assets/kawasan/`, `cityIllustration()`): the
+  `Kawasan` interface keeps an optional `foto` field, but no `foto` values or
+  asset files were carried over, and the SVG-skyline `cityIllustration()`
+  fallback was not ported. Nothing in the Angular app currently renders this
+  field at all — Geospasial's own "Foto" detail tab that used to show it was
+  dropped in its latest rewrite (see "Geospasial" above). Low priority to
+  backfill since the real asset files live outside this Angular workspace.
 - **`mapX`/`mapY`** on `kawasan` were dropped — CLAUDE.md itself calls these
   "unused leftovers from a removed locator inset," so there was nothing to
   port.
