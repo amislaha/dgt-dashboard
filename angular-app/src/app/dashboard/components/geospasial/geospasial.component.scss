@@ -1,11 +1,16 @@
-// Full-bleed page — cancels dashboard-shell's `.main` padding (space-6 top/left/right, a fixed
-// 3rem bottom, see dashboard-shell.component.scss) the same negative-margin trick already used for
-// the Data Manager's Wilayah/Submission map pages, then fills the viewport height directly (this
-// shell has no topbar to subtract, unlike that other page).
+// Full-bleed page. A negative-margin trick against `.main`'s own padding (the technique used for
+// the Data Manager's Wilayah/Submission map pages) isn't enough here on its own: `RailNavComponent`'s
+// collapsed `.rail` goes to `width: 0` but doesn't hide its label text, which then wraps into a very
+// tall single-character column at zero available width — that inflates `.shell`'s flex-row height
+// (and therefore `.main`, stretched to match it) well past one viewport's worth, on every dashboard
+// page, collapsed or not. Every other page already scrolls normally so that excess was never visible;
+// a `height: 100vh` block sized against `.main`'s padding box would leave that excess as dead
+// scrollable space below it. `position: fixed; inset: 0` sidesteps the whole thing — sized purely
+// against the real viewport, independent of whatever size `.main` ends up being.
 .geo-shell {
-  position: relative;
-  margin: calc(var(--space-6, 1.5rem) * -1) calc(var(--space-6, 1.5rem) * -1) -3rem calc(var(--space-6, 1.5rem) * -1);
-  height: 100vh;
+  position: fixed;
+  inset: 0;
+  z-index: 10; // stays under the rail/.rail-fab/theme-toggle's 1029–1031 range
   overflow: hidden;
   background: var(--sidebar, #0b1220);
 }
