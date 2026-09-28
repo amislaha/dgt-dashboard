@@ -2,28 +2,31 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { NavItem } from '../../core/models/nav-item.model';
-import { entityIconSvg } from '../config/entity-configs';
-import { APPROVAL_ICON_SVG, SUBMISSION_ICON_SVG } from '../config/submission-icons';
-import { ENTITY_ORDER } from '../models/entity-key.model';
+import { ENTITY_CONFIGS } from '../config/entity-configs';
+import { ENTITY_ORDER, MASTER_DATA_ORDER, SETTINGS_ORDER } from '../models/entity-key.model';
 import { Submission } from '../models/submission.model';
 import { EntityRegistryService } from '../services/entity-registry.service';
 import { SubmissionService } from '../services/submission.service';
 
+export interface HeaderNavItem {
+  id: string;
+  label: string;
+  sub?: string;
+}
+
 /**
- * Routed wrapper around `<dgt-app-shell>` for the data-manager feature module
- * (see the port spec's "DataManagerShellComponent"). Builds the rail's
- * `NavItem[]` from the 8 entity configs (ports `renderRail()`'s per-entity
- * button + live entry-count badge from the original data-manager/index.html)
- * plus a "Persetujuan & Pengajuan" section (Pengajuan Data/Approval) that
- * isn't part of that CRUD tool's original spec — placed FIRST, above the 8
- * entities, with the entity list following its own "Data Master" divider (on
- * request; each group's lead item carries the `sectionLabel` that draws its
- * divider — see RailNavComponent). Translates `(select)` into a child-route
- * navigation, and derives the active rail id from the current child route's
- * `data.entityKey` (entities) or `data.navId` (the two submission routes)
- * instead of keeping separate state — there is exactly one `state.tab`-
- * equivalent, the router.
+ * Routed shell for the data-manager feature module — a top HEADER bar (brand + "Wilayah" +
+ * "Submission & Approval" as flat links, "Data Master"/"Settings" as `ngbDropdown` menus) over a
+ * `<router-outlet>`, replacing the earlier `<dgt-app-shell>` (rail sidebar + topbar) layout on
+ * request (see PORT_NOTES.md). No longer builds a `NavItem[]`/rail at all — `RailNavComponent` and
+ * `AppShellComponent` are untouched and still used by the dashboard module, just not by this one
+ * any more.
+ *
+ * `activeId` is still derived from the current child route's data — `data.navId` (the two
+ * non-entity destinations, "wilayah" and "submission") takes priority over `data.entityKey` (every
+ * plain `EntityListComponent` route, including `wilayah`'s own embedded one, which sets both — see
+ * data-manager-routing.module.ts) so the header highlights "Wilayah", not the `wpt` entity key that
+ * happens to back it.
  */
 @Component({
   selector: 'dgt-data-manager-shell',
@@ -31,9 +34,12 @@ import { SubmissionService } from '../services/submission.service';
   styleUrls: ['./data-manager-shell.component.scss']
 })
 export class DataManagerShellComponent implements OnInit, OnDestroy {
-  navItems: NavItem[] = [];
   activeId: string | null = null;
   totalLabel = '0 entri tersimpan (lokal)';
+  masterItems: HeaderNavItem[] = [];
+  settingsItems: HeaderNavItem[] = [];
+  wilayahSub = '0 wilayah';
+  submissionSub = '0 pengajuan';
 
   private readonly subscriptions: Subscription[] = [];
 
@@ -45,42 +51,24 @@ export class DataManagerShellComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const entries = ENTITY_ORDER.map(key => this.registry.get(key));
+    const allEntries = ENTITY_ORDER.map(key => this.registry.get(key));
 
     this.subscriptions.push(
-      combineLatest([...entries.map(entry => entry.service.changes), this.submissions.changes]).subscribe(results => {
-        const lists = results.slice(0, entries.length) as any[][];
-        const submissionList = results[entries.length] as Submission[];
+      combineLatest([...allEntries.map(entry => entry.service.changes), this.submissions.changes]).subscribe(results => {
+        const lists = results.slice(0, allEntries.length) as any[][];
+        const submissionList = results[allEntries.length] as Submission[];
+
+        const countByKey: { [key: string]: number } = {};
+        ENTITY_ORDER.forEach((key, i) => (countByKey[key] = lists[i].length));
+
+        this.masterItems = MASTER_DATA_ORDER.map(key => ({ id: key, label: ENTITY_CONFIGS[key].label, sub: `${countByKey[key]} entri` }));
+        this.settingsItems = SETTINGS_ORDER.map(key => ({ id: key, label: ENTITY_CONFIGS[key].label, sub: `${countByKey[key]} entri` }));
+        this.wilayahSub = `${countByKey.wpt} wilayah`;
+
         const pendingCount = submissionList.filter(s => s.status === 'PENDING').length;
+        this.submissionSub = pendingCount ? `${pendingCount} menunggu` : `${submissionList.length} pengajuan`;
 
-        const entityItems: NavItem[] = entries.map((entry, i) => ({
-          id: entry.config.key,
-          label: entry.config.label,
-          sub: `${lists[i].length} entri`,
-          icon: entityIconSvg(entry.config.key),
-          // First entity item opens the divider back to "Data Master", since the Persetujuan &
-          // Pengajuan section above now leads the rail (moved to the top on request).
-          ...(i === 0 ? { sectionLabel: 'Data Master' } : {})
-        }));
-
-        this.navItems = [
-          {
-            id: 'pengajuan',
-            label: 'Pengajuan Data',
-            sub: `${submissionList.length} pengajuan`,
-            icon: SUBMISSION_ICON_SVG,
-            sectionLabel: 'Persetujuan & Pengajuan'
-          },
-          {
-            id: 'approval',
-            label: 'Approval',
-            sub: pendingCount ? `${pendingCount} menunggu` : 'Tidak ada yang menunggu',
-            icon: APPROVAL_ICON_SVG
-          },
-          ...entityItems
-        ];
-
-        const total = lists.reduce((sum, list) => sum + list.length, 0);
+        const total = ENTITY_ORDER.reduce((sum, key) => sum + countByKey[key], 0);
         this.totalLabel = `${total} entri tersimpan (lokal)`;
       })
     );
@@ -104,6 +92,6 @@ export class DataManagerShellComponent implements OnInit, OnDestroy {
     while (child && child.firstChild) {
       child = child.firstChild;
     }
-    this.activeId = (child && (child.snapshot.data.entityKey || child.snapshot.data.navId)) || null;
+    this.activeId = (child && (child.snapshot.data.navId || child.snapshot.data.entityKey)) || null;
   }
 }

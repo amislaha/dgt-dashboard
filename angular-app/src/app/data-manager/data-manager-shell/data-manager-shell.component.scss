@@ -1,4 +1,111 @@
-// Ports the original topbar's `.topbar-stat`/`.dot` pill (data-manager/index.html).
+// Header-nav shell replacing the earlier <dgt-app-shell> rail+topbar layout (see component doc
+// comment). `.dm-header`/`.dm-nav-link`/`.dm-dropdown-*` are this module's own — no shared
+// header-nav component exists yet since only data-manager uses this layout so far (dashboard keeps
+// its sidebar).
+.dm-shell {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.dm-header {
+  min-height: var(--topbar-h, 56px);
+  flex-wrap: wrap;
+}
+
+.dm-nav {
+  gap: var(--space-1, .25rem);
+}
+
+.dm-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem .85rem;
+  border-radius: var(--radius-sm, .375rem);
+  color: var(--text-dim);
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+
+  &:hover {
+    background: var(--muted);
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  &.active {
+    background: var(--primary-soft);
+    color: var(--text);
+  }
+}
+
+.dm-nav-badge {
+  font-size: .65rem;
+  font-weight: 700;
+  color: var(--text-faint);
+  background: var(--muted);
+  border-radius: 999px;
+  padding: .05rem .45rem;
+}
+
+.dm-nav-dropdown {
+  // ngbDropdown's host stays a plain inline block; the toggle button reuses .dm-nav-link so it
+  // looks identical to the flat "Wilayah"/"Submission & Approval" links beside it.
+  display: inline-block;
+}
+
+.dm-dropdown-toggle::after {
+  margin-left: .4rem;
+}
+
+.dm-dropdown-menu {
+  min-width: 260px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: .35rem;
+  border-color: var(--border);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, .12));
+}
+
+.dm-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  border-radius: var(--radius-sm, .375rem);
+  font-size: .8rem;
+  color: var(--text-dim);
+  padding: .5rem .65rem;
+
+  &:hover,
+  &:focus {
+    background: var(--muted);
+    color: var(--text);
+  }
+
+  &.active {
+    background: var(--primary-soft);
+    color: var(--text);
+    font-weight: 600;
+  }
+}
+
+.dm-item-sub {
+  font-size: .68rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.dm-content {
+  padding: var(--page-px);
+  overflow-x: hidden;
+}
+
+// Ports the original topbar's `.topbar-stat`/`.dot` pill (data-manager/index.html) — unchanged
+// from before this shell moved off <dgt-app-shell>.
 .topbar-stat {
   background: var(--muted);
   border: 1px solid var(--border);

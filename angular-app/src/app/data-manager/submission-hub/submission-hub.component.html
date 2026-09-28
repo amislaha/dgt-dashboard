@@ -1,0 +1,10 @@
+<dgt-page-head title="Submission & Approval" description="Ajukan perubahan data master dan tinjau persetujuannya di satu tempat.">
+</dgt-page-head>
+
+<div class="seg mb-3">
+  <button type="button" [class.sel]="tab === 'pengajuan'" (click)="setTab('pengajuan')">Pengajuan Data</button>
+  <button type="button" [class.sel]="tab === 'approval'" (click)="setTab('approval')">Approval</button>
+</div>
+
+<dgt-submission *ngIf="tab === 'pengajuan'"></dgt-submission>
+<dgt-submission-approval *ngIf="tab === 'approval'"></dgt-submission-approval>

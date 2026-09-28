@@ -2,14 +2,14 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DataManagerShellComponent } from './data-manager-shell/data-manager-shell.component';
 import { EntityListComponent } from './entity-list/entity-list.component';
-import { SubmissionApprovalComponent } from './submission-approval/submission-approval.component';
-import { SubmissionComponent } from './submission/submission.component';
+import { SubmissionHubComponent } from './submission-hub/submission-hub.component';
+import { WilayahComponent } from './wilayah/wilayah.component';
 
 /**
- * One route per entity, all rendered by the same generic `EntityListComponent`
- * distinguished by `data.entityKey` — not 8 separate routed components.
- * Default route redirects to `wpt`, the top of the WPT → SKP → SP hierarchy,
- * per the port spec.
+ * One route per entity (23 of the 24 `EntityKey`s — `wpt` is served by `WilayahComponent`
+ * instead, see below), all rendered by the same generic `EntityListComponent` distinguished by
+ * `data.entityKey` — not one routed component per entity. Default route redirects to `wilayah`,
+ * the header nav's landing page (moved here from `wpt` on request — see PORT_NOTES.md).
  *
  * Routes are written as inline literals rather than built via a small
  * `entityRoute(path, key)` helper (as this started out) because Angular 8's
@@ -23,8 +23,10 @@ export const routes: Routes = [
     path: '',
     component: DataManagerShellComponent,
     children: [
-      { path: '', redirectTo: 'wpt', pathMatch: 'full' },
-      { path: 'wpt', component: EntityListComponent, data: { entityKey: 'wpt' } },
+      { path: '', redirectTo: 'wilayah', pathMatch: 'full' },
+      // `wpt`'s own entity list is embedded inside WilayahComponent (see its doc comment) rather
+      // than routed to directly, so `data.entityKey: 'wpt'` lives here instead of on a `wpt` path.
+      { path: 'wilayah', component: WilayahComponent, data: { entityKey: 'wpt', navId: 'wilayah' } },
       { path: 'skp', component: EntityListComponent, data: { entityKey: 'skp' } },
       { path: 'sp', component: EntityListComponent, data: { entityKey: 'sp' } },
       { path: 'komoditi', component: EntityListComponent, data: { entityKey: 'komoditi' } },
@@ -32,10 +34,26 @@ export const routes: Routes = [
       { path: 'satker', component: EntityListComponent, data: { entityKey: 'satker' } },
       { path: 'personel', component: EntityListComponent, data: { entityKey: 'personel' } },
       { path: 'iku', component: EntityListComponent, data: { entityKey: 'iku' } },
-      // "Persetujuan & Pengajuan" rail section — a separate group from the 8 entity routes above,
-      // so `data.navId` (not `entityKey`) is what DataManagerShellComponent matches against.
-      { path: 'pengajuan', component: SubmissionComponent, data: { navId: 'pengajuan' } },
-      { path: 'approval', component: SubmissionApprovalComponent, data: { navId: 'approval' } }
+      { path: 'wilayahStatus', component: EntityListComponent, data: { entityKey: 'wilayahStatus' } },
+      { path: 'wilayahCategory', component: EntityListComponent, data: { entityKey: 'wilayahCategory' } },
+      { path: 'wilayahTarget', component: EntityListComponent, data: { entityKey: 'wilayahTarget' } },
+      { path: 'project', component: EntityListComponent, data: { entityKey: 'project' } },
+      { path: 'satkerType', component: EntityListComponent, data: { entityKey: 'satkerType' } },
+      { path: 'strategicTarget', component: EntityListComponent, data: { entityKey: 'strategicTarget' } },
+      { path: 'ikuDefinition', component: EntityListComponent, data: { entityKey: 'ikuDefinition' } },
+      { path: 'ikuNko', component: EntityListComponent, data: { entityKey: 'ikuNko' } },
+      { path: 'ikuStatus', component: EntityListComponent, data: { entityKey: 'ikuStatus' } },
+      { path: 'produkJenis', component: EntityListComponent, data: { entityKey: 'produkJenis' } },
+      { path: 'recommendationCategory', component: EntityListComponent, data: { entityKey: 'recommendationCategory' } },
+      { path: 'profilCategory', component: EntityListComponent, data: { entityKey: 'profilCategory' } },
+      { path: 'profilGroup', component: EntityListComponent, data: { entityKey: 'profilGroup' } },
+      { path: 'profilMeasure', component: EntityListComponent, data: { entityKey: 'profilMeasure' } },
+      { path: 'applicationSettings', component: EntityListComponent, data: { entityKey: 'applicationSettings' } },
+      { path: 'approvalFlow', component: EntityListComponent, data: { entityKey: 'approvalFlow' } },
+      // "Submission & Approval" — a single header item covering what used to be two rail entries
+      // (Pengajuan Data, Approval); `data.navId` (not `entityKey`) is what
+      // DataManagerShellComponent matches against, same as `wilayah` above.
+      { path: 'submission', component: SubmissionHubComponent, data: { navId: 'submission' } }
     ]
   }
 ];

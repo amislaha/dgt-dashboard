@@ -152,33 +152,101 @@ not something to launder away:
 
 ## Persetujuan & Pengajuan (added later, not in `data-manager/index.html`)
 
-A second rail section — `Pengajuan Data` and `Approval` — added on request,
-sitting ABOVE the 8 entity items (moved there on request; originally shipped
-below them), each group separated by its own divider (`NavItem.sectionLabel`,
-see `RailNavComponent`) — "Persetujuan & Pengajuan" leads the rail, "Data
-Master" heads the entity list below it. No equivalent exists in the original
-static tool; this is new to the Angular port only.
+Originally a second rail section (`Pengajuan Data` and `Approval` as two
+separate items, divider-separated from the 8 entities — see git history for
+that iteration). **Superseded by the header-nav rework below**: the rail is
+gone entirely, and the two pages were consolidated into one tab-switched page
+under a single header item, "Submission & Approval" (`submission-hub/`).
 
 - `models/submission.model.ts` / `services/submission.service.ts`: a
-  `Submission` log (propose create/update/delete on one of the 8 entities,
+  `Submission` log (propose create/update/delete on one of the entities,
   optional photo evidence, PENDING/APPROVED/REJECTED status + history),
   localStorage-backed under the same `dgt-data-manager:` prefix as the entity
   services but *not* an `EntityCrudService` subclass — review is a status
   transition (`review()`), not a field-by-field `update()`.
-- `submission/` (Pengajuan Data): create a submission (entity + create/
+- `submission/` (Pengajuan Data tab): create a submission (entity + create/
   update/delete + target picker + summary + multi-image upload via
   `FileReader`→data-URL, same encoding geomapping uses for its
   `Feature.images`) and list the queue.
-- `submission-approval/` (Approval): filter by status, expand a row to see
-  the images/summary/history, approve/reject (rejection requires a note)/
+- `submission-approval/` (Approval tab): filter by status, expand a row to
+  see the images/summary/history, approve/reject (rejection requires a note)/
   reset to pending — the same shape as geomapping's `ApprovalComponent`
   ported down to `Submission` instead of `GeomappingFeature`.
-- **Deliberately not "full" geomapping**, per the request: no map, no
-  drawing/GPS capture, no structured questionnaire — only the image-evidence
-  + approval-workflow slice. **Also deliberately not wired to auto-apply**:
-  approving a submission here does not call the target `EntityCrudService`
-  create/update/delete — it only records the decision. Wiring that up (so
-  "Setujui" actually mutates the entity) is a natural follow-up once someone
-  confirms that's wanted, since an auto-apply path needs to decide how to
-  turn `Submission.summary` (free text) into a typed `EntityConfig.fields`
-  payload.
+- `submission-hub/` (`SubmissionHubComponent`, routed at `submission`): owns
+  the single `dgt-page-head` and a `.seg` tab switcher, embedding
+  `<dgt-submission>`/`<dgt-submission-approval>` as plain child components
+  (neither depends on `ActivatedRoute`, so this needed no changes to either
+  beyond swapping their own `dgt-page-head` for a plain `.dm-toolbar` div —
+  see each component's `.html`).
+- **Deliberately not "full" geomapping**, per the original request: no map,
+  no drawing/GPS capture, no structured questionnaire — only the
+  image-evidence + approval-workflow slice. **Also deliberately not wired to
+  auto-apply**: approving a submission here does not call the target
+  `EntityCrudService` create/update/delete — it only records the decision.
+  Wiring that up (so "Setujui" actually mutates the entity) is a natural
+  follow-up once someone confirms that's wanted, since an auto-apply path
+  needs to decide how to turn `Submission.summary` (free text) into a typed
+  `EntityConfig.fields` payload.
+
+## Header nav + Wilayah map + 16 more masters (added later, on request)
+
+A larger rework, on request, replacing the sidebar entirely and adding many
+more master-data entities:
+
+- **Sidebar → header.** `DataManagerShellComponent` no longer uses
+  `<dgt-app-shell>`/`<dgt-rail-nav>` (see its own doc comment) — it now
+  renders its own header bar: "Wilayah" and "Submission & Approval" as flat
+  links, "Data Master" and "Settings" as `ngbDropdown` menus
+  (`@ng-bootstrap/ng-bootstrap`, already a dependency but unused elsewhere
+  until now — added to `SharedModule`'s imports/exports). `RailNavComponent`/
+  `AppShellComponent`/`ShellModule` are untouched; only this module stopped
+  using them (dashboard's own shell is unaffected). The `NavItem.sectionLabel`
+  divider capability added for the rail-based iteration of this feature is
+  now dormant (nothing sets it any more) but left in place in
+  `RailNavComponent` as a harmless, still-documented, still-generic capability
+  rather than reverted — dashboard or a future rail could still use it.
+- **Wilayah is now the default page and a map.** The route redirect changed
+  from `wpt` to `wilayah`. `wilayah/wilayah.component.ts` is the new routed
+  component for that path (`data: { entityKey: 'wpt', navId: 'wilayah' }`) —
+  it renders `wilayah/wilayah-map/` (a real Leaflet map, same
+  `import * as L from 'leaflet'` pattern as dashboard's `KawasanMapComponent`/
+  geomapping's `GeomappingMapComponent`, both already in this codebase) above
+  an embedded, *unmodified* `<dgt-entity-list>`. That embed works because
+  `EntityListComponent` isn't behind its own `<router-outlet>` here — its
+  injected `ActivatedRoute` resolves to `WilayahComponent`'s own route, whose
+  `data.entityKey: 'wpt'` is exactly what it needs. `Wpt` gained optional
+  `lat`/`lon` fields (illustrative real-world-approximate coordinates, same
+  fabrication convention as the dashboard's `kawasan` array — seeded in
+  `data/seed-data.ts`) for the map to plot; a record missing either is simply
+  not pinned. The WPT entity itself, its config, its service, and its
+  `skp`/`sp` children are otherwise completely unchanged — only its rail
+  label became "Wilayah" and it moved off the "Data Master" dropdown onto the
+  header directly (see entity-key.model.ts's `MASTER_DATA_ORDER`, which
+  excludes `wpt`).
+- **16 new master entities**, for the "Data Master"/"Settings" dropdowns:
+  Wilayah Status/Category/Target, Project, Satker Type, Strategic Target, IKU
+  Definition/NKO/Status, Produk Jenis, Recommendation Category, Profil
+  Category/Group/Measure, Application Settings, Approval Flow (full list and
+  grouping in `entity-key.model.ts`'s `MASTER_DATA_ORDER`/`SETTINGS_ORDER`).
+  None had real fields specified, so every one of them is a **placeholder**:
+  `models/simple-master.model.ts`'s single shared `SimpleMaster { id; nama;
+  keterangan? }` shape, `config/entity-configs.ts`'s `simpleMasterConfig()`
+  factory (one call per entity — a name + textarea form, one `nama` column),
+  and `services/simple-master-crud.service.ts` (16 tiny
+  `EntityCrudService<SimpleMaster>` subclasses in one file, since they're
+  otherwise identical boilerplate — unlike the original 8, which each got
+  their own model/service file because their shapes actually differ). No seed
+  rows (`EMPTY_SIMPLE_MASTER_SEED`) — there's no source spreadsheet for these
+  yet, so an empty list is more honest than inventing illustrative data for a
+  schema that's itself a stand-in. Swapping any one of these for a real,
+  dedicated model/config once its fields are known is the same mechanical
+  process this file's own top section describes for "Produk Unggulan".
+  `Komoditi`→"Komoditas", `Program`→"Transmigration Program", and
+  `Iku`→"IKU Indicator" were relabelled to match the requested menu wording;
+  their keys, storage, and fields are untouched.
+- `EntityKey` grew from 8 to 24 members; `EntityRegistryService`'s
+  constructor/registry map grew to match (mechanical — one param, one entry
+  per entity, per its own doc comment). `ENTITY_ORDER` is still "every
+  entity" (used for the aggregate total); `MASTER_DATA_ORDER`/
+  `SETTINGS_ORDER` are the two new orderings the header's dropdowns actually
+  render, both excluding `wpt`.

@@ -5,6 +5,7 @@ import { Komoditi } from '../models/komoditi.model';
 import { Personel } from '../models/personel.model';
 import { Program } from '../models/program.model';
 import { Satker } from '../models/satker.model';
+import { SimpleMaster } from '../models/simple-master.model';
 import { Skp } from '../models/skp.model';
 import { Sp } from '../models/sp.model';
 import { Wpt } from '../models/wpt.model';
@@ -22,8 +23,8 @@ import { Wpt } from '../models/wpt.model';
 
 const WPT_CONFIG: EntityConfig<Wpt> = {
   key: 'wpt',
-  label: 'WPT',
-  sub: 'Wilayah Pengembangan Transmigrasi — kawasan induk tingkat tertinggi',
+  label: 'Wilayah',
+  sub: 'Wilayah Pengembangan Transmigrasi (WPT) — kawasan induk tingkat tertinggi, ditampilkan di peta Wilayah',
   idPrefix: 'wpt',
   titleField: 'nama',
   columns: [
@@ -35,7 +36,9 @@ const WPT_CONFIG: EntityConfig<Wpt> = {
     { name: 'nama', label: 'Nama WPT', type: 'text', required: true, placeholder: 'cth. WPT Lunang Silaut' },
     { name: 'provinsi', label: 'Provinsi', type: 'text', required: true },
     { name: 'kabupaten', label: 'Kabupaten/Kota', type: 'text', required: true },
-    { name: 'geo', label: 'Koordinat/Geo (opsional)', type: 'text', required: false, hint: 'Kolom ini ada di ERD sumber tapi belum berisi data pada baris manapun.' }
+    { name: 'lat', label: 'Latitude (untuk peta)', type: 'number', required: false, row: 'geo' },
+    { name: 'lon', label: 'Longitude (untuk peta)', type: 'number', required: false, row: 'geo' },
+    { name: 'geo', label: 'Koordinat/Geo (opsional, teks bebas dari ERD)', type: 'text', required: false, hint: 'Kolom ini ada di ERD sumber tapi belum berisi data pada baris manapun.' }
   ]
 };
 
@@ -86,7 +89,7 @@ const SP_CONFIG: EntityConfig<Sp> = {
 
 const KOMODITI_CONFIG: EntityConfig<Komoditi> = {
   key: 'komoditi',
-  label: 'Komoditi',
+  label: 'Komoditas',
   sub: 'Kategori komoditi unggulan kawasan',
   idPrefix: 'kom',
   titleField: 'nama',
@@ -96,7 +99,7 @@ const KOMODITI_CONFIG: EntityConfig<Komoditi> = {
 
 const PROGRAM_CONFIG: EntityConfig<Program> = {
   key: 'program',
-  label: 'Program',
+  label: 'Transmigration Program',
   sub: '5 program utama transmigrasi (Tuntas, Lokal, Patriot, Karya Nusa, Gotong Royong)',
   idPrefix: 'prog',
   titleField: 'jenisTransmigrasi',
@@ -153,7 +156,7 @@ const PERSONEL_CONFIG: EntityConfig<Personel> = {
 
 const IKU_CONFIG: EntityConfig<Iku> = {
   key: 'iku',
-  label: 'IKU',
+  label: 'IKU Indicator',
   sub: 'Indikator Kinerja Utama per satker/direktorat',
   idPrefix: 'iku',
   titleField: 'indikator',
@@ -179,6 +182,46 @@ const IKU_CONFIG: EntityConfig<Iku> = {
   ]
 };
 
+/**
+ * Generic placeholder config for the 16 entities added later for the header nav's "Data Master"/
+ * "Settings" groups (see entity-key.model.ts's MASTER_DATA_ORDER/SETTINGS_ORDER and
+ * PORT_NOTES.md) — every one of these is currently just a `SimpleMaster` name + optional
+ * description, since none had real fields specified yet. Mechanical to extend later: swap the
+ * `SimpleMaster`-typed config for a dedicated one once an entity's real fields are known, same as
+ * "Produk Unggulan" would be added per this file's own top comment.
+ */
+function simpleMasterConfig(key: EntityKey, label: string, sub: string, idPrefix: string): EntityConfig<SimpleMaster> {
+  return {
+    key,
+    label,
+    sub,
+    idPrefix,
+    titleField: 'nama',
+    columns: [{ key: 'nama', label: 'Nama', sortable: true }],
+    fields: [
+      { name: 'nama', label: 'Nama', type: 'text', required: true },
+      { name: 'keterangan', label: 'Keterangan (opsional)', type: 'textarea', required: false }
+    ]
+  };
+}
+
+const WILAYAH_STATUS_CONFIG = simpleMasterConfig('wilayahStatus', 'Wilayah Status', 'Status klasifikasi wilayah (placeholder — belum ada field khusus)', 'wst');
+const WILAYAH_CATEGORY_CONFIG = simpleMasterConfig('wilayahCategory', 'Wilayah Category', 'Kategori klasifikasi wilayah (placeholder)', 'wct');
+const WILAYAH_TARGET_CONFIG = simpleMasterConfig('wilayahTarget', 'Wilayah Target', 'Target/sasaran per wilayah (placeholder)', 'wtg');
+const PROJECT_CONFIG = simpleMasterConfig('project', 'Project', 'Proyek/kegiatan di kawasan transmigrasi (placeholder)', 'prj');
+const SATKER_TYPE_CONFIG = simpleMasterConfig('satkerType', 'Satker Type', 'Jenis/tipe satuan kerja (placeholder)', 'stp');
+const STRATEGIC_TARGET_CONFIG = simpleMasterConfig('strategicTarget', 'Strategic Target', 'Sasaran strategis (placeholder — lihat juga Iku.sasaranStrategis)', 'sgt');
+const IKU_DEFINITION_CONFIG = simpleMasterConfig('ikuDefinition', 'IKU Definition', 'Definisi/penjelasan indikator kinerja utama (placeholder)', 'ikd');
+const IKU_NKO_CONFIG = simpleMasterConfig('ikuNko', 'IKU NKO', 'Nilai Kinerja Organisasi per IKU (placeholder)', 'ikn');
+const IKU_STATUS_CONFIG = simpleMasterConfig('ikuStatus', 'IKU Status', 'Status pencapaian IKU (placeholder)', 'iks');
+const PRODUK_JENIS_CONFIG = simpleMasterConfig('produkJenis', 'Produk Jenis', 'Jenis produk unggulan (placeholder)', 'pdj');
+const RECOMMENDATION_CATEGORY_CONFIG = simpleMasterConfig('recommendationCategory', 'Recommendation Category', 'Kategori rekomendasi kebijakan (placeholder)', 'rec');
+const PROFIL_CATEGORY_CONFIG = simpleMasterConfig('profilCategory', 'Profil Category', 'Kategori profil kawasan (placeholder)', 'pfc');
+const PROFIL_GROUP_CONFIG = simpleMasterConfig('profilGroup', 'Profil Group', 'Pengelompokan profil kawasan (placeholder)', 'pfg');
+const PROFIL_MEASURE_CONFIG = simpleMasterConfig('profilMeasure', 'Profil Measure', 'Ukuran/indikator profil kawasan (placeholder)', 'pfm');
+const APPLICATION_SETTINGS_CONFIG = simpleMasterConfig('applicationSettings', 'Application Settings', 'Pengaturan aplikasi (placeholder — belum berupa form singleton)', 'aps');
+const APPROVAL_FLOW_CONFIG = simpleMasterConfig('approvalFlow', 'Approval Flow', 'Definisi alur/tahapan approval (placeholder)', 'apf');
+
 export const ENTITY_CONFIGS: { [key in EntityKey]: EntityConfig } = {
   wpt: WPT_CONFIG,
   skp: SKP_CONFIG,
@@ -187,15 +230,35 @@ export const ENTITY_CONFIGS: { [key in EntityKey]: EntityConfig } = {
   program: PROGRAM_CONFIG,
   satker: SATKER_CONFIG,
   personel: PERSONEL_CONFIG,
-  iku: IKU_CONFIG
+  iku: IKU_CONFIG,
+  wilayahStatus: WILAYAH_STATUS_CONFIG,
+  wilayahCategory: WILAYAH_CATEGORY_CONFIG,
+  wilayahTarget: WILAYAH_TARGET_CONFIG,
+  project: PROJECT_CONFIG,
+  satkerType: SATKER_TYPE_CONFIG,
+  strategicTarget: STRATEGIC_TARGET_CONFIG,
+  ikuDefinition: IKU_DEFINITION_CONFIG,
+  ikuNko: IKU_NKO_CONFIG,
+  ikuStatus: IKU_STATUS_CONFIG,
+  produkJenis: PRODUK_JENIS_CONFIG,
+  recommendationCategory: RECOMMENDATION_CATEGORY_CONFIG,
+  profilCategory: PROFIL_CATEGORY_CONFIG,
+  profilGroup: PROFIL_GROUP_CONFIG,
+  profilMeasure: PROFIL_MEASURE_CONFIG,
+  applicationSettings: APPLICATION_SETTINGS_CONFIG,
+  approvalFlow: APPROVAL_FLOW_CONFIG
 };
 
 /**
  * Small hand-drawn line-icon set, one per entity, ported from the original's
  * `ENTITY_ICONS`/`railIcon()` (24x24 viewBox, `currentColor` stroke) — purely
- * decorative, no bearing on the data model.
+ * decorative, no bearing on the data model. `Partial` (not one entry per
+ * `EntityKey`) because the header nav's dropdown rows (see
+ * DataManagerShellComponent) are plain text, not icon+label rail buttons —
+ * the 16 keys added for "Data Master"/"Settings" have no icon here, and
+ * `entityIconSvg()` falls back to '' rather than requiring one.
  */
-export const ENTITY_ICON_PATHS: { [key in EntityKey]: string } = {
+export const ENTITY_ICON_PATHS: Partial<{ [key in EntityKey]: string }> = {
   wpt: '<path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/>',
   skp: '<path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
   sp: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1V9"/>',
@@ -207,5 +270,9 @@ export const ENTITY_ICON_PATHS: { [key in EntityKey]: string } = {
 };
 
 export function entityIconSvg(key: EntityKey): string {
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ENTITY_ICON_PATHS[key] + '</svg>';
+  const pathData = ENTITY_ICON_PATHS[key];
+  if (!pathData) {
+    return '';
+  }
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + pathData + '</svg>';
 }

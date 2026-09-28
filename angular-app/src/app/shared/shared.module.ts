@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { RailNavComponent } from './components/rail-nav/rail-nav.component';
 import { TopbarComponent } from './components/topbar/topbar.component';
@@ -43,7 +44,7 @@ export const COMPONENTS = [
  */
 @NgModule({
   declarations: [...COMPONENTS, SafeHtmlPipe],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
-  exports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, ...COMPONENTS, SafeHtmlPipe]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NgbDropdownModule],
+  exports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NgbDropdownModule, ...COMPONENTS, SafeHtmlPipe]
 })
 export class SharedModule {}

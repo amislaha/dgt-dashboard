@@ -3,6 +3,7 @@ import { Komoditi } from '../models/komoditi.model';
 import { Personel } from '../models/personel.model';
 import { Program } from '../models/program.model';
 import { Satker } from '../models/satker.model';
+import { SimpleMaster } from '../models/simple-master.model';
 import { Skp } from '../models/skp.model';
 import { Sp } from '../models/sp.model';
 import { Wpt } from '../models/wpt.model';
@@ -17,17 +18,20 @@ import { Wpt } from '../models/wpt.model';
  * to the original so cross-referencing against the source file is easy.
  */
 
+// lat/lon are illustrative real-world approximate coordinates for each region's own kabupaten
+// (same fabrication convention as the dashboard's `kawasan` array), added so the Wilayah map page
+// (WilayahMapComponent) has something to plot — not surveyed points.
 export const WPT_SEED: Wpt[] = [
-  { id: 'wpt1', nama: 'WPT Lunang Silaut', provinsi: 'Sumatera Barat', kabupaten: 'Pesisir Selatan' },
-  { id: 'wpt2', nama: 'WPT Mesuji', provinsi: 'Lampung', kabupaten: 'Mesuji' },
-  { id: 'wpt3', nama: 'WPT Rasau Jaya', provinsi: 'Kalimantan Barat', kabupaten: 'Kubu Raya' },
-  { id: 'wpt4', nama: 'WPT Teluk Dalam', provinsi: 'Kalimantan Timur', kabupaten: 'Kutai Kartanegara' },
-  { id: 'wpt5', nama: 'WPT Batulicin', provinsi: 'Kalimantan Selatan', kabupaten: 'Tanah Bumbu' },
-  { id: 'wpt6', nama: 'WPT Maluku Tengah', provinsi: 'Maluku', kabupaten: 'Maluku Tengah' },
-  { id: 'wpt7', nama: 'WPT Tobadak', provinsi: 'Sulawesi Barat', kabupaten: 'Mamuju Tengah' },
-  { id: 'wpt8', nama: 'WPT Salor / Merauke', provinsi: 'Papua Selatan', kabupaten: 'Merauke' },
-  { id: 'wpt9', nama: 'WPT Timika / SP-Jagamin', provinsi: 'Papua Tengah', kabupaten: 'Mimika' },
-  { id: 'wpt10', nama: 'WPT Labuan Uki', provinsi: 'Sulawesi Utara', kabupaten: 'Bolaang Mongondow' }
+  { id: 'wpt1', nama: 'WPT Lunang Silaut', provinsi: 'Sumatera Barat', kabupaten: 'Pesisir Selatan', lat: -1.99, lon: 101.28 },
+  { id: 'wpt2', nama: 'WPT Mesuji', provinsi: 'Lampung', kabupaten: 'Mesuji', lat: -4.05, lon: 105.35 },
+  { id: 'wpt3', nama: 'WPT Rasau Jaya', provinsi: 'Kalimantan Barat', kabupaten: 'Kubu Raya', lat: -0.28, lon: 109.35 },
+  { id: 'wpt4', nama: 'WPT Teluk Dalam', provinsi: 'Kalimantan Timur', kabupaten: 'Kutai Kartanegara', lat: 0.1, lon: 117.1 },
+  { id: 'wpt5', nama: 'WPT Batulicin', provinsi: 'Kalimantan Selatan', kabupaten: 'Tanah Bumbu', lat: -3.45, lon: 115.63 },
+  { id: 'wpt6', nama: 'WPT Maluku Tengah', provinsi: 'Maluku', kabupaten: 'Maluku Tengah', lat: -3.25, lon: 129.35 },
+  { id: 'wpt7', nama: 'WPT Tobadak', provinsi: 'Sulawesi Barat', kabupaten: 'Mamuju Tengah', lat: -1.9, lon: 119.35 },
+  { id: 'wpt8', nama: 'WPT Salor / Merauke', provinsi: 'Papua Selatan', kabupaten: 'Merauke', lat: -8.47, lon: 140.4 },
+  { id: 'wpt9', nama: 'WPT Timika / SP-Jagamin', provinsi: 'Papua Tengah', kabupaten: 'Mimika', lat: -4.55, lon: 136.89 },
+  { id: 'wpt10', nama: 'WPT Labuan Uki', provinsi: 'Sulawesi Utara', kabupaten: 'Bolaang Mongondow', lat: 0.5, lon: 124.1 }
 ];
 
 export const SKP_SEED: Skp[] = [
@@ -146,3 +150,11 @@ export const IKU_SEED: Iku[] = [
   // same policy the original file's own header comment states.
   { id: 'iku23', pic: 'Ir. Rajumber Prihatin, M.Si', sasaranStrategis: 'Persentase pemenuhan program pembangunan dan pengembangan kawasan transmigrasi', indikator: '(belum diberi kode/satker di sumber ERD — lengkapi saat diverifikasi)' }
 ];
+
+/**
+ * No seed rows for the 16 "Data Master"/"Settings" entities added later (see entity-key.model.ts,
+ * entity-configs.ts) — there's no source spreadsheet for these yet, unlike the 8 above, so an empty
+ * list is more honest than inventing illustrative rows for a schema (SimpleMaster: nama + optional
+ * keterangan) that's itself a placeholder pending real field requirements.
+ */
+export const EMPTY_SIMPLE_MASTER_SEED: SimpleMaster[] = [];
