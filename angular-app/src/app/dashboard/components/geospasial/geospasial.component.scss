@@ -31,11 +31,14 @@
 }
 
 // ---------- top filter toolbar ----------
+// width hugs its own content (on request — "header not fill width") rather than stretching to the
+// far edge of the viewport like the floating side panels do; only anchored top-left.
 .geo-top-toolbar {
   position: absolute;
   top: var(--space-4, 1rem);
   left: var(--space-4, 1rem);
-  right: var(--space-4, 1rem);
+  right: auto;
+  max-width: calc(100% - 2rem);
   z-index: 60;
   display: flex;
   align-items: center;
@@ -59,12 +62,22 @@
 
   select { padding: 0.32rem 0.55rem; font-size: 0.74rem; height: auto; }
 }
-.alert-chip {
-  display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700;
-  color: var(--text-dim); background: var(--muted); border: 1px solid var(--border);
-  border-radius: 999px; padding: 0.32rem 0.7rem; cursor: pointer; white-space: nowrap;
+// Toolbar's EWS entry point — an icon button with a small count badge (was a "Peringatan (N)" text
+// pill; a bell reads more like the rest of this toolbar's compact icon-first controls).
+.geo-bell-btn {
+  position: relative;
+  width: 30px; height: 30px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
+  background: var(--muted); border: 1px solid var(--border); border-radius: 50%;
+  color: var(--text-dim); cursor: pointer;
 
-  &.warn { color: var(--critical); background: var(--critical-soft); border-color: transparent; }
+  svg { width: 16px; height: 16px; }
+  &.warn { color: var(--critical); border-color: transparent; background: var(--critical-soft); }
+}
+.geo-bell-badge {
+  position: absolute; top: -4px; right: -4px; min-width: 15px; height: 15px; padding: 0 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 800; line-height: 1; color: #fff;
+  background: var(--critical); border-radius: 999px; border: 1.5px solid var(--card);
 }
 
 // ---------- floating side panels ----------
@@ -128,6 +141,10 @@
 }
 
 .geo-layer-search { margin-bottom: 0.65rem; }
+.geo-type-filter {
+  justify-content: space-between; margin-bottom: 0.75rem;
+  select { flex: 0 0 auto; }
+}
 
 // ---------- Manajemen Lapisan groups ----------
 .layer-group { margin-bottom: 0.85rem; }
@@ -151,6 +168,7 @@
   input { accent-color: var(--primary); flex: 0 0 auto; }
   .map-layer-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; border: 1px solid rgba(0,0,0,0.15); }
   .map-layer-dot.map-layer-dot-outline { background: transparent; border: 2px dashed var(--series-2); }
+  .map-layer-dot.map-layer-dot-fill { background: var(--good); border-color: transparent; }
   .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 500; }
   .nm-link:hover { text-decoration: underline; color: var(--primary); }
   .ct { flex: 0 0 auto; font-size: 0.64rem; color: var(--text-faint); max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -180,6 +198,26 @@
   b { color: var(--text); }
 }
 
+// ---------- Detail Kawasan (selected-kawasan compact profile) ----------
+.detail-kawasan-name { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+.detail-kawasan-sub { font-size: 0.72rem; color: var(--text-faint); margin-bottom: 0.5rem; }
+.detail-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.28rem 0; border-bottom: 1px solid var(--border-soft);
+  font-size: 0.76rem; color: var(--text-dim);
+
+  b { color: var(--text); }
+  &:last-of-type { border-bottom: none; }
+}
+.detail-stage-badge {
+  color: #fff; font-size: 0.68rem; font-weight: 700; padding: 0.12rem 0.55rem; border-radius: 999px;
+}
+.detail-legal { margin-top: 0.5rem; }
+.detail-legal-head {
+  display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.25rem;
+  b { color: var(--text); }
+}
+
 .ringkasan-section { margin-bottom: 0.9rem; }
 .ringkasan-section:last-child { margin-bottom: 0; }
 .ringkasan-section-title {
@@ -200,18 +238,21 @@
   b { color: var(--text); }
 }
 
+// Simplified (on request, "make it simple") — a plain colour dot + label + count per category,
+// no per-category bordered card or full alert list; just this grid plus the single highest-priority
+// alert below it (`.ews-top-alert`).
 .ews-summary-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem 0.6rem;
   margin-bottom: 0.6rem;
 }
 .ews-summary-cell {
-  display: flex; align-items: center; gap: 0.4rem; min-width: 0;
-  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.35rem 0.5rem;
+  display: flex; align-items: center; gap: 0.4rem; min-width: 0; padding: 0.15rem 0;
 }
-.ews-summary-label { font-size: 0.7rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ews-summary-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+.ews-summary-label { flex: 1 1 auto; font-size: 0.72rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ews-summary-count { flex: 0 0 auto; font-size: 0.72rem; font-weight: 700; color: var(--text); }
 
-.ews-list { display: flex; flex-direction: column; gap: 0.6rem; }
-.ews-item.ack { opacity: 0.55; }
+.ews-top-alert.ack { opacity: 0.55; }
 
 // ---------- bottom floating toolbar ----------
 .geo-bottom-toolbar {

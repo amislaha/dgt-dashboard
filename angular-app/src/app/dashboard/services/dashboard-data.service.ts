@@ -45,6 +45,11 @@ export interface SCurve {
   realisasi: (number | null)[];
 }
 
+export interface IndeksTrend {
+  labels: string[];
+  values: number[];
+}
+
 export interface Komoditas {
   nama: string;
   nilai: number;
@@ -120,15 +125,14 @@ export function seededRandom(seed: string): () => number {
   };
 }
 
-/** Ports `kawasanAreaLatLngs()` — a fabricated per-kawasan boundary "blob" (no real cadastral/HPL
- *  polygon data exists, see CLAUDE.md "Data layer"), an irregular ring generated deterministically
- *  from the kawasan's own id, roughly sized by its HPL extent. Longitude is corrected by
- *  cos(latitude) so the ring isn't visibly stretched east-west. Replaces a single-point circle
- *  marker with an actual area per kawasan on the live Leaflet map. */
-export function kawasanAreaLatLngs(k: Kawasan): [number, number][] {
-  const rnd = seededRandom(k.id + '-area');
+/** Shared ring-generator behind `kawasanAreaLatLngs()`/`kawasanShmLatLngs()` below — an irregular
+ *  polygon "blob" deterministically seeded from the kawasan's own id plus a suffix (so the two
+ *  layers don't trace an identical outline just scaled) and sized by whichever hectare figure is
+ *  passed in. Longitude is corrected by cos(latitude) so the ring isn't visibly stretched east-west. */
+function kawasanRing(k: Kawasan, hectares: number, seedSuffix: string): [number, number][] {
+  const rnd = seededRandom(k.id + seedSuffix);
   const points = 10;
-  const baseDeg = 0.5 + Math.sqrt(k.hplHa) / 350;
+  const baseDeg = 0.5 + Math.sqrt(hectares) / 350;
   const lonScale = 1 / Math.max(0.15, Math.cos((k.lat * Math.PI) / 180));
   const ring: [number, number][] = [];
   for (let i = 0; i < points; i++) {
@@ -137,6 +141,23 @@ export function kawasanAreaLatLngs(k: Kawasan): [number, number][] {
     ring.push([k.lat + Math.sin(angle) * r, k.lon + Math.cos(angle) * r * lonScale]);
   }
   return ring;
+}
+
+/** Ports `kawasanAreaLatLngs()` — a fabricated per-kawasan boundary "blob" (no real cadastral/HPL
+ *  polygon data exists, see CLAUDE.md "Data layer"), roughly sized by the kawasan's total HPL
+ *  extent. Replaces a single-point circle marker with an actual area per kawasan on the live
+ *  Leaflet map. */
+export function kawasanAreaLatLngs(k: Kawasan): [number, number][] {
+  return kawasanRing(k, k.hplHa, '-area');
+}
+
+/** The certified-SHM subset of the same HPL area — its own ring (not a literal sub-polygon of
+ *  `kawasanAreaLatLngs()`'s ring, since neither is real cadastral data anyway) sized by `shmHa`
+ *  instead of `hplHa`. Since `shmHa <= hplHa` always, this ring is always the smaller of the two,
+ *  which is enough for an illustrative "how much of the area is actually certified" overlay without
+ *  claiming a real sub-boundary. Backs `KawasanMapComponent`'s optional SHM layer. */
+export function kawasanShmLatLngs(k: Kawasan): [number, number][] {
+  return kawasanRing(k, k.shmHa, '-shm-area');
 }
 
 /** Ports `BASEMAP_BBOX`/`mercatorPx()`/`basemapPct()` — the Web Mercator projection math used to
@@ -164,18 +185,124 @@ export function basemapPct(lon: number, lat: number): { xPct: number; yPct: numb
   };
 }
 
-const KAWASAN: Kawasan[] = [
-  { id: 'k1', nama: 'SKP Salor', provinsi: 'Papua Selatan', kabupaten: 'Kabupaten Merauke', kecamatan: 5, desa: 9, tipe: 'SKP', tahap: 'Berkembang', populasi: 8420, indeks5t: 74, hplHa: 12500, shmHa: 9800, anggaranPct: 68, risiko: 'med', lat: -8.40, lon: 140.40 },
-  { id: 'k2', nama: 'KPB Rambutan', provinsi: 'Sumatera Selatan', kabupaten: 'Kabupaten Banyuasin', kecamatan: 8, desa: 14, tipe: 'KPB', tahap: 'Mandiri', populasi: 15230, indeks5t: 88, hplHa: 9800, shmHa: 9450, anggaranPct: 91, risiko: 'low', lat: -3.05, lon: 104.75 },
-  { id: 'k3', nama: 'SKP Towuti', provinsi: 'Sulawesi Tengah', kabupaten: 'Kabupaten Morowali', kecamatan: 4, desa: 7, tipe: 'SKP', tahap: 'Tumbuh', populasi: 5610, indeks5t: 58, hplHa: 7600, shmHa: 4100, anggaranPct: 45, risiko: 'high', lat: -1.50, lon: 120.70 },
-  { id: 'k4', nama: 'KPB Malinau', provinsi: 'Kalimantan Utara', kabupaten: 'Kabupaten Malinau', kecamatan: 6, desa: 10, tipe: 'KPB', tahap: 'Berkembang', populasi: 9870, indeks5t: 71, hplHa: 11200, shmHa: 8300, anggaranPct: 63, risiko: 'med', lat: 3.58, lon: 116.63 },
-  { id: 'k5', nama: 'SKP Tobadak', provinsi: 'Sulawesi Barat', kabupaten: 'Kabupaten Mamuju Tengah', kecamatan: 3, desa: 5, tipe: 'SKP', tahap: 'Rintisan', populasi: 2340, indeks5t: 39, hplHa: 5400, shmHa: 1200, anggaranPct: 22, risiko: 'high', lat: -2.32, lon: 119.15 },
-  { id: 'k6', nama: 'KPB Bathin III', provinsi: 'Jambi', kabupaten: 'Kabupaten Bungo', kecamatan: 9, desa: 15, tipe: 'KPB', tahap: 'Mandiri', populasi: 18110, indeks5t: 92, hplHa: 8900, shmHa: 8850, anggaranPct: 95, risiko: 'low', lat: -1.60, lon: 102.10 },
-  { id: 'k7', nama: 'SKP Bina Buay', provinsi: 'Bengkulu', kabupaten: 'Kabupaten Kaur', kecamatan: 4, desa: 6, tipe: 'SKP', tahap: 'Tumbuh', populasi: 4390, indeks5t: 55, hplHa: 6100, shmHa: 3200, anggaranPct: 41, risiko: 'med', lat: -3.80, lon: 102.30 },
-  { id: 'k8', nama: 'KPB Pulau Rimau', provinsi: 'Sumatera Selatan', kabupaten: 'Kabupaten Musi Banyuasin', kecamatan: 7, desa: 12, tipe: 'KPB', tahap: 'Berkembang', populasi: 11040, indeks5t: 76, hplHa: 9400, shmHa: 7700, anggaranPct: 70, risiko: 'low', lat: -2.85, lon: 104.55 },
-  { id: 'k9', nama: 'SKP Kobisonta', provinsi: 'Maluku Utara', kabupaten: 'Kabupaten Halmahera Tengah', kecamatan: 3, desa: 4, tipe: 'SKP', tahap: 'Rintisan', populasi: 1980, indeks5t: 34, hplHa: 4800, shmHa: 900, anggaranPct: 18, risiko: 'high', lat: -0.35, lon: 127.95 },
-  { id: 'k10', nama: 'KPB Air Terang', provinsi: 'Kalimantan Tengah', kabupaten: 'Kabupaten Seruyan', kecamatan: 5, desa: 8, tipe: 'KPB', tahap: 'Tumbuh', populasi: 6720, indeks5t: 61, hplHa: 8200, shmHa: 4600, anggaranPct: 48, risiko: 'med', lat: -1.50, lon: 113.50 }
+/** `nama`/`kabupaten`/`provinsi`/`kpb` below are real, copied verbatim from the user-provided
+ *  "Matriks 45 Kawasan Transmigrasi Prioritas Nasional Tahun 2025" spreadsheet (its `KAWASAN`/
+ *  `KABUPATEN`/`PROVINSI`/`KPB?` columns — `Y` in that last column means the kawasan has its own
+ *  KPB, otherwise it's SKP-only; a couple of provinces were spelled out from the sheet's
+ *  abbreviations, "NTB"/"NTT"/"Bangka Belitung" → their official full names, for consistency with
+ *  how every other province in this file is written). `lat`/`lon` are NOT from that spreadsheet
+ *  (it has none) — they're this port's own approximate kabupaten-level coordinate estimates, real
+ *  enough to place a pin in roughly the right spot on the basemap but not surveyed. Every other
+ *  field below (`tahap`/`populasi`/`indeks5t`/`hplHa`/`shmHa`/`anggaranPct`/`risiko`/`kecamatan`/
+ *  `desa`) is still fabricated/illustrative, same as the rest of this file's "Data layer" — derived
+ *  deterministically by `deriveKawasan()` below rather than hand-authored per row, the same
+ *  `seededRandom(id)` approach `profilDetailData()` already uses, so the numbers stay internally
+ *  consistent (shmHa <= hplHa, risiko trending down as tahap matures) without 45 rows of hand-tuned
+ *  figures to keep in sync. */
+interface KawasanSeed {
+  id: string;
+  nama: string;
+  kabupaten: string;
+  provinsi: string;
+  kpb: boolean;
+  lat: number;
+  lon: number;
+}
+
+const KAWASAN_SEEDS: KawasanSeed[] = [
+  { id: 'k1', nama: 'Rasau Jaya', kabupaten: 'Kubu Raya', provinsi: 'Kalimantan Barat', kpb: true, lat: -0.20, lon: 109.40 },
+  { id: 'k2', nama: 'Lagita', kabupaten: 'Bengkulu Utara', provinsi: 'Bengkulu', kpb: true, lat: -3.35, lon: 102.20 },
+  { id: 'k3', nama: 'Cahaya Baru', kabupaten: 'Barito Kuala', provinsi: 'Kalimantan Selatan', kpb: false, lat: -3.15, lon: 114.55 },
+  { id: 'k4', nama: 'Mahalona', kabupaten: 'Luwu Timur', provinsi: 'Sulawesi Selatan', kpb: false, lat: -2.55, lon: 121.35 },
+  { id: 'k5', nama: 'Tobadak', kabupaten: 'Mamuju Tengah', provinsi: 'Sulawesi Barat', kpb: false, lat: -2.32, lon: 119.15 },
+  { id: 'k6', nama: 'Lunang Silaut', kabupaten: 'Pesisir Selatan', provinsi: 'Sumatera Barat', kpb: true, lat: -2.15, lon: 101.15 },
+  { id: 'k7', nama: 'Telang', kabupaten: 'Banyuasin', provinsi: 'Sumatera Selatan', kpb: false, lat: -2.60, lon: 104.95 },
+  { id: 'k8', nama: 'Salor', kabupaten: 'Merauke', provinsi: 'Papua Selatan', kpb: false, lat: -8.40, lon: 140.40 },
+  { id: 'k9', nama: 'Jelai (Pulau Nibung)', kabupaten: 'Sukamara', provinsi: 'Kalimantan Tengah', kpb: false, lat: -2.65, lon: 111.15 },
+  { id: 'k10', nama: 'Pituriase', kabupaten: 'Sidenreng Rappang', provinsi: 'Sulawesi Selatan', kpb: true, lat: -3.75, lon: 119.85 },
+  { id: 'k11', nama: 'Petata', kabupaten: 'PALI', provinsi: 'Sumatera Selatan', kpb: true, lat: -3.35, lon: 103.85 },
+  { id: 'k12', nama: 'Parit Rambutan', kabupaten: 'Ogan Ilir', provinsi: 'Sumatera Selatan', kpb: false, lat: -3.30, lon: 104.60 },
+  { id: 'k13', nama: 'Tasifeto - Mandeu', kabupaten: 'Belu', provinsi: 'Nusa Tenggara Timur', kpb: true, lat: -9.10, lon: 124.90 },
+  { id: 'k14', nama: 'Selaut', kabupaten: 'Simeulue', provinsi: 'Aceh', kpb: true, lat: 2.55, lon: 96.10 },
+  { id: 'k15', nama: 'Selaparang', kabupaten: 'Lombok Timur', provinsi: 'Nusa Tenggara Barat', kpb: true, lat: -8.55, lon: 116.55 },
+  { id: 'k16', nama: 'Batu Betumpang', kabupaten: 'Bangka Selatan', provinsi: 'Kepulauan Bangka Belitung', kpb: false, lat: -2.90, lon: 106.30 },
+  { id: 'k17', nama: 'Sarudu Baras', kabupaten: 'Mamuju Utara', provinsi: 'Sulawesi Barat', kpb: true, lat: -1.15, lon: 119.65 },
+  { id: 'k18', nama: 'Bungku', kabupaten: 'Morowali', provinsi: 'Sulawesi Tengah', kpb: false, lat: -2.65, lon: 121.90 },
+  { id: 'k19', nama: 'Mutiara', kabupaten: 'Muna', provinsi: 'Sulawesi Tenggara', kpb: true, lat: -4.85, lon: 122.55 },
+  { id: 'k20', nama: 'Sumalata', kabupaten: 'Gorontalo Utara', provinsi: 'Gorontalo', kpb: true, lat: 0.95, lon: 122.15 },
+  { id: 'k21', nama: 'Salim Batu', kabupaten: 'Bulungan', provinsi: 'Kalimantan Utara', kpb: false, lat: 2.85, lon: 117.35 },
+  { id: 'k22', nama: 'Palolo', kabupaten: 'Sigi', provinsi: 'Sulawesi Tengah', kpb: true, lat: -1.15, lon: 120.15 },
+  { id: 'k23', nama: 'Gerbang Masperkasa', kabupaten: 'Sambas', provinsi: 'Kalimantan Barat', kpb: true, lat: 1.35, lon: 109.30 },
+  { id: 'k24', nama: 'Asinua/Routa', kabupaten: 'Konawe', provinsi: 'Sulawesi Tenggara', kpb: true, lat: -3.35, lon: 121.90 },
+  { id: 'k25', nama: 'Tampolere', kabupaten: 'Poso', provinsi: 'Sulawesi Tengah', kpb: false, lat: -1.60, lon: 120.85 },
+  { id: 'k26', nama: 'Kikim', kabupaten: 'Lahat', provinsi: 'Sumatera Selatan', kpb: false, lat: -3.65, lon: 103.35 },
+  { id: 'k27', nama: 'Ponu', kabupaten: 'Timor Tengah Utara', provinsi: 'Nusa Tenggara Timur', kpb: false, lat: -9.25, lon: 124.35 },
+  { id: 'k28', nama: 'Pulau Morotai', kabupaten: 'Morotai', provinsi: 'Maluku Utara', kpb: true, lat: 2.05, lon: 128.35 },
+  { id: 'k29', nama: 'Kobalima Timur', kabupaten: 'Malaka', provinsi: 'Nusa Tenggara Timur', kpb: true, lat: -9.30, lon: 124.75 },
+  { id: 'k30', nama: 'Kerang', kabupaten: 'Paser', provinsi: 'Kalimantan Timur', kpb: false, lat: -1.85, lon: 116.10 },
+  { id: 'k31', nama: 'Muting', kabupaten: 'Merauke', provinsi: 'Papua Selatan', kpb: true, lat: -7.85, lon: 140.35 },
+  { id: 'k32', nama: 'Senggi', kabupaten: 'Keerom', provinsi: 'Papua', kpb: false, lat: -3.05, lon: 140.75 },
+  { id: 'k33', nama: 'Tubbi Taramanu', kabupaten: 'Polewali Mandar', provinsi: 'Sulawesi Barat', kpb: false, lat: -3.20, lon: 119.15 },
+  { id: 'k34', nama: 'Anawua', kabupaten: 'Kolaka', provinsi: 'Sulawesi Tenggara', kpb: true, lat: -4.05, lon: 121.60 },
+  { id: 'k35', nama: 'Lamunti - Dadahup', kabupaten: 'Kapuas', provinsi: 'Kalimantan Tengah', kpb: true, lat: -2.85, lon: 114.45 },
+  { id: 'k36', nama: 'Ulumanda', kabupaten: 'Majene', provinsi: 'Sulawesi Barat', kpb: true, lat: -3.25, lon: 118.85 },
+  { id: 'k37', nama: 'Patlean', kabupaten: 'Halmahera Timur', provinsi: 'Maluku Utara', kpb: true, lat: 0.85, lon: 128.35 },
+  { id: 'k38', nama: 'Mambi Mehalaan', kabupaten: 'Mamasa', provinsi: 'Sulawesi Barat', kpb: false, lat: -2.90, lon: 119.30 },
+  { id: 'k39', nama: 'Sekayam - Entikong', kabupaten: 'Sanggau', provinsi: 'Kalimantan Barat', kpb: false, lat: 0.90, lon: 110.15 },
+  { id: 'k40', nama: 'Ketungau Hulu', kabupaten: 'Sintang', provinsi: 'Kalimantan Barat', kpb: false, lat: 0.85, lon: 112.25 },
+  { id: 'k41', nama: 'Sagea Waleh', kabupaten: 'Halmahera Tengah', provinsi: 'Maluku Utara', kpb: false, lat: 0.55, lon: 128.15 },
+  { id: 'k42', nama: 'Muara Takung - Kamang Baru', kabupaten: 'Sijunjung', provinsi: 'Sumatera Barat', kpb: false, lat: -0.60, lon: 100.95 },
+  { id: 'k43', nama: 'Pulau Bacan', kabupaten: 'Halmahera Selatan', provinsi: 'Maluku Utara', kpb: false, lat: -0.55, lon: 127.55 },
+  { id: 'k44', nama: 'Klamono - Segun', kabupaten: 'Sorong', provinsi: 'Papua Barat Daya', kpb: false, lat: -0.95, lon: 131.65 },
+  { id: 'k45', nama: 'Arut Selatan dan Kota Waringin Lama', kabupaten: 'Kota Waringin Barat', provinsi: 'Kalimantan Tengah', kpb: false, lat: -2.75, lon: 111.65 }
 ];
+
+/** Deterministically fabricates every field the spreadsheet doesn't provide, seeded off the
+ *  kawasan's own id so a given kawasan always gets the same numbers across reloads. `tahap` is
+ *  drawn first and every other field is band-derived from it (higher tahap → higher indeks5t/
+ *  anggaranPct/shmHa-share, lower risiko), so the fabricated figures at least read as internally
+ *  consistent with each other, the same property `profilDetailData()` maintains elsewhere in this
+ *  file. */
+function deriveKawasan(seed: KawasanSeed): Kawasan {
+  const rnd = seededRandom(seed.id);
+  const tahapRoll = rnd();
+  const tahap: Tahap = tahapRoll < 0.22 ? 'Rintisan' : tahapRoll < 0.52 ? 'Tumbuh' : tahapRoll < 0.82 ? 'Berkembang' : 'Mandiri';
+  const t = STAGES.indexOf(tahap);
+
+  const indeks5t = Math.max(15, Math.min(98, Math.round([30, 50, 68, 85][t] + (rnd() * 16 - 8))));
+  const populasi = Math.round(1800 + t * 2600 + rnd() * 4200);
+  const hplHa = Math.round(3200 + rnd() * 10800);
+  const shmShare = Math.min(0.97, Math.max(0.05, [0.18, 0.38, 0.62, 0.88][t] + (rnd() * 0.12 - 0.06)));
+  const shmHa = Math.round(hplHa * shmShare);
+  const anggaranPct = Math.max(8, Math.min(97, Math.round([20, 42, 66, 88][t] + (rnd() * 16 - 8))));
+  const riskRoll = rnd();
+  const risiko: Risiko =
+    t === 0 ? (riskRoll < 0.7 ? 'high' : 'med') :
+    t === 1 ? (riskRoll < 0.45 ? 'med' : riskRoll < 0.8 ? 'high' : 'low') :
+    t === 2 ? (riskRoll < 0.6 ? 'low' : 'med') :
+    riskRoll < 0.85 ? 'low' : 'med';
+
+  return {
+    id: seed.id,
+    nama: seed.nama,
+    provinsi: seed.provinsi,
+    kabupaten: seed.kabupaten,
+    kecamatan: 2 + Math.round(rnd() * 7),
+    desa: 3 + Math.round(rnd() * 12),
+    tipe: seed.kpb ? 'KPB' : 'SKP',
+    tahap,
+    populasi,
+    indeks5t,
+    hplHa,
+    shmHa,
+    anggaranPct,
+    risiko,
+    lat: seed.lat,
+    lon: seed.lon
+  };
+}
+
+const KAWASAN: Kawasan[] = KAWASAN_SEEDS.map(deriveKawasan);
 
 const S_CURVE: SCurve = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'],
@@ -258,6 +385,29 @@ export class DashboardDataService {
 
   getSCurve(): SCurve {
     return S_CURVE;
+  }
+
+  /** National average Indeks 5T over the last 12 months — computed from the current per-kawasan
+   *  `indeks5t` values (via `getNationalKPI().avgIndeks` as the Desember/current point) rather than
+   *  stored as its own hand-authored series, so it can't drift out of sync with the real dataset.
+   *  The 11 months before it are a smooth, deterministically-seeded ramp up to that current value —
+   *  there's no real historical time series behind this (the source data is a single snapshot), so
+   *  this is illustrative trend shape only, same "fabricated but internally consistent" treatment
+   *  as `profilDetailData()`. */
+  getIndeksTrend(): IndeksTrend {
+    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+    const current = this.getNationalKPI().avgIndeks;
+    const rnd = seededRandom('national-indeks-trend');
+    const start = Math.max(10, current - 16 - rnd() * 6);
+    const values = labels.map((_, i) => {
+      if (i === labels.length - 1) {
+        return current;
+      }
+      const frac = i / (labels.length - 1);
+      const eased = start + (current - start) * frac;
+      return Math.round(Math.max(0, Math.min(100, eased + (rnd() * 3 - 1.5))));
+    });
+    return { labels, values };
   }
 
   getKomoditas(): Komoditas[] {
@@ -460,9 +610,12 @@ export function profilDetailData(k: Kawasan): ProfilDetail {
    (Kalimantan Tengah especially) sit at a longitude that would otherwise misclassify them. */
 export type Wilayah = 'Barat' | 'Tengah' | 'Timur';
 const WILAYAH_BY_PROVINSI: { [provinsi: string]: Wilayah } = {
-  'Sumatera Selatan': 'Barat', Jambi: 'Barat', Bengkulu: 'Barat',
-  'Sulawesi Tengah': 'Tengah', 'Sulawesi Barat': 'Tengah', 'Kalimantan Utara': 'Tengah', 'Kalimantan Tengah': 'Tengah',
-  'Papua Selatan': 'Timur', 'Maluku Utara': 'Timur'
+  'Sumatera Selatan': 'Barat', Jambi: 'Barat', Bengkulu: 'Barat', 'Sumatera Barat': 'Barat', Aceh: 'Barat',
+  'Kalimantan Barat': 'Barat', 'Kepulauan Bangka Belitung': 'Barat',
+  'Sulawesi Tengah': 'Tengah', 'Sulawesi Barat': 'Tengah', 'Sulawesi Selatan': 'Tengah', 'Sulawesi Tenggara': 'Tengah',
+  Gorontalo: 'Tengah', 'Kalimantan Utara': 'Tengah', 'Kalimantan Tengah': 'Tengah', 'Kalimantan Selatan': 'Tengah',
+  'Kalimantan Timur': 'Tengah', 'Nusa Tenggara Barat': 'Tengah', 'Nusa Tenggara Timur': 'Tengah',
+  'Papua Selatan': 'Timur', 'Maluku Utara': 'Timur', Papua: 'Timur', 'Papua Barat Daya': 'Timur'
 };
 export const WILAYAH_COLOR_HEX: { [key in Wilayah]: string } = { Barat: '#c09546', Tengah: '#8e3b96', Timur: '#6b7a3a' };
 export function wilayahOf(k: Kawasan): Wilayah {

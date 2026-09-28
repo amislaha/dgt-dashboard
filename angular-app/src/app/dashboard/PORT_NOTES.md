@@ -42,10 +42,16 @@ Everything below lives under `src/app/dashboard/`.
   methods (no NgRx, per the spec — this data never changes at runtime except
   EWS ack state, which lives in its own service). All values are
   fabricated/illustrative, same as the source — not real ministry statistics.
-  - Ported **all 10** of the source's `kawasan` entries (not a trimmed
-    subset), field-for-field, since 10 was already within the suggested
-    8–12 range. `mapX`/`mapY` and `foto` were dropped — see "Simplifications"
-    below.
+  - **Update**: `kawasan` was later expanded from the original 10-entry mock
+    list to the real 45-kawasan matrix (on request, from a user-provided
+    "Matriks 45 Kawasan Transmigrasi Prioritas Nasional Tahun 2025" spreadsheet)
+    — `KAWASAN_SEEDS`'s own doc comment in `dashboard-data.service.ts` has the
+    full breakdown of what's now real (nama/kabupaten/provinsi/KPB flag) vs.
+    still fabricated (everything else, deterministically derived by
+    `deriveKawasan()`). `EwsService`'s alert titles were updated at the same
+    time, since they used to name kawasan (Kobisonta, Bina Buay, Air Terang)
+    that don't exist in the real 45. `mapX`/`mapY` and `foto` were dropped —
+    see "Simplifications" below.
   - `provinces` and `nationalKPI` are derived the same way the original does
     (reduced from `kawasan` at read time, not stored separately).
   - `ikuList`: all **17** of the source's IKU rows, consumed by the
@@ -200,13 +206,25 @@ Everything below lives under `src/app/dashboard/`.
 
 ## Geospasial — what's in, what's deliberately different
 
-**Update (latest)**: `GeospasialComponent` was rewritten a second time, from
-the card/two-column layout described further below to a full-bleed map with
-floating panels — on request, from a "DGT DSS" reference mockup. This is a
-**structural** rewrite only; no data model changes. CLAUDE.md's own
-"Architecture of dashboard/index.html" section is now stale for Geospasial in
-two independent ways (see its own already-acknowledged staleness note) —
-neither this pass nor the previous one has updated it; still an open TODO.
+**Update (latest, third pass)**: on request, after the full-bleed rewrite
+below landed: the 10→45 kawasan data expansion (see `DashboardDataService`'s
+own bullet above), a second legality layer (SHM, alongside HPL), a kawasan-type
+filter in the left panel, a "Detail Kawasan" card back in the right panel, the
+right panel's trend chart switched from budget to Indeks 5T, a simplified EWS
+summary (category grid + one top alert instead of the full list), the
+toolbar's alert count moved into a bell icon, and the top toolbar shrunk to
+its content width. Full rationale for each is in `GeospasialComponent`'s own
+doc comment ("**Second pass**" — the component's second pass, third overall
+counting the pre-full-bleed layout) rather than duplicated here.
+
+**Update (full-bleed rewrite)**: `GeospasialComponent` was rewritten a second
+time, from the card/two-column layout described further below to a full-bleed
+map with floating panels — on request, from a "DGT DSS" reference mockup. This
+was a **structural** rewrite only; no data model changes (those came later, in
+the pass above). CLAUDE.md's own "Architecture of dashboard/index.html"
+section is now stale for Geospasial in two independent ways (see its own
+already-acknowledged staleness note) — none of these passes has updated it;
+still an open TODO.
 
 What the new layout keeps from the reference: a full-bleed `KawasanMapComponent`
 (`showZoomControl=false`, its own bottom-toolbar zoom buttons drive it instead

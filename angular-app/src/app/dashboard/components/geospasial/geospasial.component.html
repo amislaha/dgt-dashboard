@@ -10,6 +10,7 @@
       [kawasan]="visibleKawasan"
       [selectedId]="selectedKawasanId"
       [showHpl]="hplVisible"
+      [showShm]="shmVisible"
       [showZoomControl]="false"
       (select)="selectKawasan($event)"
       (viewChange)="onMapView($event)">
@@ -34,8 +35,9 @@
       </select>
     </div>
     <span class="info-chip">Periode: 2026 &middot; TW1</span>
-    <button type="button" class="alert-chip" [class.warn]="activeAlertsCount > 0" (click)="scrollToEws()">
-      Peringatan ({{ activeAlertsCount }})
+    <button type="button" class="geo-bell-btn" [class.warn]="activeAlertsCount > 0" title="Peringatan Dini (EWS)" (click)="scrollToEws()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 4.5 1.2 7 2.3 8.3.4.5 0 1.2-.6 1.2H4.3c-.6 0-1-.7-.6-1.2C4.8 15 6 12.5 6 8Z"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      <span class="geo-bell-badge" *ngIf="activeAlertsCount > 0">{{ activeAlertsCount }}</span>
     </button>
   </div>
 
@@ -54,6 +56,15 @@
         class="form-control form-control-sm geo-layer-search"
         placeholder="Cari lapisan atau kawasan..."
         [(ngModel)]="layerSearchQuery" />
+
+      <div class="field-inline geo-type-filter">
+        <label for="geoTypeFilter">Tampilkan tipe</label>
+        <select id="geoTypeFilter" class="form-control form-control-sm" [(ngModel)]="typeFilter">
+          <option value="Semua">Semua</option>
+          <option value="SKP">SKP</option>
+          <option value="KPB">KPB</option>
+        </select>
+      </div>
 
       <div class="layer-group">
         <div class="layer-group-head">
@@ -79,14 +90,20 @@
 
       <div class="layer-group">
         <div class="layer-group-head">
-          <span class="nm">Batas HPL</span>
-          <span class="ct">{{ hplVisible ? 1 : 0 }}/1</span>
+          <span class="nm">Legalitas Lahan</span>
+          <span class="ct">{{ (hplVisible ? 1 : 0) + (shmVisible ? 1 : 0) }}/2</span>
         </div>
         <div class="layer-group-list">
           <label class="map-layer-item">
             <input type="checkbox" [checked]="hplVisible" (change)="toggleHpl($any($event.target).checked)" />
             <span class="map-layer-dot map-layer-dot-outline"></span>
             <span class="nm">Batas bidang HPL</span>
+            <span class="ct">{{ kawasan.length }} bidang</span>
+          </label>
+          <label class="map-layer-item">
+            <input type="checkbox" [checked]="shmVisible" (change)="toggleShm($any($event.target).checked)" />
+            <span class="map-layer-dot map-layer-dot-fill"></span>
+            <span class="nm">Area bersertifikat SHM</span>
             <span class="ct">{{ kawasan.length }} bidang</span>
           </label>
         </div>
@@ -119,6 +136,33 @@
     </div>
 
     <div class="geo-panel-body" *ngIf="!rightPanelCollapsed">
+      <div class="ringkasan-section">
+        <div class="ringkasan-section-title">Detail Kawasan</div>
+        <ng-container *ngIf="selectedKawasan as k; else noSelDetail">
+          <div class="detail-kawasan-name">{{ k.nama }}</div>
+          <div class="detail-kawasan-sub">{{ k.kabupaten }}, {{ k.provinsi }}</div>
+          <div class="detail-row"><span>Tipe</span><b>{{ k.tipe }}</b></div>
+          <div class="detail-row">
+            <span>Tahap</span>
+            <span class="detail-stage-badge" [style.background]="stageColorHex[k.tahap]">{{ k.tahap }}</span>
+          </div>
+          <div class="detail-row"><span>Populasi</span><b>{{ k.populasi | number:'1.0-0' }} jiwa</b></div>
+          <div class="detail-row"><span>Indeks 5T</span><b>{{ k.indeks5t }} / 100</b></div>
+          <div class="detail-row"><span>Realisasi Anggaran</span><b>{{ k.anggaranPct }}%</b></div>
+          <div class="detail-row">
+            <span>Risiko</span>
+            <dgt-severity-badge [severity]="severityOf(k.risiko)" [label]="severityLabel(k.risiko)"></dgt-severity-badge>
+          </div>
+          <div class="detail-legal">
+            <div class="detail-legal-head"><span>Legalitas (SHM/HPL)</span><b>{{ legalPct(k) }}%</b></div>
+            <div class="progress" style="height: 6px">
+              <div class="progress-bar" role="progressbar" [style.width.%]="legalPct(k)"></div>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #noSelDetail><p class="text-muted mb-0">Pilih kawasan pada peta atau daftar lapisan.</p></ng-template>
+      </div>
+
       <div class="ringkasan-stat" *ngIf="nationalKPI as nk">
         <div class="ringkasan-stat-total">
           <span class="v">{{ nk.totalKawasan }}</span>
@@ -143,9 +187,9 @@
         </div>
       </div>
 
-      <div class="ringkasan-section" *ngIf="sCurve as sc">
-        <div class="ringkasan-section-title">Kurva S &mdash; Rencana vs Realisasi Anggaran</div>
-        <dgt-dual-line-chart [labels]="sc.labels" [s1]="sc.rencana" [s2]="sc.realisasi" [width]="300" [height]="150"></dgt-dual-line-chart>
+      <div class="ringkasan-section" *ngIf="indeksTrend as tr">
+        <div class="ringkasan-section-title">Tren Indeks 5T Nasional</div>
+        <dgt-dual-line-chart [labels]="tr.labels" [s1]="[]" [s2]="tr.values" [width]="300" [height]="150"></dgt-dual-line-chart>
       </div>
 
       <div class="ringkasan-section" id="geoEwsSummary">
@@ -155,22 +199,20 @@
         </div>
         <div class="ews-summary-grid">
           <div class="ews-summary-cell" *ngFor="let c of ewsCategories">
-            <dgt-severity-badge [severity]="severityOf(c.sev)" [label]="c.count.toString()"></dgt-severity-badge>
+            <span class="ews-summary-dot" [style.background]="sevColorVar(c.sev)"></span>
             <span class="ews-summary-label">{{ c.category }}</span>
+            <span class="ews-summary-count">{{ c.count }}</span>
           </div>
         </div>
-        <div class="ews-list">
-          <div class="ews-item d-flex" *ngFor="let a of visibleAlerts" [class.ack]="a.ack">
-            <dgt-severity-badge class="mr-2" [severity]="severityOf(a.sev)" [label]="severityLabel(a.sev)"></dgt-severity-badge>
-            <div class="ews-body flex-grow-1">
-              <div class="t font-weight-bold small">{{ a.title }}</div>
-              <div class="d small text-muted">{{ a.detail }}</div>
-              <div class="ews-meta small text-muted">{{ a.when }}</div>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary align-self-start ml-2" (click)="toggleAck(a.id)">{{ a.ack ? 'Dibuka' : 'Tandai' }}</button>
+        <div class="ews-top-alert d-flex" *ngIf="topAlert as a" [class.ack]="a.ack">
+          <dgt-severity-badge class="mr-2" [severity]="severityOf(a.sev)" [label]="severityLabel(a.sev)"></dgt-severity-badge>
+          <div class="ews-body flex-grow-1">
+            <div class="t font-weight-bold small">{{ a.title }}</div>
+            <div class="d small text-muted">{{ a.detail }}</div>
           </div>
-          <p class="text-muted mb-0" *ngIf="!visibleAlerts.length">Tidak ada peringatan pada kategori terpilih.</p>
+          <button type="button" class="btn btn-sm btn-outline-secondary align-self-start ml-2" (click)="toggleAck(a.id)">{{ a.ack ? 'Dibuka' : 'Tandai' }}</button>
         </div>
+        <p class="text-muted mb-0" *ngIf="!topAlert">Tidak ada peringatan pada kategori terpilih.</p>
       </div>
     </div>
   </div>

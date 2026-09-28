@@ -2,10 +2,10 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
   DashboardDataService,
+  IndeksTrend,
   Kawasan,
   NationalKPI,
   Province,
-  SCurve,
   STAGES,
   STAGE_COLOR_HEX,
   Tahap
@@ -32,9 +32,20 @@ import { KawasanMapComponent } from './kawasan-map.component';
  * - Dropped entirely (not shown in the reference, and this was an explicit "change layout
  *   completely" request): the IKU-chip strip, the fullscreen/expand toggle
  *   (`toggleFullscreen()`/`panelsHidden` from the previous version — "without expand button life
- *   before"), the tabbed Detail Kawasan card, the Kawasan Teratas & Terendah ranking card, the
- *   embedded AI chat panel, the Grid Provinsi map view, and the EWS ticker marquee. Selecting a
- *   kawasan is now done by clicking its name in the left layer list or its polygon on the map.
+ *   before"), the Kawasan Teratas & Terendah ranking card, the embedded AI chat panel, the Grid
+ *   Provinsi map view, and the EWS ticker marquee. Selecting a kawasan is now done by clicking its
+ *   name in the left layer list or its polygon on the map.
+ *
+ * **Second pass** (on request, after the first full-bleed rewrite landed): expanded `kawasan` from
+ * the 10-entry mock list to the real 45-kawasan matrix (see `KAWASAN_SEEDS`'s own doc comment in
+ * `dashboard-data.service.ts`); added a second legality overlay (SHM, alongside the existing HPL
+ * outline) and a kawasan-type filter to the left panel, now that it has to handle 45 rows instead of
+ * 10; brought a compact "Detail Kawasan" card back into the right panel (dropped in the first pass,
+ * re-added since the summary panel alone wasn't enough once a kawasan gets selected); replaced the
+ * right panel's trend chart from the budget Kurva S to a national Indeks 5T trend (the reference's
+ * own "Tren Indeks ST" caption); simplified the EWS summary to a compact category grid + a single
+ * top-priority alert instead of the full per-alert list; moved the toolbar's alert count into a bell
+ * icon; and shrank the top toolbar to its content width instead of stretching edge-to-edge.
  */
 @Component({
   selector: 'dgt-geospasial',
@@ -45,7 +56,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   kawasan: Kawasan[] = [];
   alerts: EwsAlert[] = [];
   nationalKPI!: NationalKPI;
-  sCurve!: SCurve;
+  indeksTrend!: IndeksTrend;
   provinces: Province[] = [];
 
   readonly stageColorHex = STAGE_COLOR_HEX;
@@ -62,9 +73,14 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   rightPanelCollapsed = false;
 
   layerSearchQuery = '';
+  /** Narrows the per-kawasan rows shown under "Kawasan Transmigrasi" — separate from `typeVisible`
+   *  below, which toggles map-layer visibility. Matters far more now that the list has 45 rows
+   *  instead of 10. */
+  typeFilter: 'Semua' | 'SKP' | 'KPB' = 'Semua';
 
   typeVisible: { [key: string]: boolean } = { SKP: true, KPB: true };
   hplVisible = true;
+  shmVisible = false;
   ewsCategoryVisible: { [category: string]: boolean } = {};
 
   /* A plain field, recomputed only when a filter actually changes (refreshVisibleKawasan()) rather
@@ -86,7 +102,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.kawasan = this.data.getKawasan();
     this.nationalKPI = this.data.getNationalKPI();
-    this.sCurve = this.data.getSCurve();
+    this.indeksTrend = this.data.getIndeksTrend();
     this.provinces = this.data.getProvinces();
     this.selectedKawasanId = this.kawasan.length ? this.kawasan[0].id : null;
     this.refreshVisibleKawasan();
@@ -134,8 +150,9 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     const q = this.layerSearchQuery.trim().toLowerCase();
     return this.kawasan.filter(
       k =>
+        (this.typeFilter === 'Semua' || k.tipe === this.typeFilter) &&
         (!this.selectedProvinsi || k.provinsi === this.selectedProvinsi) &&
-        (!q || k.nama.toLowerCase().includes(q) || k.provinsi.toLowerCase().includes(q))
+        (!q || k.nama.toLowerCase().includes(q) || k.provinsi.toLowerCase().includes(q) || k.kabupaten.toLowerCase().includes(q))
     );
   }
 
@@ -147,8 +164,30 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Short, fixed category names by keyword match on the alert's own title/detail — replaces an
+   *  earlier version that just split the title on its em dash, which produced one wordy category
+   *  per alert (e.g. "Realisasi anggaran tertinggal") instead of a clean, reusable label. With only
+   *  5 real alerts this still yields one-each in practice, but a future alert sharing a keyword
+   *  (e.g. another "anggaran" alert) now correctly folds into the same category instead of getting
+   *  its own. */
   ewsCategoryOf(a: EwsAlert): string {
-    return a.title.split(' — ')[0];
+    const t = (a.title + ' ' + a.detail).toLowerCase();
+    if (t.includes('produktivitas')) {
+      return 'Produktivitas';
+    }
+    if (t.includes('lahan') || t.includes('sengketa')) {
+      return 'Legalitas Lahan';
+    }
+    if (t.includes('anggaran')) {
+      return 'Anggaran';
+    }
+    if (t.includes('sosial') || t.includes('kerawanan')) {
+      return 'Sosial';
+    }
+    if (t.includes('data') || t.includes('verifikasi') || t.includes('penempatan')) {
+      return 'Data Kependudukan';
+    }
+    return 'Lainnya';
   }
 
   get ewsCategories(): Array<{ category: string; count: number; sev: EwsSeverity }> {
@@ -177,6 +216,16 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     return this.visibleAlerts.filter(a => !a.ack).length;
   }
 
+  /** The single highest-priority alert to surface in the simplified EWS card — an unacknowledged
+   *  high-severity alert if one exists, else the highest-severity alert overall. Ties broken by
+   *  array order (oldest-first, matching `EwsService`'s own ordering). */
+  get topAlert(): EwsAlert | undefined {
+    const sevRank: { [key in EwsSeverity]: number } = { high: 2, med: 1, low: 0 };
+    return this.visibleAlerts
+      .slice()
+      .sort((a, b) => Number(a.ack) - Number(b.ack) || sevRank[b.sev] - sevRank[a.sev])[0];
+  }
+
   toggleType(tipe: string, visible: boolean): void {
     this.typeVisible[tipe] = visible;
     this.refreshVisibleKawasan();
@@ -190,6 +239,13 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.hplVisible = visible;
     if (this.kawasanMap) {
       this.kawasanMap.setHplVisible(visible);
+    }
+  }
+
+  toggleShm(visible: boolean): void {
+    this.shmVisible = visible;
+    if (this.kawasanMap) {
+      this.kawasanMap.setShmVisible(visible);
     }
   }
 
@@ -238,6 +294,11 @@ export class GeospasialComponent implements OnInit, OnDestroy {
 
   toggleAck(id: string): void {
     this.ews.toggleAck(id);
+  }
+
+  /** Backs the Detail Kawasan card's legalisation bar (SHM-certified share of HPL). */
+  legalPct(k: Kawasan): number {
+    return Math.round((k.shmHa / k.hplHa) * 100);
   }
 
   severityOf(sev: EwsSeverity): 'critical' | 'warn' | 'good' {

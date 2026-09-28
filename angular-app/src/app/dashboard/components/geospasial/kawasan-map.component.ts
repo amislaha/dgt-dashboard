@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
-import { Kawasan, STAGE_COLOR_HEX, kawasanAreaLatLngs } from '../../services/dashboard-data.service';
+import { Kawasan, STAGE_COLOR_HEX, kawasanAreaLatLngs, kawasanShmLatLngs } from '../../services/dashboard-data.service';
 
 /**
  * Real Leaflet + OpenStreetMap basemap for the Geospasial module — ports the
@@ -42,6 +42,13 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
    *  theme). Defaults off so components other than Geospasial that reuse this map (e.g. Ekonomi &
    *  Investasi Kawasan's wilayah-coloured map) aren't affected unless they opt in. */
   @Input() showHpl = false;
+  /** "Area SHM" — a filled overlay tracing `kawasanShmLatLngs()` (the certified-SHM subset of the
+   *  same HPL extent, see that function's own doc comment), its own toggleable layer alongside
+   *  `showHpl` above rather than folded into it, since HPL (the whole boundary, dashed outline) and
+   *  SHM (the certified portion within it, filled) are two different legality-status overlays per
+   *  DGT.md's "land legality (HPL/SHM geospatial overlay)" module theme. Defaults off, same
+   *  reasoning as `showHpl`. */
+  @Input() showShm = false;
   /** Leaflet's own topright +/− control — on by default (unchanged behaviour for the Ekonomi &
    *  Investasi Kawasan module, which also uses this component). The redesigned Geospasial page sets
    *  this false and drives zoom from its own floating bottom toolbar instead, via `zoomIn()`/
@@ -58,6 +65,7 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   private map: L.Map | null = null;
   private areas: { [id: string]: L.Polygon } = {};
   private hplLayer: L.LayerGroup | null = null;
+  private shmLayer: L.LayerGroup | null = null;
 
   ngAfterViewInit(): void {
     // zoomControl:false + a separate topright control (matching the original) frees up the
@@ -104,6 +112,9 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     if (this.map && changes.showHpl && !changes.showHpl.firstChange) {
       this.setHplVisible(this.showHpl);
     }
+    if (this.map && changes.showShm && !changes.showShm.firstChange) {
+      this.setShmVisible(this.showShm);
+    }
   }
 
   /** Called by the parent's "Batas HPL" catalogue checkbox — same add/remove-layer pattern as
@@ -118,6 +129,20 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       }
     } else if (this.map.hasLayer(this.hplLayer)) {
       this.map.removeLayer(this.hplLayer);
+    }
+  }
+
+  /** Called by the parent's "Area SHM" catalogue checkbox — same pattern as `setHplVisible()`. */
+  setShmVisible(visible: boolean): void {
+    if (!this.map || !this.shmLayer) {
+      return;
+    }
+    if (visible) {
+      if (!this.map.hasLayer(this.shmLayer)) {
+        this.shmLayer.addTo(this.map);
+      }
+    } else if (this.map.hasLayer(this.shmLayer)) {
+      this.map.removeLayer(this.shmLayer);
     }
   }
 
@@ -209,6 +234,10 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       this.map.removeLayer(this.hplLayer);
       this.hplLayer = null;
     }
+    if (this.shmLayer) {
+      this.map.removeLayer(this.shmLayer);
+      this.shmLayer = null;
+    }
 
     this.kawasan.forEach(k => {
       const area = L.polygon(kawasanAreaLatLngs(k), {
@@ -237,6 +266,22 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     );
     if (this.showHpl) {
       this.hplLayer.addTo(this.map);
+    }
+
+    this.shmLayer = L.layerGroup(
+      this.kawasan.map(k =>
+        L.polygon(kawasanShmLatLngs(k), {
+          color: '#2c755b', // STAGE_COLOR_HEX.Mandiri's raw hex twin — Leaflet can't resolve CSS vars
+          weight: 1.5,
+          opacity: 0.9,
+          fillColor: '#2c755b',
+          fillOpacity: 0.3,
+          interactive: false
+        })
+      )
+    );
+    if (this.showShm) {
+      this.shmLayer.addTo(this.map);
     }
 
     // Fit to every kawasan's own coordinates instead of the fixed setView center/zoom above —

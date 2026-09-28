@@ -12,12 +12,18 @@ export interface EwsAlert {
   ack: boolean;
 }
 
+/** Titles below reference real kawasan names from the 45-kawasan matrix (see
+ *  `dashboard-data.service.ts`'s `KAWASAN_SEEDS`) — updated when that dataset replaced the old
+ *  10-entry fabricated list, since the alerts used to name kawasan ("Kobisonta", "Bina Buay", "Air
+ *  Terang") that don't exist in the real 45. The alerts themselves (severity/detail/timing) are
+ *  still fabricated/illustrative, same as the rest of this file — only the kawasan being pointed at
+ *  is now real. */
 const INITIAL_ALERTS: EwsAlert[] = [
-  { id: 'e1', sev: 'high', title: 'Penurunan produktivitas — SKP Kobisonta', detail: 'Indeks 5T turun 9 poin dalam 2 kuartal terakhir; realisasi anggaran di bawah 20%.', when: '2 jam lalu', ack: false },
-  { id: 'e2', sev: 'high', title: 'Potensi sengketa lahan — SKP Towuti', detail: 'Tumpang tindih HPL–SHM terdeteksi di 3 blok, estimasi 1.100 Ha.', when: '5 jam lalu', ack: false },
+  { id: 'e1', sev: 'high', title: 'Penurunan produktivitas — SKP Patlean', detail: 'Indeks 5T turun 9 poin dalam 2 kuartal terakhir; realisasi anggaran di bawah 20%.', when: '2 jam lalu', ack: false },
+  { id: 'e2', sev: 'high', title: 'Potensi sengketa lahan — SKP Bungku', detail: 'Tumpang tindih HPL–SHM terdeteksi di 3 blok, estimasi 1.100 Ha.', when: '5 jam lalu', ack: false },
   { id: 'e3', sev: 'med', title: 'Realisasi anggaran tertinggal — SKP Tobadak', detail: 'Serapan anggaran 22%, di bawah target kuartalan 35%.', when: '1 hari lalu', ack: false },
-  { id: 'e4', sev: 'med', title: 'Tren kerawanan sosial — SKP Bina Buay', detail: 'Laporan gesekan sosial meningkat pada 2 dusun sekitar kawasan.', when: '1 hari lalu', ack: true },
-  { id: 'e5', sev: 'low', title: 'Verifikasi data penempatan — KPB Air Terang', detail: '9 KK menunggu validasi data kependudukan lebih dari 30 hari.', when: '3 hari lalu', ack: true }
+  { id: 'e4', sev: 'med', title: 'Tren kerawanan sosial — KPB Lagita', detail: 'Laporan gesekan sosial meningkat pada 2 dusun sekitar kawasan.', when: '1 hari lalu', ack: true },
+  { id: 'e5', sev: 'low', title: 'Verifikasi data penempatan — KPB Lamunti - Dadahup', detail: '9 KK menunggu validasi data kependudukan lebih dari 30 hari.', when: '3 hari lalu', ack: true }
 ];
 
 /**
