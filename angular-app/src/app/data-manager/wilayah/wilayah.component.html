@@ -3,7 +3,16 @@
     <dgt-wilayah-map [wilayah]="wilayah" [selectedId]="selectedId" (select)="onSelect($event)"></dgt-wilayah-map>
   </div>
 
-  <div class="wilayah-side-panel">
-    <dgt-entity-list></dgt-entity-list>
+  <div class="wilayah-side-panel" [class.collapsed]="sidebarCollapsed">
+    <button
+      type="button"
+      class="sidebar-collapse-toggle"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="sidebarCollapsed ? 'Buka panel Wilayah' : 'Ciutkan panel Wilayah'">
+      {{ sidebarCollapsed ? '‹' : '›' }}
+    </button>
+    <div class="sidebar-scroll" *ngIf="!sidebarCollapsed">
+      <dgt-entity-list></dgt-entity-list>
+    </div>
   </div>
 </div>

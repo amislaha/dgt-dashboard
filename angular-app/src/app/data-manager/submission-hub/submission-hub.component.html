@@ -3,16 +3,25 @@
     <dgt-wilayah-map [wilayah]="wilayah" [selectedId]="selectedId" (select)="onSelect($event)"></dgt-wilayah-map>
   </div>
 
-  <div class="submission-side-panel">
-    <dgt-page-head title="Submission & Approval" description="Ajukan perubahan data master dan tinjau persetujuannya di satu tempat.">
-    </dgt-page-head>
+  <div class="submission-side-panel" [class.collapsed]="sidebarCollapsed">
+    <button
+      type="button"
+      class="sidebar-collapse-toggle"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="sidebarCollapsed ? 'Buka panel Submission & Approval' : 'Ciutkan panel Submission & Approval'">
+      {{ sidebarCollapsed ? '‹' : '›' }}
+    </button>
+    <div class="sidebar-scroll" *ngIf="!sidebarCollapsed">
+      <dgt-page-head title="Submission & Approval" description="Ajukan perubahan data master dan tinjau persetujuannya di satu tempat.">
+      </dgt-page-head>
 
-    <div class="seg mb-3">
-      <button type="button" [class.sel]="tab === 'pengajuan'" (click)="setTab('pengajuan')">Pengajuan Data</button>
-      <button type="button" [class.sel]="tab === 'approval'" (click)="setTab('approval')">Approval</button>
+      <div class="seg mb-3">
+        <button type="button" [class.sel]="tab === 'pengajuan'" (click)="setTab('pengajuan')">Pengajuan Data</button>
+        <button type="button" [class.sel]="tab === 'approval'" (click)="setTab('approval')">Approval</button>
+      </div>
+
+      <dgt-submission *ngIf="tab === 'pengajuan'"></dgt-submission>
+      <dgt-submission-approval *ngIf="tab === 'approval'"></dgt-submission-approval>
     </div>
-
-    <dgt-submission *ngIf="tab === 'pengajuan'"></dgt-submission>
-    <dgt-submission-approval *ngIf="tab === 'approval'"></dgt-submission-approval>
   </div>
 </div>

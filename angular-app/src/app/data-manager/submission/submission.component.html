@@ -1,17 +1,24 @@
-<div class="dm-toolbar d-flex justify-content-end mb-3">
-  <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">+ Ajukan Perubahan</button>
-</div>
+<ng-container *ngIf="!drawerOpen">
+  <div class="dm-toolbar d-flex justify-content-end mb-3">
+    <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">+ Ajukan Perubahan</button>
+  </div>
 
-<div class="panel">
-  <dgt-data-table
-    [columns]="columns"
-    [rows]="rows"
-    emptyLabel='Belum ada pengajuan. Klik "+ Ajukan Perubahan" untuk membuat yang pertama.'>
-  </dgt-data-table>
-</div>
+  <div class="panel">
+    <dgt-data-table
+      [columns]="columns"
+      [rows]="rows"
+      emptyLabel='Belum ada pengajuan. Klik "+ Ajukan Perubahan" untuk membuat yang pertama.'>
+    </dgt-data-table>
+  </div>
+</ng-container>
 
-<dgt-drawer [open]="drawerOpen" [scrim]="false" title="Ajukan Perubahan Data" (closed)="closeDrawer()">
-  <form *ngIf="drawerOpen">
+<div class="inline-form" *ngIf="drawerOpen">
+  <div class="inline-form-head d-flex justify-content-between align-items-center mb-3">
+    <h3 class="h6 font-weight-bold mb-0">Ajukan Perubahan Data</h3>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeDrawer()" aria-label="Tutup">✕</button>
+  </div>
+
+  <form>
     <div class="form-row">
       <div class="form-group col-6">
         <label>Entitas</label>
@@ -76,8 +83,8 @@
     </div>
   </form>
 
-  <div drawer-footer class="d-flex justify-content-end w-100">
+  <div class="inline-form-actions d-flex justify-content-end">
     <button type="button" class="btn btn-secondary btn-sm mr-2" (click)="closeDrawer()">Batal</button>
     <button type="button" class="btn btn-primary btn-sm" (click)="submitDraft()">Kirim Pengajuan</button>
   </div>
-</dgt-drawer>
+</div>

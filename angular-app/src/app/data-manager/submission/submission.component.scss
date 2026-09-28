@@ -7,6 +7,20 @@
   overflow: hidden;
 }
 
+// Replaces the old <dgt-drawer> overlay (on request — the form should stay inside this
+// component's own slice of the sidebar, not slide out over it). Just normal in-flow content, no
+// fixed positioning/scrim/z-index of its own.
+.inline-form-head {
+  padding-bottom: var(--space-3, .75rem);
+  border-bottom: 1px solid var(--border);
+}
+
+.inline-form-actions {
+  padding-top: var(--space-3, .75rem);
+  margin-top: var(--space-3, .75rem);
+  border-top: 1px solid var(--border);
+}
+
 .draw-actions {
   display: flex;
   flex-wrap: wrap;

@@ -15,6 +15,9 @@
   height: 100%;
 }
 
+// `overflow: visible` (not auto) so `.sidebar-collapse-toggle` — an absolutely-positioned child
+// sitting partly outside this box at its left edge — never gets clipped; the actual scrolling
+// happens one level down, in `.sidebar-scroll`. Same pattern as wilayah.component.scss.
 .submission-side-panel {
   position: absolute;
   top: 0;
@@ -22,12 +25,45 @@
   bottom: 0;
   // Wider than Wilayah's 420px: the submission table (6 columns) and approval list need more room.
   width: min(640px, 100%);
-  overflow-y: auto;
+  overflow: visible;
   background: var(--card);
   border-left: 1px solid var(--border);
   box-shadow: var(--shadow-lg, 0 12px 32px rgba(0, 0, 0, .18));
-  padding: var(--space-4, 1rem);
   z-index: 5;
+  transition: width var(--duration-base, .2s) var(--ease-standard, ease);
+
+  &.collapsed {
+    width: 0;
+    border-left: none;
+    box-shadow: none;
+  }
+}
+
+.sidebar-scroll {
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--space-4, 1rem);
+}
+
+.sidebar-collapse-toggle {
+  position: absolute;
+  top: 50%;
+  left: -24px;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 56px;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: var(--radius-sm, .375rem) 0 0 var(--radius-sm, .375rem);
+  background: var(--card);
+  color: var(--text-dim);
+  cursor: pointer;
+  z-index: 6;
+
+  &:hover {
+    background: var(--muted);
+    color: var(--text);
+  }
 }
 
 // Same `.seg` pill-tab treatment as submission-approval.component.scss's status filter — kept as

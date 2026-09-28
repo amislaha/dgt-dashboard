@@ -14,6 +14,11 @@ import { EntityRegistryService } from '../services/entity-registry.service';
  * so its `ActivatedRoute` injection resolves to this component's own route, whose
  * `data: { entityKey: 'wpt' }` (see data-manager-routing.module.ts) is all it needs to bind to the
  * `wpt` entity, identical to how the 'wpt' route worked before this page existed.
+ *
+ * `sidebarCollapsed` (on request) just toggles the side panel's width to 0 — the map underneath is
+ * already full-width regardless (the sidebar overlays it via `position:absolute`, it doesn't push
+ * it via flex), so collapsing only ever reveals more of the same map, no resize/invalidateSize
+ * dance needed.
  */
 @Component({
   selector: 'dgt-wilayah',
@@ -23,6 +28,7 @@ import { EntityRegistryService } from '../services/entity-registry.service';
 export class WilayahComponent implements OnDestroy {
   wilayah: Wpt[] = [];
   selectedId: string | null = null;
+  sidebarCollapsed = false;
 
   private readonly sub: Subscription;
 
@@ -36,5 +42,9 @@ export class WilayahComponent implements OnDestroy {
 
   onSelect(w: Wpt): void {
     this.selectedId = w.id;
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
   }
 }

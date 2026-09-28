@@ -12,7 +12,22 @@
   flex-wrap: wrap;
 }
 
+.dm-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  margin-right: .6rem;
+}
+
 .dm-nav {
+  gap: var(--space-1, .25rem);
+}
+
+// Wraps the two dropdowns so they sit on the right side of the nav row (on request) — the flat
+// "Wilayah"/"Submission & Approval" links stay left, this group is pushed to the far right of
+// `.dm-nav`'s own flexible space via its own `ml-auto`, landing right before the entri-count/theme
+// toggle block (a separate flex item in `.dm-header`).
+.dm-nav-right {
   gap: var(--space-1, .25rem);
 }
 

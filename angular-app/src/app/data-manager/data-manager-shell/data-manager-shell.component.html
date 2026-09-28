@@ -1,5 +1,6 @@
 <div class="dm-shell d-flex flex-column">
   <header class="dm-header navbar navbar-expand navbar-light bg-white border-bottom px-3">
+    <img class="dm-logo" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi" />
     <span class="navbar-brand font-weight-bold mb-0">DGT Data Manager</span>
 
     <nav class="dm-nav flex-grow-1 d-flex align-items-center flex-wrap">
@@ -10,35 +11,37 @@
         Submission &amp; Approval <span class="dm-nav-badge">{{ submissionSub }}</span>
       </a>
 
-      <div ngbDropdown class="dm-nav-dropdown">
-        <button type="button" class="dm-nav-link dm-dropdown-toggle" ngbDropdownToggle>Data Master</button>
-        <div ngbDropdownMenu class="dm-dropdown-menu">
-          <button
-            ngbDropdownItem
-            type="button"
-            class="dm-dropdown-item"
-            *ngFor="let item of masterItems"
-            [class.active]="activeId === item.id"
-            (click)="onSelect(item.id)">
-            <span>{{ item.label }}</span>
-            <span class="dm-item-sub">{{ item.sub }}</span>
-          </button>
+      <div class="dm-nav-right ml-auto d-flex align-items-center">
+        <div ngbDropdown class="dm-nav-dropdown">
+          <button type="button" class="dm-nav-link dm-dropdown-toggle" ngbDropdownToggle>Data Master</button>
+          <div ngbDropdownMenu class="dm-dropdown-menu">
+            <button
+              ngbDropdownItem
+              type="button"
+              class="dm-dropdown-item"
+              *ngFor="let item of masterItems"
+              [class.active]="activeId === item.id"
+              (click)="onSelect(item.id)">
+              <span>{{ item.label }}</span>
+              <span class="dm-item-sub">{{ item.sub }}</span>
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div ngbDropdown class="dm-nav-dropdown">
-        <button type="button" class="dm-nav-link dm-dropdown-toggle" ngbDropdownToggle>Settings</button>
-        <div ngbDropdownMenu class="dm-dropdown-menu">
-          <button
-            ngbDropdownItem
-            type="button"
-            class="dm-dropdown-item"
-            *ngFor="let item of settingsItems"
-            [class.active]="activeId === item.id"
-            (click)="onSelect(item.id)">
-            <span>{{ item.label }}</span>
-            <span class="dm-item-sub">{{ item.sub }}</span>
-          </button>
+        <div ngbDropdown class="dm-nav-dropdown">
+          <button type="button" class="dm-nav-link dm-dropdown-toggle" ngbDropdownToggle>Settings</button>
+          <div ngbDropdownMenu class="dm-dropdown-menu">
+            <button
+              ngbDropdownItem
+              type="button"
+              class="dm-dropdown-item"
+              *ngFor="let item of settingsItems"
+              [class.active]="activeId === item.id"
+              (click)="onSelect(item.id)">
+              <span>{{ item.label }}</span>
+              <span class="dm-item-sub">{{ item.sub }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </nav>

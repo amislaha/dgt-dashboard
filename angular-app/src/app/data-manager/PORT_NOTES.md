@@ -330,9 +330,50 @@ tools like geomapping" to Submission & Approval.
   `SubmissionApprovalComponent` calls `mapDraw.showPreview(s.geometry)` when
   expanding a row that has one (`clearPreview()` on collapse/destroy) so a
   reviewer can see what was drawn without any drawing tools active.
-- The create-drawer (`<dgt-drawer>`, fixed to the right, ~480px) sits inside
-  the wider (640px) `submission-side-panel` but doesn't cover the map to its
-  left — that's what makes drawing while the form is open work at all, and
-  wasn't a deliberate width calculation, just how the two already-existing
-  fixed-width/positioned elements happen to overlap. Don't shrink the side
-  panel below the drawer's width without re-checking this.
+- Originally the create form used the shared `<dgt-drawer>` (fixed overlay).
+  That's since been replaced with an inline-in-sidebar form (see the next
+  section) — the drawer's own full-viewport scrim briefly caused a real bug
+  here (see next section's first bullet) before being superseded entirely.
+
+## Header logo, dropdowns moved right, inline form, collapsible sidebar
+
+Four more requests on the same header/sidebar system:
+
+- **Logo.** `assets/logo-emblem.png` (the same Kementerian Transmigrasi
+  emblem already wired into dashboard/geomapping/launcher's own headers —
+  see CLAUDE.md's Hosting/visibility section for the provenance/approval
+  history) now also appears in the Data Manager header, left of the "DGT
+  Data Manager" wordmark. Nothing new to flag — this is the one already-
+  approved asset, just reused, not a new emblem.
+- **"Data Master"/"Settings" moved right.** They're now wrapped in their own
+  `.dm-nav-right` div with `ml-auto` inside `.dm-nav` (itself
+  `flex-grow-1`), so they sit at the right edge of the nav row — right before
+  the entri-count/theme-toggle block — while "Wilayah"/"Submission &
+  Approval" stay as flat links on the left. Purely a template/CSS reshuffle;
+  `DataManagerShellComponent`'s TS is unchanged.
+- **Submission's create form moved fully inline.** `SubmissionComponent` no
+  longer uses `<dgt-drawer>` at all — clicking "+ Ajukan Perubahan" now
+  swaps the table for the form via a plain `*ngIf="drawerOpen"` in the same
+  template, both rendering as normal in-flow content inside this component's
+  slice of the sidebar. This was the actual fix for the scrim bug described
+  above: with the form inline there's no separate overlay/scrim to
+  accidentally swallow a map click in the first place, so the `[scrim]`
+  input added to `DrawerComponent` for that workaround was reverted (nothing
+  uses `<dgt-drawer>` from this component any more) — `DrawerComponent`
+  itself is back to its original form, still used everywhere else unchanged
+  (`EntityListComponent`'s create/edit drawer, etc.).
+- **Sidebar collapsible.** `WilayahComponent`/`SubmissionHubComponent` each
+  got their own `sidebarCollapsed` boolean (duplicated between them, same
+  "small enough not to share" reasoning as the map subscription) and a small
+  tab button (`.sidebar-collapse-toggle`) fixed to the panel's own left edge
+  via `position:absolute; left:-24px` — since it's positioned relative to
+  the sidebar itself, not the viewport, it stays glued to the panel's
+  current left edge automatically as the panel's width animates to/from 0,
+  no recalculation needed. Collapsing only ever reveals more of the map
+  underneath (the map was already full-width the whole time; the sidebar
+  merely overlays it), so there's no resize/`invalidateSize()` concern.
+  Required restructuring both panels' markup one level deeper — the
+  scrollable content moved into an inner `.sidebar-scroll` div so the outer
+  `.wilayah-side-panel`/`.submission-side-panel` could go back to
+  `overflow: visible` (needed so the toggle button, which sits partly
+  outside that box, isn't clipped by it).

@@ -23,6 +23,12 @@ const SUBMITTABLE_ENTITY_ORDER: EntityKey[] = ['wpt', ...MASTER_DATA_ORDER];
  * queue. Review/approve lives on the separate Approval tab (submission-approval.component.ts); this
  * page only creates and lists.
  *
+ * `drawerOpen` toggles the create form inline (`*ngIf`, see the template) rather than through the
+ * shared `<dgt-drawer>` overlay every entity CRUD screen uses — on request, so the form never
+ * covers/exits this component's own slice of the sidebar. The name is a holdover from when it was
+ * `<dgt-drawer>`-backed; kept to minimize churn since the boolean's meaning ("is the create/edit
+ * form showing") hasn't changed, just how it's rendered.
+ *
  * The map lives in the sibling `SubmissionHubComponent`, not here — drawing is mediated through
  * `MapDrawService` (`start()` from this form's buttons, `result$` completes the shape) rather than
  * an `@Input`/`@Output` chain, since this component and the map are siblings, not parent/child.

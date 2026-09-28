@@ -19,6 +19,8 @@ type SubmissionHubTab = 'pengajuan' | 'approval';
  * factored into a shared parent — both are small, self-contained, and this keeps the two pages
  * independent (no new shared base class to reason about). The map is also how this page's manual
  * draw tools and Approval-tab geometry preview work — see `MapDrawService`.
+ *
+ * `sidebarCollapsed` mirrors `WilayahComponent`'s own toggle — same reasoning, same duplication.
  */
 @Component({
   selector: 'dgt-submission-hub',
@@ -29,6 +31,7 @@ export class SubmissionHubComponent implements OnDestroy {
   tab: SubmissionHubTab = 'pengajuan';
   wilayah: Wpt[] = [];
   selectedId: string | null = null;
+  sidebarCollapsed = false;
 
   private readonly sub: Subscription;
 
@@ -46,5 +49,9 @@ export class SubmissionHubComponent implements OnDestroy {
 
   onSelect(w: Wpt): void {
     this.selectedId = w.id;
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
   }
 }
