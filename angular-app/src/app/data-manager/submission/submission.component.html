@@ -10,7 +10,7 @@
   </dgt-data-table>
 </div>
 
-<dgt-drawer [open]="drawerOpen" title="Ajukan Perubahan Data" (closed)="closeDrawer()">
+<dgt-drawer [open]="drawerOpen" [scrim]="false" title="Ajukan Perubahan Data" (closed)="closeDrawer()">
   <form *ngIf="drawerOpen">
     <div class="form-row">
       <div class="form-group col-6">
