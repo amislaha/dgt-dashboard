@@ -49,12 +49,17 @@ import { KawasanMapComponent } from './kawasan-map.component';
  *
  * **Third pass** (on request, from a reference screenshot of a differently-branded dashboard's
  * header): the top toolbar was rebuilt again into a full-width header bar — reversing the "shrink to
- * content width" change from the pass above — with a brand lockup (hamburger that toggles the left
- * panel, the existing `assets/logo-emblem.png` Kementerian Transmigrasi emblem already used by the
- * rail nav/other shells, and a "DGT" title) on the left and the Site/Provinsi/Periode controls
- * restyled as dark pill dropdowns in the middle. The reference showed unrelated third-party branding
+ * content width" change from the pass above — with a brand lockup (the existing
+ * `assets/logo-emblem.png` Kementerian Transmigrasi emblem already used by the rail nav/other
+ * shells, and a "DGT" title) on the left and the Site/Provinsi/Periode controls restyled as dark
+ * pill dropdowns in the middle. The reference showed unrelated third-party branding
  * ("SIPANTERA"/"KLIKPETA") — only the *shape* of that header was carried over, not its branding; this
- * one uses the app's own name and existing logo asset instead of copying someone else's brand.
+ * one uses the app's own name and existing logo asset instead of copying someone else's brand. The
+ * reference also had its own hamburger in this same spot; deliberately left out here — it would sit
+ * in the exact top-left corner `DashboardShellComponent`'s own hover-revealed rail-toggle button
+ * already occupies at a higher z-index, which would intercept clicks meant for it (verified live:
+ * a click there opened the rail instead of this page's own panel-toggle). The Manajemen Lapisan
+ * panel's own collapse chevron already covers that function without the conflict.
  */
 @Component({
   selector: 'dgt-geospasial',
