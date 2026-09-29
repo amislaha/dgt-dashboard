@@ -46,6 +46,15 @@ import { KawasanMapComponent } from './kawasan-map.component';
  * own "Tren Indeks ST" caption); simplified the EWS summary to a compact category grid + a single
  * top-priority alert instead of the full per-alert list; moved the toolbar's alert count into a bell
  * icon; and shrank the top toolbar to its content width instead of stretching edge-to-edge.
+ *
+ * **Third pass** (on request, from a reference screenshot of a differently-branded dashboard's
+ * header): the top toolbar was rebuilt again into a full-width header bar — reversing the "shrink to
+ * content width" change from the pass above — with a brand lockup (hamburger that toggles the left
+ * panel, the existing `assets/logo-emblem.png` Kementerian Transmigrasi emblem already used by the
+ * rail nav/other shells, and a "DGT" title) on the left and the Site/Provinsi/Periode controls
+ * restyled as dark pill dropdowns in the middle. The reference showed unrelated third-party branding
+ * ("SIPANTERA"/"KLIKPETA") — only the *shape* of that header was carried over, not its branding; this
+ * one uses the app's own name and existing logo asset instead of copying someone else's brand.
  */
 @Component({
   selector: 'dgt-geospasial',
