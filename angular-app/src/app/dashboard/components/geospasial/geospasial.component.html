@@ -9,8 +9,7 @@
     <dgt-kawasan-map
       [kawasan]="visibleKawasan"
       [selectedId]="selectedKawasanId"
-      [showHpl]="hplVisible"
-      [showShm]="shmVisible"
+      [showLegality]="true"
       [showZoomControl]="false"
       (select)="selectKawasan($event)"
       (viewChange)="onMapView($event)">
@@ -78,34 +77,34 @@
             <span class="nm">{{ g.tipe }}</span>
             <span class="ct">{{ g.count }}</span>
           </label>
-          <label class="map-layer-item sub-item" *ngFor="let k of kawasanRows" [class.selected]="k.id === selectedKawasanId">
-            <input type="checkbox" [checked]="typeVisible[k.tipe] !== false" disabled />
-            <span class="map-layer-dot" [style.background]="stageColorHex[k.tahap]"></span>
-            <span class="nm nm-link" role="button" (click)="selectKawasan(k)">{{ k.nama }}</span>
-            <span class="ct">{{ k.provinsi }}</span>
-          </label>
+          <div class="kawasan-tree-item" *ngFor="let k of kawasanRows">
+            <div class="map-layer-item sub-item" [class.selected]="k.id === selectedKawasanId">
+              <button
+                type="button"
+                class="kawasan-expand-btn"
+                [attr.aria-label]="expandedKawasan[k.id] ? 'Ciutkan ' + k.nama : 'Perluas ' + k.nama"
+                (click)="toggleKawasanExpand(k.id)">
+                <svg class="chev" [class.rotated]="expandedKawasan[k.id]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+              <input type="checkbox" [checked]="typeVisible[k.tipe] !== false" disabled />
+              <span class="map-layer-dot" [style.background]="stageColorHex[k.tahap]"></span>
+              <span class="nm nm-link" role="button" (click)="selectKawasan(k)">{{ k.nama }}</span>
+              <span class="ct">{{ k.provinsi }}</span>
+            </div>
+            <div class="kawasan-sub-list" *ngIf="expandedKawasan[k.id]">
+              <label class="map-layer-item kawasan-sub-item">
+                <input type="checkbox" [checked]="hplVisible[k.id] !== false" (change)="toggleKawasanHpl(k.id, $any($event.target).checked)" />
+                <span class="map-layer-dot map-layer-dot-outline"></span>
+                <span class="nm">HPL</span>
+              </label>
+              <label class="map-layer-item kawasan-sub-item">
+                <input type="checkbox" [checked]="shmVisible[k.id] !== false" (change)="toggleKawasanShm(k.id, $any($event.target).checked)" />
+                <span class="map-layer-dot map-layer-dot-fill"></span>
+                <span class="nm">SHM</span>
+              </label>
+            </div>
+          </div>
           <p class="layer-empty" *ngIf="!kawasanRows.length">Tidak ada kawasan yang cocok.</p>
-        </div>
-      </div>
-
-      <div class="layer-group">
-        <div class="layer-group-head">
-          <span class="nm">Legalitas Lahan</span>
-          <span class="ct">{{ (hplVisible ? 1 : 0) + (shmVisible ? 1 : 0) }}/2</span>
-        </div>
-        <div class="layer-group-list">
-          <label class="map-layer-item">
-            <input type="checkbox" [checked]="hplVisible" (change)="toggleHpl($any($event.target).checked)" />
-            <span class="map-layer-dot map-layer-dot-outline"></span>
-            <span class="nm">Batas bidang HPL</span>
-            <span class="ct">{{ kawasan.length }} bidang</span>
-          </label>
-          <label class="map-layer-item">
-            <input type="checkbox" [checked]="shmVisible" (change)="toggleShm($any($event.target).checked)" />
-            <span class="map-layer-dot map-layer-dot-fill"></span>
-            <span class="nm">Area bersertifikat SHM</span>
-            <span class="ct">{{ kawasan.length }} bidang</span>
-          </label>
         </div>
       </div>
 

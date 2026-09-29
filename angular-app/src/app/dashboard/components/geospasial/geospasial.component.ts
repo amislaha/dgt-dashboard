@@ -46,6 +46,14 @@ import { KawasanMapComponent } from './kawasan-map.component';
  * own "Tren Indeks ST" caption); simplified the EWS summary to a compact category grid + a single
  * top-priority alert instead of the full per-alert list; moved the toolbar's alert count into a bell
  * icon; and shrank the top toolbar to its content width instead of stretching edge-to-edge.
+ *
+ * **Third pass** (on request, from a reference screenshot of an expandable "WPT ..." layer-list
+ * row with its own nested HPL/SHM checkboxes): HPL/SHM went from two global toggles (the "Legalitas
+ * Lahan" group, now removed) to per-kawasan visibility instead — each row under "Kawasan
+ * Transmigrasi" is now individually expandable (`expandedKawasan`), revealing that one kawasan's
+ * own HPL and SHM checkboxes (`hplVisible`/`shmVisible`, both keyed by kawasan id, both defaulting
+ * true). `KawasanMapComponent` changed to match: `showHpl`/`showShm` (booleans) became a single
+ * `showLegality` opt-in flag plus `setHplVisibleFor(id, visible)`/`setShmVisibleFor(id, visible)`.
  */
 @Component({
   selector: 'dgt-geospasial',
@@ -79,8 +87,14 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   typeFilter: 'Semua' | 'SKP' | 'KPB' = 'Semua';
 
   typeVisible: { [key: string]: boolean } = { SKP: true, KPB: true };
-  hplVisible = true;
-  shmVisible = false;
+  /** Which kawasan rows are expanded in the layer list, revealing their own HPL/SHM checkboxes. */
+  expandedKawasan: { [id: string]: boolean } = {};
+  /** Per-kawasan HPL/SHM visibility — keyed by kawasan id rather than one global toggle each, so
+   *  each kawasan's legality overlays can be shown/hidden independently (see the reference layout:
+   *  an expandable "WPT ..." row with its own nested HPL/SHM checkboxes). Populated in `ngOnInit()`,
+   *  defaulting every kawasan to both visible. */
+  hplVisible: { [id: string]: boolean } = {};
+  shmVisible: { [id: string]: boolean } = {};
   ewsCategoryVisible: { [category: string]: boolean } = {};
 
   /* A plain field, recomputed only when a filter actually changes (refreshVisibleKawasan()) rather
@@ -105,6 +119,10 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.indeksTrend = this.data.getIndeksTrend();
     this.provinces = this.data.getProvinces();
     this.selectedKawasanId = this.kawasan.length ? this.kawasan[0].id : null;
+    this.kawasan.forEach(k => {
+      this.hplVisible[k.id] = true;
+      this.shmVisible[k.id] = true;
+    });
     this.refreshVisibleKawasan();
 
     this.ewsSub = this.ews.alerts$.subscribe(alerts => {
@@ -235,17 +253,21 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.ewsCategoryVisible[category] = visible;
   }
 
-  toggleHpl(visible: boolean): void {
-    this.hplVisible = visible;
+  toggleKawasanExpand(id: string): void {
+    this.expandedKawasan[id] = !this.expandedKawasan[id];
+  }
+
+  toggleKawasanHpl(id: string, visible: boolean): void {
+    this.hplVisible[id] = visible;
     if (this.kawasanMap) {
-      this.kawasanMap.setHplVisible(visible);
+      this.kawasanMap.setHplVisibleFor(id, visible);
     }
   }
 
-  toggleShm(visible: boolean): void {
-    this.shmVisible = visible;
+  toggleKawasanShm(id: string, visible: boolean): void {
+    this.shmVisible[id] = visible;
     if (this.kawasanMap) {
-      this.kawasanMap.setShmVisible(visible);
+      this.kawasanMap.setShmVisibleFor(id, visible);
     }
   }
 

@@ -178,7 +178,22 @@
   .nm-link:hover { text-decoration: underline; color: var(--primary); }
   .ct { flex: 0 0 auto; font-size: 0.64rem; color: var(--text-faint); max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
-.map-layer-item.sub-item { padding-left: 1.15rem; }
+.map-layer-item.sub-item { padding-left: 0.15rem; }
+
+// ---------- per-kawasan expandable HPL/SHM rows ----------
+.kawasan-expand-btn {
+  flex: 0 0 auto; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; padding: 0; color: var(--text-faint); cursor: pointer;
+
+  &:hover { color: var(--primary); }
+  svg { width: 13px; height: 13px; transition: transform var(--duration-base, 180ms) var(--ease-standard, ease); }
+  svg.rotated { transform: rotate(90deg); }
+}
+.kawasan-sub-list { display: flex; flex-direction: column; gap: 0.1rem; margin-bottom: 0.15rem; }
+.map-layer-item.kawasan-sub-item {
+  padding-left: 2.15rem;
+  .nm { flex: 0 0 auto; }
+}
 
 // ---------- Ringkasan Seluruh Kawasan ----------
 .ringkasan-stat {

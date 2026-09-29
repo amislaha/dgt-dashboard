@@ -36,19 +36,16 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     `<b>${k.nama}</b><br/>${k.provinsi}<br/>Tahap: ${k.tahap}` +
     `<br/>Populasi: ${k.populasi.toLocaleString('id-ID')} jiwa` +
     `<br/>Luas HPL: ${k.hplHa.toLocaleString('id-ID')} ha`;
-  /** "Batas HPL" — a dashed, unfilled outline traced over the same fabricated
-   *  kawasanAreaLatLngs() geometry as the status-coloured areas, so the legality boundary reads as
-   *  its own toggleable layer (ports DGT.md's "land legality (HPL/SHM geospatial overlay)" module
-   *  theme). Defaults off so components other than Geospasial that reuse this map (e.g. Ekonomi &
-   *  Investasi Kawasan's wilayah-coloured map) aren't affected unless they opt in. */
-  @Input() showHpl = false;
-  /** "Area SHM" — a filled overlay tracing `kawasanShmLatLngs()` (the certified-SHM subset of the
-   *  same HPL extent, see that function's own doc comment), its own toggleable layer alongside
-   *  `showHpl` above rather than folded into it, since HPL (the whole boundary, dashed outline) and
-   *  SHM (the certified portion within it, filled) are two different legality-status overlays per
-   *  DGT.md's "land legality (HPL/SHM geospatial overlay)" module theme. Defaults off, same
-   *  reasoning as `showHpl`. */
-  @Input() showShm = false;
+  /** Whether to build the HPL/SHM legality overlays at all — the whole feature is opt-in (defaults
+   *  off) so components other than Geospasial that reuse this map (e.g. Ekonomi & Investasi
+   *  Kawasan's wilayah-coloured map) aren't affected unless they opt in. When on, every kawasan's
+   *  HPL/SHM polygon is built and shown by default; per-kawasan visibility after that is driven by
+   *  `setHplVisibleFor()`/`setShmVisibleFor()` below (Geospasial's per-kawasan expand/collapse
+   *  layer-list rows), not by a single global toggle — HPL ("Batas HPL", a dashed unfilled outline)
+   *  and SHM ("Area SHM", a filled overlay tracing `kawasanShmLatLngs()`, the certified subset of
+   *  the same HPL extent) are two independent legality-status overlays per kawasan, per DGT.md's
+   *  "land legality (HPL/SHM geospatial overlay)" module theme. */
+  @Input() showLegality = false;
   /** Leaflet's own topright +/− control — on by default (unchanged behaviour for the Ekonomi &
    *  Investasi Kawasan module, which also uses this component). The redesigned Geospasial page sets
    *  this false and drives zoom from its own floating bottom toolbar instead, via `zoomIn()`/
@@ -64,8 +61,8 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   private map: L.Map | null = null;
   private areas: { [id: string]: L.Polygon } = {};
-  private hplLayer: L.LayerGroup | null = null;
-  private shmLayer: L.LayerGroup | null = null;
+  private hplAreas: { [id: string]: L.Polygon } = {};
+  private shmAreas: { [id: string]: L.Polygon } = {};
 
   ngAfterViewInit(): void {
     // zoomControl:false + a separate topright control (matching the original) frees up the
@@ -109,40 +106,37 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     if (this.map && changes.selectedId && !changes.selectedId.firstChange) {
       this.panToSelected();
     }
-    if (this.map && changes.showHpl && !changes.showHpl.firstChange) {
-      this.setHplVisible(this.showHpl);
-    }
-    if (this.map && changes.showShm && !changes.showShm.firstChange) {
-      this.setShmVisible(this.showShm);
-    }
   }
 
-  /** Called by the parent's "Batas HPL" catalogue checkbox — same add/remove-layer pattern as
-   *  setAreaVisible(), just for the whole dashed-outline group at once. */
-  setHplVisible(visible: boolean): void {
-    if (!this.map || !this.hplLayer) {
+  /** Called by the parent's per-kawasan "HPL" checkbox (nested under that kawasan's expandable
+   *  layer-list row) — same add/remove-layer pattern as `setAreaVisible()`, just for that one
+   *  kawasan's HPL outline. A no-op if `showLegality` is off (the polygon was never built). */
+  setHplVisibleFor(id: string, visible: boolean): void {
+    const p = this.hplAreas[id];
+    if (!this.map || !p) {
       return;
     }
     if (visible) {
-      if (!this.map.hasLayer(this.hplLayer)) {
-        this.hplLayer.addTo(this.map);
+      if (!this.map.hasLayer(p)) {
+        p.addTo(this.map);
       }
-    } else if (this.map.hasLayer(this.hplLayer)) {
-      this.map.removeLayer(this.hplLayer);
+    } else if (this.map.hasLayer(p)) {
+      this.map.removeLayer(p);
     }
   }
 
-  /** Called by the parent's "Area SHM" catalogue checkbox — same pattern as `setHplVisible()`. */
-  setShmVisible(visible: boolean): void {
-    if (!this.map || !this.shmLayer) {
+  /** Called by the parent's per-kawasan "SHM" checkbox — same pattern as `setHplVisibleFor()`. */
+  setShmVisibleFor(id: string, visible: boolean): void {
+    const p = this.shmAreas[id];
+    if (!this.map || !p) {
       return;
     }
     if (visible) {
-      if (!this.map.hasLayer(this.shmLayer)) {
-        this.shmLayer.addTo(this.map);
+      if (!this.map.hasLayer(p)) {
+        p.addTo(this.map);
       }
-    } else if (this.map.hasLayer(this.shmLayer)) {
-      this.map.removeLayer(this.shmLayer);
+    } else if (this.map.hasLayer(p)) {
+      this.map.removeLayer(p);
     }
   }
 
@@ -230,14 +224,10 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
     Object.keys(this.areas).forEach(id => this.map!.removeLayer(this.areas[id]));
     this.areas = {};
-    if (this.hplLayer) {
-      this.map.removeLayer(this.hplLayer);
-      this.hplLayer = null;
-    }
-    if (this.shmLayer) {
-      this.map.removeLayer(this.shmLayer);
-      this.shmLayer = null;
-    }
+    Object.keys(this.hplAreas).forEach(id => this.map!.removeLayer(this.hplAreas[id]));
+    this.hplAreas = {};
+    Object.keys(this.shmAreas).forEach(id => this.map!.removeLayer(this.shmAreas[id]));
+    this.shmAreas = {};
 
     this.kawasan.forEach(k => {
       const area = L.polygon(kawasanAreaLatLngs(k), {
@@ -252,36 +242,30 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       this.areas[k.id] = area;
     });
 
-    this.hplLayer = L.layerGroup(
-      this.kawasan.map(k =>
-        L.polygon(kawasanAreaLatLngs(k), {
+    // Built per-kawasan (not one combined layer group each) so each kawasan's HPL/SHM can be
+    // toggled independently via setHplVisibleFor()/setShmVisibleFor() — see GeospasialComponent's
+    // expandable per-kawasan layer-list rows. Shown by default (matching that UI's "all checked"
+    // starting state) whenever the feature is opted into at all.
+    if (this.showLegality) {
+      this.kawasan.forEach(k => {
+        this.hplAreas[k.id] = L.polygon(kawasanAreaLatLngs(k), {
           color: '#33809c', // var(--series-2)'s raw hex twin — Leaflet can't resolve CSS vars
           weight: 2,
           opacity: 0.9,
           dashArray: '5 4',
           fill: false,
           interactive: false
-        })
-      )
-    );
-    if (this.showHpl) {
-      this.hplLayer.addTo(this.map);
-    }
+        }).addTo(this.map!);
 
-    this.shmLayer = L.layerGroup(
-      this.kawasan.map(k =>
-        L.polygon(kawasanShmLatLngs(k), {
+        this.shmAreas[k.id] = L.polygon(kawasanShmLatLngs(k), {
           color: '#2c755b', // STAGE_COLOR_HEX.Mandiri's raw hex twin — Leaflet can't resolve CSS vars
           weight: 1.5,
           opacity: 0.9,
           fillColor: '#2c755b',
           fillOpacity: 0.3,
           interactive: false
-        })
-      )
-    );
-    if (this.showShm) {
-      this.shmLayer.addTo(this.map);
+        }).addTo(this.map!);
+      });
     }
 
     // Fit to every kawasan's own coordinates instead of the fixed setView center/zoom above —
