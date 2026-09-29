@@ -38,24 +38,32 @@
 // ---------- top filter toolbar ----------
 // width hugs its own content (on request — "header not fill width") rather than stretching to the
 // far edge of the viewport like the floating side panels do; only anchored top-left.
-.geo-top-toolbar {
+.geo-top-row {
   position: absolute;
   top: var(--space-4, 1rem);
   left: var(--space-4, 1rem);
-  right: auto;
-  max-width: calc(100% - 2rem);
+  right: 7.5rem; // clear of the fixed bell + theme toggle
   z-index: 60;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.5rem 0.75rem;
-  box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
-  pointer-events: auto;
+  gap: 0.75rem;
+  pointer-events: none;
+  > * { pointer-events: auto; }
 }
+.geo-brand-card, .geo-top-toolbar {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 0.5rem 0.9rem; box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
+}
+// left padding reserves the spot where the shell's fixed ☰ button (14px/14px, 34px wide) sits.
+.geo-brand-card {
+  padding-left: 3.4rem; padding-right: 1.4rem; min-height: 3.2rem;
+  img { height: 40px; width: auto; }
+}
+.geo-brand-title { font-size: 1rem; font-weight: 800; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
+.geo-top-toolbar { flex-wrap: wrap; }
+.geo-pill { width: auto; border-radius: 999px; background: var(--muted); font-size: 0.74rem; font-weight: 600; color: var(--text-dim); }
 
 .info-chip {
   display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 600;
@@ -107,7 +115,7 @@
 // ---------- floating side panels ----------
 .geo-panel {
   position: absolute;
-  top: calc(var(--space-4, 1rem) * 2 + 2.2rem);
+  top: 5.75rem;
   bottom: var(--space-4, 1rem);
   width: 300px;
   max-width: calc(100% - 2rem);
@@ -164,7 +172,15 @@
   padding: 0.75rem 0.85rem;
 }
 
-.geo-layer-search { margin-bottom: 0.65rem; }
+.geo-search-wrap {
+  position: relative; margin-bottom: 0.65rem;
+  svg { position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-dim); pointer-events: none; }
+  .geo-layer-search { padding-left: 2rem; }
+}
+.geo-filter-row {
+  display: flex; gap: 0.5rem; margin-bottom: 0.75rem;
+  select { flex: 1 1 0; min-width: 0; }
+}
 .geo-type-filter {
   justify-content: space-between; margin-bottom: 0.75rem;
   select { flex: 0 0 auto; }

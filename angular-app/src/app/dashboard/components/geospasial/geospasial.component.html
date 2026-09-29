@@ -17,23 +17,23 @@
   </div>
 
   <!-- Top filter toolbar -->
+  <div class="geo-top-row">
+    <div class="geo-brand-card">
+      <img src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi" />
+      <span class="geo-brand-title">DGT DASHBOARD</span>
+    </div>
   <div class="geo-top-toolbar">
-    <div class="field-inline">
-      <label for="geoSiteSelect">Site</label>
-      <select id="geoSiteSelect" class="form-control form-control-sm" [(ngModel)]="geoSite">
-        <option value="Semua">Semua</option>
-        <option value="KTPN">KTPN</option>
-        <option value="Kementerian">Kementerian</option>
-      </select>
-    </div>
-    <div class="field-inline">
-      <label for="geoProvSelect">Provinsi</label>
-      <select id="geoProvSelect" class="form-control form-control-sm" [ngModel]="selectedProvinsi" (ngModelChange)="selectedProvinsi = $event; onProvinsiChange()">
-        <option [ngValue]="null">Semua provinsi</option>
-        <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
-      </select>
-    </div>
+    <select id="geoSiteSelect" class="form-control form-control-sm geo-pill" aria-label="Site" [(ngModel)]="geoSite">
+      <option value="Semua">Semua site</option>
+      <option value="KTPN">KTPN</option>
+      <option value="Kementerian">Kementerian</option>
+    </select>
+    <select id="geoProvSelect" class="form-control form-control-sm geo-pill" aria-label="Provinsi" [ngModel]="selectedProvinsi" (ngModelChange)="selectedProvinsi = $event; onProvinsiChange()">
+      <option [ngValue]="null">Semua provinsi</option>
+      <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
+    </select>
     <span class="info-chip">Periode: 2026 &middot; TW1</span>
+  </div>
   </div>
 
   <!-- Top-right EWS entry point, just left of the fixed theme toggle. Opens the EWS category checklist. -->
@@ -59,25 +59,27 @@
   <!-- Left floating panel: Manajemen Lapisan -->
   <div class="geo-panel geo-panel-left" [class.collapsed]="leftPanelCollapsed">
     <div class="geo-panel-head">
-      <h2 class="geo-panel-title">Manajemen Lapisan</h2>
+      <h2 class="geo-panel-title">Layer Kawasan</h2>
       <button type="button" class="geo-panel-collapse" [attr.title]="leftPanelCollapsed ? 'Buka panel' : 'Ciutkan panel'" (click)="toggleLeftPanel()">
         <svg class="chev" [class.rotated]="leftPanelCollapsed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
       </button>
     </div>
 
     <div class="geo-panel-body" *ngIf="!leftPanelCollapsed">
-      <input
-        type="text"
-        class="form-control form-control-sm geo-layer-search"
-        placeholder="Cari lapisan atau kawasan..."
-        [(ngModel)]="layerSearchQuery" />
+      <div class="geo-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" class="form-control form-control-sm geo-layer-search" placeholder="Cari kawasan.." aria-label="Cari kawasan" [(ngModel)]="layerSearchQuery" />
+      </div>
 
-      <div class="field-inline geo-type-filter">
-        <label for="geoTypeFilter">Tampilkan tipe</label>
-        <select id="geoTypeFilter" class="form-control form-control-sm" [(ngModel)]="typeFilter">
-          <option value="Semua">Semua</option>
+      <div class="geo-filter-row">
+        <select class="form-control form-control-sm" aria-label="Filter tipe" [(ngModel)]="typeFilter">
+          <option value="Semua">Semua tipe</option>
           <option value="SKP">SKP</option>
           <option value="KPB">KPB</option>
+        </select>
+        <select class="form-control form-control-sm" aria-label="Filter tahap" [(ngModel)]="tahapFilter">
+          <option value="Semua">Semua tahap</option>
+          <option *ngFor="let t of stages" [value]="t">{{ t }}</option>
         </select>
       </div>
 

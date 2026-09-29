@@ -87,6 +87,8 @@ export class GeospasialComponent implements OnInit, OnDestroy {
    *  below, which toggles map-layer visibility. Matters far more now that the list has 45 rows
    *  instead of 10. */
   typeFilter: 'Semua' | 'SKP' | 'KPB' = 'Semua';
+  tahapFilter: 'Semua' | Tahap = 'Semua';
+  readonly stages = STAGES;
 
   typeVisible: { [key: string]: boolean } = { SKP: true, KPB: true };
   /** Which kawasan rows are expanded in the layer list, revealing their own HPL/SHM checkboxes. */
@@ -171,6 +173,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     return this.kawasan.filter(
       k =>
         (this.typeFilter === 'Semua' || k.tipe === this.typeFilter) &&
+        (this.tahapFilter === 'Semua' || k.tahap === this.tahapFilter) &&
         (!this.selectedProvinsi || k.provinsi === this.selectedProvinsi) &&
         (!q || k.nama.toLowerCase().includes(q) || k.provinsi.toLowerCase().includes(q) || k.kabupaten.toLowerCase().includes(q))
     );

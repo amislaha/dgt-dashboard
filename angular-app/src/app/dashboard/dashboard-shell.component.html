@@ -25,7 +25,7 @@
   <button
     type="button"
     class="rail-fab"
-    [class.hidden-until-hover]="!isNarrow && railCollapsed"
+    [class.hidden-until-hover]="!isNarrow && railCollapsed && activeId !== 'geospasial'"
     [class.shifted]="!isNarrow && !railCollapsed"
     aria-label="Buka/tutup menu modul"
     (click)="toggleRail()">
