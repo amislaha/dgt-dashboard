@@ -17,42 +17,24 @@
     </dgt-kawasan-map>
   </div>
 
-  <!-- Top header bar: full-width, brand block + filter pills — restyled on request to match a
-       reference screenshot of a similarly-shaped dashboard header (branding lockup on the left,
-       a row of dark pill dropdowns for filters, on the right). Uses --sidebar/--sidebar-foreground,
-       the same "always dark, regardless of light/dark mode" token pair the rail nav already uses
-       (see _tokens-bridge.scss's own comment), rather than inventing a new colour just for this bar. -->
+  <!-- Top filter toolbar -->
   <div class="geo-top-toolbar">
-    <div class="geo-brand">
-      <img src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi" class="geo-brand-logo" />
-      <div class="geo-brand-text">
-        <span class="geo-brand-title">DGT</span>
-        <span class="geo-brand-sub">Peta Sebaran Kawasan</span>
-      </div>
+    <div class="field-inline">
+      <label for="geoSiteSelect">Site</label>
+      <select id="geoSiteSelect" class="form-control form-control-sm" [(ngModel)]="geoSite">
+        <option value="Semua">Semua</option>
+        <option value="KTPN">KTPN</option>
+        <option value="Kementerian">Kementerian</option>
+      </select>
     </div>
-
-    <div class="geo-toolbar-filters">
-      <div class="geo-filter-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-        <select id="geoSiteSelect" aria-label="Site" [(ngModel)]="geoSite">
-          <option value="Semua">Semua Site</option>
-          <option value="KTPN">KTPN</option>
-          <option value="Kementerian">Kementerian</option>
-        </select>
-      </div>
-      <div class="geo-filter-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
-        <select id="geoProvSelect" aria-label="Provinsi" [ngModel]="selectedProvinsi" (ngModelChange)="selectedProvinsi = $event; onProvinsiChange()">
-          <option [ngValue]="null">Semua Provinsi</option>
-          <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
-        </select>
-      </div>
-      <div class="geo-filter-pill geo-filter-static">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-        <span>2026 &middot; TW1</span>
-      </div>
+    <div class="field-inline">
+      <label for="geoProvSelect">Provinsi</label>
+      <select id="geoProvSelect" class="form-control form-control-sm" [ngModel]="selectedProvinsi" (ngModelChange)="selectedProvinsi = $event; onProvinsiChange()">
+        <option [ngValue]="null">Semua provinsi</option>
+        <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
+      </select>
     </div>
-
+    <span class="info-chip">Periode: 2026 &middot; TW1</span>
     <button type="button" class="geo-bell-btn" [class.warn]="activeAlertsCount > 0" title="Peringatan Dini (EWS)" (click)="scrollToEws()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 4.5 1.2 7 2.3 8.3.4.5 0 1.2-.6 1.2H4.3c-.6 0-1-.7-.6-1.2C4.8 15 6 12.5 6 8Z"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
       <span class="geo-bell-badge" *ngIf="activeAlertsCount > 0">{{ activeAlertsCount }}</span>
