@@ -34,10 +34,26 @@
       </select>
     </div>
     <span class="info-chip">Periode: 2026 &middot; TW1</span>
-    <button type="button" class="geo-bell-btn" [class.warn]="activeAlertsCount > 0" title="Peringatan Dini (EWS)" (click)="scrollToEws()">
+  </div>
+
+  <!-- Top-right EWS entry point, just left of the fixed theme toggle. Opens the EWS category checklist. -->
+  <div class="geo-bell-wrap">
+    <button type="button" class="geo-bell-btn geo-bell-fixed" [class.warn]="activeAlertsCount > 0" [class.open]="ewsPopoverOpen" title="Peringatan Dini (EWS)" [attr.aria-expanded]="ewsPopoverOpen" (click)="toggleEwsPopover()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 4.5 1.2 7 2.3 8.3.4.5 0 1.2-.6 1.2H4.3c-.6 0-1-.7-.6-1.2C4.8 15 6 12.5 6 8Z"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
       <span class="geo-bell-badge" *ngIf="activeAlertsCount > 0">{{ activeAlertsCount }}</span>
     </button>
+    <div class="geo-ews-popover" *ngIf="ewsPopoverOpen">
+      <div class="layer-group-head">
+        <span class="nm">Peringatan Dini (EWS)</span>
+        <span class="ct">{{ ewsCategoryVisibleCount }}/{{ ewsCategories.length }}</span>
+      </div>
+      <label class="map-layer-item" *ngFor="let c of ewsCategories">
+        <input type="checkbox" [checked]="ewsCategoryVisible[c.category] !== false" (change)="toggleEwsCategory(c.category, $any($event.target).checked)" />
+        <span class="map-layer-dot" [style.background]="sevColorVar(c.sev)"></span>
+        <span class="nm">{{ c.category }}</span>
+        <span class="ct">{{ c.count }}</span>
+      </label>
+    </div>
   </div>
 
   <!-- Left floating panel: Manajemen Lapisan -->
@@ -107,36 +123,26 @@
           <p class="layer-empty" *ngIf="!kawasanRows.length">Tidak ada kawasan yang cocok.</p>
         </div>
       </div>
-
-      <div class="layer-group">
-        <div class="layer-group-head">
-          <span class="nm">Peringatan Dini (EWS)</span>
-          <span class="ct">{{ ewsCategoryVisibleCount }}/{{ ewsCategories.length }}</span>
-        </div>
-        <div class="layer-group-list">
-          <label class="map-layer-item" *ngFor="let c of ewsCategories">
-            <input type="checkbox" [checked]="ewsCategoryVisible[c.category] !== false" (change)="toggleEwsCategory(c.category, $any($event.target).checked)" />
-            <span class="map-layer-dot" [style.background]="sevColorVar(c.sev)"></span>
-            <span class="nm">{{ c.category }}</span>
-            <span class="ct">{{ c.count }}</span>
-          </label>
-        </div>
-      </div>
     </div>
   </div>
 
   <!-- Right floating panel: Ringkasan Seluruh Kawasan -->
   <div class="geo-panel geo-panel-right" [class.collapsed]="rightPanelCollapsed">
     <div class="geo-panel-head">
-      <h2 class="geo-panel-title">Ringkasan Seluruh Kawasan</h2>
+      <h2 class="geo-panel-title">Ringkasan &amp; Detail</h2>
       <button type="button" class="geo-panel-collapse" [attr.title]="rightPanelCollapsed ? 'Buka panel' : 'Ciutkan panel'" (click)="toggleRightPanel()">
         <svg class="chev" [class.rotated]="!rightPanelCollapsed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       </button>
     </div>
 
+    <div class="geo-panel-tabs" *ngIf="!rightPanelCollapsed" role="tablist">
+      <button type="button" role="tab" [class.active]="rightTab === 'nasional'" [attr.aria-selected]="rightTab === 'nasional'" (click)="rightTab = 'nasional'">Ringkasan Nasional</button>
+      <button type="button" role="tab" [class.active]="rightTab === 'detail'" [attr.aria-selected]="rightTab === 'detail'" (click)="rightTab = 'detail'">Detail Kawasan</button>
+    </div>
+
     <div class="geo-panel-body" *ngIf="!rightPanelCollapsed">
+      <ng-container *ngIf="rightTab === 'detail'">
       <div class="ringkasan-section">
-        <div class="ringkasan-section-title">Detail Kawasan</div>
         <ng-container *ngIf="selectedKawasan as k; else noSelDetail">
           <div class="detail-kawasan-name">{{ k.nama }}</div>
           <div class="detail-kawasan-sub">{{ k.kabupaten }}, {{ k.provinsi }}</div>
@@ -161,6 +167,9 @@
         </ng-container>
         <ng-template #noSelDetail><p class="text-muted mb-0">Pilih kawasan pada peta atau daftar lapisan.</p></ng-template>
       </div>
+      </ng-container>
+
+      <ng-container *ngIf="rightTab === 'nasional'">
 
       <div class="ringkasan-stat" *ngIf="nationalKPI as nk">
         <div class="ringkasan-stat-total">
@@ -213,6 +222,7 @@
         </div>
         <p class="text-muted mb-0" *ngIf="!topAlert">Tidak ada peringatan pada kategori terpilih.</p>
       </div>
+      </ng-container>
     </div>
   </div>
 

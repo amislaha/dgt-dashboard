@@ -78,6 +78,25 @@
   svg { width: 16px; height: 16px; }
   &.warn { color: var(--critical); border-color: transparent; background: var(--critical-soft); }
 }
+// Fixed top-right, immediately left of the fixed theme toggle (34px wide at right:14px).
+.geo-bell-wrap { position: fixed; top: 16px; right: 58px; z-index: 1031; }
+.geo-bell-fixed {
+  width: 34px; height: 34px; background: var(--card); box-shadow: 0 4px 14px -6px rgba(15, 25, 34, 0.25);
+  &.warn { background: var(--critical-soft); }
+}
+.geo-ews-popover {
+  position: absolute; top: calc(100% + 8px); right: 0; width: 240px; padding: 0.6rem 0.7rem;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 10px 26px -12px rgba(15, 25, 34, 0.45);
+}
+.geo-panel-tabs {
+  flex: 0 0 auto; display: flex; border-bottom: 1px solid var(--border);
+  button {
+    flex: 1; padding: 0.5rem 0.4rem; font-size: 0.74rem; font-weight: 600; background: none; border: 0;
+    border-bottom: 2px solid transparent; color: var(--text-dim); cursor: pointer;
+    &.active { color: var(--primary); border-bottom-color: var(--primary); }
+  }
+}
 .geo-bell-badge {
   position: absolute; top: -4px; right: -4px; min-width: 15px; height: 15px; padding: 0 3px;
   display: flex; align-items: center; justify-content: center;

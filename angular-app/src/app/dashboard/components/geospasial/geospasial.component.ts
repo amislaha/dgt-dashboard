@@ -79,6 +79,8 @@ export class GeospasialComponent implements OnInit, OnDestroy {
 
   leftPanelCollapsed = false;
   rightPanelCollapsed = false;
+  rightTab: 'nasional' | 'detail' = 'nasional';
+  ewsPopoverOpen = false;
 
   layerSearchQuery = '';
   /** Narrows the per-kawasan rows shown under "Kawasan Transmigrasi" — separate from `typeVisible`
@@ -279,16 +281,14 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.rightPanelCollapsed = !this.rightPanelCollapsed;
   }
 
-  scrollToEws(): void {
-    this.rightPanelCollapsed = false;
-    const el = document.getElementById('geoEwsSummary');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  toggleEwsPopover(): void {
+    this.ewsPopoverOpen = !this.ewsPopoverOpen;
   }
 
   selectKawasan(k: Kawasan): void {
     this.selectedKawasanId = k.id;
+    this.rightTab = 'detail';
+    this.rightPanelCollapsed = false;
   }
 
   onMapView(view: { zoom: number; center: { lat: number; lng: number } }): void {
