@@ -1,16 +1,21 @@
-// Full-bleed page. A negative-margin trick against `.main`'s own padding (the technique used for
-// the Data Manager's Wilayah/Submission map pages) isn't enough here on its own: `RailNavComponent`'s
-// collapsed `.rail` goes to `width: 0` but doesn't hide its label text, which then wraps into a very
-// tall single-character column at zero available width — that inflates `.shell`'s flex-row height
-// (and therefore `.main`, stretched to match it) well past one viewport's worth, on every dashboard
-// page, collapsed or not. Every other page already scrolls normally so that excess was never visible;
-// a `height: 100vh` block sized against `.main`'s padding box would leave that excess as dead
-// scrollable space below it. `position: fixed; inset: 0` sidesteps the whole thing — sized purely
-// against the real viewport, independent of whatever size `.main` ends up being.
+// Full-bleed page — cancels dashboard-shell's `.main` padding (space-6 top/left/right, a fixed
+// 3rem bottom) via the same negative-margin trick used for the Data Manager's Wilayah/Submission
+// map pages, then fills the viewport height directly (this shell has no topbar to subtract).
+//
+// This was briefly `position: fixed; inset: 0` instead — working around `RailNavComponent`'s
+// collapsed `.rail` inflating `.shell`/`.main`'s height past one viewport (its collapsed labels
+// used to wrap instead of just disappearing at width:0; fixed at the source now, see that
+// component's own `.rail.collapsed` comment) — but `position: fixed` has a worse problem than the
+// one it worked around: it covers the *entire* viewport unconditionally, including whatever
+// horizontal space the rail nav needs when a user expands it, since a fixed element doesn't
+// participate in `.shell`'s flex layout at all. Verified live: expanding the rail while on this
+// page rendered it completely hidden underneath this one (a plain `position: static` sibling never
+// wins a stacking fight against a `position: fixed` one, however low its z-index). Back to the
+// negative-margin approach, which stays in-flow and therefore correctly gives way to the rail.
 .geo-shell {
-  position: fixed;
-  inset: 0;
-  z-index: 10; // stays under the rail/.rail-fab/theme-toggle's 1029–1031 range
+  position: relative;
+  margin: calc(var(--space-6, 1.5rem) * -1) calc(var(--space-6, 1.5rem) * -1) -3rem calc(var(--space-6, 1.5rem) * -1);
+  height: 100vh;
   overflow: hidden;
   background: var(--sidebar, #0b1220);
 }

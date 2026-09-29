@@ -323,17 +323,22 @@ is gone now; see above for what replaced it.
   just laggy" rather than "zoom is broken." Worth a real investigation (start with whatever sets a
   global `transition` on a broad selector) rather than patching every call site with
   `animate: false` piecemeal.
-- **`RailNavComponent`'s collapsed `.rail` inflates page height on every dashboard route.**
-  `.rail.collapsed` goes to `width: 0` but doesn't hide its label text (only `overflow: hidden`),
-  which wraps into a very tall single-character column at zero available width. That makes `.shell`'s
-  flex-row height (and `.main`, stretched to match it via default `align-items: stretch`) taller than
-  the viewport on every dashboard page — empirically ~1018px measured on a ~660–730px-tall window,
-  regardless of window size. Invisible everywhere else since those pages already scroll normally for
-  legitimate reasons; only became visible while building Geospasial's `height: 100vh` full-bleed page
-  (worked around locally with `position: fixed; inset: 0`, see that component's own SCSS comment).
-  The real fix belongs in `RailNavComponent` itself — likely hiding collapsed labels via
-  `white-space: nowrap` (so they clip instead of wrapping) rather than relying on `overflow: hidden`
-  alone, or hiding them outright when collapsed.
+- **Fixed**: `RailNavComponent`'s collapsed `.rail` used to inflate page height on every dashboard
+  route. `.rail.collapsed` goes to `width: 0` but wasn't hiding its label text (only
+  `overflow: hidden`), which wrapped into a very tall single-character column at zero available
+  width. That made `.shell`'s flex-row height (and `.main`, stretched to match it via default
+  `align-items: stretch`) taller than the viewport on every dashboard page — empirically ~1018px
+  measured on a ~660–730px-tall window, regardless of window size. Invisible everywhere else since
+  those pages already scroll normally for legitimate reasons; only became visible while building
+  Geospasial's `height: 100vh` full-bleed page, and was first worked around locally there with
+  `position: fixed; inset: 0` instead of fixing the source. That workaround turned out to have its
+  own, worse bug — verified live, expanding the main rail nav while on the Geospasial page rendered
+  it invisible, hidden underneath the now-viewport-covering fixed page, since a `position: static`
+  sibling can't out-stack a `position: fixed` one regardless of z-index. Properly fixed at the
+  source instead: `.rail.collapsed` now sets `display: none` on `.rail-text`/`.rail-group-label`/
+  `.rail-logo-text` (see that rule's own comment in `rail-nav.component.scss`), and Geospasial's
+  `.geo-shell` is back to the plain negative-margin/`position: relative` approach, which correctly
+  stays in-flow and gives way to the rail when it's expanded.
 
 ## Explicit TODOs for the team
 

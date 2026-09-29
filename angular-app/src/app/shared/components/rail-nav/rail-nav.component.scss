@@ -29,6 +29,19 @@
   width: 0;
   padding: 0;
   border-right: none;
+
+  // `overflow: hidden` above already clips all of this visually, but at zero available width the
+  // text inside (no white-space:nowrap or fixed width anywhere in .rail-text/.rail-group-label)
+  // still reflows to fit — wrapping character-by-character instead of just disappearing — which
+  // inflates the *height* .rail itself needs, and since .rail is a normal flex-row sibling of
+  // .main (not absolutely positioned), that inflated height stretches .shell/.main to match via
+  // the row's default align-items:stretch, well past one viewport's worth, on every dashboard page
+  // regardless of collapsed state. Hiding the text outright (rather than relying on the clip)
+  // removes it from layout entirely instead of letting it wrap — no visible difference (it was
+  // already invisible at width:0) but the height it no longer needs stops leaking into ancestors.
+  .rail-text, .rail-group-label, .rail-logo-text {
+    display: none;
+  }
 }
 
 .rail-head {
