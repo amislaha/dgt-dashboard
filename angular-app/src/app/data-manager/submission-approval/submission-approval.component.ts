@@ -114,6 +114,9 @@ export class SubmissionApprovalComponent implements OnDestroy {
       const record = entry.service.get(value);
       return record ? String(record[entry.config.titleField]) : `⚠ tidak ditemukan (${value})`;
     }
+    if (field.type === 'boolean') {
+      return value ? 'Ya' : 'Tidak';
+    }
     return String(value);
   }
 

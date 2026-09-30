@@ -1,123 +1,125 @@
 import { Injectable } from '@angular/core';
-import { EMPTY_SIMPLE_MASTER_SEED } from '../data/seed-data';
-import { SimpleMaster } from '../models/simple-master.model';
+import {
+  ApplicationSetting, ApprovalFlow, IkuDefinition, IkuNko, IkuStatus, ProdukJenis, ProfilCategory, ProfilGroup, ProfilMeasure,
+  Project, RecommendationCategory, SatkerType, StrategicTarget, WilayahCategory, WilayahStatus, WilayahTarget
+} from '../models/erd-master.model';
 import { EntityCrudService } from './entity-crud.service';
 
 /**
- * One tiny `EntityCrudService<SimpleMaster>` subclass per entity added for the header nav's "Data
- * Master"/"Settings" groups (see entity-key.model.ts) — same one-class-per-entity pattern as
- * wpt-crud.service.ts etc. (each needs its own Angular DI token and its own localStorage key/id
- * prefix), just grouped into a single file since every one of these is otherwise identical
- * boilerplate. Storage keys match the `EntityKey` string, same convention as the original 8.
+ * One tiny `EntityCrudService` subclass per ERD-backed master table (see models/erd-master.model.ts
+ * and entity-key.model.ts) — same one-class-per-entity pattern as wpt-crud.service.ts etc. (each
+ * needs its own Angular DI token and its own localStorage key/id prefix), grouped into a single
+ * file since the boilerplate is otherwise identical. Storage keys match the `EntityKey` string.
+ * No seed rows: the ERD image defines columns only, there is no source data to transcribe.
  */
 @Injectable({ providedIn: 'root' })
-export class WilayahStatusCrudService extends EntityCrudService<SimpleMaster> {
+export class WilayahStatusCrudService extends EntityCrudService<WilayahStatus> {
   constructor() {
-    super('wilayahStatus', EMPTY_SIMPLE_MASTER_SEED, 'wst');
+    super('wilayahStatus', [], 'wst');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class WilayahCategoryCrudService extends EntityCrudService<SimpleMaster> {
+export class WilayahCategoryCrudService extends EntityCrudService<WilayahCategory> {
   constructor() {
-    super('wilayahCategory', EMPTY_SIMPLE_MASTER_SEED, 'wct');
+    super('wilayahCategory', [], 'wct');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class WilayahTargetCrudService extends EntityCrudService<SimpleMaster> {
+export class WilayahTargetCrudService extends EntityCrudService<WilayahTarget> {
   constructor() {
-    super('wilayahTarget', EMPTY_SIMPLE_MASTER_SEED, 'wtg');
+    super('wilayahTarget', [], 'wtg');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class ProjectCrudService extends EntityCrudService<SimpleMaster> {
+export class ProjectCrudService extends EntityCrudService<Project> {
   constructor() {
-    super('project', EMPTY_SIMPLE_MASTER_SEED, 'prj');
+    super('project', [], 'prj');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class SatkerTypeCrudService extends EntityCrudService<SimpleMaster> {
+export class SatkerTypeCrudService extends EntityCrudService<SatkerType> {
   constructor() {
-    super('satkerType', EMPTY_SIMPLE_MASTER_SEED, 'stp');
+    super('satkerType', [], 'stp');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class StrategicTargetCrudService extends EntityCrudService<SimpleMaster> {
+export class StrategicTargetCrudService extends EntityCrudService<StrategicTarget> {
   constructor() {
-    super('strategicTarget', EMPTY_SIMPLE_MASTER_SEED, 'sgt');
+    super('strategicTarget', [], 'sgt');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class IkuDefinitionCrudService extends EntityCrudService<SimpleMaster> {
+export class IkuDefinitionCrudService extends EntityCrudService<IkuDefinition> {
   constructor() {
-    super('ikuDefinition', EMPTY_SIMPLE_MASTER_SEED, 'ikd');
+    super('ikuDefinition', [], 'ikd');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class IkuNkoCrudService extends EntityCrudService<SimpleMaster> {
+export class IkuNkoCrudService extends EntityCrudService<IkuNko> {
   constructor() {
-    super('ikuNko', EMPTY_SIMPLE_MASTER_SEED, 'ikn');
+    super('ikuNko', [], 'ikn');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class IkuStatusCrudService extends EntityCrudService<SimpleMaster> {
+export class IkuStatusCrudService extends EntityCrudService<IkuStatus> {
   constructor() {
-    super('ikuStatus', EMPTY_SIMPLE_MASTER_SEED, 'iks');
+    super('ikuStatus', [], 'iks');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class ProdukJenisCrudService extends EntityCrudService<SimpleMaster> {
+export class ProdukJenisCrudService extends EntityCrudService<ProdukJenis> {
   constructor() {
-    super('produkJenis', EMPTY_SIMPLE_MASTER_SEED, 'pdj');
+    super('produkJenis', [], 'pdj');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class RecommendationCategoryCrudService extends EntityCrudService<SimpleMaster> {
+export class RecommendationCategoryCrudService extends EntityCrudService<RecommendationCategory> {
   constructor() {
-    super('recommendationCategory', EMPTY_SIMPLE_MASTER_SEED, 'rec');
+    super('recommendationCategory', [], 'rec');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class ProfilCategoryCrudService extends EntityCrudService<SimpleMaster> {
+export class ProfilCategoryCrudService extends EntityCrudService<ProfilCategory> {
   constructor() {
-    super('profilCategory', EMPTY_SIMPLE_MASTER_SEED, 'pfc');
+    super('profilCategory', [], 'pfc');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class ProfilGroupCrudService extends EntityCrudService<SimpleMaster> {
+export class ProfilGroupCrudService extends EntityCrudService<ProfilGroup> {
   constructor() {
-    super('profilGroup', EMPTY_SIMPLE_MASTER_SEED, 'pfg');
+    super('profilGroup', [], 'pfg');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class ProfilMeasureCrudService extends EntityCrudService<SimpleMaster> {
+export class ProfilMeasureCrudService extends EntityCrudService<ProfilMeasure> {
   constructor() {
-    super('profilMeasure', EMPTY_SIMPLE_MASTER_SEED, 'pfm');
+    super('profilMeasure', [], 'pfm');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class ApplicationSettingsCrudService extends EntityCrudService<SimpleMaster> {
+export class ApplicationSettingsCrudService extends EntityCrudService<ApplicationSetting> {
   constructor() {
-    super('applicationSettings', EMPTY_SIMPLE_MASTER_SEED, 'aps');
+    super('applicationSettings', [], 'aps');
   }
 }
 
 @Injectable({ providedIn: 'root' })
-export class ApprovalFlowCrudService extends EntityCrudService<SimpleMaster> {
+export class ApprovalFlowCrudService extends EntityCrudService<ApprovalFlow> {
   constructor() {
-    super('approvalFlow', EMPTY_SIMPLE_MASTER_SEED, 'apf');
+    super('approvalFlow', [], 'apf');
   }
 }

@@ -44,8 +44,22 @@
           [class.is-invalid]="fieldInvalid(field)"
           [formControlName]="field.name"
           [attr.min]="field.min"
+          [attr.step]="field.step || 'any'"
           [attr.max]="field.max"
           [placeholder]="field.placeholder || ''" />
+
+        <div *ngSwitchCase="'boolean'" class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" [id]="'f_' + field.name" [formControlName]="field.name" />
+          <label class="custom-control-label" [attr.for]="'f_' + field.name">Ya</label>
+        </div>
+
+        <input
+          *ngSwitchCase="'date'"
+          type="date"
+          [id]="'f_' + field.name"
+          class="form-control form-control-sm"
+          [class.is-invalid]="fieldInvalid(field)"
+          [formControlName]="field.name" />
 
         <input
           *ngSwitchDefault

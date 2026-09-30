@@ -419,3 +419,39 @@ field values.
   (same logic as `EntityListComponent.resolveFkLabel()`) so a reviewer sees
   "Kubu Raya", not `wpt1`. Without this the newly-captured structured data
   would be invisible to whoever has to actually approve the change.
+
+## ERD conversion: the 16 placeholder masters get their real fields
+
+On request, the dbdiagram.io ERD image ("DGT" schema, ~40 tables) was converted into Data Manager
+forms. This **supersedes the "16 new master entities ... placeholder" paragraph above**:
+`SimpleMaster`/`EMPTY_SIMPLE_MASTER_SEED` are gone, replaced by typed interfaces in
+`models/erd-master.model.ts` and configs in `config/entity-configs.ts` (`lookupConfig()` builds the
+shared code/name/description/sequence/active shape; the rest are hand-written).
+
+- **Converted**: Wilayah Status/Category/Target, Project, Satker Type, Strategic Target, IKU
+  Definition/NKO/Status, Produk Jenis, Recommendation Category, Profil Category/Group/Measure,
+  Application Settings, Approval Flow. ERD foreign keys are real `fk` dropdowns (Profil Group →
+  Profil Category, Recommendation Category → Satker Type, Strategic Target → Program + Satker,
+  IKU Definition → IKU Indicator, Project → Satker, Approval Flow → itself, Wilayah Target → WPT).
+- **Existing entities gained their ERD columns** (all optional, so seed data and saved browser data
+  still load): Satker (`parentId`, `active`), Komoditas (`code`, `description`, `sequence`,
+  `active`), Transmigration Program (`code`, `sequence`, `active`), IKU Indicator
+  (`strategicTargetId`, `description`, `sequence`, `active`).
+- **Left as-is**: WPT/SKP/SP. The ERD's single self-referencing `wilayah` table (kode_prop/kab/kec/kel,
+  hpl/shm/kk totals, k1-k3, ...) is modelled here as three entities holding real Matriks-45 data;
+  merging them would be a data migration, not a form change.
+- **Not converted** (reporting/transaction tables, not master data): wilayah_profil, produk_unggulan,
+  wilayah_kk/shm/hpl/psu (+ psu_type), wilayah_ews, wilayah_submission, approval, media,
+  recommendation, iku_result. The `iku_nko`/`iku_status` → `iku_result_id` FK is dropped for the
+  same reason (no `iku_result` entity).
+- **Conventions**: audit columns (created_*/last_modified_*) and the derived reporting_year/month/
+  week/day columns are omitted; `bigint` FKs are string ids. ERD enums whose values aren't legible in
+  the image (target_type, iku_unit, aggregation_type, value_direction, reporting_frequency) are free
+  text with a hint; `approval_status` reuses the Submission flow's PENDING/APPROVED/REJECTED.
+- **Form/list support added**: `FieldConfig` types `boolean` (checkbox) and `date`, plus `step` and
+  `defaultValue` (`active` defaults to true on new records); `EntityColumnConfig.boolean` renders
+  Ya/Tidak in the list and in the Approval field summary.
+- Not compiled: no `node_modules` here (CI builds on Node 12). Only the Angular-free files
+  (configs/models/seed) were type-checked, with TypeScript 3.5 `--strict`; the first CI build is the
+  real check for the form template and services.
+

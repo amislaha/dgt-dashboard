@@ -14,6 +14,8 @@ export interface EntityColumnConfig<T = any> {
   sortable?: boolean;
   numeric?: boolean;
   fk?: EntityKey;
+  /** Renders true/false as Ya/Tidak. */
+  boolean?: boolean;
 }
 
 /**

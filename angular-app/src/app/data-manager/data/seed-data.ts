@@ -3,7 +3,6 @@ import { Komoditi } from '../models/komoditi.model';
 import { Personel } from '../models/personel.model';
 import { Program } from '../models/program.model';
 import { Satker } from '../models/satker.model';
-import { SimpleMaster } from '../models/simple-master.model';
 import { Skp } from '../models/skp.model';
 import { Sp } from '../models/sp.model';
 import { Wpt } from '../models/wpt.model';
@@ -85,7 +84,7 @@ export const WPT_SEED: Wpt[] = [
  * them correspond to any real SKP/SP in the Matriks 45 Kawasan source (which only has free-text
  * summaries — see Wpt.skpRingkasan/spRingkasan — not structured per-record data). Leaving them in
  * place with their old `indukWptId`s would just show as broken-FK rows against the new ids; an
- * empty list (same as the 16 placeholder masters' `EMPTY_SIMPLE_MASTER_SEED`) is the honest state
+ * empty list (same as the ERD-backed master entities, which ship with no rows) is the honest state
  * until someone provides real SKP/SP-level source data.
  */
 export const SKP_SEED: Skp[] = [];
@@ -177,11 +176,3 @@ export const IKU_SEED: Iku[] = [
   // same policy the original file's own header comment states.
   { id: 'iku23', pic: 'Ir. Rajumber Prihatin, M.Si', sasaranStrategis: 'Persentase pemenuhan program pembangunan dan pengembangan kawasan transmigrasi', indikator: '(belum diberi kode/satker di sumber ERD — lengkapi saat diverifikasi)' }
 ];
-
-/**
- * No seed rows for the 16 "Data Master"/"Settings" entities added later (see entity-key.model.ts,
- * entity-configs.ts) — there's no source spreadsheet for these yet, unlike the 8 above, so an empty
- * list is more honest than inventing illustrative rows for a schema (SimpleMaster: nama + optional
- * keterangan) that's itself a placeholder pending real field requirements.
- */
-export const EMPTY_SIMPLE_MASTER_SEED: SimpleMaster[] = [];

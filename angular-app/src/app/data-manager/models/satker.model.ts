@@ -5,4 +5,8 @@ export interface Satker {
   level: number;
   eselon: string;
   keterangan?: string;
+  /** ERD `satker.parent_id` — self-reference to the unit above this one. */
+  parentId?: string;
+  /** ERD `satker.active`. */
+  active?: boolean;
 }

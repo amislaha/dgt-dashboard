@@ -69,7 +69,8 @@ export class EntityFormComponent implements OnChanges {
     const group: { [key: string]: any } = {};
     this.config.fields.forEach(field => {
       const raw = this.record ? this.record[field.name] : undefined;
-      const initial = raw != null ? raw : field.type === 'number' ? null : '';
+      const empty = field.type === 'number' ? null : field.type === 'boolean' ? false : '';
+      const initial = raw != null ? raw : !this.record && field.defaultValue !== undefined ? field.defaultValue : empty;
       group[field.name] = [initial, this.buildValidators(field)];
     });
     this.form = this.fb.group(group);

@@ -162,7 +162,11 @@ export class EntityListComponent implements OnDestroy {
       label: col.label,
       numeric: col.numeric,
       sortable: col.sortable !== false,
-      format: col.fk ? (row: any) => this.resolveFkLabel(col.fk as EntityKey, row[col.key]) : undefined
+      format: col.fk
+        ? (row: any) => this.resolveFkLabel(col.fk as EntityKey, row[col.key])
+        : col.boolean
+        ? (row: any) => (row[col.key] ? 'Ya' : 'Tidak')
+        : undefined
     }));
   }
 

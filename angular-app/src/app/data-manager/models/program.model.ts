@@ -4,4 +4,8 @@ export interface Program {
   jenisTransmigrasi: string;
   singkatan: string;
   keterangan: string;
+  /** ERD `transmigration_program.code`/`sequence`/`active`. */
+  code?: string;
+  sequence?: number;
+  active?: boolean;
 }

@@ -21,4 +21,9 @@ export interface Iku {
   indikator: string;
   pic?: string;
   sasaranStrategis?: string;
+  /** ERD `iku_indicator.strategic_target_id` — real FK to `StrategicTarget.id`. */
+  strategicTargetId?: string;
+  description?: string;
+  sequence?: number;
+  active?: boolean;
 }
