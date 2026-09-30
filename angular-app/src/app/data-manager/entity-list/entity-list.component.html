@@ -11,7 +11,7 @@
         [value]="query"
         (input)="onSearch($any($event.target).value)" />
     </div>
-    <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">+ Ajukan Tambah</button>
+    <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">{{ needsApproval ? '+ Ajukan Tambah' : '+ Tambah' }}</button>
   </dgt-page-head>
 
   <div class="panel">
@@ -30,11 +30,11 @@
     <dgt-entity-form *ngIf="drawerOpen" [config]="config" [record]="editing" (saved)="onFormSaved($event)"></dgt-entity-form>
 
     <div drawer-footer class="d-flex justify-content-between align-items-center w-100">
-      <button *ngIf="editing" type="button" class="btn btn-outline-danger btn-sm" (click)="deleteCurrent()">Ajukan Hapus</button>
+      <button *ngIf="editing" type="button" class="btn btn-outline-danger btn-sm" (click)="deleteCurrent()">{{ needsApproval ? 'Ajukan Hapus' : 'Hapus' }}</button>
       <span *ngIf="!editing"></span>
       <div>
         <button type="button" class="btn btn-secondary btn-sm mr-2" (click)="closeDrawer()">Batal</button>
-        <button type="button" class="btn btn-primary btn-sm" (click)="submitForm()">Ajukan</button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="submitForm()">{{ needsApproval ? 'Ajukan' : 'Simpan' }}</button>
       </div>
     </div>
   </dgt-drawer>

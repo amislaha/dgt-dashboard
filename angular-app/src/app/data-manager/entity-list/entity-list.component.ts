@@ -80,12 +80,23 @@ export class EntityListComponent implements OnDestroy {
   }
 
   get emptyLabel(): string {
-    return this.query ? 'Tidak ada data yang cocok.' : 'Belum ada data. Klik "+ Ajukan Tambah" — data baru muncul setelah disetujui.';
+    if (this.query) {
+      return 'Tidak ada data yang cocok.';
+    }
+    return this.needsApproval ? 'Belum ada data. Klik "+ Ajukan Tambah" — data baru muncul setelah disetujui.' : 'Belum ada data. Klik "+ Tambah".';
   }
 
   get drawerTitle(): string {
     const label = this.config ? this.config.label.toLowerCase() : '';
-    return this.editing ? `Ajukan ubah ${label}` : `Ajukan tambah ${label}`;
+    if (this.needsApproval) {
+      return this.editing ? `Ajukan ubah ${label}` : `Ajukan tambah ${label}`;
+    }
+    return this.editing ? `Ubah ${label}` : `Tambah ${label}`;
+  }
+
+  /** Only Wilayah (`wpt`, the entity with map shapes) still goes through Submission & Approval; every other master-data entity writes directly. */
+  get needsApproval(): boolean {
+    return this.entityKey === 'wpt';
   }
 
   openCreate(): void {
@@ -109,9 +120,22 @@ export class EntityListComponent implements OnDestroy {
     }
   }
 
-  /** No direct writes: add/edit/delete all become a PENDING Submission, applied only once approved (SubmissionService.review). */
+  /** Wilayah: add/edit become a PENDING Submission, applied only once approved (SubmissionService.review). Other entities save directly. */
   onFormSaved(value: any): void {
     const config = this.config as EntityConfig;
+    if (!this.needsApproval) {
+      const service = this.registry.get(this.entityKey).service;
+      if (this.editing) {
+        const patch: { [key: string]: any } = {};
+        config.fields.forEach(f => (patch[f.name] = value[f.name]));
+        service.update(this.editing.id, patch);
+      } else {
+        service.create(value);
+      }
+      this.toast.show('Data disimpan.', 'success');
+      this.closeDrawer();
+      return;
+    }
     const submittedBy = this.requireOperator();
     if (!submittedBy) {
       return;
@@ -135,13 +159,21 @@ export class EntityListComponent implements OnDestroy {
     if (!this.editing || !this.config) {
       return;
     }
-    const submittedBy = this.requireOperator();
-    if (!submittedBy) {
-      return;
-    }
     let label = this.labelOf(this.editing);
     if (label.length > 70) {
       label = label.slice(0, 70) + '…';
+    }
+    if (!this.needsApproval) {
+      if (window.confirm(`Hapus "${label}"?`)) {
+        this.registry.get(this.entityKey).service.remove(this.editing.id);
+        this.toast.show('Data dihapus.', 'success');
+        this.closeDrawer();
+      }
+      return;
+    }
+    const submittedBy = this.requireOperator();
+    if (!submittedBy) {
+      return;
     }
     if (!window.confirm(`Ajukan penghapusan "${label}"? Data baru terhapus setelah pengajuan disetujui.`)) {
       return;
