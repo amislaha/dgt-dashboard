@@ -1,5 +1,6 @@
 <form *ngIf="form" [formGroup]="form">
   <div class="form-row" *ngFor="let group of rowGroups">
+    <h3 class="col-12 form-section" *ngIf="group[0].section">{{ group[0].section }}</h3>
     <div class="form-group" [ngClass]="group.length > 1 ? 'col-6' : 'col-12'" *ngFor="let field of group">
       <label [attr.for]="'f_' + field.name">
         {{ field.label }}<span *ngIf="field.required" class="text-danger"> *</span>
@@ -47,6 +48,18 @@
           [attr.step]="field.step || 'any'"
           [attr.max]="field.max"
           [placeholder]="field.placeholder || ''" />
+
+        <div *ngSwitchCase="'geometry'" class="geometry-field">
+          <div class="geometry-actions">
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startDraw(field, 'Point')">Tandai Titik</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startDraw(field, 'LineString')">Gambar Garis</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startDraw(field, 'Polygon')">Gambar Area</button>
+          </div>
+          <div class="geometry-summary" *ngIf="form.get(field.name)!.value">
+            <span>{{ geometrySummary(field) }}</span>
+            <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="clearGeometry(field)">Hapus</button>
+          </div>
+        </div>
 
         <div *ngSwitchCase="'boolean'" class="custom-control custom-checkbox">
           <input type="checkbox" class="custom-control-input" [id]="'f_' + field.name" [formControlName]="field.name" />

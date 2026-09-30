@@ -1,6 +1,6 @@
 import { EntityKey } from './entity-key.model';
 
-export type FieldType = 'text' | 'number' | 'select' | 'textarea' | 'fk' | 'boolean' | 'date';
+export type FieldType = 'text' | 'number' | 'select' | 'textarea' | 'fk' | 'boolean' | 'date' | 'geometry';
 
 /**
  * Describes one Reactive Form field for an entity's create/edit drawer.
@@ -22,6 +22,8 @@ export interface FieldConfig<T = any> {
   options?: string[];
   /** type: 'fk' only — which entity's records populate the dropdown. */
   fkEntity?: EntityKey;
+  /** Heading rendered above this field (put it on the first field of a group). */
+  section?: string;
   min?: number;
   /** type: 'number' only — `step` attribute (e.g. 0.01 for the ERD's decimal columns). */
   step?: number;

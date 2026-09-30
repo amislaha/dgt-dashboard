@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
 import { Subscription } from 'rxjs';
-import { DrawGeometryType, DrawnGeometry } from '../../models/drawn-geometry.model';
+import { DrawGeometryType, DrawnGeometry, geometryCenter } from '../../models/drawn-geometry.model';
 import { Wpt } from '../../models/wpt.model';
 import { MapDrawService } from '../../services/map-draw.service';
 
@@ -45,6 +45,7 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   private markers: { [id: string]: L.CircleMarker } = {};
   private readonly drawLayer = L.layerGroup();
   private readonly previewLayer = L.layerGroup();
+  private readonly shapesLayer = L.layerGroup();
   private readonly subs: Subscription[] = [];
 
   constructor(private readonly mapDraw: MapDrawService) {}
@@ -60,6 +61,7 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       maxZoom: 18,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
     }).addTo(this.map);
+    this.shapesLayer.addTo(this.map);
     this.drawLayer.addTo(this.map);
     this.previewLayer.addTo(this.map);
     this.plotMarkers();
@@ -191,8 +193,42 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40], maxZoom: 12 });
   }
 
-  private get withCoords(): Wpt[] {
-    return this.wilayah.filter(w => w.lat != null && w.lon != null);
+  /** [lat, lon] to pin a record at: its own lat/lon, else the middle of its drawn shape. */
+  private pinOf(w: Wpt): [number, number] | null {
+    if (w.lat != null && w.lon != null) {
+      return [w.lat, w.lon];
+    }
+    return geometryCenter(w.geometry);
+  }
+
+  private get withCoords(): Array<{ w: Wpt; pin: [number, number] }> {
+    const out: Array<{ w: Wpt; pin: [number, number] }> = [];
+    this.wilayah.forEach(w => {
+      const pin = this.pinOf(w);
+      if (pin) {
+        out.push({ w, pin });
+      }
+    });
+    return out;
+  }
+
+  /** Lines/areas drawn on a record (points are covered by its pin). */
+  private plotShapes(): void {
+    this.shapesLayer.clearLayers();
+    this.wilayah.forEach(w => {
+      const g = w.geometry;
+      if (!g || g.type === 'Point') {
+        return;
+      }
+      const ring: number[][] = g.type === 'Polygon' ? g.coordinates[0] : g.coordinates;
+      const latlngs = ring.map(c => [c[1], c[0]] as [number, number]);
+      const shape =
+        g.type === 'Polygon'
+          ? L.polygon(latlngs, { color: '#2c755b', weight: 2, fillColor: '#2c755b', fillOpacity: 0.15 })
+          : L.polyline(latlngs, { color: '#2c755b', weight: 3 });
+      shape.bindPopup(`<b>${esc(w.nama)}</b><br>${esc(w.provinsi)}, ${esc(w.kabupaten)}`);
+      this.shapesLayer.addLayer(shape);
+    });
   }
 
   private plotMarkers(): void {
@@ -201,10 +237,11 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
     Object.keys(this.markers).forEach(id => this.map!.removeLayer(this.markers[id]));
     this.markers = {};
+    this.plotShapes();
 
     const pins = this.withCoords;
-    pins.forEach(w => {
-      const marker = L.circleMarker([w.lat as number, w.lon as number], {
+    pins.forEach(({ w, pin }) => {
+      const marker = L.circleMarker(pin, {
         radius: 9,
         color: '#fff',
         weight: 2,
@@ -227,7 +264,7 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
           return;
         }
         this.map.fitBounds(
-          L.latLngBounds(pins.map(w => [w.lat as number, w.lon as number] as [number, number])),
+          L.latLngBounds(pins.map(p => p.pin)),
           { padding: [30, 30], maxZoom: 6 }
         );
       }, 60);
@@ -240,8 +277,9 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
     const marker = this.markers[this.selectedId];
     const w = this.wilayah.find(x => x.id === this.selectedId);
-    if (marker && w && w.lat != null && w.lon != null) {
-      this.map.panTo([w.lat, w.lon]);
+    const pin = w ? this.pinOf(w) : null;
+    if (marker && pin) {
+      this.map.panTo(pin);
       marker.openPopup();
     }
   }

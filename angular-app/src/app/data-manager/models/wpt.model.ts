@@ -1,3 +1,5 @@
+import { DrawnGeometry } from './drawn-geometry.model';
+
 /**
  * Wilayah Pengembangan Transmigrasi — top-level development region. No parent entity. User-facing
  * label is "Wilayah" (see entity-configs.ts); this is also the record plotted on the Wilayah map
@@ -36,4 +38,36 @@ export interface Wpt {
    *  in the table, just absent from the map until set. */
   lat?: number;
   lon?: number;
+  /** Shape drawn on the Wilayah map (point/line/area). Set via the form's map tools, applied on approval. */
+  geometry?: DrawnGeometry | null;
+
+  // ERD `wilayah` columns (see erd-master.model.ts header for conventions). All optional.
+  address?: string;
+  kecamatan?: string;
+  kelurahan?: string;
+  kodeProp?: string;
+  kodeKab?: string;
+  kodeKec?: string;
+  kodeKel?: string;
+  dasarPenetapan?: string;
+  /** ERD enum `wilayah_type` — values aren't legible in the diagram, so free text. */
+  wilayahType?: string;
+  k1?: boolean;
+  k2?: boolean;
+  k3?: boolean;
+  kapasitasMaksimum?: number;
+  kkTotal?: number;
+  hplTotal?: number;
+  hplTerbit?: number;
+  hplBelumTerbit?: number;
+  hplPersentase?: number;
+  shmTotal?: number;
+  shmTerbit?: number;
+  shmBelumTerbit?: number;
+  shmPersentase?: number;
+  /** ERD `wilayah_status_id` — FK to Wilayah Status. */
+  wilayahStatusId?: string;
+  /** ERD `wilayah_category_mapping` (many-to-many) simplified to one Wilayah Category. */
+  wilayahCategoryId?: string;
+  active?: boolean;
 }

@@ -26,7 +26,7 @@
     </dgt-data-table>
   </div>
 
-  <dgt-drawer [open]="drawerOpen" [title]="drawerTitle" (closed)="closeDrawer()">
+  <dgt-drawer [open]="drawerOpen && !drawing" [title]="drawerTitle" (closed)="closeDrawer()">
     <dgt-entity-form *ngIf="drawerOpen" [config]="config" [record]="editing" (saved)="onFormSaved($event)"></dgt-entity-form>
 
     <div drawer-footer class="d-flex justify-content-between align-items-center w-100">

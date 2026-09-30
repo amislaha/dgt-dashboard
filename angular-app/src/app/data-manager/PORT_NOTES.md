@@ -485,3 +485,25 @@ omitted" convention above.
   approval, since the rule lives in the shared list component.
 - Not compiled locally (no `node_modules`); the CI build is the check.
 
+## Mapping on the Wilayah page: draw + full attributes
+
+- **Draw from the form.** New `FieldConfig` type `geometry` (Tandai Titik / Gambar Garis / Gambar Area,
+  summary, Hapus) — only the WPT config uses it. `EntityFormComponent` starts `MapDrawService`, and
+  `EntityListComponent` hides the drawer (`[open]="drawerOpen && !drawing"`) while `drawType$` is
+  active, because the drawer's scrim swallows map clicks (see the inline-form note above). The form
+  stays alive underneath, so nothing typed is lost; when the shape completes (or is cancelled from the
+  map toolbar) the drawer comes back.
+- **Goes through approval like everything else.** The shape is `fieldValues.geometry` on the
+  submission; the Approval row previews it on the map and lists it as a field. `Wpt.geometry` is
+  applied on approve.
+- **Map shows it.** `WilayahMapComponent` draws each record's line/area (`shapesLayer`) and pins a
+  record at its `lat`/`lon`, or at the centre of its shape when it has no coordinates
+  (`geometryCenter()`).
+- **All ERD `wilayah` attributes** are now on the Wilayah form, grouped under section headings
+  (new `FieldConfig.section`): identity, location/map, administrative (kecamatan, kelurahan, kode_*),
+  status & capacity (Wilayah Status/Category FKs, k1–k3, kapasitas_maksimum, kk_total), land legality
+  (HPL/SHM totals, terbit, belum terbit, %), and the Matriks-45 summaries. All optional so the 45 seed
+  rows still load. `wilayah_category_mapping` (many-to-many) is simplified to a single category, and
+  `wilayah_type` stays free text (enum values not legible in the ERD image).
+- SKP/SP are unchanged and have no map drawing.
+

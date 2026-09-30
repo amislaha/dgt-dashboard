@@ -1,9 +1,12 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
+import { describeGeometry, DrawGeometryType, DrawnGeometry } from '../models/drawn-geometry.model';
 import { EntityConfig } from '../models/entity-config.model';
 import { FieldConfig } from '../models/field-config.model';
 import { EntityRegistryService } from '../services/entity-registry.service';
+import { MapDrawService } from '../services/map-draw.service';
 
 /**
  * Generic Reactive Form driven by one entity's `FieldConfig[]` (the port
@@ -24,7 +27,7 @@ import { EntityRegistryService } from '../services/entity-registry.service';
   templateUrl: './entity-form.component.html',
   styleUrls: ['./entity-form.component.scss']
 })
-export class EntityFormComponent implements OnChanges {
+export class EntityFormComponent implements OnChanges, OnDestroy {
   @Input() config!: EntityConfig;
   @Input() record: any | null = null;
   @Output() saved = new EventEmitter<any>();
@@ -33,7 +36,53 @@ export class EntityFormComponent implements OnChanges {
   rowGroups: FieldConfig[][] = [];
   fkOptions: { [fieldName: string]: Array<{ id: string; label: string }> } = {};
 
-  constructor(private readonly fb: FormBuilder, private readonly registry: EntityRegistryService, private readonly toast: ToastService) {}
+  private drawSub?: Subscription;
+
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly registry: EntityRegistryService,
+    private readonly toast: ToastService,
+    private readonly mapDraw: MapDrawService
+  ) {}
+
+  ngOnDestroy(): void {
+    this.stopListeningForDraw();
+    this.mapDraw.cancel();
+  }
+
+  /** `geometry` fields: start drawing on the page's shared map; the result lands in this control. */
+  startDraw(field: FieldConfig, type: DrawGeometryType): void {
+    this.stopListeningForDraw();
+    this.drawSub = this.mapDraw.result$.subscribe(geometry => {
+      const control = this.form.get(field.name);
+      if (control) {
+        control.setValue(geometry);
+        control.markAsDirty();
+      }
+      this.stopListeningForDraw();
+    });
+    this.mapDraw.start(type);
+  }
+
+  clearGeometry(field: FieldConfig): void {
+    this.stopListeningForDraw();
+    this.mapDraw.cancel();
+    const control = this.form.get(field.name);
+    if (control) {
+      control.setValue(null);
+    }
+  }
+
+  geometrySummary(field: FieldConfig): string {
+    return describeGeometry(this.form.get(field.name)!.value as DrawnGeometry | null);
+  }
+
+  private stopListeningForDraw(): void {
+    if (this.drawSub) {
+      this.drawSub.unsubscribe();
+      this.drawSub = undefined;
+    }
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.config || changes.record) {
@@ -55,7 +104,9 @@ export class EntityFormComponent implements OnChanges {
 
     const value: any = { ...this.form.value };
     this.config.fields.forEach(field => {
-      if (field.type === 'number') {
+      if (field.type === 'geometry') {
+        value[field.name] = value[field.name] || undefined;
+      } else if (field.type === 'number') {
         value[field.name] = value[field.name] === '' || value[field.name] == null ? undefined : Number(value[field.name]);
       } else if (typeof value[field.name] === 'string') {
         const trimmed = value[field.name].trim();
@@ -69,7 +120,7 @@ export class EntityFormComponent implements OnChanges {
     const group: { [key: string]: any } = {};
     this.config.fields.forEach(field => {
       const raw = this.record ? this.record[field.name] : undefined;
-      const empty = field.type === 'number' ? null : field.type === 'boolean' ? false : '';
+      const empty = field.type === 'number' || field.type === 'geometry' ? null : field.type === 'boolean' ? false : '';
       const initial = raw != null ? raw : !this.record && field.defaultValue !== undefined ? field.defaultValue : empty;
       group[field.name] = [initial, this.buildValidators(field)];
     });

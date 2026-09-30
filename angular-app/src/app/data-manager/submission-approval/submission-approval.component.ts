@@ -2,6 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
 import { ENTITY_CONFIGS } from '../config/entity-configs';
+import { describeGeometry } from '../models/drawn-geometry.model';
 import { FieldConfig } from '../models/field-config.model';
 import {
   Submission,
@@ -88,7 +89,7 @@ export class SubmissionApprovalComponent implements OnDestroy {
     this.openId[id] = !this.openId[id];
     if (this.openId[id]) {
       const submission = this.items.find(s => s.id === id);
-      this.mapDraw.showPreview((submission && submission.geometry) || null);
+      this.mapDraw.showPreview((submission && (submission.geometry || (submission.fieldValues && submission.fieldValues.geometry))) || null);
     } else {
       this.mapDraw.clearPreview();
     }
@@ -113,6 +114,9 @@ export class SubmissionApprovalComponent implements OnDestroy {
       const entry = this.registry.get(field.fkEntity);
       const record = entry.service.get(value);
       return record ? String(record[entry.config.titleField]) : `⚠ tidak ditemukan (${value})`;
+    }
+    if (field.type === 'geometry') {
+      return describeGeometry(value);
     }
     if (field.type === 'boolean') {
       return value ? 'Ya' : 'Tidak';

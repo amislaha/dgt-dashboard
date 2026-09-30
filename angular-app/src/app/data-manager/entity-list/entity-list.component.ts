@@ -7,6 +7,7 @@ import { EntityFormComponent } from '../entity-form/entity-form.component';
 import { EntityConfig } from '../models/entity-config.model';
 import { EntityKey } from '../models/entity-key.model';
 import { getOperator } from '../services/entity-crud.service';
+import { MapDrawService } from '../services/map-draw.service';
 import { EntityRegistryService } from '../services/entity-registry.service';
 import { SubmissionService } from '../services/submission.service';
 
@@ -41,14 +42,18 @@ export class EntityListComponent implements OnDestroy {
   sortDir: SortDirection = 'asc';
 
   drawerOpen = false;
+  drawing = false;
   editing: any | null = null;
 
   private entityKey!: EntityKey;
   private allRows: any[] = [];
   private readonly routeSubscription: Subscription;
   private entitySubscription?: Subscription;
+  private readonly drawSubscription: Subscription;
 
-  constructor(private readonly route: ActivatedRoute, private readonly registry: EntityRegistryService, private readonly toast: ToastService, private readonly submissions: SubmissionService) {
+  constructor(private readonly route: ActivatedRoute, private readonly registry: EntityRegistryService, private readonly toast: ToastService, private readonly submissions: SubmissionService, private readonly mapDraw: MapDrawService) {
+    // While a form is drawing on the Wilayah map, slide the drawer (and its scrim, which would swallow map clicks) away; the form stays alive underneath.
+    this.drawSubscription = this.mapDraw.drawType$.subscribe(type => (this.drawing = !!type));
     this.routeSubscription = this.route.data.subscribe(data => {
       this.entityKey = data.entityKey;
       this.bindEntity();
@@ -57,6 +62,7 @@ export class EntityListComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.routeSubscription.unsubscribe();
+    this.drawSubscription.unsubscribe();
     if (this.entitySubscription) {
       this.entitySubscription.unsubscribe();
     }
