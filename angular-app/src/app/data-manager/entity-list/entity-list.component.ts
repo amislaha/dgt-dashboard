@@ -94,9 +94,9 @@ export class EntityListComponent implements OnDestroy {
     return this.editing ? `Ubah ${label}` : `Tambah ${label}`;
   }
 
-  /** Only Wilayah (`wpt`, the entity with map shapes) still goes through Submission & Approval; every other master-data entity writes directly. */
+  /** Every entity now writes directly; the submission path below is kept only so approval can be switched back on per entity. */
   get needsApproval(): boolean {
-    return this.entityKey === 'wpt';
+    return false;
   }
 
   openCreate(): void {
