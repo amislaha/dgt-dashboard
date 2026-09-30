@@ -3,24 +3,16 @@ import { Subscription } from 'rxjs';
 import { Wpt } from '../models/wpt.model';
 import { EntityRegistryService } from '../services/entity-registry.service';
 
-type SubmissionHubTab = 'pengajuan' | 'approval';
-
 /**
- * "Submission & Approval" — the header nav's single top-level entry for what used to be two
- * separate rail items (Pengajuan Data, Approval — see PORT_NOTES.md's "Persetujuan & Pengajuan"
- * section). Combines them into one routed page with a tab switcher; `SubmissionComponent` and
- * `SubmissionApprovalComponent` are unchanged otherwise and neither depends on `ActivatedRoute`, so
- * embedding them here (instead of routing to each) needed no changes beyond moving their own
- * `dgt-page-head` toolbar controls into a plain `.dm-toolbar` div (this page owns the single
- * `dgt-page-head` now).
+ * "Submission & Approval" — approval-only page. Submitting is no longer done here: every add/edit/
+ * delete on any entity screen (including Wilayah) creates a PENDING Submission from that screen's own
+ * drawer (EntityListComponent), and this page is where they're reviewed. Approving applies the
+ * change to the entity (SubmissionService.review). The old "Pengajuan Data" tab and its form were
+ * removed, along with the map draw tools that only that form used.
  *
- * Shares the exact same `<dgt-wilayah-map>` as `WilayahComponent` (on request — "same map... only
- * the sidebar is different"), including its own `wpt` list subscription duplicated here rather than
- * factored into a shared parent — both are small, self-contained, and this keeps the two pages
- * independent (no new shared base class to reason about). The map is also how this page's manual
- * draw tools and Approval-tab geometry preview work — see `MapDrawService`.
- *
- * `sidebarCollapsed` mirrors `WilayahComponent`'s own toggle — same reasoning, same duplication.
+ * Still shares the same `<dgt-wilayah-map>` as `WilayahComponent` (with its own `wpt` subscription,
+ * duplicated rather than factored out) — it's how an old submission's `geometry` gets previewed, see
+ * `MapDrawService.showPreview()`. `sidebarCollapsed` mirrors `WilayahComponent`'s own toggle.
  */
 @Component({
   selector: 'dgt-submission-hub',
@@ -28,7 +20,6 @@ type SubmissionHubTab = 'pengajuan' | 'approval';
   styleUrls: ['./submission-hub.component.scss']
 })
 export class SubmissionHubComponent implements OnDestroy {
-  tab: SubmissionHubTab = 'pengajuan';
   wilayah: Wpt[] = [];
   selectedId: string | null = null;
   sidebarCollapsed = false;
@@ -41,10 +32,6 @@ export class SubmissionHubComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
-  }
-
-  setTab(tab: SubmissionHubTab): void {
-    this.tab = tab;
   }
 
   onSelect(w: Wpt): void {

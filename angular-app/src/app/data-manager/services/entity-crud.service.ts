@@ -8,6 +8,33 @@ import { BehaviorSubject, Observable } from 'rxjs';
  */
 export const STORAGE_PREFIX = 'dgt-data-manager:';
 
+/** Audit columns from the ERD (created_by/created_date/last_modified_by/last_modified_date). Stamped by `EntityCrudService`, never edited in a form. */
+export interface AuditFields {
+  createdBy?: string;
+  createdDate?: string;
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
+}
+
+const OPERATOR_KEY = STORAGE_PREFIX + 'operator';
+
+/** The name stamped into `createdBy`/`lastModifiedBy` — there is no login, so it's whatever was typed in the header. */
+export function getOperator(): string {
+  try {
+    return localStorage.getItem(OPERATOR_KEY) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+export function setOperator(name: string): void {
+  try {
+    localStorage.setItem(OPERATOR_KEY, name.trim());
+  } catch (e) {
+    // name just isn't remembered
+  }
+}
+
 /**
  * Generic, reusable CRUD base for one entity, backed by localStorage.
  * One concrete subclass per entity (see wpt-crud.service.ts etc.), each
@@ -41,19 +68,22 @@ export abstract class EntityCrudService<T extends { id: string }> {
     return this.itemsSubject.value.find(record => record.id === id);
   }
 
-  create(input: Omit<T, 'id'>): T {
-    const record = { ...(input as object), id: this.nextId() } as T;
+  /** `by` overrides the stamped operator — used when applying an approved submission, so the record is credited to whoever proposed it. */
+  create(input: Omit<T, 'id'>, by?: string): T {
+    const now = new Date().toISOString();
+    const who = by || getOperator() || undefined;
+    const record = { ...(input as object), id: this.nextId(), createdBy: who, createdDate: now, lastModifiedBy: who, lastModifiedDate: now } as any as T;
     this.persist([...this.itemsSubject.value, record]);
     return record;
   }
 
-  update(id: string, patch: Partial<T>): T | undefined {
+  update(id: string, patch: Partial<T>, by?: string): T | undefined {
     let updated: T | undefined;
     const next = this.itemsSubject.value.map(record => {
       if (record.id !== id) {
         return record;
       }
-      updated = { ...record, ...patch, id: record.id };
+      updated = { ...record, ...patch, id: record.id, lastModifiedBy: by || getOperator() || undefined, lastModifiedDate: new Date().toISOString() };
       return updated;
     });
     this.persist(next);

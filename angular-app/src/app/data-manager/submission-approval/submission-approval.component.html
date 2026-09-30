@@ -51,8 +51,8 @@
         <textarea class="appr-note" placeholder="Catatan reviewer (wajib untuk penolakan)" [(ngModel)]="noteDraft[s.id]"></textarea>
         <div class="appr-actions">
           <button class="btn btn-success btn-sm" type="button" *ngIf="s.status !== 'APPROVED'" (click)="act(s, 'APPROVED')">Setujui</button>
-          <button class="btn btn-danger btn-sm" type="button" *ngIf="s.status !== 'REJECTED'" (click)="act(s, 'REJECTED')">Tolak</button>
-          <button class="btn btn-outline-secondary btn-sm" type="button" *ngIf="s.status !== 'PENDING'" (click)="act(s, 'PENDING')">Kembalikan ke Menunggu</button>
+          <button class="btn btn-danger btn-sm" type="button" *ngIf="s.status === 'PENDING'" (click)="act(s, 'REJECTED')">Tolak</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" *ngIf="s.status === 'REJECTED'" (click)="act(s, 'PENDING')">Kembalikan ke Menunggu</button>
         </div>
       </div>
     </div>

@@ -8,20 +8,14 @@
       type="button"
       class="sidebar-collapse-toggle"
       (click)="toggleSidebar()"
-      [attr.aria-label]="sidebarCollapsed ? 'Buka panel Submission & Approval' : 'Ciutkan panel Submission & Approval'">
+      [attr.aria-label]="sidebarCollapsed ? 'Buka panel Approval' : 'Ciutkan panel Approval'">
       {{ sidebarCollapsed ? '‹' : '›' }}
     </button>
     <div class="sidebar-scroll" *ngIf="!sidebarCollapsed">
-      <dgt-page-head title="Submission & Approval" description="Ajukan perubahan data master dan tinjau persetujuannya di satu tempat.">
+      <dgt-page-head title="Submission & Approval" description="Semua penambahan, perubahan, dan penghapusan data diajukan dari menu masing-masing, lalu ditinjau di sini. Data baru berubah setelah disetujui.">
       </dgt-page-head>
 
-      <div class="seg mb-3">
-        <button type="button" [class.sel]="tab === 'pengajuan'" (click)="setTab('pengajuan')">Pengajuan Data</button>
-        <button type="button" [class.sel]="tab === 'approval'" (click)="setTab('approval')">Approval</button>
-      </div>
-
-      <dgt-submission *ngIf="tab === 'pengajuan'"></dgt-submission>
-      <dgt-submission-approval *ngIf="tab === 'approval'"></dgt-submission-approval>
+      <dgt-submission-approval></dgt-submission-approval>
     </div>
   </div>
 </div>

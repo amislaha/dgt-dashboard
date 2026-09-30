@@ -137,7 +137,14 @@ export class SubmissionApprovalComponent implements OnDestroy {
       this.toast.show('Beri catatan alasan penolakan.', 'danger');
       return;
     }
-    this.submissions.review(s.id, status, reviewer, note);
-    this.toast.show('Status pengajuan diperbarui: ' + this.statusMeta[status].label, 'success');
+    const error = this.submissions.review(s.id, status, reviewer, note);
+    if (error) {
+      this.toast.show(error, 'danger');
+      return;
+    }
+    this.toast.show(
+      status === 'APPROVED' ? 'Pengajuan disetujui dan diterapkan ke data.' : 'Status pengajuan diperbarui: ' + this.statusMeta[status].label,
+      'success'
+    );
   }
 }

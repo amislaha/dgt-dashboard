@@ -455,3 +455,33 @@ shared code/name/description/sequence/active shape; the rest are hand-written).
   (configs/models/seed) were type-checked, with TypeScript 3.5 `--strict`; the first CI build is the
   real check for the form template and services.
 
+### Audit columns
+
+`created_by`/`created_date`/`last_modified_by`/`last_modified_date` are now stamped by
+`EntityCrudService.create()/update()` for every entity (camelCase, optional, so old records show
+"—") and appended as list columns by `EntityListComponent.buildColumns()`. They are not in any form.
+There is no login, so the "by" value is the "Nama operator" box in the header (localStorage
+`dgt-data-manager:operator`); empty means unstamped. This supersedes the "audit columns are
+omitted" convention above.
+
+## All changes go through approval (supersedes the "not wired to auto-apply" and Pengajuan tab notes above)
+
+- **No direct writes.** `EntityListComponent` (used by every entity screen, Wilayah included) no
+  longer calls `EntityCrudService.create/update/remove`. "+ Ajukan Tambah", the drawer's "Ajukan" and
+  "Ajukan Hapus" each create a PENDING `Submission` (`fieldValues` = the form values, `targetId` for
+  update/delete). The pengaju is the header's "Nama operator" (required — saving is refused with a
+  toast if empty).
+- **Approve applies.** `SubmissionService.review(..., 'APPROVED')` runs `apply()`: create → `create()`,
+  update → `update()` (cleared fields become explicit `undefined`), delete → `remove()`, with the
+  audit "by" set to the submitter. It returns an error string (shown as a toast, submission left as
+  is) if the target no longer exists or the submission has no `fieldValues` (old summary-only
+  submissions can't be applied). **Approved is final**: Tolak/Kembalikan are hidden and `review()`
+  refuses to change an approved submission, because the data has already changed.
+- **Submission & Approval page** is approval-only. The `submission/` component (the old "Pengajuan
+  Data" tab, its 3-tab form, photo upload and Tandai Titik/Gambar Garis/Gambar Area buttons) was
+  deleted. Consequences: new submissions have no photos or drawn geometry (old ones still show
+  theirs, and the map preview still works), and `MapDrawService.start()` has no caller left.
+- Settings-group entities (Profil Measure, Application Settings, Approval Flow) now also go through
+  approval, since the rule lives in the shared list component.
+- Not compiled locally (no `node_modules`); the CI build is the check.
+

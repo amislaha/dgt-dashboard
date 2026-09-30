@@ -6,7 +6,9 @@ import { ToastService } from '../../shared/services/toast.service';
 import { EntityFormComponent } from '../entity-form/entity-form.component';
 import { EntityConfig } from '../models/entity-config.model';
 import { EntityKey } from '../models/entity-key.model';
+import { getOperator } from '../services/entity-crud.service';
 import { EntityRegistryService } from '../services/entity-registry.service';
+import { SubmissionService } from '../services/submission.service';
 
 /**
  * Generic list view shared by all 8 entities (the port spec's "generic
@@ -46,7 +48,7 @@ export class EntityListComponent implements OnDestroy {
   private readonly routeSubscription: Subscription;
   private entitySubscription?: Subscription;
 
-  constructor(private readonly route: ActivatedRoute, private readonly registry: EntityRegistryService, private readonly toast: ToastService) {
+  constructor(private readonly route: ActivatedRoute, private readonly registry: EntityRegistryService, private readonly toast: ToastService, private readonly submissions: SubmissionService) {
     this.routeSubscription = this.route.data.subscribe(data => {
       this.entityKey = data.entityKey;
       this.bindEntity();
@@ -72,12 +74,12 @@ export class EntityListComponent implements OnDestroy {
   }
 
   get emptyLabel(): string {
-    return this.query ? 'Tidak ada data yang cocok.' : 'Belum ada data. Klik "+ Tambah" untuk membuat entri pertama.';
+    return this.query ? 'Tidak ada data yang cocok.' : 'Belum ada data. Klik "+ Ajukan Tambah" — data baru muncul setelah disetujui.';
   }
 
   get drawerTitle(): string {
     const label = this.config ? this.config.label.toLowerCase() : '';
-    return this.editing ? `Ubah ${label}` : `Tambah ${label}`;
+    return this.editing ? `Ajukan ubah ${label}` : `Ajukan tambah ${label}`;
   }
 
   openCreate(): void {
@@ -101,32 +103,79 @@ export class EntityListComponent implements OnDestroy {
     }
   }
 
+  /** No direct writes: add/edit/delete all become a PENDING Submission, applied only once approved (SubmissionService.review). */
   onFormSaved(value: any): void {
-    const entry = this.registry.get(this.entityKey);
-    if (this.editing) {
-      entry.service.update(this.editing.id, value);
-    } else {
-      entry.service.create(value);
+    const config = this.config as EntityConfig;
+    const submittedBy = this.requireOperator();
+    if (!submittedBy) {
+      return;
     }
-    this.toast.show('Data disimpan.', 'success');
-    this.closeDrawer();
+    const label = this.labelOf({ ...(this.editing || {}), ...value });
+    this.submissions.submit({
+      entityKey: this.entityKey,
+      mode: this.editing ? 'update' : 'create',
+      targetId: this.editing ? this.editing.id : null,
+      targetLabel: label,
+      summary: `${this.editing ? 'Ubah' : 'Tambah'} ${config.label.toLowerCase()}: ${label}`,
+      images: [],
+      geometry: null,
+      fieldValues: value,
+      submittedBy
+    });
+    this.afterSubmit();
   }
 
   deleteCurrent(): void {
     if (!this.editing || !this.config) {
       return;
     }
-    const entry = this.registry.get(this.entityKey);
-    let label = String(this.editing[this.config.titleField] || '(tanpa nama)');
+    const submittedBy = this.requireOperator();
+    if (!submittedBy) {
+      return;
+    }
+    let label = this.labelOf(this.editing);
     if (label.length > 70) {
       label = label.slice(0, 70) + '…';
     }
-    if (!window.confirm(`Hapus "${label}"? Tindakan ini tidak bisa dibatalkan.`)) {
+    if (!window.confirm(`Ajukan penghapusan "${label}"? Data baru terhapus setelah pengajuan disetujui.`)) {
       return;
     }
-    entry.service.remove(this.editing.id);
-    this.toast.show('Data dihapus.', 'danger');
+    this.submissions.submit({
+      entityKey: this.entityKey,
+      mode: 'delete',
+      targetId: this.editing.id,
+      targetLabel: label,
+      summary: `Hapus ${this.config.label.toLowerCase()}: ${label}`,
+      images: [],
+      geometry: null,
+      fieldValues: null,
+      submittedBy
+    });
+    this.afterSubmit();
+  }
+
+  private requireOperator(): string {
+    const name = getOperator();
+    if (!name) {
+      this.toast.show('Isi "Nama operator" di header terlebih dahulu — dicatat sebagai pengaju.', 'danger');
+    }
+    return name;
+  }
+
+  private afterSubmit(): void {
+    this.toast.show('Pengajuan dikirim — menunggu persetujuan di Submission & Approval.', 'success');
     this.closeDrawer();
+  }
+
+  /** Display label of a record: its `titleField`, resolved through the FK when that field is an id reference. */
+  private labelOf(record: any): string {
+    const config = this.config as EntityConfig;
+    const field = config.fields.find(f => f.name === config.titleField);
+    const value = record[config.titleField];
+    if (field && field.type === 'fk' && field.fkEntity) {
+      return this.resolveFkLabel(field.fkEntity, value);
+    }
+    return String(value || '(tanpa nama)');
   }
 
   /** Resolves an `fk` column's stored id to the referenced record's display label. */
@@ -157,7 +206,7 @@ export class EntityListComponent implements OnDestroy {
   }
 
   private buildColumns(config: EntityConfig): DataTableColumn<any>[] {
-    return config.columns.map(col => ({
+    const columns: DataTableColumn<any>[] = config.columns.map(col => ({
       key: col.key,
       label: col.label,
       numeric: col.numeric,
@@ -168,6 +217,16 @@ export class EntityListComponent implements OnDestroy {
         ? (row: any) => (row[col.key] ? 'Ya' : 'Tidak')
         : undefined
     }));
+    // ERD audit columns, stamped by EntityCrudService — shown in the table only, never in the form.
+    const when = (key: string) => (row: any) => (row[key] ? new Date(row[key]).toLocaleString('id-ID') : '—');
+    const who = (key: string) => (row: any) => row[key] || '—';
+    columns.push(
+      { key: 'createdBy', label: 'Dibuat oleh', sortable: true, format: who('createdBy') },
+      { key: 'createdDate', label: 'Tanggal dibuat', sortable: true, format: when('createdDate') },
+      { key: 'lastModifiedBy', label: 'Diubah oleh', sortable: true, format: who('lastModifiedBy') },
+      { key: 'lastModifiedDate', label: 'Tanggal diubah', sortable: true, format: when('lastModifiedDate') }
+    );
+    return columns;
   }
 
   private applyFilterAndSort(): void {

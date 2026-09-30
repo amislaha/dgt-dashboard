@@ -6,7 +6,6 @@ import { EntityFormComponent } from './entity-form/entity-form.component';
 import { EntityListComponent } from './entity-list/entity-list.component';
 import { SubmissionApprovalComponent } from './submission-approval/submission-approval.component';
 import { SubmissionHubComponent } from './submission-hub/submission-hub.component';
-import { SubmissionComponent } from './submission/submission.component';
 import { WilayahMapComponent } from './wilayah/wilayah-map/wilayah-map.component';
 import { WilayahComponent } from './wilayah/wilayah.component';
 
@@ -26,7 +25,6 @@ import { WilayahComponent } from './wilayah/wilayah.component';
     DataManagerShellComponent,
     EntityListComponent,
     EntityFormComponent,
-    SubmissionComponent,
     SubmissionApprovalComponent,
     SubmissionHubComponent,
     WilayahComponent,

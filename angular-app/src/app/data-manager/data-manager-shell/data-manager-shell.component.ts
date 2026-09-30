@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { ENTITY_CONFIGS } from '../config/entity-configs';
 import { ENTITY_ORDER, MASTER_DATA_ORDER, SETTINGS_ORDER } from '../models/entity-key.model';
 import { Submission } from '../models/submission.model';
+import { getOperator, setOperator } from '../services/entity-crud.service';
 import { EntityRegistryService } from '../services/entity-registry.service';
 import { SubmissionService } from '../services/submission.service';
 
@@ -38,6 +39,7 @@ export class DataManagerShellComponent implements OnInit, OnDestroy {
   totalLabel = '0 entri tersimpan (lokal)';
   masterItems: HeaderNavItem[] = [];
   settingsItems: HeaderNavItem[] = [];
+  operatorName = getOperator();
   wilayahSub = '0 wilayah';
   submissionSub = '0 pengajuan';
 
@@ -81,6 +83,11 @@ export class DataManagerShellComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  onOperatorChange(name: string): void {
+    this.operatorName = name;
+    setOperator(name);
   }
 
   onSelect(id: string): void {

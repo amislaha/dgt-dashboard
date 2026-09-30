@@ -3,7 +3,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { DrawnGeometry } from '../models/drawn-geometry.model';
 import { EntityKey } from '../models/entity-key.model';
 import { Submission, SubmissionHistoryEntry, SubmissionMode, SubmissionStatus } from '../models/submission.model';
+import { ENTITY_CONFIGS } from '../config/entity-configs';
 import { STORAGE_PREFIX } from './entity-crud.service';
+import { EntityRegistryService } from './entity-registry.service';
 
 const KEY = STORAGE_PREFIX + 'submissions';
 
@@ -24,11 +26,18 @@ export interface SubmissionInput {
  * 8 entity CRUD services (see entity-crud.service.ts) — reactive via BehaviorSubject like them, but
  * not an `EntityCrudService` subclass: a submission is reviewed (approve/reject/reset), not edited
  * field-by-field, so it needs its own `review()` instead of a generic `update()`.
+ *
+ * Every add/edit/delete of master data is a submission (see EntityListComponent) — nothing writes an
+ * entity directly any more. `review(..., 'APPROVED')` is what actually applies the change through
+ * the entity's `EntityCrudService`, credited to the submitter. An approved submission is final (it
+ * can't be rejected/reset afterwards — the data has already changed).
  */
 @Injectable({ providedIn: 'root' })
 export class SubmissionService {
   private readonly itemsSubject = new BehaviorSubject<Submission[]>(this.loadInitial());
   readonly changes: Observable<Submission[]> = this.itemsSubject.asObservable();
+
+  constructor(private readonly registry: EntityRegistryService) {}
 
   list(): Submission[] {
     return this.itemsSubject.value;
@@ -64,7 +73,20 @@ export class SubmissionService {
 
   /** Records a review decision. Resetting to PENDING clears the reviewer/note, matching geomapping's
    *  `setApproval()` "Kembalikan ke Menunggu" behaviour. */
-  review(id: string, status: SubmissionStatus, reviewer: string, note: string): void {
+  review(id: string, status: SubmissionStatus, reviewer: string, note: string): string | null {
+    const current = this.itemsSubject.value.find(s => s.id === id);
+    if (!current) {
+      return 'Pengajuan tidak ditemukan.';
+    }
+    if (current.status === 'APPROVED') {
+      return 'Pengajuan yang sudah disetujui tidak bisa diubah lagi — datanya sudah diterapkan.';
+    }
+    if (status === 'APPROVED') {
+      const error = this.apply(current);
+      if (error) {
+        return error;
+      }
+    }
     const now = new Date().toISOString();
     const action: SubmissionHistoryEntry['action'] = status === 'PENDING' ? 'RESET' : status;
     const next = this.itemsSubject.value.map(s => {
@@ -81,6 +103,34 @@ export class SubmissionService {
       };
     });
     this.persist(next);
+    return null;
+  }
+
+  /** Applies an approved submission to its entity. Returns an error message instead of throwing so the caller can toast it and leave the submission unchanged. */
+  private apply(s: Submission): string | null {
+    const entry = this.registry.get(s.entityKey);
+    if (s.mode === 'delete') {
+      if (!entry.service.get(s.targetId)) {
+        return 'Data yang diusulkan untuk dihapus sudah tidak ada.';
+      }
+      entry.service.remove(s.targetId as string);
+      return null;
+    }
+    if (!s.fieldValues) {
+      return 'Pengajuan ini tidak memuat isian data, jadi tidak bisa diterapkan.';
+    }
+    if (s.mode === 'create') {
+      entry.service.create(s.fieldValues as any, s.submittedBy);
+      return null;
+    }
+    if (!entry.service.get(s.targetId)) {
+      return 'Data yang diusulkan untuk diubah sudah tidak ada.';
+    }
+    // A field cleared in the form is absent after the localStorage JSON round-trip; make that an explicit clear.
+    const patch: { [key: string]: any } = {};
+    ENTITY_CONFIGS[s.entityKey].fields.forEach(f => (patch[f.name] = s.fieldValues![f.name]));
+    entry.service.update(s.targetId as string, patch, s.submittedBy);
+    return null;
   }
 
   private nextSeq(): number {

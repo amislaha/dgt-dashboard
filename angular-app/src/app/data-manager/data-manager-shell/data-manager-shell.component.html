@@ -47,6 +47,13 @@
     </nav>
 
     <div class="ml-auto d-flex align-items-center">
+      <input
+        type="text"
+        class="form-control form-control-sm mr-3 dm-operator"
+        placeholder="Nama operator"
+        title="Dicatat sebagai 'Dibuat oleh' / 'Diubah oleh' pada setiap data yang disimpan"
+        [ngModel]="operatorName"
+        (ngModelChange)="onOperatorChange($event)" />
       <span class="topbar-stat d-none d-sm-inline-flex align-items-center mr-3">
         <span class="status-dot mr-2"></span>{{ totalLabel }}
       </span>
