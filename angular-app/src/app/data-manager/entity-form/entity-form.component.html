@@ -1,6 +1,18 @@
 <form *ngIf="form" [formGroup]="form">
-  <div class="form-row" *ngFor="let group of rowGroups">
-    <h3 class="col-12 form-section" *ngIf="group[0].section">{{ group[0].section }}</h3>
+  <div class="form-tabs" *ngIf="tabs.length > 1">
+    <button
+      type="button"
+      *ngFor="let tab of tabs; let i = index"
+      [class.sel]="activeTab === i"
+      [class.has-error]="tabHasErrors(i)"
+      (click)="activeTab = i">
+      {{ tab.label }}
+    </button>
+  </div>
+
+  <ng-container *ngFor="let tab of tabs; let i = index">
+  <div [class.d-none]="activeTab !== i">
+  <div class="form-row" *ngFor="let group of tab.groups">
     <div class="form-group" [ngClass]="group.length > 1 ? 'col-6' : 'col-12'" *ngFor="let field of group">
       <label [attr.for]="'f_' + field.name">
         {{ field.label }}<span *ngIf="field.required" class="text-danger"> *</span>
@@ -88,4 +100,6 @@
       <small class="form-text text-danger" *ngIf="fieldInvalid(field)">Kolom ini wajib diisi.</small>
     </div>
   </div>
+  </div>
+  </ng-container>
 </form>

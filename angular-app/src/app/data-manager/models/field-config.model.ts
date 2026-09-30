@@ -22,7 +22,7 @@ export interface FieldConfig<T = any> {
   options?: string[];
   /** type: 'fk' only — which entity's records populate the dropdown. */
   fkEntity?: EntityKey;
-  /** Heading rendered above this field (put it on the first field of a group). */
+  /** Starts a new tab in the form with this label (put it on the first field of the tab). */
   section?: string;
   min?: number;
   /** type: 'number' only — `step` attribute (e.g. 0.01 for the ERD's decimal columns). */

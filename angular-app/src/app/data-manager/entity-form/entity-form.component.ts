@@ -33,7 +33,9 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
   @Output() saved = new EventEmitter<any>();
 
   form: FormGroup = this.fb.group({});
-  rowGroups: FieldConfig[][] = [];
+  /** One tab per `FieldConfig.section` (a single unlabeled tab — no tab strip — when no field has one). */
+  tabs: Array<{ label: string; groups: FieldConfig[][] }> = [];
+  activeTab = 0;
   fkOptions: { [fieldName: string]: Array<{ id: string; label: string }> } = {};
 
   private drawSub?: Subscription;
@@ -98,6 +100,7 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
   submit(): void {
     if (this.form.invalid) {
       Object.values(this.form.controls).forEach(control => control.markAsTouched());
+      this.showFirstInvalidTab();
       this.toast.show('Periksa kembali kolom yang wajib diisi.', 'danger');
       return;
     }
@@ -126,7 +129,8 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
     });
     this.form = this.fb.group(group);
 
-    this.rowGroups = this.groupFields(this.config.fields);
+    this.tabs = this.buildTabs(this.config.fields);
+    this.activeTab = 0;
 
     this.fkOptions = {};
     this.config.fields.forEach(field => {
@@ -151,6 +155,29 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
       }
     }
     return validators;
+  }
+
+  tabHasErrors(index: number): boolean {
+    return this.tabs[index].groups.some(group => group.some(field => this.fieldInvalid(field)));
+  }
+
+  private showFirstInvalidTab(): void {
+    const first = this.tabs.findIndex((_, i) => this.tabHasErrors(i));
+    if (first !== -1) {
+      this.activeTab = first;
+    }
+  }
+
+  /** A field's `section` starts a new tab; fields after it without one stay in that tab. */
+  private buildTabs(fields: FieldConfig[]): Array<{ label: string; groups: FieldConfig[][] }> {
+    const sections: Array<{ label: string; fields: FieldConfig[] }> = [];
+    fields.forEach(field => {
+      if (field.section || !sections.length) {
+        sections.push({ label: field.section || '', fields: [] });
+      }
+      sections[sections.length - 1].fields.push(field);
+    });
+    return sections.map(section => ({ label: section.label, groups: this.groupFields(section.fields) }));
   }
 
   /** Groups fields sharing the same `row` key so the template can render them 2-up, matching the original's `f.row` bucketing in `openForm()`. */

@@ -500,7 +500,7 @@ omitted" convention above.
   record at its `lat`/`lon`, or at the centre of its shape when it has no coordinates
   (`geometryCenter()`).
 - **All ERD `wilayah` attributes** are now on the Wilayah form, grouped under section headings
-  (new `FieldConfig.section`): identity, location/map, administrative (kecamatan, kelurahan, kode_*),
+  (new `FieldConfig.section`, rendered as **tabs** in `EntityFormComponent` — a tab per section, red pill if it holds an invalid field, submit jumps to the first invalid tab; forms with no sections show no tab strip): identity, location/map, administrative (kecamatan, kelurahan, kode_*),
   status & capacity (Wilayah Status/Category FKs, k1–k3, kapasitas_maksimum, kk_total), land legality
   (HPL/SHM totals, terbit, belum terbit, %), and the Matriks-45 summaries. All optional so the 45 seed
   rows still load. `wilayah_category_mapping` (many-to-many) is simplified to a single category, and
