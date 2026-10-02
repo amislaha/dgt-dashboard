@@ -109,6 +109,7 @@ a { color: inherit; text-decoration: none; }
   background: linear-gradient(160deg, var(--primary) 0%, #0f2c40 55%, var(--sidebar) 100%);
 }
 .hero-text {
+  min-width: 0;
   flex: 1 1 420px; padding: 3.2rem clamp(1.5rem, 5vw, 4.5rem); color: #eaf1f5;
   display: flex; flex-direction: column; justify-content: center; gap: 1rem;
 }
@@ -117,8 +118,8 @@ a { color: inherit; text-decoration: none; }
   color: rgba(234, 241, 245, 0.62); margin: 0;
 }
 .hero-text h1 {
-  margin: 0; font-size: clamp(1.6rem, 3vw, 2.3rem); font-weight: 800; line-height: 1.2;
-  letter-spacing: -0.01em; color: #fff; max-width: 16ch;
+  margin: 0; font-size: clamp(1.15rem, 2.1vw, 2.2rem); font-weight: 800; line-height: 1.2; white-space: nowrap;
+  letter-spacing: -0.01em; color: #fff;
 }
 .hero-text .tagline {
   margin: 0; font-size: 1rem; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase;
