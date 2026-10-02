@@ -7,7 +7,6 @@ import {
   NationalKPI,
   ProfilDetail,
   profilBucketIndeks,
-  profilBucketTahap,
   profilDetailData,
   Province,
   STAGE_BADGE_CLASS,
@@ -67,14 +66,9 @@ export class ProfilComponent implements OnInit {
   statusFilter = 'Semua';
   search = '';
   intransSegments: DonutSegment[] = [];
-  kinerjaSegments: DonutSegment[] = [];
   intransCounts: { [key: string]: number } = {};
-  kinerjaCounts: { [key: string]: number } = {};
   readonly bucketOrder = BUCKET_ORDER;
   intransLegend: LegendRow[] = [];
-  kinerjaLegend: LegendRow[] = [];
-  tahapSegments: DonutSegment[] = [];
-  tahapLegend: LegendRow[] = [];
 
   /** "Peringkat kinerja kawasan" card: top or bottom 5 by Indeks 5T, within the area filter. */
   rankMode: 'top' | 'bottom' = 'top';
@@ -137,17 +131,8 @@ export class ProfilComponent implements OnInit {
   private rebuildDonuts(): void {
     const pool = this.kawasan.filter(k => this.areaFilter === 'Semua' || k.provinsi === this.areaFilter);
     this.intransCounts = this.bucketCounts(pool, k => profilBucketIndeks(k.indeks5t));
-    this.kinerjaCounts = this.bucketCounts(pool, k => profilBucketTahap(k.tahap));
     this.intransSegments = this.toSegments(this.intransCounts);
-    this.kinerjaSegments = this.toSegments(this.kinerjaCounts);
-
-    const tahapCounts: { [key: string]: number } = {};
-    STAGES.slice().reverse().forEach(st => (tahapCounts[st] = pool.filter(k => k.tahap === st).length));
-    const tahapOrder = STAGES.slice().reverse();
-    this.tahapSegments = tahapOrder.map(st => ({ label: st, value: tahapCounts[st], color: STAGE_COLOR_HEX[st] }));
     this.intransLegend = this.legendRows(this.intransCounts, BUCKET_ORDER, BUCKET_COLOR);
-    this.kinerjaLegend = this.legendRows(this.kinerjaCounts, BUCKET_ORDER, BUCKET_COLOR);
-    this.tahapLegend = this.legendRows(tahapCounts, tahapOrder, STAGE_COLOR_HEX);
   }
 
   private legendRows(counts: { [key: string]: number }, order: string[], colors: { [key: string]: string }): LegendRow[] {

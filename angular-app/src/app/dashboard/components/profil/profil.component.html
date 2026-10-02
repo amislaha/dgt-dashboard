@@ -6,7 +6,7 @@
       <h1>Data induk &amp; profil kawasan transmigrasi</h1>
       <p>Repositori tunggal status perkembangan kawasan (SKP/KPB) berbasis indikator program unggulan 5T.</p>
     </div>
-    <div class="pf-hero-photo" style="background-image: url(assets/hero-kawasan.jpg)" role="img" aria-label="Warga transmigran"></div>
+    <div class="pf-hero-photo" style="background-image: url(assets/hero-transmigran.png); background-position: center 30%" role="img" aria-label="Warga transmigran"></div>
   </section>
 
   <!-- KPI cards -->
@@ -66,43 +66,6 @@
         </li>
       </ol>
       <p class="pf-note">Skor indeks kinerja utama (0&ndash;100) &middot; 5 kawasan dengan skor {{ rankMode === 'top' ? 'tertinggi' : 'terendah' }}</p>
-    </section>
-  </div>
-
-  <!-- Indeks Kinerja Utama + tahap pengembangan -->
-  <div class="pf-row">
-    <section class="pf-card">
-      <header class="pf-card-head">
-        <span class="pf-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9h9"/><path d="M20.5 15A9 9 0 1 1 9 3.5"/></svg></span>
-        <h2>Indeks Kinerja Utama</h2>
-        <span class="pf-count">{{ donutTotal }}&nbsp; kawasan</span>
-      </header>
-      <div class="pf-donut-wrap compact">
-        <dgt-donut-chart [segments]="kinerjaSegments" [size]="148" [stroke]="22" [centerLabel]="donutTotal" centerSub="kawasan"></dgt-donut-chart>
-        <ul class="pf-legend">
-          <li *ngFor="let r of kinerjaLegend" [style.background]="r.bg">
-            <i [style.background]="r.color"></i><span class="nm">{{ r.label }}</span>
-            <b [style.color]="r.fg">{{ r.count }}</b><span class="pc">{{ r.pct }}%</span>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="pf-card">
-      <header class="pf-card-head">
-        <span class="pf-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7l9 5 9-5-9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg></span>
-        <h2>Tahap pengembangan</h2>
-        <span class="pf-count">{{ donutTotal }}&nbsp; kawasan</span>
-      </header>
-      <div class="pf-donut-wrap compact">
-        <dgt-donut-chart [segments]="tahapSegments" [size]="148" [stroke]="22" [centerLabel]="donutTotal" centerSub="kawasan"></dgt-donut-chart>
-        <ul class="pf-legend">
-          <li *ngFor="let r of tahapLegend" [style.background]="r.bg">
-            <i [style.background]="r.color"></i><span class="nm">{{ r.label }}</span>
-            <b [style.color]="r.fg">{{ r.count }}</b><span class="pc">{{ r.pct }}%</span>
-          </li>
-        </ul>
-      </div>
     </section>
   </div>
 
