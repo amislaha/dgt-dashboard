@@ -15,12 +15,12 @@
 .draw-toolbar {
   position: absolute;
   top: 12px;
-  left: 12px;
+  left: 60px;
   z-index: 1000;
   display: flex;
   align-items: center;
   gap: .6rem;
-  max-width: calc(100% - 24px);
+  max-width: calc(100% - 140px);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm, .375rem);
@@ -38,17 +38,18 @@
 .map-tools {
   position: absolute;
   top: 12px;
-  right: 56px;
+  left: 12px;
   z-index: 1000;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: .4rem;
-  max-width: calc(100% - 80px);
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
 }
 
 .tool-group {
   display: flex;
+  flex-direction: column;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm, .375rem);
@@ -56,18 +57,35 @@
   overflow: hidden;
 
   button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
     border: 0;
     background: transparent;
     color: var(--text);
-    font-size: .74rem;
-    padding: .35rem .6rem;
     cursor: pointer;
 
+    svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
     & + button {
-      border-left: 1px solid var(--border);
+      border-top: 1px solid var(--border);
     }
     &:hover:not(:disabled) {
       background: rgba(0, 0, 0, .05);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
     }
     &.active {
       background: var(--primary);
@@ -78,10 +96,6 @@
       cursor: not-allowed;
     }
   }
-}
-
-.measure-bar {
-  top: 56px;
 }
 
 .cursor-coords {

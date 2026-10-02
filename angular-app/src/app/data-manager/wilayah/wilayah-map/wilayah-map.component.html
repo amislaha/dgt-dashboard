@@ -20,22 +20,47 @@
     <button type="button" class="btn btn-sm btn-primary" (click)="stopMeasure()">Selesai</button>
   </div>
 
-  <div class="map-tools" role="toolbar" aria-label="Alat peta">
+  <div class="map-tools" role="toolbar" aria-label="Alat peta" aria-orientation="vertical">
     <div class="tool-group" role="group" aria-label="Peta dasar">
-      <button type="button" *ngFor="let b of basemaps" [class.active]="basemapKey === b.key" (click)="setBasemap(b.key)">
-        {{ b.label }}
+      <button
+        type="button"
+        *ngFor="let b of basemaps"
+        [class.active]="basemapKey === b.key"
+        [attr.title]="'Peta dasar: ' + b.label"
+        [attr.aria-label]="'Peta dasar: ' + b.label"
+        (click)="setBasemap(b.key)">
+        <svg *ngIf="b.key === 'osm'" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>
+        <svg *ngIf="b.key === 'satelit'" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
+        <svg *ngIf="b.key === 'topo'" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19l6-10 4 6 3-4 5 8z"/></svg>
       </button>
     </div>
-    <div class="tool-group">
-      <button type="button" (click)="zoomToAll()" title="Zoom ke semua wilayah">Semua</button>
-      <button type="button" (click)="zoomToSelected()" [disabled]="!hasSelected" title="Zoom ke wilayah terpilih">Terpilih</button>
-      <button type="button" (click)="resetView()" title="Kembali ke tampilan Indonesia">Reset</button>
-      <button type="button" (click)="locateMe()" [disabled]="locating" title="Lokasi saya">{{ locating ? '…' : 'Lokasi' }}</button>
+
+    <div class="tool-group" role="group" aria-label="Zoom">
+      <button type="button" (click)="zoomToAll()" title="Zoom ke semua wilayah" aria-label="Zoom ke semua wilayah">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+      <button type="button" (click)="zoomToSelected()" [disabled]="!hasSelected" title="Zoom ke wilayah terpilih" aria-label="Zoom ke wilayah terpilih">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      </button>
+      <button type="button" (click)="resetView()" title="Kembali ke tampilan Indonesia" aria-label="Kembali ke tampilan Indonesia">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      </button>
+      <button type="button" (click)="locateMe()" [disabled]="locating" title="Lokasi saya" aria-label="Lokasi saya">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      </button>
     </div>
-    <div class="tool-group">
-      <button type="button" [class.active]="measuring" (click)="toggleMeasure()" title="Ukur jarak">Ukur</button>
-      <button type="button" [class.active]="scrollZoom" (click)="toggleScrollZoom()" title="Zoom dengan scroll mouse">Scroll</button>
-      <button type="button" [class.active]="fullscreen" (click)="toggleFullscreen()" title="Layar penuh">{{ fullscreen ? 'Keluar' : 'Penuh' }}</button>
+
+    <div class="tool-group" role="group" aria-label="Alat lain">
+      <button type="button" [class.active]="measuring" (click)="toggleMeasure()" title="Ukur jarak" aria-label="Ukur jarak">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg>
+      </button>
+      <button type="button" [class.active]="scrollZoom" (click)="toggleScrollZoom()" title="Zoom dengan scroll mouse" aria-label="Zoom dengan scroll mouse">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 6v4"/></svg>
+      </button>
+      <button type="button" [class.active]="fullscreen" (click)="toggleFullscreen()" [attr.title]="fullscreen ? 'Keluar layar penuh' : 'Layar penuh'" [attr.aria-label]="fullscreen ? 'Keluar layar penuh' : 'Layar penuh'">
+        <svg *ngIf="!fullscreen" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        <svg *ngIf="fullscreen" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+      </button>
     </div>
   </div>
 
