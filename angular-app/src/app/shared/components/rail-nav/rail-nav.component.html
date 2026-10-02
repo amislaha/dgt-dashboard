@@ -23,7 +23,7 @@
           <span class="rail-icon" *ngIf="item.icon" [innerHTML]="item.icon | safeHtml"></span>
           <span class="rail-text">
             <span class="rail-label">{{ item.label }}</span>
-            <span class="rail-sub" *ngIf="item.sub">{{ item.sub }}</span>
+            <span class="rail-sub" *ngIf="item.sub && showSub">{{ item.sub }}</span>
           </span>
         </button>
       </ng-container>

@@ -60,8 +60,6 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
   // by default, unlike data-manager's (which starts expanded).
   railCollapsed = true;
   railOpen = false;
-  /** "Admin DGT" footer button: reveals the two admin tools (Data Manager, Geomapping). */
-  adminOpen = false;
 
   private routerSub?: Subscription;
 

@@ -1,16 +1,10 @@
 <ng-container *ngIf="view === 'landing'; else gridTpl">
-  <dgt-page-head title="Ekonomi &amp; Investasi Kawasan">
-    <div class="d-flex align-items-center" style="gap: .4rem">
-      <label class="small text-muted mb-0" for="ekAreaSelect">Area</label>
-      <select id="ekAreaSelect" class="form-control form-control-sm" [(ngModel)]="areaFilter">
-        <option value="Semua">Semua Provinsi</option>
-        <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
-      </select>
-    </div>
-  </dgt-page-head>
+  <dgt-page-head title="Ekonomi &amp; Investasi Kawasan"></dgt-page-head>
 
+  <!-- Card artwork is an inline style so `assets/…` resolves against the document <base href>
+       (differs between local dev and the GitHub Pages sub-path). -->
   <div class="komoditas-card-grid mb-4">
-    <div class="komoditas-card" *ngFor="let kom of komoditasCards" (click)="openKomoditas(kom.nama)">
+    <div class="komoditas-card" style="background-image: linear-gradient(180deg, rgba(5, 15, 50, 0.15), rgba(5, 15, 50, 0.45)), url(assets/komoditas-card-bg.png)" *ngFor="let kom of komoditasCards" (click)="openKomoditas(kom.nama)">
       <span class="kat-badge">{{ kom.kategori }}</span>
       <div class="kom-nama">{{ kom.nama }}</div>
       <div class="kom-sub">{{ kom.ids.length }} Kawasan</div>
@@ -19,7 +13,7 @@
   </div>
 
   <div class="inv-layout mb-4">
-    <div class="card">
+    <div class="card inv-filter-card">
       <div class="card-body">
         <div class="inv-filter-field">
           <input type="text" class="form-control form-control-sm" placeholder="Masukkan kata kunci.." [(ngModel)]="search" />
@@ -83,7 +77,7 @@
     <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Produktivitas komoditas nasional</h2></div>
     <div class="card-body">
       <div class="prod-bar-row" *ngFor="let r of productivityRows">
-        <span class="pb-label">{{ r.nama }}</span>
+        <span class="pb-label"><span class="pb-ico" [style.color]="r.color" [innerHTML]="komoditasIcon(r.nama) | safeHtml"></span>{{ r.nama }}</span>
         <div class="prod-bar-track"><div class="prod-bar-fill" [style.width.%]="r.pct" [style.background]="r.color"></div></div>
         <span class="prod-bar-val mono">{{ r.val.toFixed(1) }} t/Ha</span>
         <span class="prod-bar-delta">{{ r.delta >= 0 ? '+' : '' }}{{ r.delta.toFixed(1) }} t/Ha dari rata-rata nasional</span>
@@ -96,7 +90,10 @@
       <div class="card h-100">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h2 class="h6 font-weight-bold mb-0">Kawasan dengan Produksi Terbesar</h2>
-          <span class="doc-status-pill ok">{{ kategoriFilter === 'Semua' ? 'Semua Sektor' : kategoriFilter }}</span>
+          <select class="form-control form-control-sm top-komoditas-select" aria-label="Filter komoditas" [(ngModel)]="komoditasFilter">
+            <option value="Semua">Semua komoditas</option>
+            <option *ngFor="let n of komoditasOptions" [value]="n">{{ n }}</option>
+          </select>
         </div>
         <div class="table-responsive">
           <table class="table mb-0">
@@ -104,7 +101,7 @@
             <tbody>
               <tr *ngFor="let row of topProduksi" (click)="goToKawasanProfile(row.k.id)" style="cursor:pointer">
                 <td>{{ row.k.nama }}</td>
-                <td class="text-right mono">{{ row.d.produksiTon | number:'1.0-0' }} ton &ndash; {{ row.d.produkUnggulan[2].komoditas }}</td>
+                <td class="text-right mono">{{ row.ton | number:'1.0-0' }} ton &ndash; {{ row.komoditas }}</td>
               </tr>
               <tr *ngIf="!topProduksi.length"><td colspan="2" class="text-center text-muted py-4">Tidak ada kawasan yang cocok dengan filter.</td></tr>
             </tbody>

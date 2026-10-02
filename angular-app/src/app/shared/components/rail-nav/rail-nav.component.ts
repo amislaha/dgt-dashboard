@@ -47,6 +47,8 @@ export class RailNavComponent {
   /** dashboard/index.html's rail group label is "Modul Eksekutif"; kept generic here since this
    *  component is shared. */
   @Input() groupLabel = 'Modul';
+  /** Show each item's small sub-label under its title (default on; the dashboard turns it off). */
+  @Input() showSub = true;
   @Output() select = new EventEmitter<string>();
   @Output() closeMobile = new EventEmitter<void>();
 

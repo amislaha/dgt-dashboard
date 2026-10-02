@@ -7,26 +7,16 @@
     logoSrc="assets/logo-emblem.png"
     logoAlt="Lambang Kementerian Transmigrasi"
     brandText="DGT"
+    [showSub]="false"
     backLabel="Kembali ke DGT"
     groupLabel="Modul Eksekutif"
     (select)="onSelect($event)"
     (closeMobile)="railOpen = false">
     <div class="rail-footer" railFooter>
-      <div class="admin-menu" *ngIf="adminOpen">
-        <a class="admin-link" routerLink="/data-manager" title="Buka DGT Data Manager">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18"/><path d="M9 4v16"/></svg>
-          <span>Kelola Data Tabel</span>
-        </a>
-        <a class="admin-link" routerLink="/geomapping" title="Buka Geomapping">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.58 7-12a7 7 0 1 0-14 0c0 4.42 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg>
-          <span>Kelola Data Spasial</span>
-        </a>
-      </div>
-      <button type="button" class="rail-footer-btn" [class.open]="adminOpen" [attr.aria-expanded]="adminOpen" (click)="adminOpen = !adminOpen">
+      <a class="rail-footer-btn" routerLink="/data-manager" title="Buka DGT Data Manager">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.2 7.6 8 9 4.8-1.4 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>
         <span>Admin DGT</span>
-        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>
-      </button>
+      </a>
     </div>
   </dgt-rail-nav>
 
