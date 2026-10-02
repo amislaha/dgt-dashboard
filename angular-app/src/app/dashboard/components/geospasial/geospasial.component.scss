@@ -1,28 +1,26 @@
-// Full-bleed page — cancels dashboard-shell's `.main` padding (space-6 top/left/right, a fixed
-// 3rem bottom) via the same negative-margin trick used for the Data Manager's Wilayah/Submission
-// map pages, then fills the viewport height directly (this shell has no topbar to subtract).
+// Full-bleed page — cancels dashboard-shell's `.main` padding (space-6 top/left/right, a fixed 3rem
+// bottom) via a negative margin, then fills the viewport height. Stays in-flow (not position:fixed)
+// so the rail nav can still push/overlay it when expanded.
 //
-// This was briefly `position: fixed; inset: 0` instead — working around `RailNavComponent`'s
-// collapsed `.rail` inflating `.shell`/`.main`'s height past one viewport (its collapsed labels
-// used to wrap instead of just disappearing at width:0; fixed at the source now, see that
-// component's own `.rail.collapsed` comment) — but `position: fixed` has a worse problem than the
-// one it worked around: it covers the *entire* viewport unconditionally, including whatever
-// horizontal space the rail nav needs when a user expands it, since a fixed element doesn't
-// participate in `.shell`'s flex layout at all. Verified live: expanding the rail while on this
-// page rendered it completely hidden underneath this one (a plain `position: static` sibling never
-// wins a stacking fight against a `position: fixed` one, however low its z-index). Back to the
-// negative-margin approach, which stays in-flow and therefore correctly gives way to the rail.
+// Pixel values below are read off the "DGT DASHBOARD" reference screenshot (1920 px wide).
 .geo-shell {
   position: relative;
   margin: calc(var(--space-6, 1.5rem) * -1) calc(var(--space-6, 1.5rem) * -1) -3rem calc(var(--space-6, 1.5rem) * -1);
   height: 100vh;
   overflow: hidden;
   background: var(--sidebar, #0b1220);
+  font-family: var(--font-sans);
 }
 
 .geo-map-layer {
   position: absolute;
   inset: 0;
+  transition: transform 0.4s var(--ease-standard, ease);
+
+  &.tilt {
+    transform: perspective(1400px) rotateX(32deg) scale(1.4);
+    transform-origin: 50% 85%;
+  }
 
   ::ng-deep dgt-kawasan-map {
     display: block;
@@ -35,326 +33,547 @@
   }
 }
 
-// ---------- top filter toolbar ----------
-// width hugs its own content (on request — "header not fill width") rather than stretching to the
-// far edge of the viewport like the floating side panels do; only anchored top-left.
+// ---------- top-left: brand card + filter pills ----------
 .geo-top-row {
   position: absolute;
-  top: var(--space-4, 1rem);
-  left: var(--space-4, 1rem);
-  right: 7.5rem; // clear of the fixed bell + theme toggle
+  top: 17px;
+  left: 14px;
+  right: 190px; // clear of the actions card
   z-index: 60;
   display: flex;
   align-items: stretch;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 15px;
   pointer-events: none;
   > * { pointer-events: auto; }
 }
-.geo-brand-card, .geo-top-toolbar {
-  display: flex; align-items: center; gap: 0.6rem;
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 0.5rem 0.9rem; box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
-}
-// left padding reserves the spot where the shell's fixed ☰ button (14px/14px, 34px wide) sits.
 .geo-brand-card {
-  padding-left: 3.4rem; padding-right: 1.4rem; min-height: 3.2rem;
-  img { height: 40px; width: auto; }
-}
-.geo-brand-title { font-size: 1rem; font-weight: 800; letter-spacing: 0.02em; color: var(--text); white-space: nowrap; }
-.geo-top-toolbar { flex-wrap: wrap; }
-.geo-pill { width: auto; border-radius: 999px; background: var(--muted); font-size: 0.74rem; font-weight: 600; color: var(--text-dim); }
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 60px;
+  // left padding reserves the spot of the shell's ☰ button (see `.rail-fab.on-geo`)
+  padding: 0 18px 0 62px;
+  background: var(--primary);
+  border-radius: 12px;
+  box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.5);
 
-.info-chip {
-  display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 600;
-  color: var(--text-dim); background: var(--muted); border: 1px solid var(--border);
-  border-radius: 999px; padding: 0.32rem 0.7rem; white-space: nowrap;
+  img { height: 48px; width: 48px; object-fit: contain; }
 }
-.field-inline {
-  display: flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; color: var(--text-dim);
+.geo-brand-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  white-space: nowrap;
+}
+.geo-top-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 60px;
+  padding: 0 20px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
+}
+.geo-pill {
+  height: 26px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  font: 500 12px/1 var(--font-sans);
+  color: var(--text-dim);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  white-space: nowrap;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.geo-pill-static { cursor: default; }
 
-  select { padding: 0.32rem 0.55rem; font-size: 0.74rem; height: auto; }
-}
-// Toolbar's EWS entry point — an icon button with a small count badge (was a "Peringatan (N)" text
-// pill; a bell reads more like the rest of this toolbar's compact icon-first controls).
-.geo-bell-btn {
-  position: relative;
-  width: 30px; height: 30px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
-  background: var(--muted); border: 1px solid var(--border); border-radius: 50%;
-  color: var(--text-dim); cursor: pointer;
+// ---------- top-right: actions card ----------
+.geo-actions-card {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 62;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 47px;
+  padding: 0 10px 0 16px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
 
-  svg { width: 16px; height: 16px; }
-  &.warn { color: var(--critical); border-color: transparent; background: var(--critical-soft); }
-}
-// Fixed top-right, immediately left of the fixed theme toggle (34px wide at right:14px).
-.geo-bell-wrap { position: fixed; top: 16px; right: 58px; z-index: 1031; }
-.geo-bell-fixed {
-  width: 34px; height: 34px; background: var(--card); box-shadow: 0 4px 14px -6px rgba(15, 25, 34, 0.25);
-  &.warn { background: var(--critical-soft); }
-}
-.geo-ews-popover {
-  position: absolute; top: calc(100% + 8px); right: 0; width: 240px; padding: 0.6rem 0.7rem;
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-  box-shadow: 0 10px 26px -12px rgba(15, 25, 34, 0.45);
-}
-.geo-panel-tabs {
-  flex: 0 0 auto; display: flex; border-bottom: 1px solid var(--border);
-  button {
-    flex: 1; padding: 0.5rem 0.4rem; font-size: 0.74rem; font-weight: 600; background: none; border: 0;
-    border-bottom: 2px solid transparent; color: var(--text-dim); cursor: pointer;
-    &.active { color: var(--primary); border-bottom-color: var(--primary); }
+  ::ng-deep .theme-toggle {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    background: transparent;
+    color: var(--text-dim);
+    box-shadow: none;
   }
 }
+.geo-action-btn {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+
+  svg { width: 20px; height: 20px; }
+  &:hover, &.open { color: var(--primary); background: var(--primary-soft); }
+}
+.geo-bell-wrap { position: relative; }
 .geo-bell-badge {
-  position: absolute; top: -4px; right: -4px; min-width: 15px; height: 15px; padding: 0 3px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.6rem; font-weight: 800; line-height: 1; color: #fff;
-  background: var(--critical); border-radius: 999px; border: 1.5px solid var(--card);
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 10px/1 var(--font-sans);
+  color: #fff;
+  background: #e5262c;
+  border-radius: 999px;
+  border: 1.5px solid var(--card);
+}
+.geo-avatar {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f5a623;
+  color: #fff;
+
+  svg { width: 17px; height: 17px; }
+}
+.geo-ews-popover {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: -8px;
+  width: 250px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px -10px rgba(15, 25, 34, 0.45);
+}
+.layer-group-head {
+  display: flex; align-items: center; justify-content: space-between; padding: 0 2px 6px;
+  .nm { font-weight: 700; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.03em; color: var(--text-dim); }
+  .ct { font-size: 10.5px; color: var(--text-faint); }
+}
+.ews-cat-item {
+  display: flex; align-items: center; gap: 8px; padding: 5px 4px; margin: 0; border-radius: 6px; cursor: pointer; font-size: 12.5px;
+  &:hover { background: var(--muted); }
+  input { accent-color: var(--primary); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+  .nm { flex: 1 1 auto; color: var(--text); }
+  .ct { font-size: 11px; color: var(--text-faint); }
+}
+
+// ---------- orange layer button ----------
+.geo-layer-btn {
+  position: absolute;
+  top: 100px;
+  left: 412px;
+  z-index: 58;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: #f5a623;
+  color: #fff;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.45);
+
+  svg { width: 15px; height: 15px; }
+  &.panel-closed { left: 14px; top: 93px; }
 }
 
 // ---------- floating side panels ----------
 .geo-panel {
   position: absolute;
-  top: 5.75rem;
-  bottom: var(--space-4, 1rem);
-  width: 300px;
-  max-width: calc(100% - 2rem);
   z-index: 55;
   display: flex;
   flex-direction: column;
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.45);
   overflow: hidden;
-  pointer-events: auto;
-
-  &.collapsed {
-    bottom: auto;
-    height: auto;
-  }
 }
-.geo-panel-left { left: var(--space-4, 1rem); }
-.geo-panel-right { right: var(--space-4, 1rem); }
+.geo-panel-left {
+  left: 14px;
+  top: 93px;
+  bottom: 69px;
+  width: 380px;
+}
+.geo-panel-right {
+  right: 16px;
+  top: 70px;
+  bottom: 13px;
+  width: 411px;
 
+  &.collapsed { bottom: auto; }
+}
 .geo-panel-head {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.65rem 0.85rem;
-  border-bottom: 1px solid var(--border);
+  padding: 18px 16px 10px 18px;
 }
-.geo-panel.collapsed .geo-panel-head { border-bottom: none; }
-
 .geo-panel-title {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--text);
   margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
 }
-
 .geo-panel-collapse {
-  flex: 0 0 auto; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
-  background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-dim); cursor: pointer;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
 
-  &:hover { border-color: var(--primary-line); color: var(--primary); }
-  svg { width: 12px; height: 12px; transition: transform var(--duration-base, 180ms) var(--ease-standard, ease); }
-  svg.rotated { transform: rotate(180deg); }
+  &:hover { color: var(--primary); }
+  svg { width: 14px; height: 14px; }
 }
-
 .geo-panel-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0.75rem 0.85rem;
+  padding: 0 16px 16px 18px;
 }
+.geo-panel-left .geo-panel-body { padding-right: 18px; }
 
+// ---------- left: search / filters / tree ----------
 .geo-search-wrap {
-  position: relative; margin-bottom: 0.65rem;
-  svg { position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-dim); pointer-events: none; }
-  .geo-layer-search { padding-left: 2rem; }
+  position: relative;
+  margin: 4px 0 12px;
+
+  svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text-faint); pointer-events: none; }
+}
+.geo-layer-search {
+  width: 100%;
+  height: 38px;
+  padding: 0 14px 0 38px;
+  font: 400 13px var(--font-sans);
+  color: var(--text);
+  background: var(--background);
+  border: 0;
+  border-radius: 8px;
+  outline: none;
+
+  &::placeholder { color: var(--text-faint); }
+  &:focus { box-shadow: 0 0 0 2px var(--primary-line); }
 }
 .geo-filter-row {
-  display: flex; gap: 0.5rem; margin-bottom: 0.75rem;
-  select { flex: 1 1 0; min-width: 0; }
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
 }
-.geo-type-filter {
-  justify-content: space-between; margin-bottom: 0.75rem;
-  select { flex: 0 0 auto; }
-}
+.geo-select {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 38px;
+  padding: 0 12px;
+  font: 400 13px var(--font-sans);
+  color: var(--text-dim);
+  background-color: var(--background);
+  border: 0;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
 
-// ---------- Manajemen Lapisan groups ----------
-.layer-group { margin-bottom: 0.85rem; }
-.layer-group:last-child { margin-bottom: 0; }
-.layer-group-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0.15rem 0.1rem 0.35rem;
-
-  .nm { font-weight: 700; text-transform: uppercase; font-size: 0.66rem; letter-spacing: 0.03em; color: var(--text-dim); }
-  .ct { font-size: 0.66rem; color: var(--text-faint); }
-}
-.layer-group-list { display: flex; flex-direction: column; gap: 0.1rem; }
-.layer-empty { font-size: 0.75rem; color: var(--text-faint); padding: 0.2rem 0.4rem; margin: 0; }
-
-.map-layer-item {
-  display: flex; align-items: center; gap: 0.4rem; padding: 0.28rem 0.4rem;
-  border-radius: 6px; cursor: pointer; user-select: none; margin: 0;
-
-  &:hover { background: var(--muted); }
-  &.selected { background: var(--primary-soft); }
-  input { accent-color: var(--primary); flex: 0 0 auto; }
-  .map-layer-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; border: 1px solid rgba(0,0,0,0.15); }
-  .map-layer-dot.map-layer-dot-outline { background: transparent; border: 2px dashed var(--series-2); }
-  .map-layer-dot.map-layer-dot-fill { background: var(--good); border-color: transparent; }
-  .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 500; }
-  .nm-link:hover { text-decoration: underline; color: var(--primary); }
-  .ct { flex: 0 0 auto; font-size: 0.64rem; color: var(--text-faint); max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-}
-.map-layer-item.sub-item { padding-left: 0.15rem; }
-
-// ---------- per-kawasan expandable HPL/SHM rows ----------
-.kawasan-expand-btn {
-  flex: 0 0 auto; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
-  background: transparent; border: none; padding: 0; color: var(--text-faint); cursor: pointer;
-
-  &:hover { color: var(--primary); }
-  svg { width: 13px; height: 13px; transition: transform var(--duration-base, 180ms) var(--ease-standard, ease); }
-  svg.rotated { transform: rotate(90deg); }
-}
-.kawasan-sub-list { display: flex; flex-direction: column; gap: 0.1rem; margin-bottom: 0.15rem; }
-.map-layer-item.kawasan-sub-item {
-  padding-left: 2.15rem;
-  .nm { flex: 0 0 auto; }
+  &:focus { box-shadow: 0 0 0 2px var(--primary-line); }
 }
 
-// ---------- Ringkasan Seluruh Kawasan ----------
-.ringkasan-stat {
+.geo-tree { padding-bottom: 8px; }
+.geo-tree-node { margin-bottom: 4px; }
+.geo-tree-row {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
-}
-.ringkasan-stat-total {
-  display: flex; flex-direction: column; align-items: center; flex: 0 0 auto;
+  gap: 9px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
 
-  .v { font-size: 1.7rem; font-weight: 800; color: var(--text); line-height: 1; }
-  .l { font-size: 0.66rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.03em; }
+  input[type='checkbox'] { width: 15px; height: 15px; margin: 0; flex: 0 0 auto; accent-color: #0868ad; cursor: pointer; }
 }
-.ringkasan-stat-chips {
-  display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 auto;
+.geo-tree-parent {
+  padding: 7px 0 7px 2px;
+  font-weight: 700;
+  border-radius: 6px;
+
+  &.selected { background: var(--primary-soft); }
 }
-.stat-chip {
-  font-size: 0.74rem; color: var(--text-dim);
-  b { color: var(--text); }
+.geo-tree-chev {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: #0868ad;
+  cursor: pointer;
+
+  svg { width: 20px; height: 20px; transition: transform var(--duration-base, 180ms) var(--ease-standard, ease); }
+  svg.collapsed { transform: rotate(-90deg); }
+}
+.geo-tree-name {
+  cursor: pointer;
+  &:hover { color: var(--primary); text-decoration: underline; }
+}
+.geo-tree-child {
+  padding: 6px 0 6px 31px;
+  border-bottom: 1px solid var(--border-soft);
+  font-weight: 400;
+  cursor: pointer;
+}
+.layer-empty { font-size: 12.5px; color: var(--text-faint); margin: 8px 2px; }
+
+// ---------- right: Summary Nasional sections ----------
+.sum-sec {
+  margin-bottom: 14px;
+  border-radius: 10px;
+  background: var(--background);
+  overflow: hidden;
+
+  &:last-child { margin-bottom: 0; }
+}
+.sum-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 38px;
+  padding: 0 10px;
+  background: var(--sec-bg);
+}
+.sum-ico {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--sec-ic);
+  color: #fff;
+
+  svg { width: 15px; height: 15px; }
+}
+.sum-title {
+  flex: 1 1 auto;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sec-fg);
+}
+.sum-doc { flex: 0 0 auto; width: 15px; height: 15px; color: var(--text-faint); }
+.sum-body { padding: 10px 14px 12px; }
+.sum-sub { font-size: 11px; font-weight: 600; color: var(--text); margin: 2px 0 4px; }
+
+.tone-amber { --sec-bg: var(--tone-amber-bg); --sec-fg: var(--tone-amber-fg); --sec-ic: var(--tone-amber-ic); }
+.tone-blue { --sec-bg: var(--tone-blue-bg); --sec-fg: var(--tone-blue-fg); --sec-ic: var(--tone-blue-ic); }
+.tone-cyan { --sec-bg: var(--tone-cyan-bg); --sec-fg: var(--tone-cyan-fg); --sec-ic: var(--tone-cyan-ic); }
+.tone-green { --sec-bg: var(--tone-green-bg); --sec-fg: var(--tone-green-fg); --sec-ic: var(--tone-green-ic); }
+
+.stat-grid {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  &:last-child { margin-bottom: 0; }
+  &.g3 { grid-template-columns: repeat(3, 1fr); }
+  &.g2 { grid-template-columns: 1.1fr 1fr; }
+  &.g4 { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+}
+.stat-tile {
+  min-width: 0;
+  padding: 9px 4px 8px;
+  text-align: center;
+  background: var(--card);
+  border-radius: 8px;
+
+  b { display: block; font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  span { display: block; margin-top: 2px; font-size: 9.5px; color: var(--text-dim); line-height: 1.25; }
+
+  &.mini {
+    padding: 7px 2px 8px;
+    .mini-label { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 9.5px; color: var(--text-dim); margin: 0 0 3px; white-space: nowrap; }
+    b { font-size: 14px; }
+  }
+}
+.mini-ico::before { font-size: 11px; line-height: 1; }
+.mini-ico[data-i='tani']::before { content: '\1F33E'; }
+.mini-ico[data-i='kebun']::before { content: '\1F965'; }
+.mini-ico[data-i='ikan']::before { content: '\1F41F'; }
+.mini-ico[data-i='hutan']::before { content: '\1F333'; }
+
+.kv {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 11px;
+  color: var(--text-dim);
+
+  b { font-size: 12.5px; font-weight: 500; color: var(--text); white-space: nowrap; }
+  &.ruled { border-bottom: 1px solid var(--border); padding: 6px 0; &:last-child { border-bottom: 0; } }
+}
+.bar {
+  height: 7px;
+  margin: 1px 0 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+
+  i { display: block; height: 100%; border-radius: 999px; }
+  i.green { background: #106d30; }
+  i.blue { background: #0868ad; }
+}
+.patriot {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 4px 4px 2px;
+}
+.patriot-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 11.5px;
+  color: var(--text);
+
+  li { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+  i { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 auto; }
+  b { margin-left: 2px; color: var(--text-dim); font-weight: 600; }
 }
 
-// ---------- Detail Kawasan (selected-kawasan compact profile) ----------
-.detail-kawasan-name { font-size: 0.95rem; font-weight: 700; color: var(--text); }
-.detail-kawasan-sub { font-size: 0.72rem; color: var(--text-faint); margin-bottom: 0.5rem; }
-.detail-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0.28rem 0; border-bottom: 1px solid var(--border-soft);
-  font-size: 0.76rem; color: var(--text-dim);
-
-  b { color: var(--text); }
-  &:last-of-type { border-bottom: none; }
-}
-.detail-stage-badge {
-  color: #fff; font-size: 0.68rem; font-weight: 700; padding: 0.12rem 0.55rem; border-radius: 999px;
-}
-.detail-legal { margin-top: 0.5rem; }
-.detail-legal-head {
-  display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.25rem;
-  b { color: var(--text); }
-}
-
-.ringkasan-section { margin-bottom: 0.9rem; }
-.ringkasan-section:last-child { margin-bottom: 0; }
-.ringkasan-section-title {
-  font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
-  color: var(--text-dim); margin-bottom: 0.4rem;
-}
-
-.stage-bar {
-  display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--muted);
-}
-.stage-legend {
-  display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; margin-top: 0.45rem;
-}
-.stage-legend-item {
-  display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; color: var(--text-dim);
-
-  i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-  b { color: var(--text); }
-}
-
-// Simplified (on request, "make it simple") — a plain colour dot + label + count per category,
-// no per-category bordered card or full alert list; just this grid plus the single highest-priority
-// alert below it (`.ews-top-alert`).
-.ews-summary-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem 0.6rem;
-  margin-bottom: 0.6rem;
-}
-.ews-summary-cell {
-  display: flex; align-items: center; gap: 0.4rem; min-width: 0; padding: 0.15rem 0;
-}
-.ews-summary-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
-.ews-summary-label { flex: 1 1 auto; font-size: 0.72rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ews-summary-count { flex: 0 0 auto; font-size: 0.72rem; font-weight: 700; color: var(--text); }
-
-.ews-top-alert.ack { opacity: 0.55; }
-
-// ---------- bottom floating toolbar ----------
-.geo-bottom-toolbar {
+// ---------- bottom-centre: basemap switcher + toolbar ----------
+.geo-bottom {
   position: absolute;
   left: 50%;
-  bottom: var(--space-4, 1rem);
+  bottom: 23px;
   transform: translateX(-50%);
   z-index: 60;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.3rem;
-  box-shadow: 0 10px 26px -16px rgba(15, 25, 34, 0.4);
-  pointer-events: auto;
+  gap: 10px;
+  pointer-events: none;
+  > * { pointer-events: auto; }
+}
+.geo-basemaps {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px 6px;
+  background: rgba(20, 36, 46, 0.62);
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+.bm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+
+  .bm-label { font-size: 10px; font-weight: 600; line-height: 1.15; text-align: center; }
+  .bm-thumb {
+    width: 58px;
+    height: 58px;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+  }
+  &.active .bm-thumb { border-color: #f5a623; }
+}
+.bm-thumb.street {
+  background:
+    linear-gradient(115deg, transparent 46%, #e9697a 46% 50%, transparent 50%),
+    linear-gradient(20deg, transparent 58%, #fff 58% 63%, transparent 63%),
+    linear-gradient(90deg, transparent 30%, #cfd7dc 30% 33%, transparent 33%),
+    #f1ede4;
+}
+.bm-thumb.lahan {
+  background:
+    radial-gradient(circle at 70% 70%, #2a87c9 0 22%, transparent 23%),
+    linear-gradient(135deg, #f3b72b 0 45%, #e69b1b 45% 70%, #f6d36a 70%);
+}
+.geo-bottom-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 38px;
+  padding: 0 8px;
+  background: rgba(22, 44, 58, 0.88);
+  border-radius: 8px;
+  box-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
 }
 .geo-tool-btn {
-  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-  background: transparent; border: none; border-radius: 50%; color: var(--text-dim);
-  font-size: 1.1rem; font-weight: 700; line-height: 1; cursor: pointer;
+  width: 38px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
 
-  &:hover { background: var(--muted); color: var(--text); }
-  svg { width: 15px; height: 15px; }
-}
-.geo-tool-sep { width: 1px; height: 18px; background: var(--border); margin: 0 0.15rem; }
-.geo-zoom-readout {
-  min-width: 2.4rem; text-align: center; font-size: 0.74rem; font-weight: 700; color: var(--text-dim);
-}
-
-// ---------- bottom status bar ----------
-.geo-status-bar {
-  position: absolute;
-  left: var(--space-4, 1rem);
-  bottom: var(--space-4, 1rem);
-  z-index: 55;
-  font-size: 0.68rem;
-  color: var(--text-dim);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.3rem 0.7rem;
-  pointer-events: none;
+  &:hover { background: rgba(255, 255, 255, 0.14); }
+  &.active { background: rgba(255, 255, 255, 0.24); }
+  &.txt { font: 600 14px var(--font-sans); letter-spacing: 0.02em; }
+  svg { width: 20px; height: 20px; }
 }
 
-@media (max-width: 900px) {
-  .geo-panel { position: static; width: auto; max-width: none; margin: 0 var(--space-4, 1rem) var(--space-4, 1rem); }
-  .geo-panel-left, .geo-panel-right { left: auto; right: auto; }
+@media (max-width: 1100px) {
+  .geo-panel-left { width: 300px; }
+  .geo-panel-right { width: 320px; }
+  .geo-layer-btn { left: 330px; }
+  .geo-top-toolbar { display: none; }
+}
+@media (max-width: 760px) {
+  .geo-panel { position: static; width: auto; margin: 0 14px 14px; }
+  .geo-layer-btn { display: none; }
 }

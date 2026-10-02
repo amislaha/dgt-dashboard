@@ -71,6 +71,14 @@
   --shadow-md: #{$shadow-md};
   --shadow-lg: #{$shadow-lg};
 
+  // Tinted section/KPI tones from the "Design system colors updated" bundle (amber/blue/cyan/green
+  // -50 backgrounds with their matching text/icon colours) — used by the Geospasial summary panel
+  // and the Kawasan detail modal.
+  --tone-amber-bg: #f3efe4; --tone-amber-fg: #a8620a; --tone-amber-ic: #e8981c;
+  --tone-blue-bg: #ddeaf2; --tone-blue-fg: #286a82; --tone-blue-ic: #0868ad;
+  --tone-cyan-bg: #ddeff3; --tone-cyan-fg: #0b7f99; --tone-cyan-ic: #0b98b8;
+  --tone-green-bg: #deebe6; --tone-green-fg: #106d30; --tone-green-ic: #106d30;
+
   --duration-fast: #{$duration-fast};
   --duration-base: #{$duration-base};
   --ease-standard: #{$ease-standard};
@@ -99,6 +107,11 @@
   --warn: #{$emas-300}; --warn-soft: #{rgba($emas-300, .16)};
   --critical: #e4566a; --critical-soft: #{rgba(#e4566a, .18)};
   --series-2: #{$teal-300}; --series-2-soft: #{rgba($teal-300, .2)};
+
+  --tone-amber-bg: rgba(232, 152, 28, .14); --tone-amber-fg: #f0b45a;
+  --tone-blue-bg: rgba(39, 123, 183, .18); --tone-blue-fg: #8cc3e6;
+  --tone-cyan-bg: rgba(11, 152, 184, .16); --tone-cyan-fg: #5cc8de;
+  --tone-green-bg: rgba(16, 109, 48, .22); --tone-green-fg: #6fd08f;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, .3);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, .35), 0 1px 2px rgba(0, 0, 0, .24);

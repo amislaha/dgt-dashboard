@@ -1,0 +1,234 @@
+// Dimensions follow the "KAWASAN DETAIL" reference screenshot (1920 px wide: card 1628 px wide,
+// hero 230 px, KPI cards ~100 px tall, tab strip, white chart panel).
+.kd-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(12, 28, 40, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: kd-fade 0.18s ease-out;
+}
+@keyframes kd-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.kd-modal {
+  width: min(1628px, 100%);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--background);
+  border-radius: 20px;
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.55);
+  font-family: var(--font-sans);
+  color: var(--text);
+}
+
+// The photo itself is an inline style on the element (see the template comment).
+.kd-hero {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 230px;
+  padding: 104px 26px 24px;
+  color: #fff;
+  background-color: #1f5d47;
+  background-size: cover;
+  background-position: center;
+}
+.kd-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: 0;
+  border-radius: 50%;
+  color: #111;
+  cursor: pointer;
+
+  &:hover { background: #fff; }
+  svg { width: 16px; height: 16px; }
+}
+.kd-hero-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+}
+.kd-pill {
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #286a82;
+  background: #fff;
+  border-radius: 8px;
+}
+.kd-where {
+  font-size: 13px;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+.kd-title {
+  margin: 14px 0 0;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.kd-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 24px 22px;
+}
+
+// ---------- KPI cards ----------
+.kd-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+.kd-kpi {
+  padding: 16px 18px 14px;
+  border-radius: 10px;
+  background: var(--k-bg);
+  color: var(--k-fg);
+
+  &.t-green { --k-bg: var(--tone-green-bg); --k-fg: var(--tone-green-fg); --k-ic: var(--tone-green-ic); }
+  &.t-cyan { --k-bg: var(--tone-cyan-bg); --k-fg: var(--tone-cyan-fg); --k-ic: var(--tone-cyan-ic); }
+  &.t-blue { --k-bg: var(--tone-blue-bg); --k-fg: var(--tone-blue-fg); --k-ic: var(--tone-blue-ic); }
+  &.t-amber { --k-bg: var(--tone-amber-bg); --k-fg: var(--tone-amber-fg); --k-ic: var(--tone-amber-ic); }
+}
+.kd-kpi-top { display: flex; align-items: center; gap: 12px; }
+.kd-kpi-ico {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--k-ic);
+  color: #fff;
+
+  svg { width: 20px; height: 20px; }
+}
+.kd-kpi-val { font-size: 32px; font-weight: 600; line-height: 1; letter-spacing: -0.01em; }
+.kd-kpi-label { margin-top: 8px; font-size: 13px; font-weight: 600; }
+
+// ---------- tabs ----------
+.kd-tabs {
+  display: flex;
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+
+  button {
+    flex: 1 0 auto;
+    padding: 20px 14px 14px;
+    background: none;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    font: 500 14px var(--font-sans);
+    color: var(--text-dim);
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover { color: var(--text); }
+    &.active { color: var(--primary); border-bottom-color: var(--primary); }
+  }
+}
+
+// ---------- chart panel ----------
+.kd-panel {
+  margin-top: 14px;
+  padding: 18px 16px 22px;
+  background: var(--card);
+  border-radius: 12px;
+}
+.kd-panel-title { margin: 0 0 12px; font-size: 15px; font-weight: 600; }
+
+.kd-bars { display: flex; flex-direction: column; gap: 14px; }
+.kd-bars.usia { margin-top: 22px; }
+.kd-bar-row {
+  display: grid;
+  grid-template-columns: 112px 1fr 66px 252px;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+
+  // Tabs without a delta pill (Indeks Kinerja / Demografi) drop the 4th column.
+  &.no-delta { grid-template-columns: 190px 1fr 90px; }
+}
+.kd-bar-label { font-weight: 600; }
+.kd-bar-track {
+  height: 20px;
+  border-radius: 999px;
+  overflow: hidden;
+
+  i { display: block; height: 100%; border-radius: 999px; }
+}
+.kd-bar-val { text-align: right; font-weight: 600; white-space: nowrap; }
+.kd-delta {
+  padding: 5px 12px;
+  font-size: 12.5px;
+  text-align: center;
+  color: var(--tone-amber-fg);
+  background: var(--tone-amber-bg);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.kd-facts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.kd-fact {
+  padding: 16px 18px;
+  background: var(--background);
+  border-radius: 10px;
+
+  b { display: block; font-size: 22px; font-weight: 600; }
+  span { font-size: 12.5px; color: var(--text-dim); }
+}
+
+// ---------- footer ----------
+.kd-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 0 14px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.kd-foot-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  svg { width: 14px; height: 14px; }
+}
+
+@media (max-width: 1000px) {
+  .kd-kpis { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .kd-facts { grid-template-columns: repeat(2, 1fr); }
+  .kd-bar-row, .kd-bar-row.no-delta { grid-template-columns: 90px 1fr 60px; }
+  .kd-delta { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+  .kd-title { font-size: 22px; }
+  .kd-foot { flex-direction: column; }
+}

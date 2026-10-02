@@ -51,7 +51,18 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
    *  this false and drives zoom from its own floating bottom toolbar instead, via `zoomIn()`/
    *  `zoomOut()`/`resetView()` below. */
   @Input() showZoomControl = true;
+  /** 'street' = OpenStreetMap tiles (default), 'satelit' = Esri World Imagery. */
+  @Input() basemap: 'street' | 'satelit' = 'street';
+  /** 'stage' (default) fills each kawasan by its tahap colour; 'boundary' draws the purple
+   *  boundary-only look of the "DGT DASHBOARD" reference (Geospasial page). */
+  @Input() polygonStyle: 'stage' | 'boundary' = 'stage';
+  /** Per-kawasan HPL/SHM overlays the parent has switched off — re-applied after every replot, so
+   *  filtering the kawasan list doesn't silently bring hidden overlays back. */
+  @Input() hplHidden: { [id: string]: boolean } = {};
+  @Input() shmHidden: { [id: string]: boolean } = {};
   @Output() select = new EventEmitter<Kawasan>();
+  /** Fires when the "Lihat profil kawasan" link inside a popup is clicked. */
+  @Output() detail = new EventEmitter<Kawasan>();
   /** Fires once after the initial view is set, then again on every pan/zoom (Leaflet's 'moveend') —
    *  a plain object, not `L.LatLng`, so a consumer doesn't need its own Leaflet import just to read
    *  this. */
@@ -60,6 +71,7 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   @ViewChild('mapEl', { static: true }) mapElRef!: ElementRef<HTMLDivElement>;
 
   private map: L.Map | null = null;
+  private baseLayer: L.TileLayer | null = null;
   private areas: { [id: string]: L.Polygon } = {};
   private hplAreas: { [id: string]: L.Polygon } = {};
   private shmAreas: { [id: string]: L.Polygon } = {};
@@ -77,12 +89,21 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
     L.control.attribution({ position: 'bottomright' }).addTo(this.map);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
-    }).addTo(this.map);
-
+    this.applyBasemap();
     this.plotAreas();
+
+    this.map.on('popupopen', e => {
+      const el = (e as any).popup.getElement() as HTMLElement | undefined;
+      const btn = el && (el.querySelector('[data-kpop-detail]') as HTMLElement | null);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          const k = this.kawasan.find(x => x.id === btn.getAttribute('data-kpop-detail'));
+          if (k) {
+            this.detail.emit(k);
+          }
+        });
+      }
+    });
 
     this.map.on('moveend', () => this.emitView());
     this.emitView();
@@ -100,11 +121,50 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.map && changes.kawasan) {
+    if (this.map && changes.basemap) {
+      this.applyBasemap();
+    }
+    if (this.map && (changes.kawasan || changes.polygonStyle)) {
       this.plotAreas();
     }
     if (this.map && changes.selectedId && !changes.selectedId.firstChange) {
       this.panToSelected();
+    }
+  }
+
+  private applyBasemap(): void {
+    if (!this.map) {
+      return;
+    }
+    if (this.baseLayer) {
+      this.map.removeLayer(this.baseLayer);
+    }
+    this.baseLayer =
+      this.basemap === 'satelit'
+        ? L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 18,
+            attribution: 'Tiles &copy; Esri'
+          })
+        : L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+          });
+    this.baseLayer.addTo(this.map);
+    this.baseLayer.bringToBack();
+  }
+
+  /** Whole-country view (the globe button in Geospasial's bottom toolbar). */
+  showNational(): void {
+    if (this.map) {
+      this.map.setView([-2.2, 118], 5, { animate: false });
+    }
+  }
+
+  /** Zooms into the selected kawasan (the compass button in Geospasial's bottom toolbar). */
+  focusSelected(): void {
+    const k = this.kawasan.find(x => x.id === this.selectedId);
+    if (this.map && k) {
+      this.map.setView([k.lat, k.lon], Math.max(this.map.getZoom(), 10), { animate: false });
     }
   }
 
@@ -230,14 +290,12 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.shmAreas = {};
 
     this.kawasan.forEach(k => {
-      const area = L.polygon(kawasanAreaLatLngs(k), {
-        color: '#0a0f1c',
-        weight: 1.3,
-        opacity: 0.85,
-        fillColor: this.fillColorOf(k),
-        fillOpacity: 0.42
-      }).addTo(this.map!);
-      area.bindPopup(this.popupOf(k));
+      const boundary = this.polygonStyle === 'boundary';
+      const area = L.polygon(kawasanAreaLatLngs(k), boundary
+        ? { color: '#4b2ee6', weight: 3, opacity: 1, fillColor: '#2b1a8a', fillOpacity: 0.14 }
+        : { color: '#0a0f1c', weight: 1.3, opacity: 0.85, fillColor: this.fillColorOf(k), fillOpacity: 0.42 }
+      ).addTo(this.map!);
+      area.bindPopup(this.popupOf(k), { maxWidth: 330, minWidth: 296, className: 'kpop-wrap', autoPanPadding: [40, 40] });
       area.on('click', () => this.select.emit(k));
       this.areas[k.id] = area;
     });
@@ -249,13 +307,16 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     if (this.showLegality) {
       this.kawasan.forEach(k => {
         this.hplAreas[k.id] = L.polygon(kawasanAreaLatLngs(k), {
-          color: '#33809c', // var(--series-2)'s raw hex twin — Leaflet can't resolve CSS vars
+          color: this.polygonStyle === 'boundary' ? '#7c5cff' : '#33809c', // raw hex — Leaflet can't resolve CSS vars
           weight: 2,
           opacity: 0.9,
           dashArray: '5 4',
           fill: false,
           interactive: false
-        }).addTo(this.map!);
+        });
+        if (!this.hplHidden[k.id]) {
+          this.hplAreas[k.id].addTo(this.map!);
+        }
 
         this.shmAreas[k.id] = L.polygon(kawasanShmLatLngs(k), {
           color: '#2c755b', // STAGE_COLOR_HEX.Mandiri's raw hex twin — Leaflet can't resolve CSS vars
@@ -264,7 +325,10 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
           fillColor: '#2c755b',
           fillOpacity: 0.3,
           interactive: false
-        }).addTo(this.map!);
+        });
+        if (!this.shmHidden[k.id]) {
+          this.shmAreas[k.id].addTo(this.map!);
+        }
       });
     }
 

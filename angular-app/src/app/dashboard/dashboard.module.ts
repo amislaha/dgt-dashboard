@@ -8,6 +8,7 @@ import { DashboardShellComponent } from './dashboard-shell.component';
 import { ChatPanelComponent } from './components/chat-panel/chat-panel.component';
 import { KawasanMapComponent } from './components/geospasial/kawasan-map.component';
 import { GeospasialComponent } from './components/geospasial/geospasial.component';
+import { KawasanDetailModalComponent } from './components/geospasial/kawasan-detail-modal.component';
 import { ProfilComponent } from './components/profil/profil.component';
 import { DemografiComponent } from './components/demografi/demografi.component';
 import { InfrastrukturComponent } from './components/infrastruktur/infrastruktur.component';
@@ -29,6 +30,7 @@ import { IntelijenComponent } from './components/intelijen/intelijen.component';
     ChatPanelComponent,
     KawasanMapComponent,
     GeospasialComponent,
+    KawasanDetailModalComponent,
     ProfilComponent,
     DemografiComponent,
     InfrastrukturComponent,

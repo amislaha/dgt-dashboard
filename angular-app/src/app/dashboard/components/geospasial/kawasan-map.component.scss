@@ -5,3 +5,110 @@
   border-radius: var(--radius-sm);
   z-index: 1;
 }
+
+// Leaflet inserts popup markup outside this component's own encapsulated DOM, hence ::ng-deep.
+// Card look follows the "DGT DASHBOARD" reference: white card, green top rule, location-pin chip,
+// title + green caps subtitle, label/value rows, circular close button.
+:host ::ng-deep .kpop-wrap {
+  .leaflet-popup-content-wrapper {
+    padding: 0;
+    border-radius: 12px;
+    border-top: 3px solid #106d30;
+    background: var(--card);
+    color: var(--text);
+    box-shadow: 0 12px 32px -8px rgba(15, 25, 34, 0.45);
+  }
+  .leaflet-popup-content {
+    margin: 0;
+    width: auto !important;
+    font-family: var(--font-sans);
+  }
+  .leaflet-popup-tip {
+    background: var(--card);
+  }
+  a.leaflet-popup-close-button {
+    top: 14px;
+    right: 14px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    font: 20px/16px var(--font-sans);
+    color: var(--text);
+    text-align: center;
+  }
+}
+
+:host ::ng-deep .kpop {
+  padding: 14px 18px 14px;
+
+  .kpop-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 22px 10px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .kpop-ico {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #deebe6;
+    color: #106d30;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  .kpop-title {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .kpop-sub {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #106d30;
+  }
+  .kpop-row {
+    display: grid;
+    grid-template-columns: 82px 1fr;
+    gap: 6px;
+    padding: 2.5px 0;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .kpop-k {
+    color: var(--text-dim);
+  }
+  .kpop-v {
+    color: var(--text);
+  }
+  .kpop-v.hl {
+    color: #0868ad;
+    font-weight: 600;
+  }
+  .kpop-link {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font: 600 12px var(--font-sans);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+  }
+}

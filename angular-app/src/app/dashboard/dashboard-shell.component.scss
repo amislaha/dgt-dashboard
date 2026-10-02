@@ -100,6 +100,22 @@
   }
 }
 
+// On the Geospasial page the button sits inside the teal brand card ("DGT DASHBOARD" reference):
+// no chrome of its own, white icon, positioned over the card's reserved left padding.
+.rail-fab.on-geo:not(.shifted) {
+  top: 30px;
+  left: 28px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: #fff;
+  font-size: 1.15rem;
+
+  &:hover { border-color: rgba(255, 255, 255, 0.5); color: #fff; }
+}
+
 // Once the rail is expanded on desktop, nudge the fab clear of the rail's
 // own header instead of sitting on top of it.
 .rail-fab.shifted {

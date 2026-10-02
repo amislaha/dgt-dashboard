@@ -27,12 +27,13 @@
     class="rail-fab"
     [class.hidden-until-hover]="!isNarrow && railCollapsed && activeId !== 'geospasial'"
     [class.shifted]="!isNarrow && !railCollapsed"
+    [class.on-geo]="activeId === 'geospasial'"
     aria-label="Buka/tutup menu modul"
     (click)="toggleRail()">
     &#9776;
   </button>
 
-  <dgt-theme-toggle [fixed]="true"></dgt-theme-toggle>
+  <dgt-theme-toggle *ngIf="activeId !== 'geospasial'" [fixed]="true"></dgt-theme-toggle>
 
   <main class="main flex-grow-1">
     <router-outlet></router-outlet>

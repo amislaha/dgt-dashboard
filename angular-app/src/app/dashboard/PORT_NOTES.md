@@ -353,3 +353,22 @@ is gone now; see above for what replaced it.
 - No automated tests exist for this module (none exist anywhere in the
   Angular workspace yet, matching the rest of the repo's no-build/no-test
   convention carried over from the original static prototype).
+
+## Geospasial redesign from the "DGT DASHBOARD" / "KAWASAN DETAIL" screenshots
+
+Geospasial was re-laid-out to match two reference screenshots (supersedes the older descriptions
+above of its right-panel tabs, type-group layer list and EWS summary card):
+
+- Teal brand card (the shell's ☰ button is restyled to sit inside it — `.rail-fab.on-geo`), filter
+  pills, a top-right actions card (print / theme / EWS bell / avatar), a "Layer Kawasan" tree
+  (`WPT <nama>` → HPL / SHM; filters are type + HPL-certification status), and a "Summary Nasional"
+  panel of five tinted sections (Trans Tuntas / Lokal / Patriot / Gotong Royong / Karya Nusa).
+  The summary figures are fixed-ratio derivations from `nationalKPI`/`kawasan` — illustrative.
+- Map: satellite default ("Tutupan lahan" = Esri World Imagery; "Street Map" = OSM — there is no
+  real land-cover layer), purple boundary polygons, a "HPL TRANSMIGRASI" popup card (SK/sertifikat
+  lines are seeded-hash placeholders), a dark bottom toolbar. The "3D" button only tilts the map
+  with a CSS perspective transform — Leaflet has no real 3D.
+- `KawasanDetailModalComponent` is the "KAWASAN DETAIL" modal (replaces the old Detail Kawasan
+  tab). Opened from a tree row name or the popup's "Lihat profil kawasan" link. Its commodity tabs
+  show derived placeholder metrics.
+- Not verified in a browser at the time of writing — see git history for follow-up fixes.
