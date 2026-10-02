@@ -1,18 +1,23 @@
 // Ports dashboard/index.html's `.shell`/`.rail-fab`/`.main` (no topbar — see
 // the component's own doc comment for why this diverges from the shared
 // `<dgt-app-shell>` data-manager still uses).
+// Fixed-size app frame: the sidebar always spans exactly the viewport height and never moves;
+// only `.main` (the inner content) scrolls.
 :host {
   display: block;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .shell {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   position: relative;
 }
 
 .main {
   min-width: 0;
+  height: 100vh;
   overflow-y: auto;
   padding: var(--space-6, 1.5rem) var(--space-6, 1.5rem) 3rem;
 }
@@ -31,18 +36,41 @@
   display: flex;
   align-items: center;
   gap: var(--space-2, .5rem);
+  width: 100%;
   padding: var(--space-2, .5rem) var(--space-3, .75rem);
   border-radius: var(--radius-md, .5rem);
   color: var(--text-dim);
-  text-decoration: none;
-  font-size: var(--text-sm, .8125rem);
-  font-weight: 600;
+  font: 600 var(--text-sm, .8125rem) var(--font-sans);
+  text-align: left;
   border: 1px solid var(--border);
   background: var(--muted);
+  cursor: pointer;
 
   svg { width: 16px; height: 16px; flex: 0 0 auto; }
+  span { flex: 1 1 auto; }
+  .chev { transition: transform var(--duration-base, 180ms) var(--ease-standard, ease); }
+  &.open .chev { transform: rotate(180deg); }
 
-  &:hover { border-color: var(--primary-line); color: var(--primary); background: var(--primary-soft); }
+  &:hover, &.open { border-color: var(--primary-line); color: var(--primary); background: var(--primary-soft); }
+}
+.admin-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.admin-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, .5rem);
+  padding: var(--space-2, .5rem) var(--space-3, .75rem);
+  border-radius: var(--radius-md, .5rem);
+  color: var(--text);
+  text-decoration: none;
+  font-size: var(--text-sm, .8125rem);
+  font-weight: 500;
+
+  svg { width: 16px; height: 16px; flex: 0 0 auto; color: var(--primary); }
+  &:hover { background: var(--accent); color: var(--primary); text-decoration: none; }
 }
 
 // ---------- rail-fab (sidebar toggle) ----------
