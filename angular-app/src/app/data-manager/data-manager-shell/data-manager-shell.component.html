@@ -1,7 +1,9 @@
 <div class="dm-shell d-flex flex-column">
   <header class="dm-header navbar navbar-expand navbar-light bg-white border-bottom px-3">
-    <img class="dm-logo" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi" />
-    <span class="navbar-brand font-weight-bold mb-0">DGT Data Manager</span>
+    <a class="dm-brand d-flex align-items-center" routerLink="/" title="Kembali ke beranda" aria-label="Kembali ke beranda">
+      <img class="dm-logo" src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi" />
+      <span class="navbar-brand font-weight-bold mb-0">DGT Data Manager</span>
+    </a>
 
     <nav class="dm-nav flex-grow-1 d-flex align-items-center flex-wrap">
       <a class="dm-nav-link" [class.active]="activeId === 'wilayah'" (click)="onSelect('wilayah')">

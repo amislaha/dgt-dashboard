@@ -12,6 +12,17 @@
   flex-wrap: wrap;
 }
 
+.dm-brand {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
 .dm-logo {
   width: 32px;
   height: 32px;
