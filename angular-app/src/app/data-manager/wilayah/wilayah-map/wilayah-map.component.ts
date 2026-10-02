@@ -9,7 +9,7 @@ function esc(s: any): string {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as any)[c]);
 }
 
-const DRAW_COLOR = '#163b54';
+const DRAW_COLOR = '#286a82';
 const PREVIEW_COLOR = '#c65b7c';
 
 /**

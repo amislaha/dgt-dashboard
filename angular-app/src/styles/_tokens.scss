@@ -16,8 +16,8 @@ $biru-50: #eef2f6; $biru-100: #d7e1ea; $biru-200: #aec2d2; $biru-300: #7e9db6;
 $biru-400: #4b7695; $biru-500: #2a5a78; $biru-600: #163b54; $biru-700: #102c40;
 $biru-800: #0c2233; $biru-900: #081826; $biru-950: #050f19;
 
-$teal-50: #eef5f8; $teal-100: #d5e7ee; $teal-200: #a9cedb; $teal-300: #75b0c4;
-$teal-400: #4b95ad; $teal-500: #33809c; $teal-600: #2a6b83; $teal-700: #205468;
+$teal-50: #e3f1f5; $teal-100: #d5e7ee; $teal-200: #a9cedb; $teal-300: #75b0c4;
+$teal-400: #4b95ad; $teal-500: #14a5c0; $teal-600: #33809c; $teal-700: #286a82;
 
 $emas-50: #fbf6ec; $emas-100: #f6ead3; $emas-200: #eed7ae; $emas-300: #dfb87e;
 $emas-400: #cfa460; $emas-500: #c09546; $emas-600: #9d7936; $emas-700: #765a28;
@@ -26,35 +26,38 @@ $merah-50: #fdeef0; $merah-100: #fad7db; $merah-200: #f3aeb6; $merah-300: #e97e8
 $merah-400: #dd4b5d; $merah-500: #ce1126; $merah-600: #af0e20; $merah-700: #8c0b1a;
 
 $hijau-50: #edf6f1; $hijau-100: #d3e9dd; $hijau-200: #a6d2bc; $hijau-300: #6fb195;
-$hijau-400: #438f72; $hijau-500: #2c755b; $hijau-600: #1f5d47; $hijau-700: #174838;
+$hijau-400: #438f72; $hijau-500: #2c755b; $hijau-600: #106d30; $hijau-700: #174838;
 
-$abu-0: #ffffff; $abu-50: #f7f9fa; $abu-100: #eff3f5; $abu-200: #dfe6ea;
+$abu-0: #ffffff; $abu-50: #f4f8fa; $abu-100: #f6f6f6; $abu-200: #e4eaee;
 $abu-300: #c4d0d8; $abu-400: #97a7b2; $abu-500: #71818c; $abu-600: #5b6b76;
-$abu-700: #42505a; $abu-800: #2a3740; $abu-900: #1a2530; $abu-950: #0f1922;
+$abu-700: #42505a; $abu-800: #2a3740; $abu-900: #111111; $abu-950: #0f1922;
 
-// --- Semantic aliases --------------------------------------------------------
-$color-background: $abu-0;
-$color-foreground: $abu-950;
-$color-primary: $biru-600;
-$color-primary-foreground: #f4f8fa;
+// --- Semantic aliases (palette from the "Design system colors updated" bundle) ---
+// Primary is the bundle's accent teal #33809c (its --accent role); brand teal #14a5c0 is the ring.
+$color-background: $abu-50;
+$color-card: $abu-0;
+$color-foreground: $abu-900;
+$color-primary: $teal-600;
+$color-primary-foreground: #ffffff;
 $color-secondary: $abu-100;
-$color-secondary-foreground: $biru-800;
+$color-secondary-foreground: $abu-900;
 $color-muted: $abu-100;
 $color-muted-foreground: $abu-600;
-$color-accent: $biru-50;
-$color-accent-foreground: $biru-700;
+$color-accent: $teal-50;
+$color-accent-foreground: $teal-700;
 $color-destructive: $merah-500;
 $color-success: $hijau-600;
-$color-warning: $emas-500;
-$color-info: $teal-500;
+$color-warning: #e8981c;
+$color-info: #0b98b8;
 $color-border: $abu-200;
 $color-ring: $teal-500;
 
-$chart-1: $biru-600; $chart-2: $teal-500; $chart-3: $emas-300; $chart-4: $emas-500; $chart-5: $merah-400;
+$chart-1: #106d30; $chart-2: #0b98b8; $chart-3: #0868ad; $chart-4: #cfa460; $chart-5: #e8981c;
 
-$sidebar-bg: $biru-900;
-$sidebar-fg: #d5e1ea;
-$sidebar-primary: $emas-300;
+// The bundle has no sidebar colours; derived as a dark shade of its accent teal.
+$sidebar-bg: darken($teal-700, 14%);
+$sidebar-fg: #d5e6ee;
+$sidebar-primary: $emas-400;
 $sidebar-accent: rgba(255, 255, 255, .08);
 $sidebar-border: rgba(255, 255, 255, .10);
 
