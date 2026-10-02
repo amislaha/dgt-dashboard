@@ -1,0 +1,106 @@
+.sb-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+
+  h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+  p { margin: 0; font-size: 14px; color: var(--text-dim); max-width: 640px; }
+}
+.sb-badge {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tone-amber-fg);
+  background: var(--tone-amber-bg);
+  border: 1px solid rgba(168, 98, 10, 0.25);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.sb-card {
+  margin-bottom: 20px;
+  padding: 18px 20px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-xs);
+}
+.sb-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+
+  h2 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text); }
+}
+.sb-tools { display: flex; align-items: center; gap: 8px; }
+.sb-select {
+  height: 32px;
+  padding: 0 10px;
+  font: 500 13px var(--font-sans);
+  color: var(--text);
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.sb-seg {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  button {
+    padding: 4px 14px;
+    font: 500 12.5px var(--font-sans);
+    color: var(--text-dim);
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &.active { color: var(--text); background: var(--card); box-shadow: var(--shadow-xs); }
+  }
+}
+
+.sb-umur {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 48px;
+  padding: 8px 0 4px;
+}
+.sb-umur-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 360px;
+
+  li {
+    display: grid;
+    grid-template-columns: 12px 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 13px;
+
+    &:last-child { border-bottom: 0; }
+  }
+  i { width: 10px; height: 10px; border-radius: 50%; }
+  .nm { color: var(--text); }
+  .pc { font-weight: 600; color: #106d30; min-width: 48px; text-align: right; }
+  .val { min-width: 54px; text-align: right; color: var(--text-dim); }
+}
+
+@media (max-width: 640px) {
+  .sb-head h1 { font-size: 22px; }
+  .sb-umur-legend { min-width: 0; width: 100%; }
+}

@@ -16,6 +16,8 @@ import { MonitoringComponent } from './components/monitoring/monitoring.componen
 import { EkonomiComponent } from './components/ekonomi/ekonomi.component';
 import { AnalitikComponent } from './components/analitik/analitik.component';
 import { IntelijenComponent } from './components/intelijen/intelijen.component';
+import { SibarduktransComponent } from './components/sibarduktrans/sibarduktrans.component';
+import { SibColumnChartComponent } from './components/sibarduktrans/sib-column-chart.component';
 
 /**
  * DGT Dashboard feature module — Angular port of dashboard/index.html (see
@@ -37,7 +39,9 @@ import { IntelijenComponent } from './components/intelijen/intelijen.component';
     MonitoringComponent,
     EkonomiComponent,
     AnalitikComponent,
-    IntelijenComponent
+    IntelijenComponent,
+    SibarduktransComponent,
+    SibColumnChartComponent
   ],
   imports: [SharedModule, ShellModule, DashboardRoutingModule]
 })

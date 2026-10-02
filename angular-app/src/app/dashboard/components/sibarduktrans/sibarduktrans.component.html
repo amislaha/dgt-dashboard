@@ -1,0 +1,78 @@
+<header class="sb-head">
+  <div>
+    <h1>Data Transmigran</h1>
+    <p>Statistik jumlah transmigran dari Sibarduktrans &mdash; per periode, provinsi asal, provinsi tujuan, dan kelompok umur.</p>
+  </div>
+  <span class="sb-badge" title="Belum terhubung ke API Sibarduktrans">Data contoh &middot; belum terhubung API</span>
+</header>
+
+<!-- Per periode -->
+<section class="sb-card">
+  <header class="sb-card-head">
+    <h2>Statistik Jumlah Transmigran Per Periode</h2>
+    <div class="sb-tools">
+      <div class="sb-seg" role="tablist">
+        <button type="button" role="tab" *ngFor="let u of units" [class.active]="periodeUnit === u" [attr.aria-selected]="periodeUnit === u" (click)="setPeriodeUnit(u)">{{ u }}</button>
+      </div>
+    </div>
+  </header>
+  <dgt-sib-column-chart [categories]="periodeCats" [series]="periodeSeries" [height]="320" ariaLabel="Jumlah transmigran per periode"></dgt-sib-column-chart>
+</section>
+
+<!-- Per provinsi asal -->
+<section class="sb-card">
+  <header class="sb-card-head">
+    <h2>Statistik Jumlah Transmigran Per Provinsi Asal</h2>
+    <div class="sb-tools">
+      <select class="sb-select" aria-label="Tahun" [(ngModel)]="asalTahun" (ngModelChange)="loadAsal()">
+        <option *ngFor="let t of tahunOptions" [ngValue]="t">{{ t }}</option>
+      </select>
+      <div class="sb-seg" role="tablist">
+        <button type="button" role="tab" *ngFor="let u of units" [class.active]="asalUnit === u" [attr.aria-selected]="asalUnit === u" (click)="setAsalUnit(u)">{{ u }}</button>
+      </div>
+    </div>
+  </header>
+  <dgt-sib-column-chart [categories]="asalCats" [series]="asalSeries" [pctLabels]="asalPct" [rotate]="true" [height]="400" ariaLabel="Jumlah transmigran per provinsi asal"></dgt-sib-column-chart>
+</section>
+
+<!-- Per provinsi tujuan -->
+<section class="sb-card">
+  <header class="sb-card-head">
+    <h2>Statistik Jumlah Transmigran Per Provinsi Tujuan</h2>
+    <div class="sb-tools">
+      <select class="sb-select" aria-label="Tahun" [(ngModel)]="tujuanTahun" (ngModelChange)="loadTujuan()">
+        <option *ngFor="let t of tahunOptions" [ngValue]="t">{{ t }}</option>
+      </select>
+      <div class="sb-seg" role="tablist">
+        <button type="button" role="tab" *ngFor="let u of units" [class.active]="tujuanUnit === u" [attr.aria-selected]="tujuanUnit === u" (click)="setTujuanUnit(u)">{{ u }}</button>
+      </div>
+    </div>
+  </header>
+  <dgt-sib-column-chart [categories]="tujuanCats" [series]="tujuanSeries" [pctLabels]="tujuanPct" [rotate]="true" [height]="400" ariaLabel="Jumlah transmigran per provinsi tujuan"></dgt-sib-column-chart>
+</section>
+
+<!-- Per kelompok umur -->
+<section class="sb-card">
+  <header class="sb-card-head">
+    <h2>Statistik Jumlah Transmigran Per Kelompok Umur</h2>
+    <div class="sb-tools">
+      <select class="sb-select" aria-label="Tahun" [(ngModel)]="umurTahun" (ngModelChange)="loadUmur()">
+        <option *ngFor="let t of tahunOptions" [ngValue]="t">{{ t }}</option>
+      </select>
+      <div class="sb-seg" role="tablist">
+        <button type="button" role="tab" *ngFor="let u of units" [class.active]="umurUnit === u" [attr.aria-selected]="umurUnit === u" (click)="setUmurUnit(u)">{{ u }}</button>
+      </div>
+    </div>
+  </header>
+  <div class="sb-umur">
+    <dgt-donut-chart [segments]="umurSegments" [size]="230" [stroke]="42" [centerLabel]="fmt(umurTotal)" [centerSub]="umurUnit"></dgt-donut-chart>
+    <ul class="sb-umur-legend">
+      <li *ngFor="let r of umurRows">
+        <i [style.background]="r.color"></i>
+        <span class="nm">{{ r.label }}</span>
+        <span class="pc">{{ r.pct.toFixed(1) }}%</span>
+        <span class="val">{{ fmt(r.nilai) }}</span>
+      </li>
+    </ul>
+  </div>
+</section>

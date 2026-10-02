@@ -7,6 +7,9 @@
  */
 export const MODULE_ICON_PATHS: { [id: string]: string } = {
   profil: '<path d="M12 2 L21 7 L12 12 L3 7 Z"/><path d="M3 12 L12 17 L21 12"/><path d="M3 17 L12 22 L21 17"/>',
+  // people + a rising bar chart: transmigran statistics
+  sibarduktrans:
+    '<circle cx="8" cy="7.5" r="2.6"/><path d="M3 20v-2.5a5 5 0 0 1 10 0V20"/><path d="M16 20v-5M20 20V9M12.500 20h9"/>',
   geospasial: '<path d="M12 21s7-7.58 7-12a7 7 0 1 0-14 0c0 4.42 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/>',
   demografi:
     '<circle cx="8.5" cy="8" r="3"/><path d="M2.5 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9.3" r="2.3"/><path d="M15 14.2c2.6.3 4.5 2.5 4.5 5.3"/>',

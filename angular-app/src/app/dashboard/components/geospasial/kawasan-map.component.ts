@@ -58,6 +58,11 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   @Input() polygonStyle: 'stage' | 'boundary' = 'stage';
   /** Per-kawasan HPL/SHM overlays the parent has switched off — re-applied after every replot, so
    *  filtering the kawasan list doesn't silently bring hidden overlays back. */
+  /** Global overlay switches (the Basemap/Overlay panel): kawasan boundaries, HPL outlines, SHM
+   *  areas. A kawasan's own HPL/SHM checkbox only matters while the matching global switch is on. */
+  @Input() showAreaLayer = true;
+  @Input() showHplLayer = true;
+  @Input() showShmLayer = true;
   @Input() hplHidden: { [id: string]: boolean } = {};
   @Input() shmHidden: { [id: string]: boolean } = {};
   @Output() select = new EventEmitter<Kawasan>();
@@ -124,6 +129,9 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     if (this.map && changes.basemap) {
       this.applyBasemap();
     }
+    if (this.map && (changes.showAreaLayer || changes.showHplLayer || changes.showShmLayer)) {
+      this.applyOverlayVisibility();
+    }
     if (this.map && (changes.kawasan || changes.polygonStyle)) {
       this.plotAreas();
     }
@@ -172,32 +180,32 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
    *  layer-list row) — same add/remove-layer pattern as `setAreaVisible()`, just for that one
    *  kawasan's HPL outline. A no-op if `showLegality` is off (the polygon was never built). */
   setHplVisibleFor(id: string, visible: boolean): void {
-    const p = this.hplAreas[id];
-    if (!this.map || !p) {
-      return;
-    }
-    if (visible) {
-      if (!this.map.hasLayer(p)) {
-        p.addTo(this.map);
-      }
-    } else if (this.map.hasLayer(p)) {
-      this.map.removeLayer(p);
-    }
+    this.toggleLayer(this.hplAreas[id], visible && this.showHplLayer);
   }
 
   /** Called by the parent's per-kawasan "SHM" checkbox — same pattern as `setHplVisibleFor()`. */
   setShmVisibleFor(id: string, visible: boolean): void {
-    const p = this.shmAreas[id];
-    if (!this.map || !p) {
+    this.toggleLayer(this.shmAreas[id], visible && this.showShmLayer);
+  }
+
+  private toggleLayer(layer: L.Layer | undefined, visible: boolean): void {
+    if (!this.map || !layer) {
       return;
     }
     if (visible) {
-      if (!this.map.hasLayer(p)) {
-        p.addTo(this.map);
+      if (!this.map.hasLayer(layer)) {
+        layer.addTo(this.map);
       }
-    } else if (this.map.hasLayer(p)) {
-      this.map.removeLayer(p);
+    } else if (this.map.hasLayer(layer)) {
+      this.map.removeLayer(layer);
     }
+  }
+
+  /** Re-applies the three global overlay switches (and each kawasan's own HPL/SHM state). */
+  private applyOverlayVisibility(): void {
+    Object.keys(this.areas).forEach(id => this.toggleLayer(this.areas[id], this.showAreaLayer));
+    Object.keys(this.hplAreas).forEach(id => this.toggleLayer(this.hplAreas[id], this.showHplLayer && !this.hplHidden[id]));
+    Object.keys(this.shmAreas).forEach(id => this.toggleLayer(this.shmAreas[id], this.showShmLayer && !this.shmHidden[id]));
   }
 
   /** Called by the parent after the map panel's own resize transition finishes (e.g. the
@@ -314,7 +322,7 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
           fill: false,
           interactive: false
         });
-        if (!this.hplHidden[k.id]) {
+        if (this.showHplLayer && !this.hplHidden[k.id]) {
           this.hplAreas[k.id].addTo(this.map!);
         }
 
@@ -326,11 +334,13 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
           fillOpacity: 0.3,
           interactive: false
         });
-        if (!this.shmHidden[k.id]) {
+        if (this.showShmLayer && !this.shmHidden[k.id]) {
           this.shmAreas[k.id].addTo(this.map!);
         }
       });
     }
+
+    this.applyOverlayVisibility();
 
     // Fit to every kawasan's own coordinates instead of the fixed setView center/zoom above —
     // ports a later fix for SKP Salor (lon 140.4°, Papua) sitting permanently off-screen at the

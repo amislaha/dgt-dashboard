@@ -51,9 +51,18 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   /** Kawasan whose profile modal is open. */
   detailKawasan: Kawasan | null = null;
 
+  /** "Layer Kawasan" panel body (the panel header always stays, like the right panel). */
   leftPanelOpen = true;
   rightPanelOpen = true;
   ewsPopoverOpen = false;
+  /** Orange layers button → the "Legenda" card. */
+  legendOpen = false;
+  /** Globe button → the collapsible Basemap + Overlay panel. */
+  layersOpen = true;
+  /** Global overlay switches, passed to the map (see KawasanMapComponent.showAreaLayer & co). */
+  overlayArea = true;
+  overlayHpl = true;
+  overlayShm = true;
 
   basemap: 'street' | 'satelit' = 'satelit';
   tilt3d = false;
@@ -225,6 +234,14 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.rightPanelOpen = !this.rightPanelOpen;
   }
 
+  toggleLegend(): void {
+    this.legendOpen = !this.legendOpen;
+  }
+
+  toggleLayers(): void {
+    this.layersOpen = !this.layersOpen;
+  }
+
   toggleEwsPopover(): void {
     this.ewsPopoverOpen = !this.ewsPopoverOpen;
   }
@@ -257,12 +274,6 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   resetView(): void {
     if (this.kawasanMap) {
       this.kawasanMap.resetView();
-    }
-  }
-
-  showNational(): void {
-    if (this.kawasanMap) {
-      this.kawasanMap.showNational();
     }
   }
 

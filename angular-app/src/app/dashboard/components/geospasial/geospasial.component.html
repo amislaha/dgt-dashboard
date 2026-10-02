@@ -12,6 +12,9 @@
       [showLegality]="true"
       [showZoomControl]="false"
       [basemap]="basemap"
+      [showAreaLayer]="overlayArea"
+      [showHplLayer]="overlayHpl"
+      [showShmLayer]="overlayShm"
       polygonStyle="boundary"
       [popupOf]="hplPopupOf"
       [hplHidden]="hplHidden"
@@ -70,21 +73,31 @@
     </span>
   </div>
 
-  <!-- Orange layer button: shows/hides the Layer Kawasan panel -->
-  <button type="button" class="geo-layer-btn" [class.panel-closed]="!leftPanelOpen" [attr.title]="leftPanelOpen ? 'Sembunyikan Layer Kawasan' : 'Tampilkan Layer Kawasan'" aria-label="Layer Kawasan" (click)="toggleLeftPanel()">
+  <!-- Orange layers button: opens the Legenda card -->
+  <button type="button" class="geo-layer-btn" [class.active]="legendOpen" title="Legenda" aria-label="Legenda" [attr.aria-expanded]="legendOpen" (click)="toggleLegend()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7l9 5 9-5-9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>
   </button>
+  <div class="geo-legend" *ngIf="legendOpen" role="region" aria-label="Legenda">
+    <div class="geo-legend-head">
+      <b>Legenda</b>
+      <button type="button" class="geo-legend-x" aria-label="Tutup legenda" (click)="toggleLegend()">&times;</button>
+    </div>
+    <div class="lg-row" [class.off]="!overlayArea"><i class="sw sw-area"></i><span>Batas kawasan (WPT)</span></div>
+    <div class="lg-row" [class.off]="!overlayHpl"><i class="sw sw-hpl"></i><span>Batas HPL</span></div>
+    <div class="lg-row" [class.off]="!overlayShm"><i class="sw sw-shm"></i><span>Area SHM (bersertifikat)</span></div>
+    <p class="lg-note">Klik poligon kawasan untuk melihat detail HPL.</p>
+  </div>
 
   <!-- Left panel: Layer Kawasan -->
-  <div class="geo-panel geo-panel-left" *ngIf="leftPanelOpen">
+  <div class="geo-panel geo-panel-left" [class.collapsed]="!leftPanelOpen">
     <div class="geo-panel-head">
       <h2 class="geo-panel-title">Layer Kawasan</h2>
-      <button type="button" class="geo-panel-collapse" title="Sembunyikan panel" aria-label="Sembunyikan panel" (click)="toggleLeftPanel()">
+      <button type="button" class="geo-panel-collapse" [attr.title]="leftPanelOpen ? 'Ciutkan panel' : 'Buka panel'" [attr.aria-label]="leftPanelOpen ? 'Ciutkan panel' : 'Buka panel'" (click)="toggleLeftPanel()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h12M3 18h18"/><path d="m18 9-3 3 3 3"/></svg>
       </button>
     </div>
 
-    <div class="geo-panel-body">
+    <div class="geo-panel-body" *ngIf="leftPanelOpen">
       <div class="geo-search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="text" class="geo-layer-search" placeholder="Cari kawasan.." aria-label="Cari kawasan" [(ngModel)]="layerSearchQuery" />
@@ -229,22 +242,29 @@
 
   <!-- Basemap switcher + dark toolbar, bottom-centre -->
   <div class="geo-bottom">
-    <div class="geo-basemaps" role="group" aria-label="Peta dasar">
-      <button type="button" class="bm" [class.active]="basemap === 'street'" (click)="setBasemap('street')">
-        <span class="bm-label">Street<br />Map</span>
-        <span class="bm-thumb street"></span>
-      </button>
-      <button type="button" class="bm" [class.active]="basemap === 'satelit'" (click)="setBasemap('satelit')">
-        <span class="bm-label">Tutupan<br />lahan</span>
-        <span class="bm-thumb lahan"></span>
-      </button>
+    <div class="geo-layers" *ngIf="layersOpen" role="group" aria-label="Basemap dan overlay">
+      <div class="gl-title">Basemap</div>
+      <div class="geo-basemaps">
+        <button type="button" class="bm" [class.active]="basemap === 'street'" (click)="setBasemap('street')">
+          <span class="bm-label">Street<br />Map</span>
+          <span class="bm-thumb street"></span>
+        </button>
+        <button type="button" class="bm" [class.active]="basemap === 'satelit'" (click)="setBasemap('satelit')">
+          <span class="bm-label">Tutupan<br />lahan</span>
+          <span class="bm-thumb lahan"></span>
+        </button>
+      </div>
+      <div class="gl-title gl-title-overlay">Overlay</div>
+      <label class="gl-check"><input type="checkbox" [(ngModel)]="overlayArea" /><span>Batas kawasan</span></label>
+      <label class="gl-check"><input type="checkbox" [(ngModel)]="overlayHpl" /><span>HPL</span></label>
+      <label class="gl-check"><input type="checkbox" [(ngModel)]="overlayShm" /><span>SHM</span></label>
     </div>
     <div class="geo-bottom-toolbar" role="toolbar" aria-label="Alat peta">
       <button type="button" class="geo-tool-btn txt" [class.active]="tilt3d" title="Tampilan 3D (miring)" aria-label="Tampilan 3D" [attr.aria-pressed]="tilt3d" (click)="toggle3d()">3D</button>
       <button type="button" class="geo-tool-btn" title="Fokus ke kawasan terpilih" aria-label="Fokus ke kawasan terpilih" (click)="focusSelected()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 3.5 9L12 21l-3.5-9z"/><path d="M8.5 12h7"/></svg>
       </button>
-      <button type="button" class="geo-tool-btn" title="Tampilan seluruh Indonesia" aria-label="Tampilan seluruh Indonesia" (click)="showNational()">
+      <button type="button" class="geo-tool-btn" [class.active]="layersOpen" title="Basemap &amp; overlay" aria-label="Basemap dan overlay" [attr.aria-expanded]="layersOpen" (click)="toggleLayers()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
       </button>
       <button type="button" class="geo-tool-btn" title="Kembali ke seluruh kawasan" aria-label="Kembali ke seluruh kawasan" (click)="resetView()">
