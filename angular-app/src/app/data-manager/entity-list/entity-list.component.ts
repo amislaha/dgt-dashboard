@@ -259,8 +259,8 @@ export class EntityListComponent implements OnDestroy {
     const when = (key: string) => (row: any) => (row[key] ? new Date(row[key]).toLocaleString('id-ID') : '—');
     const who = (key: string) => (row: any) => row[key] || '—';
     columns.push(
-      { key: 'createdBy', label: 'Dibuat oleh', sortable: true, format: who('createdBy') },
       { key: 'createdDate', label: 'Tanggal dibuat', sortable: true, format: when('createdDate') },
+      { key: 'createdBy', label: 'Dibuat oleh', sortable: true, format: who('createdBy') },
       { key: 'lastModifiedBy', label: 'Diubah oleh', sortable: true, format: who('lastModifiedBy') },
       { key: 'lastModifiedDate', label: 'Tanggal diubah', sortable: true, format: when('lastModifiedDate') }
     );

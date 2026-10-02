@@ -35,7 +35,7 @@ const DECIMAL = (name: string, label: string, extra: Partial<FieldConfig<any>> =
 const WPT_CONFIG: EntityConfig<Wpt> = {
   key: 'wpt',
   label: 'Wilayah',
-  sub: '45 Kawasan Transmigrasi Prioritas Nasional 2025 — kawasan induk tingkat tertinggi, ditampilkan di peta Wilayah',
+  sub: '',
   idPrefix: 'wpt',
   titleField: 'nama',
   columns: [
