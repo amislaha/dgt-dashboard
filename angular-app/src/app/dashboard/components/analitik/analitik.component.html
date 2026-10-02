@@ -1,56 +1,61 @@
-<dgt-page-head
-  title="Analitik Kawasan, Skoring Prioritas 5T &amp; Early Warning"
-  description="Pemodelan statistik untuk skoring prioritas intervensi serta notifikasi otomatis Early Warning System (EWS).">
-</dgt-page-head>
+<header class="an-head">
+  <h1>Analitik kawasan, skoring prioritas 5T &amp; peringatan dini</h1>
+  <p>Per {{ asOf }} &middot; {{ activeAlerts.length }} peringatan aktif &middot; {{ urgentCount }} kawasan prioritas segera</p>
+</header>
 
-<div class="row">
-  <div class="col-lg-7 mb-4">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h6 font-weight-bold mb-0">Skoring Prioritas Intervensi</h2>
-        <span class="small text-muted">semakin rendah indeks 5T, semakin tinggi prioritas</span>
-      </div>
-      <div class="table-responsive">
-        <table class="table mb-0">
-          <thead>
-            <tr>
-              <th>Kawasan</th>
-              <th class="text-right">Indeks 5T</th>
-              <th>Risiko</th>
-              <th>Prioritas</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of priorityRows">
-              <td class="mono">#{{ row.rank }} {{ row.kawasan.nama }}</td>
-              <td class="text-right mono">{{ row.kawasan.indeks5t }}</td>
-              <td><dgt-severity-badge [severity]="severityOf(row.kawasan.risiko)" [label]="riskLabel(row.kawasan.risiko)"></dgt-severity-badge></td>
-              <td><dgt-severity-badge [severity]="severityOf(row.priority)" [label]="priorityLabel(row.priority)"></dgt-severity-badge></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-5 mb-4">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h6 font-weight-bold mb-0">Early Warning System</h2>
-        <span class="small text-muted">{{ activeCount }} aktif</span>
-      </div>
-      <div class="card-body">
-        <div class="ews-item d-flex mb-3" *ngFor="let a of alerts" [class.ack]="a.ack">
-          <dgt-severity-badge class="mr-2" [severity]="severityOf(a.sev)" [label]="riskLabel(a.sev)"></dgt-severity-badge>
-          <div class="ews-body flex-grow-1">
-            <div class="t font-weight-bold small">{{ a.title }}</div>
-            <div class="d small text-muted">{{ a.detail }}</div>
-            <div class="ews-meta small text-muted">{{ a.when }}</div>
-          </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary align-self-start ml-2" (click)="toggleAck(a.id)">{{ a.ack ? 'Dibuka' : 'Tandai' }}</button>
-        </div>
-        <p class="text-muted mb-0" *ngIf="!alerts.length">Tidak ada peringatan aktif.</p>
-      </div>
-    </div>
-  </div>
+<!-- Peringatan aktif -->
+<div class="an-label">
+  <span>Peringatan aktif</span>
+  <button type="button" class="an-toggle" *ngIf="resolvedAlerts.length" (click)="showResolved = !showResolved">
+    {{ showResolved ? 'Sembunyikan selesai' : 'Tampilkan selesai (' + resolvedAlerts.length + ')' }}
+  </button>
 </div>
+<section class="an-card an-alerts">
+  <div class="an-alert" *ngFor="let a of shownAlerts" [class.done]="a.ack">
+    <span class="dot" [ngClass]="sevClass(a.sev)"></span>
+    <div class="body">
+      <b>{{ a.title }}</b>
+      <p>{{ a.detail }}</p>
+    </div>
+    <span class="when">{{ a.when }}</span>
+    <button type="button" class="act" (click)="toggleAck(a.id)">{{ a.ack ? 'Buka lagi' : 'Selesai' }}</button>
+  </div>
+  <p class="an-empty" *ngIf="!shownAlerts.length">Tidak ada peringatan aktif.</p>
+</section>
+
+<!-- Skoring prioritas intervensi -->
+<div class="an-label">
+  <span>Skoring prioritas intervensi</span>
+  <span class="note">Semakin rendah indeks 5T, semakin tinggi prioritas</span>
+</div>
+<section class="an-card an-score">
+  <div class="an-tools">
+    <div class="an-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" placeholder="Cari kawasan atau provinsi" aria-label="Cari kawasan atau provinsi" [(ngModel)]="search" />
+    </div>
+    <select class="an-select" aria-label="Filter prioritas" [(ngModel)]="priorityFilter">
+      <option value="all">Semua prioritas</option>
+      <option value="high">Segera</option>
+      <option value="med">Terjadwal</option>
+      <option value="low">Pantau</option>
+    </select>
+  </div>
+
+  <div class="table-responsive">
+    <table class="an-table">
+      <thead>
+        <tr><th class="c-no">#</th><th>Kawasan</th><th class="c-idx">Indeks</th><th class="c-pri">Prioritas</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of filteredRows">
+          <td class="c-no">{{ r.rank }}</td>
+          <td><b>{{ r.kawasan.nama }}</b><span class="prov"> &middot; {{ r.kawasan.provinsi }}</span></td>
+          <td class="c-idx"><span class="idx" [ngClass]="indeksClass(r.kawasan.indeks5t)">{{ r.kawasan.indeks5t }}</span></td>
+          <td class="c-pri"><span class="pill" [ngClass]="'p-' + r.priority">{{ priorityLabel(r.priority) }}</span></td>
+        </tr>
+        <tr *ngIf="!filteredRows.length"><td colspan="4" class="an-empty">Tidak ada kawasan yang cocok.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
