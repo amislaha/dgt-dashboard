@@ -41,6 +41,23 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   activeDrawType: DrawGeometryType | null = null;
   drawPoints: L.LatLng[] = [];
 
+  readonly basemaps = [
+    { key: 'osm', label: 'Peta' },
+    { key: 'satelit', label: 'Satelit' },
+    { key: 'topo', label: 'Topografi' }
+  ];
+  basemapKey = 'osm';
+  scrollZoom = false;
+  fullscreen = false;
+  measuring = false;
+  measureText = '';
+  cursorText = '';
+  locating = false;
+
+  private baseLayer: L.TileLayer | null = null;
+  private measurePoints: L.LatLng[] = [];
+  private readonly measureLayer = L.layerGroup();
+  private locateMarker: L.Layer | null = null;
   private map: L.Map | null = null;
   private markers: { [id: string]: L.CircleMarker } = {};
   private readonly drawLayer = L.layerGroup();
@@ -57,16 +74,20 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     );
     L.control.zoom({ position: 'topright' }).addTo(this.map);
     L.control.attribution({ position: 'bottomright' }).addTo(this.map);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
-    }).addTo(this.map);
+    L.control.scale({ position: 'bottomleft', imperial: false }).addTo(this.map);
+    this.setBasemap('osm');
+    this.measureLayer.addTo(this.map);
     this.shapesLayer.addTo(this.map);
     this.drawLayer.addTo(this.map);
     this.previewLayer.addTo(this.map);
     this.plotMarkers();
 
     this.map.on('click', e => this.onMapClick((e as L.LeafletMouseEvent).latlng));
+    this.map.on('mousemove', e => {
+      const ll = (e as L.LeafletMouseEvent).latlng;
+      this.cursorText = `${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}`;
+    });
+    this.map.on('mouseout', () => (this.cursorText = ''));
     this.map.on('dblclick', () => this.finishDraw());
 
     this.subs.push(this.mapDraw.drawType$.subscribe(type => this.onDrawTypeChange(type)));
@@ -113,6 +134,152 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     return false;
   }
 
+  setBasemap(key: string): void {
+    if (!this.map) {
+      return;
+    }
+    const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
+    const defs: { [k: string]: { url: string; attribution: string; maxZoom: number } } = {
+      osm: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: osmAttr, maxZoom: 19 },
+      satelit: {
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attribution: 'Tiles &copy; Esri',
+        maxZoom: 18
+      },
+      topo: { url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', attribution: osmAttr + ', SRTM | &copy; OpenTopoMap', maxZoom: 17 }
+    };
+    const def = defs[key] || defs.osm;
+    if (this.baseLayer) {
+      this.map.removeLayer(this.baseLayer);
+    }
+    this.baseLayer = L.tileLayer(def.url, { maxZoom: def.maxZoom, attribution: def.attribution }).addTo(this.map);
+    this.baseLayer.bringToBack();
+    this.basemapKey = key;
+  }
+
+  zoomToAll(): void {
+    const pts = this.withCoords.map(p => p.pin);
+    if (this.map && pts.length) {
+      this.map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 6 });
+    }
+  }
+
+  zoomToSelected(): void {
+    const w = this.wilayah.find(x => x.id === this.selectedId);
+    const pin = w ? this.pinOf(w) : null;
+    if (this.map && w && pin) {
+      this.map.setView(pin, Math.max(this.map.getZoom(), 11));
+      const m = this.markers[w.id];
+      if (m) {
+        m.openPopup();
+      }
+    }
+  }
+
+  get hasSelected(): boolean {
+    const w = this.wilayah.find(x => x.id === this.selectedId);
+    return !!w && !!this.pinOf(w);
+  }
+
+  resetView(): void {
+    if (this.map) {
+      this.map.setView([-2.2, 118], 5);
+    }
+  }
+
+  toggleScrollZoom(): void {
+    this.scrollZoom = !this.scrollZoom;
+    if (this.map) {
+      if (this.scrollZoom) {
+        this.map.scrollWheelZoom.enable();
+      } else {
+        this.map.scrollWheelZoom.disable();
+      }
+    }
+  }
+
+  toggleFullscreen(): void {
+    this.fullscreen = !this.fullscreen;
+    setTimeout(() => this.map && this.map.invalidateSize(), 50);
+  }
+
+  locateMe(): void {
+    if (!this.map || !navigator.geolocation) {
+      return;
+    }
+    this.locating = true;
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        this.locating = false;
+        if (!this.map) {
+          return;
+        }
+        const ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
+        if (this.locateMarker) {
+          this.map.removeLayer(this.locateMarker);
+        }
+        this.locateMarker = L.circleMarker(ll, { radius: 7, color: '#fff', weight: 2, fillColor: '#2f6fdb', fillOpacity: 1 }).addTo(this.map);
+        this.map.setView(ll, 14);
+      },
+      () => (this.locating = false),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  toggleMeasure(): void {
+    if (this.measuring) {
+      this.stopMeasure();
+      return;
+    }
+    if (this.activeDrawType) {
+      this.mapDraw.cancel();
+    }
+    this.measuring = true;
+    this.measurePoints = [];
+    this.measureText = 'Klik titik-titik pada peta untuk mengukur jarak.';
+    if (this.map) {
+      this.map.getContainer().style.cursor = 'crosshair';
+      this.map.doubleClickZoom.disable();
+    }
+  }
+
+  clearMeasure(): void {
+    this.measurePoints = [];
+    this.measureLayer.clearLayers();
+    this.measureText = 'Klik titik-titik pada peta untuk mengukur jarak.';
+  }
+
+  stopMeasure(): void {
+    this.measuring = false;
+    this.clearMeasure();
+    this.measureText = '';
+    if (this.map) {
+      this.map.getContainer().style.cursor = this.activeDrawType ? 'crosshair' : '';
+      if (!this.activeDrawType) {
+        this.map.doubleClickZoom.enable();
+      }
+    }
+  }
+
+  private renderMeasure(): void {
+    this.measureLayer.clearLayers();
+    const pts = this.measurePoints;
+    if (!pts.length) {
+      return;
+    }
+    if (pts.length > 1) {
+      this.measureLayer.addLayer(L.polyline(pts, { color: '#d97706', weight: 3, dashArray: '6 4' }));
+    }
+    pts.forEach(p =>
+      this.measureLayer.addLayer(L.circleMarker(p, { radius: 4, color: '#d97706', weight: 2, fillColor: '#fff', fillOpacity: 1 }))
+    );
+    let total = 0;
+    for (let i = 1; i < pts.length; i++) {
+      total += pts[i - 1].distanceTo(pts[i]);
+    }
+    this.measureText = total >= 1000 ? `Jarak: ${(total / 1000).toFixed(2)} km` : `Jarak: ${Math.round(total)} m`;
+  }
+
   cancelDraw(): void {
     this.mapDraw.cancel();
   }
@@ -128,6 +295,11 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private onMapClick(latlng: L.LatLng): void {
+    if (this.measuring) {
+      this.measurePoints.push(latlng);
+      this.renderMeasure();
+      return;
+    }
     if (!this.activeDrawType) {
       return;
     }
@@ -146,8 +318,11 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     if (!this.map) {
       return;
     }
-    this.map.getContainer().style.cursor = type ? 'crosshair' : '';
-    if (type) {
+    if (type && this.measuring) {
+      this.stopMeasure();
+    }
+    this.map.getContainer().style.cursor = type || this.measuring ? 'crosshair' : '';
+    if (type || this.measuring) {
       this.map.doubleClickZoom.disable();
     } else {
       this.map.doubleClickZoom.enable();

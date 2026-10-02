@@ -1,4 +1,4 @@
-<div class="wilayah-map-wrapper">
+<div class="wilayah-map-wrapper" [class.fullscreen]="fullscreen">
   <div class="wilayah-map" #mapEl></div>
 
   <div class="draw-toolbar" *ngIf="activeDrawType">
@@ -13,4 +13,31 @@
       Selesai
     </button>
   </div>
+
+  <div class="draw-toolbar measure-bar" *ngIf="measuring && !activeDrawType">
+    <span class="draw-hint">{{ measureText }}</span>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearMeasure()">Reset</button>
+    <button type="button" class="btn btn-sm btn-primary" (click)="stopMeasure()">Selesai</button>
+  </div>
+
+  <div class="map-tools" role="toolbar" aria-label="Alat peta">
+    <div class="tool-group" role="group" aria-label="Peta dasar">
+      <button type="button" *ngFor="let b of basemaps" [class.active]="basemapKey === b.key" (click)="setBasemap(b.key)">
+        {{ b.label }}
+      </button>
+    </div>
+    <div class="tool-group">
+      <button type="button" (click)="zoomToAll()" title="Zoom ke semua wilayah">Semua</button>
+      <button type="button" (click)="zoomToSelected()" [disabled]="!hasSelected" title="Zoom ke wilayah terpilih">Terpilih</button>
+      <button type="button" (click)="resetView()" title="Kembali ke tampilan Indonesia">Reset</button>
+      <button type="button" (click)="locateMe()" [disabled]="locating" title="Lokasi saya">{{ locating ? '…' : 'Lokasi' }}</button>
+    </div>
+    <div class="tool-group">
+      <button type="button" [class.active]="measuring" (click)="toggleMeasure()" title="Ukur jarak">Ukur</button>
+      <button type="button" [class.active]="scrollZoom" (click)="toggleScrollZoom()" title="Zoom dengan scroll mouse">Scroll</button>
+      <button type="button" [class.active]="fullscreen" (click)="toggleFullscreen()" title="Layar penuh">{{ fullscreen ? 'Keluar' : 'Penuh' }}</button>
+    </div>
+  </div>
+
+  <div class="cursor-coords" *ngIf="cursorText">{{ cursorText }}</div>
 </div>

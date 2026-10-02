@@ -70,4 +70,20 @@ export interface Wpt {
   /** ERD `wilayah_category_mapping` (many-to-many) simplified to one Wilayah Category. */
   wilayahCategoryId?: string;
   active?: boolean;
+
+  /** FK to Program (jenis transmigrasi) this region is developed under. */
+  programId?: string;
+  /** FK to Satker — the work unit responsible for this region. */
+  satkerId?: string;
+  /** FK to Komoditi — the region's leading commodity. */
+  komoditiUnggulanId?: string;
+  /** FK to Komoditi — a secondary commodity. */
+  komoditiPendukungId?: string;
+  tanggalPenetapan?: string;
+  tahunPenetapan?: number;
+  luasKawasanHa?: number;
+  luasLahanSiapHa?: number;
+  jumlahPenduduk?: number;
+  jumlahDesa?: number;
+  keterangan?: string;
 }

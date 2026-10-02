@@ -28,6 +28,75 @@
   box-shadow: var(--shadow-md, 0 6px 18px rgba(0, 0, 0, .18));
 }
 
+.wilayah-map-wrapper.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: var(--card);
+}
+
+.map-tools {
+  position: absolute;
+  top: 12px;
+  right: 56px;
+  z-index: 1000;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .4rem;
+  max-width: calc(100% - 80px);
+}
+
+.tool-group {
+  display: flex;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, .375rem);
+  box-shadow: var(--shadow-md, 0 6px 18px rgba(0, 0, 0, .18));
+  overflow: hidden;
+
+  button {
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: .74rem;
+    padding: .35rem .6rem;
+    cursor: pointer;
+
+    & + button {
+      border-left: 1px solid var(--border);
+    }
+    &:hover:not(:disabled) {
+      background: rgba(0, 0, 0, .05);
+    }
+    &.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    &:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.measure-bar {
+  top: 56px;
+}
+
+.cursor-coords {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(255, 255, 255, .85);
+  border-radius: 4px;
+  padding: 1px 8px;
+  font: .7rem/1.5 'JetBrains Mono', monospace;
+  pointer-events: none;
+}
+
 .draw-hint {
   font-size: .78rem;
   color: var(--text-dim);
