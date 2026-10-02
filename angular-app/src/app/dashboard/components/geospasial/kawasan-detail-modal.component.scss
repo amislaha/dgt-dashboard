@@ -158,6 +158,9 @@
   border-radius: 12px;
 }
 .kd-panel-title { margin: 0 0 12px; font-size: 15px; font-weight: 600; }
+// Asisten AI bot icon beside the "Tanya AI" title.
+.kd-ai-title { display: flex; align-items: center; gap: 8px; }
+.kd-ai-ico { width: 30px; height: 30px; flex: 0 0 auto; }
 
 .kd-bars { display: flex; flex-direction: column; gap: 14px; }
 .kd-bars.usia { margin-top: 22px; }
