@@ -1,84 +1,144 @@
 <ng-container *ngIf="view === 'list'; else detailTpl">
-  <dgt-page-head
-    title="Data Induk &amp; Profil Kawasan Transmigrasi"
-    description="Repositori tunggal status perkembangan kawasan (SKP/KPB) berbasis indikator program unggulan 5T.">
-    <div class="d-flex align-items-center" style="gap: .4rem">
-      <label class="small text-muted mb-0" for="profilAreaSelect">Area</label>
-      <select id="profilAreaSelect" class="form-control form-control-sm" [(ngModel)]="areaFilter" (ngModelChange)="onAreaChange()">
+
+  <!-- Hero banner -->
+  <section class="pf-hero">
+    <div class="pf-hero-text">
+      <h1>Data induk &amp; profil kawasan transmigrasi</h1>
+      <p>Repositori tunggal status perkembangan kawasan (SKP/KPB) berbasis indikator program unggulan 5T.</p>
+    </div>
+    <div class="pf-hero-photo" style="background-image: url(assets/hero-kawasan.jpg)" role="img" aria-label="Warga transmigran"></div>
+  </section>
+
+  <!-- KPI cards -->
+  <div class="pf-kpis">
+    <div class="pf-kpi tone-teal">
+      <span class="pf-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20Z"/><path d="M9 4v13.5M15 6.5V20"/></svg></span>
+      <div><div class="pf-kpi-label">Provinsi</div><div class="pf-kpi-val">{{ nationalKPI.totalProvinsi }}</div></div>
+    </div>
+    <div class="pf-kpi tone-blue">
+      <span class="pf-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5"/><path d="M4 20h16M5 9.5V20M9 12v5M12 12v5M15 12v5M19 9.5V20"/></svg></span>
+      <div><div class="pf-kpi-label">Kabupaten/Kota</div><div class="pf-kpi-val">{{ nationalKPI.totalKabupaten }}</div></div>
+    </div>
+    <div class="pf-kpi tone-amber">
+      <span class="pf-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V8l7-4v17"/><path d="M12 9h7v12"/><path d="M8 11h1M8 14h1M8 17h1M15 13h1M15 16h1M3 21h18"/></svg></span>
+      <div><div class="pf-kpi-label">Kecamatan</div><div class="pf-kpi-val">{{ nationalKPI.totalKecamatan }}</div></div>
+    </div>
+    <div class="pf-kpi tone-green">
+      <span class="pf-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5h4v5"/></svg></span>
+      <div><div class="pf-kpi-label">Desa</div><div class="pf-kpi-val">{{ nationalKPI.totalDesa }}</div></div>
+    </div>
+  </div>
+
+  <!-- Indeks Intrans + ranking -->
+  <div class="pf-row">
+    <section class="pf-card">
+      <header class="pf-card-head">
+        <span class="pf-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9h9"/><path d="M20.5 15A9 9 0 1 1 9 3.5"/></svg></span>
+        <h2>Indeks Intrans</h2>
+        <span class="pf-count">{{ donutTotal }}&nbsp; kawasan</span>
+      </header>
+      <div class="pf-donut-wrap">
+        <dgt-donut-chart [segments]="intransSegments" [size]="148" [stroke]="22" [centerLabel]="donutTotal" centerSub="kawasan"></dgt-donut-chart>
+        <ul class="pf-legend">
+          <li *ngFor="let r of intransLegend" [style.background]="r.bg">
+            <i [style.background]="r.color"></i><span class="nm">{{ r.label }}</span>
+            <b [style.color]="r.fg">{{ r.count }}</b><span class="pc">{{ r.pct }}%</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="pf-card">
+      <header class="pf-card-head">
+        <span class="pf-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3"/><path d="M12 13v4M8.5 20h7M10 17h4"/></svg></span>
+        <h2>Peringkat kinerja kawasan</h2>
+        <div class="pf-seg" role="tablist">
+          <button type="button" role="tab" [class.active]="rankMode === 'top'" [attr.aria-selected]="rankMode === 'top'" (click)="setRankMode('top')">Teratas</button>
+          <button type="button" role="tab" [class.active]="rankMode === 'bottom'" [attr.aria-selected]="rankMode === 'bottom'" (click)="setRankMode('bottom')">Terbawah</button>
+        </div>
+      </header>
+      <ol class="pf-rank">
+        <li *ngFor="let k of rankRows; let i = index" [class.first]="i === 0" role="button" tabindex="0" (click)="openDetail(k.id)" (keydown.enter)="openDetail(k.id)">
+          <span class="no">{{ i + 1 }}</span>
+          <span class="who"><b>{{ k.nama }}</b><small>{{ k.kabupaten }} &middot; {{ k.provinsi }}</small></span>
+          <span class="track"><i [style.width.%]="k.indeks5t"></i></span>
+          <span class="score">{{ k.indeks5t }}</span>
+        </li>
+      </ol>
+      <p class="pf-note">Skor indeks kinerja utama (0&ndash;100) &middot; 5 kawasan dengan skor {{ rankMode === 'top' ? 'tertinggi' : 'terendah' }}</p>
+    </section>
+  </div>
+
+  <!-- Indeks Kinerja Utama + tahap pengembangan -->
+  <div class="pf-row">
+    <section class="pf-card">
+      <header class="pf-card-head">
+        <span class="pf-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9h9"/><path d="M20.5 15A9 9 0 1 1 9 3.5"/></svg></span>
+        <h2>Indeks Kinerja Utama</h2>
+        <span class="pf-count">{{ donutTotal }}&nbsp; kawasan</span>
+      </header>
+      <div class="pf-donut-wrap compact">
+        <dgt-donut-chart [segments]="kinerjaSegments" [size]="148" [stroke]="22" [centerLabel]="donutTotal" centerSub="kawasan"></dgt-donut-chart>
+        <ul class="pf-legend">
+          <li *ngFor="let r of kinerjaLegend" [style.background]="r.bg">
+            <i [style.background]="r.color"></i><span class="nm">{{ r.label }}</span>
+            <b [style.color]="r.fg">{{ r.count }}</b><span class="pc">{{ r.pct }}%</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="pf-card">
+      <header class="pf-card-head">
+        <span class="pf-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7l9 5 9-5-9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg></span>
+        <h2>Tahap pengembangan</h2>
+        <span class="pf-count">{{ donutTotal }}&nbsp; kawasan</span>
+      </header>
+      <div class="pf-donut-wrap compact">
+        <dgt-donut-chart [segments]="tahapSegments" [size]="148" [stroke]="22" [centerLabel]="donutTotal" centerSub="kawasan"></dgt-donut-chart>
+        <ul class="pf-legend">
+          <li *ngFor="let r of tahapLegend" [style.background]="r.bg">
+            <i [style.background]="r.color"></i><span class="nm">{{ r.label }}</span>
+            <b [style.color]="r.fg">{{ r.count }}</b><span class="pc">{{ r.pct }}%</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <section class="pf-card pf-table-card">
+    <header class="pf-card-head">
+      <span class="pf-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></span>
+      <h2>Daftar Kawasan Transmigrasi</h2>
+    </header>
+    <div class="d-flex flex-wrap mb-3" style="gap: .5rem">
+      <input type="text" class="form-control form-control-sm" style="flex: 1 1 220px" placeholder="Cari kawasan atau komoditas.." [(ngModel)]="search" />
+      <select class="form-control form-control-sm" style="max-width: 200px" [(ngModel)]="areaFilter" (ngModelChange)="onAreaChange()">
         <option value="Semua">Semua Provinsi</option>
         <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
       </select>
+      <select class="form-control form-control-sm" style="max-width: 180px" [(ngModel)]="statusFilter">
+        <option value="Semua">Semua status</option>
+        <option *ngFor="let s of stages" [value]="s">{{ s }}</option>
+      </select>
     </div>
-  </dgt-page-head>
-
-  <div class="row mb-4">
-    <div class="col-6 col-md-3 mb-3"><dgt-kpi-tile label="Jumlah Provinsi" [value]="nationalKPI.totalProvinsi"></dgt-kpi-tile></div>
-    <div class="col-6 col-md-3 mb-3"><dgt-kpi-tile label="Jumlah Kabupaten/Kota" [value]="nationalKPI.totalKabupaten"></dgt-kpi-tile></div>
-    <div class="col-6 col-md-3 mb-3"><dgt-kpi-tile label="Jumlah Kecamatan" [value]="nationalKPI.totalKecamatan"></dgt-kpi-tile></div>
-    <div class="col-6 col-md-3 mb-3"><dgt-kpi-tile label="Jumlah Desa" [value]="nationalKPI.totalDesa"></dgt-kpi-tile></div>
-  </div>
-
-  <div class="row mb-4">
-    <div class="col-lg-6 mb-4">
-      <div class="card h-100">
-        <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Indeks Intrans</h2></div>
-        <div class="card-body d-flex flex-column align-items-center">
-          <dgt-donut-chart [segments]="intransSegments" [centerLabel]="donutTotal" centerSub="kawasan"></dgt-donut-chart>
-          <div class="d-flex flex-wrap justify-content-center mt-3" style="gap: var(--space-3)">
-            <span *ngFor="let b of bucketOrder" class="small d-flex align-items-center">
-              <span class="legend-chip mr-1" [style.background]="bucketColor(b)"></span>{{ b }} ({{ intransCounts[b] }})
-            </span>
-          </div>
-        </div>
-      </div>
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Detail Kawasan</th><th>Kabupaten</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr *ngFor="let k of filteredRows">
+            <td><b>{{ k.nama }}</b><div class="small text-muted">{{ rowSubLabel(k) }}</div></td>
+            <td>{{ k.kabupaten }}</td>
+            <td><span class="badge" [ngClass]="'badge-stage-' + stageBadgeClass[k.tahap]">{{ k.tahap }}</span></td>
+            <td class="text-right"><button type="button" class="btn btn-sm btn-primary" (click)="openDetail(k.id)">Lihat detail</button></td>
+          </tr>
+          <tr *ngIf="filteredRows.length === 0">
+            <td colspan="4" class="text-center text-muted py-4">Tidak ada kawasan yang cocok dengan filter.</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="col-lg-6 mb-4">
-      <div class="card h-100">
-        <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Indeks Kinerja Utama</h2></div>
-        <div class="card-body d-flex flex-column align-items-center">
-          <dgt-donut-chart [segments]="kinerjaSegments" [centerLabel]="donutTotal" centerSub="kawasan"></dgt-donut-chart>
-          <div class="d-flex flex-wrap justify-content-center mt-3" style="gap: var(--space-3)">
-            <span *ngFor="let b of bucketOrder" class="small d-flex align-items-center">
-              <span class="legend-chip mr-1" [style.background]="bucketColor(b)"></span>{{ b }} ({{ kinerjaCounts[b] }})
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Daftar Kawasan Transmigrasi</h2></div>
-    <div class="card-body">
-      <div class="d-flex flex-wrap mb-3" style="gap: .5rem">
-        <input type="text" class="form-control form-control-sm" style="flex: 1 1 220px" placeholder="Cari kawasan atau komoditas.." [(ngModel)]="search" />
-        <select class="form-control form-control-sm" style="max-width: 200px" [(ngModel)]="areaFilter" (ngModelChange)="onAreaChange()">
-          <option value="Semua">Semua Provinsi</option>
-          <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
-        </select>
-        <select class="form-control form-control-sm" style="max-width: 180px" [(ngModel)]="statusFilter">
-          <option value="Semua">Semua status</option>
-          <option *ngFor="let s of stages" [value]="s">{{ s }}</option>
-        </select>
-      </div>
-      <div class="table-responsive">
-        <table class="table mb-0">
-          <thead><tr><th>Detail Kawasan</th><th>Kabupaten</th><th>Status</th><th></th></tr></thead>
-          <tbody>
-            <tr *ngFor="let k of filteredRows">
-              <td><b>{{ k.nama }}</b><div class="small text-muted">{{ rowSubLabel(k) }}</div></td>
-              <td>{{ k.kabupaten }}</td>
-              <td><span class="badge" [ngClass]="'badge-stage-' + stageBadgeClass[k.tahap]">{{ k.tahap }}</span></td>
-              <td class="text-right"><button type="button" class="btn btn-sm btn-primary" (click)="openDetail(k.id)">Lihat detail</button></td>
-            </tr>
-            <tr *ngIf="filteredRows.length === 0">
-              <td colspan="4" class="text-center text-muted py-4">Tidak ada kawasan yang cocok dengan filter.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  </section>
 </ng-container>
 
 <ng-template #detailTpl>

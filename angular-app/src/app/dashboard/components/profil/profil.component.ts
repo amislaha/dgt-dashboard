@@ -19,12 +19,31 @@ import { DonutSegment } from '../../../shared/components/charts/chart.model';
 
 type DetailTab = 'ekonomi' | 'sosial' | 'perencanaan' | 'patriot' | 'media';
 
+/** Literal hex (not CSS vars) so each legend row can derive its own tint by appending an alpha
+ *  byte — see `LegendRow.bg`. Palette from the "Design system colors updated" bundle. */
 const BUCKET_COLOR: { [key: string]: string } = {
-  Mandiri: 'var(--good)',
-  Berkembang: 'var(--series-2)',
-  Tertinggal: 'var(--critical)'
+  Mandiri: '#106d30',
+  Berkembang: '#0b98b8',
+  Tertinggal: '#e8981c'
 };
-const BUCKET_ORDER = ['Mandiri', 'Tertinggal', 'Berkembang'];
+/** Darker text twin of each legend colour (the bright fills are too light for text). */
+const LEGEND_FG: { [key: string]: string } = {
+  Mandiri: '#106d30',
+  Berkembang: '#0b7f99',
+  Tertinggal: '#a8620a',
+  Rintisan: '#ce1126',
+  Tumbuh: '#a8620a'
+};
+const BUCKET_ORDER = ['Mandiri', 'Berkembang', 'Tertinggal'];
+
+export interface LegendRow {
+  label: string;
+  count: number;
+  pct: number;
+  color: string;
+  fg: string;
+  bg: string;
+}
 
 /** Ports `renderProfil()` (legacy-static/dashboard/index.html) — "Data Induk & Profil Kawasan":
  *  a searchable/filterable landing list plus a per-kawasan drill-down with Ekonomi/Sosial/
@@ -52,6 +71,13 @@ export class ProfilComponent implements OnInit {
   intransCounts: { [key: string]: number } = {};
   kinerjaCounts: { [key: string]: number } = {};
   readonly bucketOrder = BUCKET_ORDER;
+  intransLegend: LegendRow[] = [];
+  kinerjaLegend: LegendRow[] = [];
+  tahapSegments: DonutSegment[] = [];
+  tahapLegend: LegendRow[] = [];
+
+  /** "Peringkat kinerja kawasan" card: top or bottom 5 by Indeks 5T, within the area filter. */
+  rankMode: 'top' | 'bottom' = 'top';
 
   // detail view state
   selectedId: string | null = null;
@@ -114,6 +140,36 @@ export class ProfilComponent implements OnInit {
     this.kinerjaCounts = this.bucketCounts(pool, k => profilBucketTahap(k.tahap));
     this.intransSegments = this.toSegments(this.intransCounts);
     this.kinerjaSegments = this.toSegments(this.kinerjaCounts);
+
+    const tahapCounts: { [key: string]: number } = {};
+    STAGES.slice().reverse().forEach(st => (tahapCounts[st] = pool.filter(k => k.tahap === st).length));
+    const tahapOrder = STAGES.slice().reverse();
+    this.tahapSegments = tahapOrder.map(st => ({ label: st, value: tahapCounts[st], color: STAGE_COLOR_HEX[st] }));
+    this.intransLegend = this.legendRows(this.intransCounts, BUCKET_ORDER, BUCKET_COLOR);
+    this.kinerjaLegend = this.legendRows(this.kinerjaCounts, BUCKET_ORDER, BUCKET_COLOR);
+    this.tahapLegend = this.legendRows(tahapCounts, tahapOrder, STAGE_COLOR_HEX);
+  }
+
+  private legendRows(counts: { [key: string]: number }, order: string[], colors: { [key: string]: string }): LegendRow[] {
+    const total = order.reduce((s, k) => s + counts[k], 0) || 1;
+    return order.map(label => ({
+      label,
+      count: counts[label],
+      pct: Math.round((counts[label] / total) * 100),
+      color: colors[label],
+      fg: LEGEND_FG[label] || colors[label],
+      bg: colors[label] + '1f'
+    }));
+  }
+
+  get rankRows(): Kawasan[] {
+    const pool = this.kawasan.filter(k => this.areaFilter === 'Semua' || k.provinsi === this.areaFilter);
+    const sorted = pool.slice().sort((a, b) => (this.rankMode === 'top' ? b.indeks5t - a.indeks5t : a.indeks5t - b.indeks5t));
+    return sorted.slice(0, 5);
+  }
+
+  setRankMode(m: 'top' | 'bottom'): void {
+    this.rankMode = m;
   }
 
   private bucketCounts(pool: Kawasan[], bucketFn: (k: Kawasan) => string): { [key: string]: number } {

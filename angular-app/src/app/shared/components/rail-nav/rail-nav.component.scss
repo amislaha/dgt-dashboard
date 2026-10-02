@@ -13,7 +13,7 @@
 .rail {
   display: flex;
   flex-direction: column;
-  width: var(--sidebar-w);
+  width: 17.25rem;
   background: var(--card);
   color: var(--text-dim);
   border-right: 1px solid var(--border);
@@ -39,20 +39,22 @@
   // regardless of collapsed state. Hiding the text outright (rather than relying on the clip)
   // removes it from layout entirely instead of letting it wrap — no visible difference (it was
   // already invisible at width:0) but the height it no longer needs stops leaking into ancestors.
-  .rail-text, .rail-group-label, .rail-logo-text {
+  .rail-text, .rail-group-label, .rail-logo-text, .rail-brand {
     display: none;
   }
 }
 
 .rail-head {
-  height: var(--topbar-h);
+  height: 5rem;
   display: flex;
   align-items: center;
-  padding: 0 var(--space-4);
+  padding: 0 1.25rem;
 }
 
 .rail-back-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: .85rem;
   flex: 0 0 auto;
   color: var(--primary);
   text-decoration: none;
@@ -76,21 +78,29 @@
   color: var(--primary);
 }
 
+// "DGT" wordmark beside the emblem (reference sidebar): large, bold, accent-teal.
+.rail-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--tone-blue-fg);
+}
+
 .rail-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: var(--space-4) var(--space-3);
+  padding: .5rem .5rem 1rem;
 }
 
 .rail-group-label {
   display: block;
-  padding: 0 var(--space-2);
-  margin-bottom: var(--space-3);
-  font-size: var(--text-2xs, .6875rem);
-  font-weight: 700;
+  padding: 0 .75rem;
+  margin-bottom: .85rem;
+  font-size: .75rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .1em;
-  color: var(--text-faint);
+  letter-spacing: .05em;
+  color: var(--text-dim);
 }
 
 // Marks a new rail section (e.g. data-manager's Persetujuan & Pengajuan group, distinct from its
@@ -102,26 +112,24 @@
   margin: var(--space-2) var(--space-2) var(--space-3);
 }
 
-// More breathing room between items (was a near-invisible 2px) and a bigger, more deliberate
-// click target — enlarged/spaced out on request as a deliberate exception to the source's own
-// tighter, denser rail-item spacing.
+// Item rows after the reference sidebar: a rounded icon tile (light accent tint, solid primary
+// when active) + label + small sub-label; the active row gets a soft accent background. No
+// left accent bar or hover slide.
 .rail-item {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: .8rem;
   width: 100%;
-  border: 1px solid transparent;
+  border: 0;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--text);
   text-align: left;
-  padding: var(--space-3);
-  border-radius: var(--radius-lg);
+  padding: .5rem .5rem;
+  border-radius: .75rem;
   cursor: pointer;
-  margin-bottom: var(--space-2);
-  transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard),
-    border-color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard),
-    box-shadow var(--duration-fast) var(--ease-standard);
+  margin-bottom: .45rem;
+  transition: background var(--duration-fast) var(--ease-standard);
 
   &:last-child {
     margin-bottom: 0;
@@ -129,83 +137,54 @@
 
   &:hover {
     background: var(--muted);
-    color: var(--text);
-    transform: translateX(2px);
-  }
-
-  // left accent bar sliding in on the active item, matching dashboard/index.html's .rail-item::before
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 18%;
-    bottom: 18%;
-    width: 3px;
-    border-radius: 2px;
-    background: var(--primary);
-    transform: scaleY(0);
-    transition: transform var(--duration-base) var(--ease-standard);
   }
 
   &.active {
-    background: var(--primary-soft);
-    border-color: var(--primary-line);
-    color: var(--text);
-    box-shadow: var(--shadow-xs);
-
-    &::before {
-      transform: scaleY(1);
-    }
+    background: var(--accent);
 
     .rail-icon {
       background: var(--primary);
-      color: var(--card);
+      color: #fff;
     }
   }
 }
 
-// A small rounded "chip" behind each icon (rather than a bare glyph) — reads as more considered/
-// polished than a plain icon-and-label row, and gives the active state somewhere to show itself
-// besides just the accent bar.
 .rail-icon {
-  width: 32px;
-  height: 32px;
+  width: 2.25rem;
+  height: 2.25rem;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md, .5rem);
-  background: var(--muted);
-  color: var(--text-faint);
-  transition: transform var(--duration-base) var(--ease-standard), color var(--duration-fast) var(--ease-standard),
-    background var(--duration-fast) var(--ease-standard);
+  border-radius: .6rem;
+  background: var(--accent);
+  color: var(--primary);
+  transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
 
   ::ng-deep svg {
     display: block;
-    width: 18px;
-    height: 18px;
+    width: 1.15rem;
+    height: 1.15rem;
   }
-}
-
-.rail-item:hover .rail-icon {
-  transform: scale(1.06);
 }
 
 .rail-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
   line-height: 1.25;
 }
 
 .rail-label {
-  font-size: var(--text-sm, .8125rem);
-  font-weight: 600;
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--text);
 }
 
 .rail-sub {
-  font-size: var(--text-2xs, .6875rem);
-  opacity: .65;
+  font-size: .75rem;
+  color: var(--text-dim);
 }
 
 // Mobile off-canvas mode: ≤760px, matches the original breakpoint.
@@ -215,7 +194,7 @@
     inset: 0 auto 0 0;
     z-index: 1030;
     transform: translateX(-100%);
-    width: min(var(--sidebar-w), 85vw);
+    width: min(17.25rem, 85vw);
   }
 
   .rail.open {
@@ -225,7 +204,7 @@
   // On mobile the desktop collapse state is irrelevant — `open` is the only
   // thing that matters, so undo any `width:0` from `.collapsed`.
   .rail.collapsed {
-    width: min(var(--sidebar-w), 85vw);
+    width: min(17.25rem, 85vw);
     padding: inherit;
   }
 }

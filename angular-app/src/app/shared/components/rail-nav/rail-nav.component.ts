@@ -42,6 +42,8 @@ export class RailNavComponent {
    *  topbar instead, see DataManagerShellComponent). */
   @Input() logoSrc?: string;
   @Input() logoAlt = '';
+  /** Wordmark shown beside the image logo (dashboard: "DGT"). */
+  @Input() brandText?: string;
   /** dashboard/index.html's rail group label is "Modul Eksekutif"; kept generic here since this
    *  component is shared. */
   @Input() groupLabel = 'Modul';

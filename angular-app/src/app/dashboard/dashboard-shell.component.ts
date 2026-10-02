@@ -100,6 +100,9 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
     this.router.navigate([id], { relativeTo: this.route });
   }
 
+  /** Last module the rail's collapsed state was auto-set for — see updateActiveId(). */
+  private lastRailId: string | null = null;
+
   private updateActiveId(): void {
     let snapshot: ActivatedRouteSnapshot | null = this.route.snapshot.firstChild;
     while (snapshot && snapshot.firstChild) {
@@ -107,5 +110,12 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
     }
     const navId = snapshot && snapshot.data ? snapshot.data.navId : null;
     this.activeId = navId || (snapshot && snapshot.url.length ? snapshot.url[0].path : 'geospasial');
+    // Geospasial is the full-bleed map (its own brand card holds the ☰), so the rail starts collapsed
+    // there; every other module opens with the rail expanded, like the reference screenshot. Only
+    // re-applied when the module actually changes, so a manual ☰ toggle sticks within a module.
+    if (this.activeId !== this.lastRailId) {
+      this.lastRailId = this.activeId;
+      this.railCollapsed = this.activeId === 'geospasial';
+    }
   }
 }

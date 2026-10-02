@@ -6,6 +6,7 @@
       <a class="rail-back-link" routerLink="/" [title]="backLabel" [attr.aria-label]="backLabel">
         <img class="rail-logo" *ngIf="logoSrc" [src]="logoSrc" [alt]="logoAlt" />
         <span class="rail-logo-text" *ngIf="!logoSrc">DGT</span>
+        <span class="rail-brand" *ngIf="brandText">{{ brandText }}</span>
       </a>
     </div>
 
