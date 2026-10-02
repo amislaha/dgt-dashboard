@@ -59,7 +59,7 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   private readonly measureLayer = L.layerGroup();
   private locateMarker: L.Layer | null = null;
   private map: L.Map | null = null;
-  private markers: { [id: string]: L.CircleMarker } = {};
+  private markers: { [id: string]: L.Layer } = {};
   private readonly drawLayer = L.layerGroup();
   private readonly previewLayer = L.layerGroup();
   private readonly shapesLayer = L.layerGroup();
@@ -165,15 +165,7 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   zoomToSelected(): void {
-    const w = this.wilayah.find(x => x.id === this.selectedId);
-    const pin = w ? this.pinOf(w) : null;
-    if (this.map && w && pin) {
-      this.map.setView(pin, Math.max(this.map.getZoom(), 11));
-      const m = this.markers[w.id];
-      if (m) {
-        m.openPopup();
-      }
-    }
+    this.panToSelected();
   }
 
   get hasSelected(): boolean {
@@ -387,75 +379,84 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     return out;
   }
 
-  /** Lines/areas drawn on a record (points are covered by its pin). */
-  private plotShapes(): void {
-    this.shapesLayer.clearLayers();
-    this.wilayah.forEach(w => {
-      const g = w.geometry;
-      if (!g || g.type === 'Point') {
-        return;
-      }
-      const ring: number[][] = g.type === 'Polygon' ? g.coordinates[0] : g.coordinates;
-      const latlngs = ring.map(c => [c[1], c[0]] as [number, number]);
-      const shape =
-        g.type === 'Polygon'
-          ? L.polygon(latlngs, { color: '#2c755b', weight: 2, fillColor: '#2c755b', fillOpacity: 0.15 })
-          : L.polyline(latlngs, { color: '#2c755b', weight: 3 });
-      shape.bindPopup(`<b>${esc(w.nama)}</b><br>${esc(w.provinsi)}, ${esc(w.kabupaten)}`);
-      this.shapesLayer.addLayer(shape);
-    });
+  /** Radius (m) of the approximate area drawn for a record with no shape of its own: a circle of
+   *  its own `luasKawasanHa` when set, else a fixed 25 km. */
+  private radiusOf(w: Wpt): number {
+    return w.luasKawasanHa && w.luasKawasanHa > 0 ? Math.sqrt((w.luasKawasanHa * 10000) / Math.PI) : 25000;
   }
 
+  private areaStyle(selected: boolean, approx: boolean): L.PathOptions {
+    return {
+      color: selected ? '#c65b7c' : '#2c755b',
+      weight: selected ? 3 : 2,
+      fillColor: selected ? '#c65b7c' : '#2c755b',
+      fillOpacity: selected ? 0.3 : 0.18,
+      dashArray: approx ? '6 4' : undefined
+    };
+  }
+
+  /** Every record is drawn as an area, never a pin: its own drawn polygon/line when it has one,
+   *  else an approximate circle around its lat/lon (dashed, to read as approximate). */
   private plotMarkers(): void {
     if (!this.map) {
       return;
     }
-    Object.keys(this.markers).forEach(id => this.map!.removeLayer(this.markers[id]));
+    this.shapesLayer.clearLayers();
     this.markers = {};
-    this.plotShapes();
 
-    const pins = this.withCoords;
-    pins.forEach(({ w, pin }) => {
-      const marker = L.circleMarker(pin, {
-        radius: 9,
-        color: '#fff',
-        weight: 2,
-        fillColor: '#2c755b',
-        fillOpacity: 0.9
-      }).addTo(this.map!);
-      marker.bindPopup(`<b>${esc(w.nama)}</b><br>${esc(w.provinsi)}, ${esc(w.kabupaten)}`);
-      // stopPropagation so a pin click while drawing doesn't also register as a draw click — Leaflet
-      // vector layers bubble clicks up to the map by default.
-      marker.on('click', e => {
+    const bounds: L.LatLng[] = [];
+    this.wilayah.forEach(w => {
+      const g = w.geometry;
+      let shape: L.Path | null = null;
+      let approx = false;
+      if (g && g.type !== 'Point') {
+        const ring: number[][] = g.type === 'Polygon' ? g.coordinates[0] : g.coordinates;
+        const latlngs = ring.map(c => [c[1], c[0]] as [number, number]);
+        shape =
+          g.type === 'Polygon'
+            ? L.polygon(latlngs, this.areaStyle(w.id === this.selectedId, false))
+            : L.polyline(latlngs, { color: '#2c755b', weight: 4 });
+      } else {
+        const pin = this.pinOf(w);
+        if (pin) {
+          approx = true;
+          shape = L.circle(pin, { radius: this.radiusOf(w), ...this.areaStyle(w.id === this.selectedId, true) });
+        }
+      }
+      if (!shape) {
+        return;
+      }
+      shape.bindPopup(`<b>${esc(w.nama)}</b><br>${esc(w.provinsi)}, ${esc(w.kabupaten)}${approx ? '<br><i>Area perkiraan</i>' : ''}`);
+      // stopPropagation so an area click while drawing/measuring doesn't also register as a map click.
+      shape.on('click', e => {
         L.DomEvent.stopPropagation(e as any);
         this.select.emit(w);
       });
-      this.markers[w.id] = marker;
+      this.shapesLayer.addLayer(shape);
+      this.markers[w.id] = shape;
+      const b = (shape as any).getBounds() as L.LatLngBounds;
+      bounds.push(b.getSouthWest(), b.getNorthEast());
     });
 
-    if (pins.length) {
-      setTimeout(() => {
-        if (!this.map) {
-          return;
-        }
-        this.map.fitBounds(
-          L.latLngBounds(pins.map(p => p.pin)),
-          { padding: [30, 30], maxZoom: 6 }
-        );
-      }, 60);
+    if (bounds.length) {
+      setTimeout(() => this.map && this.map.fitBounds(L.latLngBounds(bounds), { padding: [30, 30], maxZoom: 6 }), 60);
     }
   }
 
   private panToSelected(): void {
-    if (!this.map || !this.selectedId) {
+    if (!this.map) {
       return;
     }
-    const marker = this.markers[this.selectedId];
-    const w = this.wilayah.find(x => x.id === this.selectedId);
-    const pin = w ? this.pinOf(w) : null;
-    if (marker && pin) {
-      this.map.panTo(pin);
-      marker.openPopup();
+    this.wilayah.forEach(w => {
+      const shape = this.markers[w.id];
+      if (shape instanceof L.Polygon || shape instanceof L.Circle) {
+        shape.setStyle(this.areaStyle(w.id === this.selectedId, shape instanceof L.Circle));
+      }
+    });
+    const shape = this.selectedId ? this.markers[this.selectedId] : null;
+    if (shape) {
+      this.map.fitBounds((shape as any).getBounds(), { padding: [40, 40], maxZoom: 10 });
+      shape.openPopup();
     }
   }
 }
