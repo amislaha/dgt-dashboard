@@ -22,6 +22,10 @@ export class SibarduktransComponent implements OnInit {
   readonly tahunOptions = SIB_TAHUN;
   readonly units: SibUnit[] = ['KK', 'Jiwa'];
 
+  // Jumlah animo
+  animoUnit: SibUnit = 'KK';
+  animoTotal = 0;
+
   // Per periode
   periodeUnit: SibUnit = 'KK';
   periodeCats: string[] = [];
@@ -51,10 +55,20 @@ export class SibarduktransComponent implements OnInit {
   constructor(private readonly sib: SibarduktransService) {}
 
   ngOnInit(): void {
+    this.loadAnimo();
     this.loadPeriode();
     this.loadAsal();
     this.loadTujuan();
     this.loadUmur();
+  }
+
+  loadAnimo(): void {
+    this.sib.getJumlahAnimo(this.animoUnit).subscribe((n: number) => (this.animoTotal = n));
+  }
+
+  setAnimoUnit(u: SibUnit): void {
+    this.animoUnit = u;
+    this.loadAnimo();
   }
 
   loadPeriode(): void {

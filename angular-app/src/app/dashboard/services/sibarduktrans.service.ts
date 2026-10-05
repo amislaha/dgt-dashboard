@@ -67,6 +67,9 @@ const TUJUAN_KK: Array<[string, number]> = [
   ['BENGKULU', 3], ['KEPULAUAN BANGKA BELITUNG', 0], ['NUSA TENGGARA BARAT', 1], ['NUSA TENGGARA TIMUR', 0]
 ];
 
+/** "Jumlah Animo Transmigrasi" (KK) — the page's counter reads 0 until its API loads, so this is a made-up sample. */
+const ANIMO_KK = 18420;
+
 /** Age-group shares (%), as on the page (Dewasa takes the remainder so they sum to 100). */
 const UMUR: Array<{ label: string; pct: number; color: string }> = [
   { label: 'Bayi dan Balita (0 - 4 tahun 11 bulan)', pct: 1.3, color: '#a78bfa' },
@@ -78,6 +81,11 @@ const UMUR: Array<{ label: string; pct: number; color: string }> = [
 
 @Injectable({ providedIn: 'root' })
 export class SibarduktransService {
+  /** "Jumlah Animo Transmigrasi" — total registered interest in transmigration. */
+  getJumlahAnimo(unit: SibUnit): Observable<number> {
+    return of(Math.round(ANIMO_KK * (unit === 'Jiwa' ? JIWA_PER_KK : 1)));
+  }
+
   /** "Statistik Jumlah Transmigran Per Periode". */
   getPeriode(unit: SibUnit): Observable<PeriodeStat[]> {
     const k = unit === 'Jiwa' ? JIWA_PER_KK : 1;

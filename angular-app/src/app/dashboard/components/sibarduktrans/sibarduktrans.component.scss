@@ -104,3 +104,8 @@
   .sb-head h1 { font-size: 22px; }
   .sb-umur-legend { min-width: 0; width: 100%; }
 }
+
+.sb-animo-val {
+  font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; color: var(--text);
+  span { margin-left: 10px; font-size: 16px; font-weight: 600; letter-spacing: 0; color: var(--text-dim); }
+}

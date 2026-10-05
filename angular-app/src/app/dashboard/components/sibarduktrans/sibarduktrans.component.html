@@ -6,6 +6,19 @@
   <span class="sb-badge" title="Belum terhubung ke API Sibarduktrans">Data contoh &middot; belum terhubung API</span>
 </header>
 
+<!-- Jumlah animo -->
+<section class="sb-card sb-animo">
+  <header class="sb-card-head">
+    <h2>Jumlah Animo Transmigrasi</h2>
+    <div class="sb-tools">
+      <div class="sb-seg" role="tablist">
+        <button type="button" role="tab" *ngFor="let u of units" [class.active]="animoUnit === u" [attr.aria-selected]="animoUnit === u" (click)="setAnimoUnit(u)">{{ u }}</button>
+      </div>
+    </div>
+  </header>
+  <div class="sb-animo-val">{{ fmt(animoTotal) }}<span>{{ animoUnit }}</span></div>
+</section>
+
 <!-- Per periode -->
 <section class="sb-card">
   <header class="sb-card-head">
