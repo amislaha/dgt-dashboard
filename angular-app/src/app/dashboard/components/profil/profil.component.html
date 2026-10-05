@@ -27,6 +27,14 @@
       <span class="pf-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5h4v5"/></svg></span>
       <div><div class="pf-kpi-label">Desa</div><div class="pf-kpi-val">{{ nationalKPI.totalDesa }}</div></div>
     </div>
+    <div class="pf-kpi tone-teal">
+      <span class="pf-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+      <div><div class="pf-kpi-label">Total Kawasan Transmigrasi</div><div class="pf-kpi-val">{{ nationalKPI.totalKawasan }}</div></div>
+    </div>
+    <div class="pf-kpi tone-green">
+      <span class="pf-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v5c0 4.5 3.2 8.2 8 10 4.8-1.8 8-5.5 8-10V6Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></span>
+      <div><div class="pf-kpi-label">Total Luas HPL Bersertifikat</div><div class="pf-kpi-val">{{ nationalKPI.shmTotal | number:'1.0-0' }} <small class="pf-kpi-unit">ha</small></div></div>
+    </div>
   </div>
 
   <!-- Indeks Intrans + ranking -->
@@ -413,10 +421,42 @@
         </div>
       </ng-container>
 
-      <!-- ---------- Patriot / Media (not yet designed — see CLAUDE.md) ---------- -->
-      <div class="card" *ngIf="detailTab === 'patriot' || detailTab === 'media'">
-        <div class="placeholder-panel">Modul "{{ detailTab === 'patriot' ? 'Patriot' : 'Media' }}" belum tersedia pada versi prototipe ini.</div>
+      <!-- ---------- Media: Foto + Infografis ---------- -->
+      <ng-container *ngIf="detailTab === 'media'">
+        <div class="card mb-3">
+          <div class="card-body">
+            <h2 class="h6 font-weight-bold mb-3">Foto</h2>
+            <div class="media-grid">
+              <button type="button" class="media-thumb" (click)="openLightbox('assets/hero-kawasan.jpg', 'Foto ' + k.nama)">
+                <img src="assets/hero-kawasan.jpg" alt="Foto {{ k.nama }}" />
+              </button>
+            </div>
+            <p class="small text-muted mt-2 mb-0">Foto placeholder &mdash; foto asli per kawasan belum diunggah.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+              <h2 class="h6 font-weight-bold mb-0">Infografis</h2>
+              <a class="btn btn-sm btn-outline-secondary" href="assets/infografis/infografis-salor.png" download="infografis-kawasan.png">Unduh</a>
+            </div>
+            <button type="button" class="infografis-btn" (click)="openLightbox('assets/infografis/infografis-salor.png', 'Infografis kawasan')" aria-label="Perbesar infografis">
+              <img src="assets/infografis/infografis-salor.png" alt="Infografis kawasan" />
+            </button>
+            <p class="small text-muted mt-2 mb-0">Contoh infografis (Kawasan Salor) sebagai placeholder &mdash; belum spesifik untuk {{ k.nama }}.</p>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ---------- Patriot (not yet designed — see CLAUDE.md) ---------- -->
+      <div class="card" *ngIf="detailTab === 'patriot'">
+        <div class="placeholder-panel">Modul "Patriot" belum tersedia pada versi prototipe ini.</div>
       </div>
     </ng-container>
   </ng-container>
 </ng-template>
+
+<div class="lightbox" *ngIf="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true" [attr.aria-label]="lightbox.alt">
+  <button type="button" class="lightbox-close" (click)="closeLightbox()" aria-label="Tutup">&times;</button>
+  <img [src]="lightbox.src" [alt]="lightbox.alt" (click)="$event.stopPropagation()" />
+</div>
