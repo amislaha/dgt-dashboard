@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   basemapPct,
@@ -194,21 +194,6 @@ export class ProfilComponent implements OnInit {
 
   setDetailTab(tab: DetailTab): void {
     this.detailTab = tab;
-  }
-
-  lightbox: { src: string; alt: string } | null = null;
-
-  openLightbox(src: string, alt: string): void {
-    this.lightbox = { src, alt };
-  }
-
-  closeLightbox(): void {
-    this.lightbox = null;
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscape(): void {
-    this.lightbox = null;
   }
 
   get selected(): Kawasan | undefined {

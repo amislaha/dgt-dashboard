@@ -23,7 +23,8 @@
   border: none;
   color: #fff;
 
-  .k-label { color: #fff; }
+  // !important: Bootstrap's .text-muted (also on this element) is !important and would win otherwise.
+  .k-label { color: #fff !important; }
   .k-value { color: #fff; }
 }
 .kpi-tile-good { background: var(--good); }
