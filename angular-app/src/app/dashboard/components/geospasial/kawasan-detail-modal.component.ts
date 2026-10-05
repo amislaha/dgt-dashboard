@@ -1,5 +1,6 @@
 import { Component, EventEmitter, HostListener, Input, OnChanges, Output } from '@angular/core';
-import { Kawasan, ProfilDetail, profilDetailData, seededRandom } from '../../services/dashboard-data.service';
+import { Kawasan, PROFIL_DIPERBARUI, PROFIL_SUMBER, ProfilDetail, ProfilProduk, profilDetailData } from '../../services/dashboard-data.service';
+import { FISIK_BY_KAWASAN, FisikBlok } from '../profil/profil-fisik.data';
 
 interface Kpi {
   tone: 'green' | 'cyan' | 'blue' | 'amber';
@@ -17,37 +18,33 @@ interface UsahaBar {
   above: boolean;
 }
 
-interface KomoditasTab {
-  nama: string;
-  luasHa: number;
-  produksiTon: number;
-  produktivitas: string;
-  pelaku: number;
+interface IndeksBar {
+  label: string;
+  /** Bar fill, 0-100. */
+  pct: number;
+  display: string;
 }
 
-const TABS = [
-  'Ringkasan',
-  'Indeks Kinerja',
-  'Kelapa Sawit',
-  'Kopi',
-  'Rambutan',
-  'Sapi Potong',
-  'Padi & jagung',
-  'Demografi',
-  'Fisik & ekologi',
-  'Tanya AI'
-];
-const KOMODITAS_TABS = ['Kelapa Sawit', 'Kopi', 'Rambutan', 'Sapi Potong', 'Padi & jagung'];
+const TABS_AWAL = ['Ringkasan', 'Indeks Kinerja'];
+const TABS_AKHIR = ['Demografi', 'Perencanaan', 'Fisik & ekologi', 'Tanya AI'];
+
+const SEKTOR_COLOR: { [label: string]: string } = {
+  Pertanian: '#106d30',
+  Perkebunan: '#0b98b8',
+  Pangan: '#0868ad',
+  Perikanan: '#cfa460',
+  Kehutanan: '#e8981c'
+};
 
 /**
  * The "KAWASAN DETAIL" modal (reference screenshot): hero banner with the kawasan name, four tinted
- * KPI cards, a tab strip, and a white chart panel over a blurred, dimmed page. Replaces the old
- * "Detail Kawasan" tab of the Geospasial right panel. Opened from a kawasan's name in the layer
- * tree or the popup's "Lihat profil kawasan" link; closes on ✕, backdrop click or Escape.
+ * KPI cards, a tab strip, and a white chart panel over a blurred, dimmed page. Opened from a
+ * kawasan's name in the layer tree or the popup's "Lihat profil kawasan" link; closes on ✕,
+ * backdrop click or Escape.
  *
- * Everything shown is derived deterministically from the kawasan's own fields plus
- * `profilDetailData()`/`seededRandom()` — illustrative like the rest of the dataset, not real
- * PDRB/SP2023/TEP figures.
+ * Every figure comes from `profilDetailData()` (and the shared Fisik & Ekologi data), the same
+ * source the Profil page uses, and labels follow the Profil page — so the two views cannot drift
+ * apart. The only per-kawasan fields read straight from `Kawasan` are the ones Profil also reads.
  */
 @Component({
   selector: 'dgt-kawasan-detail-modal',
@@ -58,50 +55,59 @@ export class KawasanDetailModalComponent implements OnChanges {
   @Input() kawasan!: Kawasan;
   @Output() closed = new EventEmitter<void>();
 
-  readonly tabs = TABS;
+  tabs: string[] = [];
   activeTab = 'Ringkasan';
 
   kpis: Kpi[] = [];
   usahaBars: UsahaBar[] = [];
+  indeksBars: IndeksBar[] = [];
+  fisik: FisikBlok[] = [];
   detail!: ProfilDetail;
-  komoditas: KomoditasTab | null = null;
+  komoditas: ProfilProduk | null = null;
+
+  readonly sumber = PROFIL_SUMBER;
+  readonly diperbarui = PROFIL_DIPERBARUI;
 
   ngOnChanges(): void {
     if (!this.kawasan) {
       return;
     }
     const k = this.kawasan;
-    const rnd = seededRandom('modal-' + k.id + '-' + k.nama);
-    this.detail = profilDetailData(k);
+    const d = profilDetailData(k);
+    this.detail = d;
     this.activeTab = 'Ringkasan';
+    this.komoditas = null;
+    this.tabs = [...TABS_AWAL, ...d.produkUnggulan.map(p => p.komoditas), ...TABS_AKHIR];
+    this.fisik = FISIK_BY_KAWASAN[k.nama] || [];
 
+    const e = d.ekonomiSektor;
     this.kpis = [
-      { tone: 'green', value: this.dec(14 + rnd() * 16, 2) + '%', label: `Kontribusi sektor PDRB ke ${k.kabupaten}`, icon: 'chart' },
-      { tone: 'cyan', value: 'Rp ' + this.dec(1.5 + rnd() * 6, 2) + ' T', label: 'Nilai Sektor Pertanian, Kehutanan & Perikanan', icon: 'tag' },
-      { tone: 'blue', value: Math.round(k.populasi / 5.2).toLocaleString('id-ID'), label: 'Unit Usaha Perorangan (SP 2023)', icon: 'building' },
-      { tone: 'amber', value: String(5 + Math.floor(rnd() * 6)), label: 'Komoditas Unggulan Utama', icon: 'wheat' }
+      { tone: 'green', value: this.dec(e.kontribusiPdrbPct, 2) + '%', label: `Kontribusi sektor PDRB ke ${k.kabupaten}`, icon: 'chart' },
+      { tone: 'cyan', value: 'Rp ' + this.dec(e.nilaiSektorT, 2) + ' T', label: 'Nilai Sektor Pertanian, Kehutanan & Perikanan', icon: 'tag' },
+      { tone: 'blue', value: this.fmt(e.unitUsaha), label: 'Unit Usaha Perorangan (SP 2023)', icon: 'building' },
+      { tone: 'amber', value: String(d.produkUnggulan.length), label: 'Produk Unggulan Kawasan', icon: 'wheat' }
     ];
 
-    // [label, base t/Ha, national average t/Ha, bar colour]
-    const defs: Array<[string, number, number, string]> = [
-      ['Pertanian', 5.2, 4.2, '#106d30'],
-      ['Perkebunan', 3.6, 3.1, '#0b98b8'],
-      ['Pangan', 3.0, 2.9, '#0868ad'],
-      ['Perikanan', 2.0, 2.4, '#cfa460'],
-      ['Kehutanan', 1.0, 1.6, '#e8981c']
-    ];
-    this.usahaBars = defs.map(([label, base, nasional, color]) => {
-      const value = Math.max(0.4, base + (rnd() * 0.6 - 0.3));
-      const diff = value - nasional;
+    this.usahaBars = e.sektor.map(s => {
+      const diff = s.tHa - s.nasional;
       return {
-        label,
-        value,
-        display: this.dec(value, 1) + ' t/Ha',
-        color,
+        label: s.label,
+        value: s.tHa,
+        display: this.dec(s.tHa, 1) + ' t/Ha',
+        color: SEKTOR_COLOR[s.label] || '#33809c',
         above: diff > 0,
         deltaText: diff > 0 ? `+${this.dec(diff, 1)} t/Ha dari rata-rata nasional` : 'Di bawah rata-rata nasional'
       };
     });
+
+    this.indeksBars = [
+      { label: 'Nilai Intrans', pct: parseFloat(d.nilaiIntrans), display: d.nilaiIntrans + ' / 100' },
+      { label: 'Indeks kesiapan infrastruktur', pct: (parseFloat(d.indeksInfra) / 5) * 100, display: d.indeksInfra + ' / 5' },
+      { label: 'Indeks kelembagaan', pct: (parseFloat(d.indeksKelembagaan) / 5) * 100, display: d.indeksKelembagaan + ' / 5' },
+      { label: 'Indeks dukungan investasi', pct: (parseFloat(d.indeksDukungan) / 5) * 100, display: d.indeksDukungan + ' / 5' },
+      { label: 'Realisasi anggaran', pct: k.anggaranPct, display: k.anggaranPct + '%' },
+      { label: 'Legalitas lahan (SHM/HPL)', pct: Math.round((k.shmHa / k.hplHa) * 100), display: Math.round((k.shmHa / k.hplHa) * 100) + '%' }
+    ];
   }
 
   get maxUsaha(): number {
@@ -109,41 +115,12 @@ export class KawasanDetailModalComponent implements OnChanges {
   }
 
   get isKomoditasTab(): boolean {
-    return KOMODITAS_TABS.indexOf(this.activeTab) !== -1;
+    return this.detail.produkUnggulan.some(p => p.komoditas === this.activeTab);
   }
 
   selectTab(t: string): void {
     this.activeTab = t;
-    if (this.isKomoditasTab) {
-      const k = this.kawasan;
-      const rnd = seededRandom('kom-' + k.id + '-' + t);
-      const luasHa = Math.max(40, Math.round(k.hplHa * (0.06 + rnd() * 0.16)));
-      const prod = 2 + rnd() * 9;
-      this.komoditas = {
-        nama: t,
-        luasHa,
-        produksiTon: Math.round(luasHa * prod),
-        produktivitas: this.dec(prod, 1),
-        pelaku: Math.max(12, Math.round(k.populasi / (6 + rnd() * 8)))
-      };
-    }
-  }
-
-  /** The 5T score bars of the "Indeks Kinerja" tab (0–100). */
-  get indeksBars(): Array<{ label: string; value: number }> {
-    const d = this.detail;
-    return [
-      { label: 'Indeks 5T', value: this.kawasan.indeks5t },
-      { label: 'Infrastruktur', value: Math.round((parseFloat(d.indeksInfra) / 5) * 100) },
-      { label: 'Kelembagaan', value: Math.round((parseFloat(d.indeksKelembagaan) / 5) * 100) },
-      { label: 'Dukungan', value: Math.round((parseFloat(d.indeksDukungan) / 5) * 100) },
-      { label: 'Realisasi anggaran', value: this.kawasan.anggaranPct },
-      { label: 'Legalitas lahan (SHM/HPL)', value: Math.round((this.kawasan.shmHa / this.kawasan.hplHa) * 100) }
-    ];
-  }
-
-  get sumber(): string {
-    return `Laporan TEP ${this.kawasan.nama} 2025`;
+    this.komoditas = this.detail.produkUnggulan.find(p => p.komoditas === t) || null;
   }
 
   fmt(n: number): string {

@@ -37,7 +37,7 @@
       <section class="kd-panel">
 
         <ng-container *ngIf="activeTab === 'Ringkasan'">
-          <h3 class="kd-panel-title">Distribusi unit usaha perorangan</h3>
+          <h3 class="kd-panel-title">Produktivitas sektor (t/Ha)</h3>
           <div class="kd-bars">
             <div class="kd-bar-row" *ngFor="let b of usahaBars">
               <span class="kd-bar-label">{{ b.label }}</span>
@@ -53,58 +53,80 @@
           <div class="kd-bars">
             <div class="kd-bar-row no-delta" *ngFor="let b of indeksBars">
               <span class="kd-bar-label">{{ b.label }}</span>
-              <span class="kd-bar-track"><i [style.width.%]="b.value" style="background:#33809c"></i></span>
-              <span class="kd-bar-val">{{ b.value }} / 100</span>
+              <span class="kd-bar-track"><i [style.width.%]="b.pct" style="background:#33809c"></i></span>
+              <span class="kd-bar-val">{{ b.display }}</span>
             </div>
           </div>
         </ng-container>
 
         <ng-container *ngIf="isKomoditasTab && komoditas as c">
-          <h3 class="kd-panel-title">{{ activeTab }}</h3>
+          <h3 class="kd-panel-title">{{ c.komoditas }}</h3>
           <div class="kd-facts">
+            <div class="kd-fact"><b>{{ c.kategori }}</b><span>Kategori</span></div>
+            <div class="kd-fact"><b>{{ c.perHa }} ton/ha</b><span>/Ha</span></div>
             <div class="kd-fact"><b>{{ fmt(c.luasHa) }} ha</b><span>Luas lahan</span></div>
             <div class="kd-fact"><b>{{ fmt(c.produksiTon) }} ton</b><span>Produksi per tahun</span></div>
-            <div class="kd-fact"><b>{{ c.produktivitas }} t/Ha</b><span>Produktivitas</span></div>
             <div class="kd-fact"><b>{{ fmt(c.pelaku) }}</b><span>Pelaku usaha</span></div>
+            <div class="kd-fact"><b>{{ c.tahun }}</b><span>Tahun data</span></div>
           </div>
         </ng-container>
 
         <ng-container *ngIf="activeTab === 'Demografi'">
           <h3 class="kd-panel-title">Demografi</h3>
           <div class="kd-facts">
-            <div class="kd-fact"><b>{{ fmt(detail.pendudukJiwa) }} jiwa</b><span>Populasi</span></div>
-            <div class="kd-fact"><b>{{ fmt(detail.dayaTampungKK) }} KK</b><span>Daya tampung</span></div>
+            <div class="kd-fact"><b>{{ fmt(detail.pendudukJiwa) }} jiwa</b><span>Jumlah Penduduk</span></div>
+            <div class="kd-fact"><b>{{ fmt(detail.dayaTampungKK) }} KK</b><span>Potensi Daya Tampung</span></div>
             <div class="kd-fact"><b>{{ detail.kepadatan }} jiwa/ha</b><span>Kepadatan</span></div>
             <div class="kd-fact"><b>Rp {{ fmt(detail.pendapatanPerKapita) }}</b><span>Pendapatan per kapita</span></div>
           </div>
           <div class="kd-bars usia">
             <div class="kd-bar-row no-delta">
-              <span class="kd-bar-label">Usia produktif</span>
+              <span class="kd-bar-label">Usia produktif (15-65)</span>
               <span class="kd-bar-track"><i [style.width.%]="detail.strukturUsia.produktifPct" style="background:#106d30"></i></span>
               <span class="kd-bar-val">{{ detail.strukturUsia.produktifPct }}%</span>
             </div>
             <div class="kd-bar-row no-delta">
-              <span class="kd-bar-label">Usia muda</span>
+              <span class="kd-bar-label">Usia &lt; 15 tahun</span>
               <span class="kd-bar-track"><i [style.width.%]="detail.strukturUsia.mudaPct" style="background:#0b98b8"></i></span>
               <span class="kd-bar-val">{{ detail.strukturUsia.mudaPct }}%</span>
             </div>
             <div class="kd-bar-row no-delta">
-              <span class="kd-bar-label">Usia lanjut</span>
+              <span class="kd-bar-label">Usia &gt; 65 tahun</span>
               <span class="kd-bar-track"><i [style.width.%]="detail.strukturUsia.tuaPct" style="background:#cfa460"></i></span>
               <span class="kd-bar-val">{{ detail.strukturUsia.tuaPct }}%</span>
             </div>
           </div>
         </ng-container>
 
+        <ng-container *ngIf="activeTab === 'Perencanaan'">
+          <h3 class="kd-panel-title">Perencanaan</h3>
+          <div class="kd-facts">
+            <div class="kd-fact"><b>{{ fmt(kawasan.hplHa) }} ha</b><span>Luas Kawasan</span></div>
+            <div class="kd-fact"><b>{{ fmt(kawasan.shmHa) }} ha</b><span>Luas SHM</span></div>
+            <div class="kd-fact"><b>{{ kawasan.statusHpl }}</b><span>Status lahan kawasan</span></div>
+            <div class="kd-fact"><b>{{ detail.konektivitas }}</b><span>Konektivitas digital</span></div>
+            <div class="kd-fact"><b>{{ fmt(detail.sertifikasi.total) }} bidang</b><span>Bidang teridentifikasi</span></div>
+            <div class="kd-fact"><b>{{ fmt(detail.sertifikasi.terbit) }} bidang</b><span>Sertifikat terbit</span></div>
+            <div class="kd-fact"><b>{{ fmt(detail.sertifikasi.menunggu) }} bidang</b><span>Menunggu penerbitan</span></div>
+            <div class="kd-fact"><b>{{ detail.sertifikasi.pct }}%</b><span>Bidang bersertifikat</span></div>
+            <div class="kd-fact"><b>{{ detail.dokumen.rkt ? 'Tersedia' : 'Belum ada' }}</b><span>Dokumen RKT</span></div>
+            <div class="kd-fact"><b>{{ detail.dokumen.rtsp ? 'Tersedia' : 'Belum ada' }}</b><span>Dokumen RTSP</span></div>
+            <div class="kd-fact"><b>{{ detail.dokumen.rskp ? 'Tersedia' : 'Belum ada' }}</b><span>Dokumen RSKP</span></div>
+          </div>
+        </ng-container>
+
         <ng-container *ngIf="activeTab === 'Fisik & ekologi'">
           <h3 class="kd-panel-title">Fisik &amp; ekologi</h3>
-          <div class="kd-facts">
-            <div class="kd-fact"><b>{{ fmt(kawasan.hplHa) }} ha</b><span>Luas HPL</span></div>
-            <div class="kd-fact"><b>{{ fmt(kawasan.shmHa) }} ha</b><span>Luas SHM</span></div>
-            <div class="kd-fact"><b>{{ kawasan.statusHpl }}</b><span>Status HPL</span></div>
-            <div class="kd-fact"><b>{{ detail.sertifikasi.pct }}%</b><span>Bidang bersertifikat</span></div>
-            <div class="kd-fact"><b>{{ detail.konektivitas }}</b><span>Konektivitas</span></div>
-          </div>
+          <ng-container *ngIf="fisik.length; else fisikKosong">
+            <div class="kd-facts">
+              <div class="kd-fact" *ngFor="let f of fisik"><b>{{ f.headline.value }}</b><span>{{ f.judul }} &middot; {{ f.headline.label }}</span></div>
+            </div>
+            <div class="kd-fisik" *ngFor="let f of fisik">
+              <h4>{{ f.judul }}</h4>
+              <p>{{ f.ringkasan }}</p>
+            </div>
+          </ng-container>
+          <ng-template #fisikKosong><p class="mb-0">Belum ada data fisik &amp; ekologi untuk {{ kawasan.nama }}.</p></ng-template>
         </ng-container>
 
         <ng-container *ngIf="activeTab === 'Tanya AI'">
@@ -120,7 +142,7 @@
         </span>
         <span class="kd-foot-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8Z"/><path d="M14 3v5h5"/></svg>
-          Terakhir diperbarui 1 Oktober 2026
+          Terakhir diperbarui {{ diperbarui }}
         </span>
       </footer>
     </div>

@@ -123,7 +123,7 @@
       <div class="profil-detail-header-text">
         <button type="button" class="back-link mb-2" (click)="backToList()">&larr; Kembali ke Daftar</button>
         <div class="page-head mb-2"><h1 class="h4 font-weight-bold mb-1">{{ k.nama }}</h1></div>
-        <div class="profil-detail-source">Sumber: Ditjen PKP2Trans &middot; Data IPKT 2023 &middot; Terakhir diperbarui 24 Agustus 2026</div>
+        <div class="profil-detail-source">Sumber: {{ sumber }} &middot; Terakhir diperbarui {{ diperbarui }}</div>
       </div>
       <div class="profil-detail-photo"><img src="assets/hero-kawasan.jpg" alt="Foto {{ k.nama }}" /></div>
     </div>
@@ -134,6 +134,7 @@
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'perencanaan'" (click)="setDetailTab('perencanaan')">Perencanaan</button>
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'fisik'" (click)="setDetailTab('fisik')">Fisik &amp; Ekologi</button>
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'media'" (click)="setDetailTab('media')">Media</button>
+      <button type="button" class="subtab-btn" [class.active]="detailTab === 'ai'" (click)="setDetailTab('ai')">Tanya AI</button>
     </div>
 
     <ng-container *ngIf="detail as d">
@@ -164,12 +165,15 @@
             <input type="text" class="form-control form-control-sm mb-3" style="max-width: 320px" placeholder="Cari komoditas.." [(ngModel)]="produkFilter" />
             <div class="table-responsive">
               <table class="table mb-0">
-                <thead><tr><th>Kategori</th><th>Komoditas</th><th>/Ha</th><th>/Tahun</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>Kategori</th><th>Komoditas</th><th>/Ha</th><th>Luas lahan</th><th>Produksi per tahun</th><th>Pelaku usaha</th><th>/Tahun</th><th>Aksi</th></tr></thead>
                 <tbody>
                   <tr *ngFor="let p of produkRows">
                     <td>{{ p.kategori }}</td>
                     <td>{{ p.komoditas }}</td>
                     <td class="mono">{{ p.perHa }} ton/ha</td>
+                    <td class="mono">{{ p.luasHa | number:'1.0-0' }} ha</td>
+                    <td class="mono">{{ p.produksiTon | number:'1.0-0' }} ton</td>
+                    <td class="mono">{{ p.pelaku | number:'1.0-0' }}</td>
                     <td class="mono">{{ p.tahun }}</td>
                     <td>
                       <button type="button" class="btn btn-sm btn-outline-secondary" title="Non-fungsional pada prototipe ini">Ubah</button>
@@ -178,6 +182,32 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-lg-5 mb-4">
+            <div class="card h-100">
+              <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Kontribusi ekonomi</h2></div>
+              <div class="card-body stat-cols">
+                <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.ekonomiSektor.kontribusiPdrbPct | number:'1.2-2' }}%</div><div class="k-label text-muted">Kontribusi sektor PDRB ke {{ k.kabupaten }}</div></div>
+                <div class="stat-col"><div class="k-value font-weight-bold mono">Rp {{ d.ekonomiSektor.nilaiSektorT | number:'1.2-2' }} T</div><div class="k-label text-muted">Nilai Sektor Pertanian, Kehutanan &amp; Perikanan</div></div>
+                <div class="stat-col"><div class="k-value font-weight-bold mono">{{ d.ekonomiSektor.unitUsaha | number:'1.0-0' }}</div><div class="k-label text-muted">Unit Usaha Perorangan (SP 2023)</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-7 mb-4">
+            <div class="card h-100">
+              <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Produktivitas sektor (t/Ha)</h2></div>
+              <div class="card-body">
+                <div class="sk-row" *ngFor="let s of d.ekonomiSektor.sektor">
+                  <span class="sk-label">{{ s.label }}</span>
+                  <span class="sk-track"><i [style.width.%]="(s.tHa / sektorMax(d)) * 100"></i></span>
+                  <b class="sk-val mono">{{ s.tHa | number:'1.1-1' }} t/Ha</b>
+                  <span class="small" [class.text-success]="s.tHa > s.nasional" [class.text-muted]="s.tHa <= s.nasional">{{ s.tHa > s.nasional ? '+' + ((s.tHa - s.nasional) | number:'1.1-1') + ' t/Ha dari rata-rata nasional' : 'Di bawah rata-rata nasional' }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -244,6 +274,9 @@
                 <div class="investasi-desc-row"><span class="lbl">Indeks kesiapan infrastruktur</span><b>{{ d.indeksInfra }}</b></div>
                 <div class="investasi-desc-row"><span class="lbl">Indeks kelembagaan</span><b>{{ d.indeksKelembagaan }}</b></div>
                 <div class="investasi-desc-row"><span class="lbl">Indeks dukungan investasi</span><b>{{ d.indeksDukungan }} ({{ d.dukunganLabel }})</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Luas SHM</span><b>{{ k.shmHa | number:'1.0-0' }} ha</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Legalitas lahan (SHM/HPL)</span><b>{{ legalPct(k) }}%</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Realisasi anggaran</span><b>{{ k.anggaranPct }}%</b></div>
               </div>
             </div>
           </div>
@@ -379,7 +412,7 @@
                 </div>
                 <div class="doc-status-row">
                   <span>Status lahan kawasan</span>
-                  <span class="badge badge-stage-berkembang">{{ d.statusLahan }}</span>
+                  <span class="badge badge-stage-berkembang">{{ k.statusHpl }}</span>
                 </div>
                 <div class="doc-status-row">
                   <span>Konektivitas digital</span>
@@ -411,19 +444,102 @@
 
       <!-- ---------- Fisik & Ekologi ---------- -->
       <ng-container *ngIf="detailTab === 'fisik'">
-        <div class="card mb-3" *ngFor="let b of fisikFor(k)">
+        <ng-container *ngIf="fisikFor(k).length; else fisikKosong">
+          <div class="fk-tiles" role="tablist">
+            <button type="button" role="tab" class="fk-tile" *ngFor="let t of fisikFor(k)"
+                    [class.active]="fisikBlok(k)?.id === t.id" [attr.aria-selected]="fisikBlok(k)?.id === t.id"
+                    [attr.data-tone]="t.id" (click)="setFisik(t.id)">
+              <span class="fk-tile-ico" [ngSwitch]="t.id">
+            <ng-container *ngSwitchCase="'topografi'"><svg class="fk-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20 9 9l4 6 3-4 5 9Z"/><path d="M14 7l1.5-2.5L17 7"/></svg></ng-container>
+            <ng-container *ngSwitchCase="'tanah'"><svg class="fk-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l9-4 9 4-9 4Z"/><path d="M3 12l9 4 9-4"/><path d="M3 16l9 4 9-4"/></svg></ng-container>
+            <ng-container *ngSwitchCase="'hidrologi'"><svg class="fk-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.2 6 10.5A6 6 0 0 1 6 13.5C6 9.2 12 3 12 3Z"/><path d="M9.5 14a2.5 2.5 0 0 0 2.5 2.5"/></svg></ng-container>
+            <ng-container *ngSwitchCase="'iklim'"><svg class="fk-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17a4 4 0 0 1 .6-7.9A5.5 5.5 0 0 1 18 10.5 3.3 3.3 0 0 1 17.5 17Z"/><path d="M9 20l1-2M13 20l1-2M17 20l1-2"/></svg></ng-container>
+            <ng-container *ngSwitchCase="'tutupan'"><svg class="fk-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-6"/><path d="M12 15c-4 0-6-2.5-6-5.5C6 6 9 4 12 3c3 1 6 3 6 6.5 0 3-2 5.5-6 5.5Z"/><path d="M12 11l-2-2M12 13l2-2"/></svg></ng-container>
+              </span>
+              <span class="fk-tile-title">{{ t.judul }}</span>
+              <span class="fk-tile-val">{{ t.headline.value }}</span>
+              <span class="fk-tile-lbl">{{ t.headline.label }}</span>
+            </button>
+          </div>
+
+          <div class="card fk-panel" *ngIf="fisikBlok(k) as b" [attr.data-tone]="b.id">
+            <div class="card-body">
+              <h2 class="h6 font-weight-bold mb-3">{{ b.judul }}</h2>
+
+              <!-- Topografi: elevation scale -->
+              <div class="fk-elev" *ngIf="b.elevasi as e">
+                <div class="fk-elev-bar" [style.background]="elevGradient(e)">
+                  <span class="fk-elev-sea" [style.left.%]="seaLevelPct(e)"><i></i><em>0 m (muka laut)</em></span>
+                </div>
+                <div class="fk-elev-ends"><b>{{ e.min }} m</b><span>Rentang ketinggian (m dpl)</span><b>{{ e.max }} m</b></div>
+              </div>
+
+              <!-- Tanah: one card per soil type -->
+              <div class="fk-soils" *ngIf="b.tanah">
+                <div class="fk-soil" *ngFor="let t of b.tanah">
+                  <span class="fk-soil-sw" [style.background]="t.warna"></span>
+                  <div>
+                    <div class="fk-soil-head"><b>{{ t.nama }}</b><span class="fk-tag" [attr.data-tone]="t.tone">{{ t.kesuburan }}</span></div>
+                    <div class="fk-soil-loc">{{ t.lokasi }}</div>
+                    <p class="mb-0">{{ t.ket }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hidrologi: districts by hazard -->
+              <div class="fk-groups" *ngIf="b.banjirTinggi">
+                <div class="fk-group">
+                  <div class="fk-group-title">Bahaya banjir tinggi</div>
+                  <span class="fk-chip" data-tone="bad" *ngFor="let d of b.banjirTinggi">{{ d }}</span>
+                </div>
+                <div class="fk-group">
+                  <div class="fk-group-title">Daya dukung air terlampaui</div>
+                  <span class="fk-chip" data-tone="warn" *ngFor="let d of b.airTerlampaui">{{ d }}</span>
+                </div>
+                <div class="fk-group">
+                  <div class="fk-group-title">Daya dukung air masih cukup</div>
+                  <span class="fk-chip" data-tone="good" *ngFor="let d of b.airAman">{{ d }}</span>
+                </div>
+              </div>
+
+              <!-- Iklim: monthly rainfall pattern -->
+              <div class="fk-rain" *ngIf="b.hujanBulanan as h">
+                <div class="fk-rain-bars">
+                  <div class="fk-rain-col" *ngFor="let lv of h; let i = index" [attr.data-lv]="lv"
+                       [title]="fisikBulanPenuh[i] + ': ' + fisikHujanLabel[lv]">
+                    <span class="fk-rain-bar" [style.height.%]="12 + lv * 29"></span>
+                    <span class="fk-rain-m">{{ fisikBulan[i] }}</span>
+                  </div>
+                </div>
+                <div class="fk-legend">
+                  <span *ngFor="let l of fisikHujanLabel; let i = index"><i [attr.data-lv]="i"></i>{{ l }}</span>
+                </div>
+              </div>
+
+              <ul class="fk-facts" *ngIf="b.fakta.length">
+                <li *ngFor="let f of b.fakta">
+                  <div class="fk-fact-head"><b>{{ f.label }}</b><span class="fk-tag" *ngIf="f.tag" [attr.data-tone]="f.tone || 'info'">{{ f.tag }}</span></div>
+                  <div class="fk-fact-val">{{ f.value }}</div>
+                </li>
+              </ul>
+
+              <p class="fk-summary mb-0">{{ b.ringkasan }}</p>
+            </div>
+          </div>
+          <p class="small text-muted">Sumber: Laporan Ekspedisi Patriot 2025, Output 1 (ITB), Bab 3.4 &mdash; Sumber daya alam dan kondisi lingkungan.</p>
+        </ng-container>
+        <ng-template #fisikKosong>
+          <div class="card"><div class="placeholder-panel">Belum ada data fisik &amp; ekologi untuk {{ k.nama }}.</div></div>
+        </ng-template>
+      </ng-container>
+
+      <!-- ---------- Tanya AI ---------- -->
+      <ng-container *ngIf="detailTab === 'ai'">
+        <div class="card">
           <div class="card-body">
-            <h2 class="h6 font-weight-bold mb-3">{{ b.judul }}</h2>
-            <dl class="fisik-dl">
-              <ng-container *ngFor="let f of b.fakta"><dt>{{ f.label }}</dt><dd>{{ f.value }}</dd></ng-container>
-            </dl>
-            <p class="mb-0">{{ b.ringkasan }}</p>
+            <dgt-chat-panel mode="compact"></dgt-chat-panel>
           </div>
         </div>
-        <div class="card" *ngIf="!fisikFor(k).length">
-          <div class="placeholder-panel">Belum ada data fisik &amp; ekologi untuk {{ k.nama }}.</div>
-        </div>
-        <p class="small text-muted" *ngIf="fisikFor(k).length">Sumber: Laporan Ekspedisi Patriot 2025, Output 1 (ITB), Bab 3.4 &mdash; Sumber daya alam dan kondisi lingkungan.</p>
       </ng-container>
 
       <!-- ---------- Media: Foto + Infografis ---------- -->

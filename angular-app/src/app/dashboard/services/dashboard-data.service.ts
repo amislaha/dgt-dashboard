@@ -491,7 +491,33 @@ export interface ProfilProduk {
   komoditas: string;
   perHa: string;
   tahun: number;
+  /** Land under this commodity (ha). Items 1-2 equal the figures quoted in `deskripsiInvestasi`. */
+  luasHa: number;
+  /** Production (ton per year). */
+  produksiTon: number;
+  /** Number of business actors (pelaku usaha). */
+  pelaku: number;
 }
+
+export interface ProfilSektorBar {
+  label: string;
+  /** Productivity of the sector in this kawasan (t/Ha). */
+  tHa: number;
+  /** National average for the same sector (t/Ha). */
+  nasional: number;
+}
+
+/** Economic-contribution figures. Fabricated like the rest of the dataset (seeded per kawasan). */
+export interface ProfilEkonomiSektor {
+  kontribusiPdrbPct: number;
+  nilaiSektorT: number;
+  unitUsaha: number;
+  sektor: ProfilSektorBar[];
+}
+
+/** Source line and last-updated date shown for a kawasan profile (Profil page and its modal). */
+export const PROFIL_SUMBER = 'Ditjen PKP2Trans · Data IPKT 2023';
+export const PROFIL_DIPERBARUI = '24 Agustus 2026';
 
 export interface ProfilMataPencaharian {
   jenis: string;
@@ -527,6 +553,7 @@ export interface ProfilDetail {
   dukunganLabel: string;
   produksiTon: number;
   deskripsiInvestasi: string;
+  ekonomiSektor: ProfilEkonomiSektor;
 }
 
 const PRODUK_POOL: { [key in ProfilKategori]: string[] } = {
@@ -573,7 +600,7 @@ export function profilDetailData(k: Kawasan): ProfilDetail {
 
   const produkUnggulan: ProfilProduk[] = (['Pangan', 'Peternakan', 'Perkebunan', 'Pertambangan'] as ProfilKategori[]).map(kat => {
     const pool = PRODUK_POOL[kat];
-    return { kategori: kat, komoditas: pool[Math.floor(rnd() * pool.length)], perHa: (6 + rnd() * 24).toFixed(1), tahun: 2026 };
+    return { kategori: kat, komoditas: pool[Math.floor(rnd() * pool.length)], perHa: (6 + rnd() * 24).toFixed(1), tahun: 2026, luasHa: 0, produksiTon: 0, pelaku: 0 };
   });
 
   const mpShuffled = MATA_PENCAHARIAN_POOL.slice().sort(() => rnd() - 0.5);
@@ -597,6 +624,34 @@ export function profilDetailData(k: Kawasan): ProfilDetail {
   const lahan1 = Math.round(k.hplHa * 0.18);
   const lahan2 = Math.round(k.hplHa * 0.12);
   const produksi2 = Math.round(produksiTon * 0.35 + rnd() * 500);
+  // Per-commodity land / production / actors. Items 1-2 use exactly the numbers quoted in the
+  // description below; items 3-4 and every `pelaku` come from a separate seed so none of the draws
+  // above (and therefore no existing figure) changes.
+  const rk = seededRandom(k.id + '-' + k.nama + '-komoditas');
+  produkUnggulan[0].luasHa = lahan1;
+  produkUnggulan[0].produksiTon = produksiTon;
+  produkUnggulan[1].luasHa = lahan2;
+  produkUnggulan[1].produksiTon = produksi2;
+  [0.08, 0.05].forEach((share, i) => {
+    const luasHa = Math.round(k.hplHa * share);
+    produkUnggulan[i + 2].luasHa = luasHa;
+    produkUnggulan[i + 2].produksiTon = Math.round(luasHa * (1 + rk() * 4));
+  });
+  produkUnggulan.forEach(p => {
+    p.pelaku = Math.max(12, Math.round(k.populasi / (6 + rk() * 8)));
+  });
+
+  const rm = seededRandom('modal-' + k.id + '-' + k.nama);
+  const SEKTOR_DEF: Array<[string, number, number]> = [
+    ['Pertanian', 5.2, 4.2], ['Perkebunan', 3.6, 3.1], ['Pangan', 3.0, 2.9], ['Perikanan', 2.0, 2.4], ['Kehutanan', 1.0, 1.6]
+  ];
+  const ekonomiSektor: ProfilEkonomiSektor = {
+    kontribusiPdrbPct: 14 + rm() * 16,
+    nilaiSektorT: 1.5 + rm() * 6,
+    unitUsaha: Math.round(k.populasi / 5.2),
+    sektor: SEKTOR_DEF.map(([label, base, nasional]) => ({ label, tHa: Math.max(0.4, base + (rm() * 0.6 - 0.3)), nasional }))
+  };
+
   const deskripsiInvestasi =
     `Komoditas unggulan yang dicantumkan adalah ${top2[0].komoditas.toLowerCase()} dan ${top2[1].komoditas.toLowerCase()}. ` +
     `${top2[0].komoditas} menghasilkan produksi sebesar ${produksiTon.toLocaleString('id-ID')} ton per tahun dari luas lahan ${lahan1.toLocaleString('id-ID')} hektare. ` +
@@ -630,7 +685,8 @@ export function profilDetailData(k: Kawasan): ProfilDetail {
     indeksDukungan: indeksDukunganNum.toFixed(2),
     dukunganLabel,
     produksiTon,
-    deskripsiInvestasi
+    deskripsiInvestasi,
+    ekonomiSektor
   };
 }
 

@@ -6,6 +6,7 @@ import { Satker } from '../models/satker.model';
 import { Skp } from '../models/skp.model';
 import { Sp } from '../models/sp.model';
 import { Wpt } from '../models/wpt.model';
+import { KOMODITI_PROFIL_SEED, WPT_PROFIL_FIELDS } from './wpt-profil.seed';
 
 /**
  * Seed data transcribed from the original data-manager/index.html `SEED`
@@ -30,7 +31,7 @@ import { Wpt } from '../models/wpt.model';
  * approximations added only so WilayahMapComponent's pins have somewhere to sit, same fabrication
  * convention as the dashboard's `kawasan` array. Treat them as roughly-the-right-area, not surveyed.
  */
-export const WPT_SEED: Wpt[] = [
+const WPT_BASE: Wpt[] = [
   { id: 'wpt1', nama: 'RASAU JAYA', kawasan: 'Rasau Jaya', provinsi: 'Kalimantan Barat', kabupaten: 'Kubu Raya', skpRingkasan: 'SKP (A, B, C, D), KPB', spRingkasan: 'Sei bulan c (SKP A)', kpb: 'Y', lat: -0.05, lon: 109.35 },
   { id: 'wpt2', nama: 'LAGITA', kawasan: 'Lagita', provinsi: 'Bengkulu', kabupaten: 'Bengkulu Utara', skpRingkasan: 'SKP I, II, III, KPB', kpb: 'Y', lat: -3.5, lon: 102.25 },
   { id: 'wpt3', nama: 'CAHAYA BARU', kawasan: 'Cahaya Baru', provinsi: 'Kalimantan Selatan', kabupaten: 'Barito Kuala', skpRingkasan: 'SKP 1, 2, 3, 4, 5, Pengembangan', spRingkasan: 'Jejangkit timur (SKP 1)', lat: -3.15, lon: 114.6 },
@@ -78,6 +79,10 @@ export const WPT_SEED: Wpt[] = [
   { id: 'wpt45', nama: 'ARSEL KOLAM', kawasan: 'Arut Selatan dan Kota Waringin Lama', provinsi: 'Kalimantan Tengah', kabupaten: 'Kota Waringin Barat', skpRingkasan: 'SKP A RANGDA, SKP B RUNGUN, SKP C TANJUNG PUTRI', lat: -2.55, lon: 111.65 }
 ];
 
+/** WPT_BASE (the real spreadsheet columns) plus the master fields filled from Profil Kawasan —
+ *  area, population, villages, SHM and the two leading commodities. See wpt-profil.seed.ts. */
+export const WPT_SEED: Wpt[] = WPT_BASE.map(w => ({ ...w, ...(WPT_PROFIL_FIELDS[w.id] || {}) }));
+
 /**
  * Cleared rather than kept alongside the real WPT_SEED above: these were fully fabricated
  * illustrative sub-units (see git history) invented for the old 10-WPT placeholder, and none of
@@ -94,7 +99,8 @@ export const SP_SEED: Sp[] = [];
 export const KOMODITI_SEED: Komoditi[] = [
   { id: 'kom1', nama: 'Padi' },
   { id: 'kom2', nama: 'Perkebunan' },
-  { id: 'kom3', nama: 'Industri' }
+  { id: 'kom3', nama: 'Industri' },
+  ...KOMODITI_PROFIL_SEED
 ];
 
 export const PROGRAM_SEED: Program[] = [

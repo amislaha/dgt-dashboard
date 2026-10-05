@@ -461,9 +461,100 @@
   dd { margin: 0; }
 }
 
-.fisik-dl {
-  display: grid; grid-template-columns: minmax(130px, 200px) 1fr; gap: .5rem 1.25rem; margin: 0 0 1rem; font-size: .88rem;
-  dt { color: var(--text-dim); font-weight: 600; }
-  dd { margin: 0; }
-  @media (max-width: 640px) { grid-template-columns: 1fr; dd { margin-bottom: .4rem; } }
+// ---- Fisik & Ekologi (interactive) ----
+.fk-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.fk-tile {
+  --c: #2a6f8c; --bg: var(--tone-cyan-bg);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; cursor: pointer;
+  padding: 14px; background: var(--card); border: 1px solid var(--border); border-top: 4px solid var(--border);
+  border-radius: 14px; font-family: inherit; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  &[data-tone='topografi'] { --c: #8a5a2b; --bg: var(--tone-amber-bg); }
+  &[data-tone='tanah'] { --c: #a8620a; --bg: var(--tone-amber-bg); }
+  &[data-tone='hidrologi'] { --c: #0868ad; --bg: var(--tone-blue-bg); }
+  &[data-tone='iklim'] { --c: #0b7f99; --bg: var(--tone-cyan-bg); }
+  &[data-tone='tutupan'] { --c: #106d30; --bg: var(--tone-green-bg); }
+  &:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+  &.active { border-top-color: var(--c); box-shadow: var(--shadow-sm); }
+}
+.fk-tile-ico {
+  width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg); color: var(--c); margin-bottom: 6px;
+  .fk-ico { width: 22px; height: 22px; }
+}
+.fk-tile-title { font-size: 12px; font-weight: 600; color: var(--text-dim); }
+.fk-tile-val { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.fk-tile-lbl { font-size: 11px; color: var(--text-dim); }
+
+.fk-panel { animation: fkIn .22s ease; }
+@keyframes fkIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fk-panel { animation: none; } .fk-tile { transition: none; } }
+
+.fk-tag {
+  display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap;
+  background: var(--tone-blue-bg); color: var(--tone-blue-ic);
+  &[data-tone='good'] { background: var(--tone-green-bg); color: var(--tone-green-fg); }
+  &[data-tone='warn'] { background: var(--tone-amber-bg); color: var(--tone-amber-fg); }
+  &[data-tone='bad'] { background: var(--critical-soft); color: var(--critical); }
+}
+.fk-chip {
+  display: inline-block; margin: 0 6px 6px 0; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  background: var(--tone-blue-bg); color: var(--tone-blue-ic);
+  &[data-tone='good'] { background: var(--tone-green-bg); color: var(--tone-green-fg); }
+  &[data-tone='warn'] { background: var(--tone-amber-bg); color: var(--tone-amber-fg); }
+  &[data-tone='bad'] { background: var(--critical-soft); color: var(--critical); }
+}
+
+.fk-facts { list-style: none; margin: 16px 0; padding: 0; display: grid; gap: 10px; }
+.fk-facts li { padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--muted); }
+.fk-fact-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
+.fk-fact-val { font-size: 13.5px; color: var(--text); }
+.fk-summary { font-size: 13.5px; color: var(--text-dim); border-left: 3px solid var(--primary); padding-left: 12px; }
+
+// topografi: elevation scale
+.fk-elev { margin: 4px 0 18px; }
+.fk-elev-bar {
+  position: relative; height: 18px; border-radius: 9px; margin-bottom: 26px;
+}
+.fk-elev-sea {
+  position: absolute; top: -4px; transform: translateX(-50%);
+  i { display: block; width: 2px; height: 26px; margin: 0 auto; background: var(--text); }
+  em { display: block; margin-top: 2px; font-size: 11px; font-style: normal; color: var(--text-dim); white-space: nowrap; }
+}
+.fk-elev-ends { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--text-dim); b { font-size: 16px; color: var(--text); } }
+
+// tanah
+.fk-soils { display: grid; gap: 12px; margin-bottom: 16px; }
+.fk-soil { display: flex; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; font-size: 13.5px; }
+.fk-soil-sw { flex: 0 0 8px; border-radius: 4px; }
+.fk-soil-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; b { font-size: 15px; } }
+.fk-soil-loc { font-size: 12px; color: var(--text-dim); margin: 2px 0 6px; }
+
+// hidrologi
+.fk-groups { display: grid; gap: 12px; margin-bottom: 4px; }
+.fk-group-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--text-dim); margin-bottom: 6px; }
+
+// iklim
+.fk-rain { margin-bottom: 12px; }
+.fk-rain-bars { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; align-items: end; height: 120px; }
+.fk-rain-col { display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; height: 100%; text-align: center; font-size: 11px; color: var(--text-dim); }
+.fk-rain-bar { display: block; border-radius: 6px 6px 2px 2px; background: #9ecbe8; transition: filter .15s ease; }
+.fk-rain-col:hover .fk-rain-bar { filter: brightness(.92); }
+.fk-rain-col[data-lv='0'] .fk-rain-bar { background: #e8c98a; }
+.fk-rain-col[data-lv='1'] .fk-rain-bar { background: #b9d9ea; }
+.fk-rain-col[data-lv='2'] .fk-rain-bar { background: #5aa8d6; }
+.fk-rain-col[data-lv='3'] .fk-rain-bar { background: #0868ad; }
+.fk-rain-m { margin-top: 4px; }
+.fk-legend {
+  display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; font-size: 12px; color: var(--text-dim);
+  i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; background: #9ecbe8; }
+  i[data-lv='0'] { background: #e8c98a; } i[data-lv='1'] { background: #b9d9ea; }
+  i[data-lv='2'] { background: #5aa8d6; } i[data-lv='3'] { background: #0868ad; }
+}
+
+.sk-row {
+  display: grid; grid-template-columns: 90px 1fr 80px; gap: 4px 12px; align-items: center; margin-bottom: 14px; font-size: .86rem;
+  .sk-label { font-weight: 600; }
+  .sk-track { height: 10px; border-radius: 5px; background: var(--muted); overflow: hidden; i { display: block; height: 100%; background: var(--primary); border-radius: 5px; } }
+  .sk-val { text-align: right; }
+  .small { grid-column: 2 / 4; }
 }
