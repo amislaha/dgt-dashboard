@@ -1,0 +1,22 @@
+<main class="am-page">
+  <dgt-page-head title="Audits" description="Riwayat perubahan akun, grup, dan aplikasi (maks. 200 terbaru, disimpan di browser ini).">
+    <button type="button" class="btn btn-outline-danger" *ngIf="entries.length" (click)="clear()">Bersihkan</button>
+  </dgt-page-head>
+
+  <div class="table-responsive am-table">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>Waktu</th><th>Oleh</th><th>Aksi</th><th>Target</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of entries">
+          <td>{{ e.at | date:'dd/MM/yy HH:mm:ss' }}</td>
+          <td>{{ e.by }}</td>
+          <td>{{ e.action }}</td>
+          <td>{{ e.target }}</td>
+        </tr>
+        <tr *ngIf="!entries.length"><td colspan="4" class="text-center text-muted py-4">Belum ada aktivitas tercatat.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>

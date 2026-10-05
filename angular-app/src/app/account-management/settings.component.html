@@ -1,0 +1,27 @@
+<main class="am-page">
+  <dgt-page-head title="Settings" description="Pengaturan profil untuk akun yang sedang masuk."></dgt-page-head>
+
+  <form class="am-form" (ngSubmit)="submit()" novalidate>
+    <div class="form-group">
+      <label for="stLogin">Login</label>
+      <input id="stLogin" class="form-control" [value]="login" disabled>
+    </div>
+    <div class="form-group">
+      <label for="stName">Nama tampilan</label>
+      <input id="stName" name="displayName" class="form-control" [(ngModel)]="form.displayName">
+    </div>
+    <div class="form-group">
+      <label for="stEmail">Email</label>
+      <input id="stEmail" name="email" type="email" class="form-control" [class.is-invalid]="emailError" [(ngModel)]="form.email">
+      <div class="invalid-feedback">{{ emailError }}</div>
+    </div>
+    <div class="form-group">
+      <label for="stLang">Bahasa</label>
+      <select id="stLang" name="language" class="form-control" [(ngModel)]="form.language">
+        <option value="id">Indonesia (id)</option>
+        <option value="en">English (en)</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Simpan</button>
+  </form>
+</main>

@@ -1,0 +1,41 @@
+<main class="am-page">
+  <dgt-page-head [title]="label" [description]="'Kelola daftar ' + label + '.'">
+    <a [routerLink]="['/account-management', kind, 'new']" class="btn btn-primary">+ Tambah {{ label }}</a>
+  </dgt-page-head>
+
+  <div class="input-group search mb-3">
+    <input type="search" class="form-control" placeholder="Cari…" [(ngModel)]="search" aria-label="Cari">
+  </div>
+
+  <div class="table-responsive am-table">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>ID</th><th>Nama</th><th>Deskripsi</th><th>Tgl diubah</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of filtered">
+          <td>{{ e.id }}</td>
+          <td>{{ e.name }}</td>
+          <td>{{ e.description }}</td>
+          <td>{{ e.modifiedDate | date:'dd/MM/yy HH:mm' }}</td>
+          <td class="actions">
+            <a [routerLink]="['/account-management', kind, e.id, 'edit']" class="btn btn-sm btn-primary">Ubah</a>
+            <button type="button" class="btn btn-sm btn-danger" (click)="pendingDelete = e">Hapus</button>
+          </td>
+        </tr>
+        <tr *ngIf="!filtered.length"><td colspan="5" class="text-center text-muted py-4">Belum ada data.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<div class="confirm-scrim" *ngIf="pendingDelete" (click)="pendingDelete = null">
+  <div class="confirm-box" role="alertdialog" (click)="$event.stopPropagation()">
+    <h2 class="h6 font-weight-bold">Hapus {{ label }}?</h2>
+    <p class="mb-3"><strong>{{ pendingDelete.name }}</strong> akan dihapus permanen.</p>
+    <div class="d-flex justify-content-end">
+      <button type="button" class="btn btn-outline-secondary mr-2" (click)="pendingDelete = null">Batal</button>
+      <button type="button" class="btn btn-danger" (click)="confirmDelete()">Hapus</button>
+    </div>
+  </div>
+</div>

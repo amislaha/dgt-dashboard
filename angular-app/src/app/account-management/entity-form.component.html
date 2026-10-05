@@ -1,0 +1,21 @@
+<main class="am-page">
+  <dgt-page-head [title]="title">
+    <a [routerLink]="['/account-management', kind]" class="btn btn-outline-secondary">← Kembali</a>
+  </dgt-page-head>
+
+  <form class="am-form" (ngSubmit)="submit()" novalidate>
+    <div class="form-group">
+      <label for="enName">Nama</label>
+      <input id="enName" name="name" class="form-control" [class.is-invalid]="nameError" [(ngModel)]="form.name">
+      <div class="invalid-feedback">{{ nameError }}</div>
+    </div>
+    <div class="form-group">
+      <label for="enDesc">Deskripsi</label>
+      <textarea id="enDesc" name="description" rows="3" class="form-control" [(ngModel)]="form.description"></textarea>
+    </div>
+    <div class="d-flex">
+      <a [routerLink]="['/account-management', kind]" class="btn btn-outline-secondary mr-2">Batal</a>
+      <button type="submit" class="btn btn-primary">Simpan</button>
+    </div>
+  </form>
+</main>

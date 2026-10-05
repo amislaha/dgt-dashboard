@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Account } from './account.model';
 import { AuthGateService } from '../core/services/auth-gate.service';
+import { AuditService } from './audit.service';
 
 /**
  * localStorage-backed CRUD for accounts (same no-backend approach as data-manager). This is
@@ -11,7 +12,7 @@ import { AuthGateService } from '../core/services/auth-gate.service';
 export class AccountService {
   private readonly key = 'dgt-account-management:accounts';
 
-  constructor(private readonly auth: AuthGateService) {}
+  constructor(private readonly auth: AuthGateService, private readonly audit: AuditService) {}
 
   list(): Account[] {
     try {
@@ -33,6 +34,7 @@ export class AccountService {
       const i = all.findIndex(a => a.id === draft.id);
       all[i] = { ...all[i], ...draft, modifiedBy: by, modifiedDate: now } as Account;
       this.write(all);
+      this.audit.log('Ubah akun', all[i].login);
       return all[i];
     }
     const created: Account = {
@@ -41,11 +43,24 @@ export class AccountService {
       ...draft, createdDate: now, modifiedBy: by, modifiedDate: now
     } as Account;
     this.write([...all, created]);
+    this.audit.log('Buat akun', created.login);
     return created;
   }
 
   remove(id: number): void {
+    const gone = this.list().find(a => a.id === id);
     this.write(this.list().filter(a => a.id !== id));
+    if (gone) { this.audit.log('Hapus akun', gone.login); }
+  }
+
+  /** Stamp modified-by/date without changing anything else (e.g. after a password reset). */
+  touch(id: number): void {
+    const all = this.list();
+    const i = all.findIndex(a => a.id === id);
+    if (i >= 0) {
+      all[i] = { ...all[i], modifiedBy: this.auth.getUsername(), modifiedDate: new Date().toISOString() };
+      this.write(all);
+    }
   }
 
   /** Case-insensitive uniqueness check on login/email, ignoring the record being edited. */
