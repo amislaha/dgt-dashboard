@@ -13,8 +13,6 @@ import {
   STAGE_COLOR_HEX,
   STAGES,
   STATUS_HPL,
-  ProfilIndeksJenis,
-  profilIndeksScore,
   Tahap
 } from '../../services/dashboard-data.service';
 import { DonutSegment } from '../../../shared/components/charts/chart.model';
@@ -93,13 +91,6 @@ export class ProfilComponent implements OnInit {
   statusFilter = 'Semua';
   statusHplFilter = 'Semua';
   search = '';
-  readonly indeksOptions: { id: ProfilIndeksJenis; label: string }[] = [
-    { id: 'intrans', label: 'Indeks Intrans' },
-    { id: 'iku', label: 'IKU' },
-    { id: 'ss', label: 'SS' },
-    { id: 'idi', label: 'IDI' }
-  ];
-  indeksJenis: ProfilIndeksJenis = 'intrans';
   intransSegments: DonutSegment[] = [];
   intransCounts: { [key: string]: number } = {};
   readonly bucketOrder = BUCKET_ORDER;
@@ -162,21 +153,13 @@ export class ProfilComponent implements OnInit {
     return this.detailFor(k).produkUnggulan[2].komoditas;
   }
 
-  get indeksLabel(): string {
-    return (this.indeksOptions.find(o => o.id === this.indeksJenis) || this.indeksOptions[0]).label;
-  }
-
-  onIndeksChange(): void {
-    this.rebuildDonuts();
-  }
-
   onAreaChange(): void {
     this.rebuildDonuts();
   }
 
   private rebuildDonuts(): void {
     const pool = this.kawasan.filter(k => this.areaFilter === 'Semua' || k.provinsi === this.areaFilter);
-    this.intransCounts = this.bucketCounts(pool, k => profilBucketIndeks(profilIndeksScore(k, this.indeksJenis)));
+    this.intransCounts = this.bucketCounts(pool, k => profilBucketIndeks(k.indeks5t));
     this.intransSegments = this.toSegments(this.intransCounts);
     this.intransLegend = this.legendRows(this.intransCounts, BUCKET_ORDER, BUCKET_COLOR);
   }

@@ -545,20 +545,6 @@ const FASKES_POOL = ['Rumah Sakit', 'Posyandu', 'Klinik', 'Apotik', 'Posbindu', 
 export function profilBucketIndeks(v: number): string {
   return v >= 75 ? 'Mandiri' : v >= 45 ? 'Berkembang' : 'Tertinggal';
 }
-/** Which index the Data Induk donut buckets kawasan by. `intrans` is the real `indeks5t`; the other
- *  three have no per-kawasan field in the dataset, so they are fabricated deterministically (IKU/SS
- *  from `indeks5t` plus seeded noise, IDI from the detail page's `indeksDukungan` rescaled 1-5 -> 0-100). */
-export type ProfilIndeksJenis = 'intrans' | 'iku' | 'ss' | 'idi';
-export function profilIndeksScore(k: Kawasan, jenis: ProfilIndeksJenis): number {
-  if (jenis === 'intrans') {
-    return k.indeks5t;
-  }
-  if (jenis === 'idi') {
-    return ((parseFloat(profilDetailData(k).indeksDukungan) - 1) / 4) * 100;
-  }
-  const rnd = seededRandom(k.id + '-' + k.nama + '-' + jenis);
-  return Math.max(10, Math.min(98, k.indeks5t + (rnd() * 24 - 12)));
-}
 export function profilBucketTahap(t: Tahap): string {
   return t === 'Mandiri' ? 'Mandiri' : t === 'Berkembang' ? 'Berkembang' : 'Tertinggal';
 }
