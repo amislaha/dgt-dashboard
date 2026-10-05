@@ -17,6 +17,29 @@ import {
 } from '../../services/dashboard-data.service';
 import { DonutSegment } from '../../../shared/components/charts/chart.model';
 
+interface Dokumen {
+  judul: string;
+  jenis: string;
+  tahun: number;
+  output: string;
+  lokus: string;
+  judulKajian: string;
+  cover: string;
+}
+
+/** Documents attached to a kawasan, keyed by kawasan name. Only Salor has one so far. */
+const DOKUMEN_BY_KAWASAN: { [nama: string]: Dokumen[] } = {
+  Salor: [{
+    judul: 'Rekomendasi Kebijakan Ekspedisi Patriot 2025',
+    jenis: 'Laporan Akhir',
+    tahun: 2025,
+    output: 'Desain Model Kolaborasi Kelembagaan Ekonomi Kawasan Transmigrasi',
+    lokus: 'Salor, Merauke, Papua Selatan',
+    judulKajian: 'Desain Model Kolaborasi Kelembagaan Ekonomi Kawasan Transmigrasi Salor Merauke Papua Selatan',
+    cover: 'assets/dokumen/laporan-ekspedisi-patriot-2025-salor.png'
+  }]
+};
+
 type DetailTab = 'ekonomi' | 'sosial' | 'perencanaan' | 'media';
 
 /** Literal hex (not CSS vars) so each legend row can derive its own tint by appending an alpha
@@ -194,6 +217,10 @@ export class ProfilComponent implements OnInit {
 
   setDetailTab(tab: DetailTab): void {
     this.detailTab = tab;
+  }
+
+  dokumenFor(k: Kawasan): Dokumen[] {
+    return DOKUMEN_BY_KAWASAN[k.nama] || [];
   }
 
   lightbox: { src: string; alt: string } | null = null;

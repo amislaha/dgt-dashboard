@@ -433,6 +433,30 @@
             <p class="small text-muted mt-2 mb-0">Contoh infografis (Kawasan Salor) sebagai placeholder &mdash; belum spesifik untuk {{ k.nama }}.</p>
           </div>
         </div>
+        <div class="card mt-3">
+          <div class="card-body">
+            <h2 class="h6 font-weight-bold mb-3">Dokumen</h2>
+            <div class="dokumen-item" *ngFor="let doc of dokumenFor(k)">
+              <button type="button" class="dokumen-cover" (click)="openLightbox(doc.cover, 'Sampul ' + doc.jenis + ' ' + doc.judul)" aria-label="Perbesar sampul dokumen">
+                <img [src]="doc.cover" [alt]="'Sampul ' + doc.judul" />
+              </button>
+              <div class="dokumen-meta">
+                <span class="badge badge-info mb-2">{{ doc.jenis }} &middot; {{ doc.tahun }}</span>
+                <h3 class="h6 font-weight-bold">{{ doc.judul }}</h3>
+                <dl class="dokumen-dl">
+                  <dt>Output</dt><dd>{{ doc.output }}</dd>
+                  <dt>Lokus</dt><dd>{{ doc.lokus }}</dd>
+                  <dt>Judul kajian</dt><dd>{{ doc.judulKajian }}</dd>
+                </dl>
+                <div class="d-flex" style="gap: .6rem">
+                  <button type="button" class="btn btn-sm btn-primary" (click)="openLightbox(doc.cover, 'Sampul ' + doc.jenis + ' ' + doc.judul)">Lihat sampul</button>
+                  <a class="btn btn-sm btn-outline-secondary" [href]="doc.cover" download>Unduh sampul</a>
+                </div>
+              </div>
+            </div>
+            <p class="text-muted mb-0" *ngIf="!dokumenFor(k).length">Belum ada dokumen untuk {{ k.nama }}.</p>
+          </div>
+        </div>
       </ng-container>
 
     </ng-container>

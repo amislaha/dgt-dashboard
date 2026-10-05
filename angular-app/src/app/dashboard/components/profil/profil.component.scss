@@ -446,3 +446,17 @@
   position: fixed; top: 1rem; right: 1.25rem; width: 40px; height: 40px; border-radius: 50%;
   border: 0; background: var(--card); color: var(--text); font-size: 1.5rem; line-height: 1; cursor: pointer;
 }
+
+.dokumen-item { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.dokumen-item + .dokumen-item { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.dokumen-cover {
+  flex: 0 0 160px; padding: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  background: none; cursor: zoom-in; align-self: flex-start;
+  img { display: block; width: 100%; height: auto; }
+}
+.dokumen-meta { flex: 1 1 280px; min-width: 0; }
+.dokumen-dl {
+  display: grid; grid-template-columns: max-content 1fr; gap: .25rem .9rem; margin: 0 0 1rem; font-size: .86rem;
+  dt { color: var(--text-dim); font-weight: 600; }
+  dd { margin: 0; }
+}
