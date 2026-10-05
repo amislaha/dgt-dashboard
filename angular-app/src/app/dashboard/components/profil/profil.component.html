@@ -258,18 +258,6 @@
           <div class="investasi-desc-head teal">Deskripsi kawasan</div>
           <div class="investasi-desc-text">{{ d.deskripsiInvestasi }}</div>
         </div>
-        <div class="investasi-desc-panel mb-3">
-          <div class="investasi-desc-head teal">Infografis dan Infomemo</div>
-          <div class="investasi-placeholder-grid">
-            <div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div>
-          </div>
-        </div>
-        <div class="investasi-desc-panel">
-          <div class="investasi-desc-head teal">Galeri</div>
-          <div class="investasi-placeholder-grid">
-            <div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div><div class="investasi-placeholder-box"></div>
-          </div>
-        </div>
       </ng-container>
 
       <!-- ---------- Sosial ---------- -->
@@ -421,10 +409,42 @@
         </div>
       </ng-container>
 
-      <!-- ---------- Patriot / Media (not yet designed — see CLAUDE.md) ---------- -->
-      <div class="card" *ngIf="detailTab === 'patriot' || detailTab === 'media'">
-        <div class="placeholder-panel">Modul "{{ detailTab === 'patriot' ? 'Patriot' : 'Media' }}" belum tersedia pada versi prototipe ini.</div>
+      <!-- ---------- Media: Foto + Infografis ---------- -->
+      <ng-container *ngIf="detailTab === 'media'">
+        <div class="card mb-3">
+          <div class="card-body">
+            <h2 class="h6 font-weight-bold mb-3">Foto</h2>
+            <div class="media-grid">
+              <button type="button" class="media-thumb" (click)="openLightbox('assets/hero-kawasan.jpg', 'Foto ' + k.nama)">
+                <img src="assets/hero-kawasan.jpg" alt="Foto {{ k.nama }}" />
+              </button>
+            </div>
+            <p class="small text-muted mt-2 mb-0">Foto placeholder &mdash; foto asli per kawasan belum diunggah.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+              <h2 class="h6 font-weight-bold mb-0">Infografis</h2>
+              <a class="btn btn-sm btn-outline-secondary" href="assets/infografis/infografis-salor.png" download="infografis-kawasan.png">Unduh</a>
+            </div>
+            <button type="button" class="infografis-btn" (click)="openLightbox('assets/infografis/infografis-salor.png', 'Infografis kawasan')" aria-label="Perbesar infografis">
+              <img src="assets/infografis/infografis-salor.png" alt="Infografis kawasan" />
+            </button>
+            <p class="small text-muted mt-2 mb-0">Contoh infografis (Kawasan Salor) sebagai placeholder &mdash; belum spesifik untuk {{ k.nama }}.</p>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ---------- Patriot (not yet designed — see CLAUDE.md) ---------- -->
+      <div class="card" *ngIf="detailTab === 'patriot'">
+        <div class="placeholder-panel">Modul "Patriot" belum tersedia pada versi prototipe ini.</div>
       </div>
     </ng-container>
   </ng-container>
 </ng-template>
+
+<div class="lightbox" *ngIf="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true" [attr.aria-label]="lightbox.alt">
+  <button type="button" class="lightbox-close" (click)="closeLightbox()" aria-label="Tutup">&times;</button>
+  <img [src]="lightbox.src" [alt]="lightbox.alt" (click)="$event.stopPropagation()" />
+</div>
