@@ -36,7 +36,6 @@ export interface HeaderNavItem {
 })
 export class DataManagerShellComponent implements OnInit, OnDestroy {
   activeId: string | null = null;
-  totalLabel = '0 entri tersimpan (lokal)';
   masterItems: HeaderNavItem[] = [];
   settingsItems: HeaderNavItem[] = [];
   operatorName = getOperator();
@@ -70,8 +69,6 @@ export class DataManagerShellComponent implements OnInit, OnDestroy {
         const pendingCount = submissionList.filter(s => s.status === 'PENDING').length;
         this.submissionSub = pendingCount ? `${pendingCount} menunggu` : `${submissionList.length} pengajuan`;
 
-        const total = ENTITY_ORDER.reduce((sum, key) => sum + countByKey[key], 0);
-        this.totalLabel = `${total} entri tersimpan (lokal)`;
       })
     );
 
