@@ -17,7 +17,7 @@ import {
 } from '../../services/dashboard-data.service';
 import { DonutSegment } from '../../../shared/components/charts/chart.model';
 
-type DetailTab = 'ekonomi' | 'sosial' | 'perencanaan' | 'patriot' | 'media';
+type DetailTab = 'ekonomi' | 'sosial' | 'perencanaan' | 'media';
 
 /** Literal hex (not CSS vars) so each legend row can derive its own tint by appending an alpha
  *  byte — see `LegendRow.bg`. Palette from the "Design system colors updated" bundle. */
@@ -47,7 +47,7 @@ export interface LegendRow {
 
 /** Ports `renderProfil()` (legacy-static/dashboard/index.html) — "Data Induk & Profil Kawasan":
  *  a searchable/filterable landing list plus a per-kawasan drill-down with Ekonomi/Sosial/
- *  Perencanaan/Patriot/Media tabs. See profilDetailData() in dashboard-data.service.ts for how the
+ *  Perencanaan/Media tabs. See profilDetailData() in dashboard-data.service.ts for how the
  *  detail page's numbers are derived. */
 @Component({
   selector: 'dgt-profil',

@@ -132,7 +132,6 @@
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'ekonomi'" (click)="setDetailTab('ekonomi')">Ekonomi</button>
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'sosial'" (click)="setDetailTab('sosial')">Sosial</button>
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'perencanaan'" (click)="setDetailTab('perencanaan')">Perencanaan</button>
-      <button type="button" class="subtab-btn" [class.active]="detailTab === 'patriot'" (click)="setDetailTab('patriot')">Patriot</button>
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'media'" (click)="setDetailTab('media')">Media</button>
     </div>
 
@@ -436,10 +435,6 @@
         </div>
       </ng-container>
 
-      <!-- ---------- Patriot (not yet designed — see CLAUDE.md) ---------- -->
-      <div class="card" *ngIf="detailTab === 'patriot'">
-        <div class="placeholder-panel">Modul "Patriot" belum tersedia pada versi prototipe ini.</div>
-      </div>
     </ng-container>
   </ng-container>
 </ng-template>
