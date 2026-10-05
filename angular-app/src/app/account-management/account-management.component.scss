@@ -1,0 +1,28 @@
+:host { display: block; min-height: 100vh; background: var(--background); color: var(--text); }
+
+.am-nav {
+  display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1.75rem;
+  background: var(--card); border-bottom: 1px solid var(--border);
+  .back { color: var(--primary); font-weight: 600; font-size: 0.86rem; text-decoration: none; }
+  .nav-title { font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; font-size: 0.95rem; color: var(--primary); }
+}
+.am-page { padding: 1.75rem; max-width: 1280px; margin: 0 auto; }
+.search { max-width: 420px; }
+
+.am-table {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  th { white-space: nowrap; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); border-top: 0; }
+  th button { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-transform: inherit; cursor: pointer; }
+  td { vertical-align: middle; font-size: 0.86rem; color: var(--text); }
+  .role { margin: 0 0.25rem 0.25rem 0; }
+  .actions { white-space: nowrap; text-align: right; }
+}
+
+.confirm-scrim {
+  position: fixed; inset: 0; z-index: 1100; background: rgba(8, 20, 32, 0.5);
+  display: grid; place-items: center; padding: 1rem;
+}
+.confirm-box {
+  background: var(--card); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem; width: 100%; max-width: 380px;
+}

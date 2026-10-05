@@ -47,7 +47,8 @@ export class LauncherComponent {
     { id: 'dashboard', title: 'Dashboard DGT', desc: 'Peta kawasan dan dasbor eksekutif', cta: 'Buka dashboard', num: '01', route: '/dashboard', accent: 'dark' },
     { id: 'gis-dgt', title: 'GIS DGT', desc: 'Analisis spasial lanjutan peta kawasan', cta: 'Buka GIS DGT', num: '02', route: 'gis-dgt/', accent: 'blue', external: true },
     { id: 'data-manager', title: 'DGT Data Manager', desc: 'Manajemen dan pengolahan data tabel', cta: 'Buka data manager', num: '03', route: '/data-manager', accent: 'gold' },
-    { id: 'geomapping', title: 'Geomapping', desc: 'Manajemen dan pengolahan data spasial', cta: 'Buka Geomapping', num: '04', route: '/geomapping', accent: 'green' }
+    { id: 'geomapping', title: 'Geomapping', desc: 'Manajemen dan pengolahan data spasial', cta: 'Buka Geomapping', num: '04', route: '/geomapping', accent: 'green' },
+    { id: 'account-management', title: 'Account Management', desc: 'Kelola akun pengguna dan hak akses', cta: 'Buka Account Management', num: '05', route: '/account-management', accent: 'blue' }
   ];
 
   constructor(private readonly auth: AuthGateService, private readonly router: Router) {}

@@ -6,6 +6,7 @@ export const routes: Routes = [
   { path: 'dashboard', loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule) },
   { path: 'data-manager', loadChildren: () => import('./data-manager/data-manager.module').then(m => m.DataManagerModule) },
   { path: 'geomapping', loadChildren: () => import('./geomapping/geomapping.module').then(m => m.GeomappingModule) },
+  { path: 'account-management', loadChildren: () => import('./account-management/account-management.module').then(m => m.AccountManagementModule) },
   { path: '**', redirectTo: '' }
 ];
 
