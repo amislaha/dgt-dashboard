@@ -132,6 +132,7 @@
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'ekonomi'" (click)="setDetailTab('ekonomi')">Ekonomi</button>
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'sosial'" (click)="setDetailTab('sosial')">Sosial</button>
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'perencanaan'" (click)="setDetailTab('perencanaan')">Perencanaan</button>
+      <button type="button" class="subtab-btn" [class.active]="detailTab === 'fisik'" (click)="setDetailTab('fisik')">Fisik &amp; Ekologi</button>
       <button type="button" class="subtab-btn" [class.active]="detailTab === 'media'" (click)="setDetailTab('media')">Media</button>
     </div>
 
@@ -406,6 +407,23 @@
             </div>
           </div>
         </div>
+      </ng-container>
+
+      <!-- ---------- Fisik & Ekologi ---------- -->
+      <ng-container *ngIf="detailTab === 'fisik'">
+        <div class="card mb-3" *ngFor="let b of fisikFor(k)">
+          <div class="card-body">
+            <h2 class="h6 font-weight-bold mb-3">{{ b.judul }}</h2>
+            <dl class="fisik-dl">
+              <ng-container *ngFor="let f of b.fakta"><dt>{{ f.label }}</dt><dd>{{ f.value }}</dd></ng-container>
+            </dl>
+            <p class="mb-0">{{ b.ringkasan }}</p>
+          </div>
+        </div>
+        <div class="card" *ngIf="!fisikFor(k).length">
+          <div class="placeholder-panel">Belum ada data fisik &amp; ekologi untuk {{ k.nama }}.</div>
+        </div>
+        <p class="small text-muted" *ngIf="fisikFor(k).length">Sumber: Laporan Ekspedisi Patriot 2025, Output 1 (ITB), Bab 3.4 &mdash; Sumber daya alam dan kondisi lingkungan.</p>
       </ng-container>
 
       <!-- ---------- Media: Foto + Infografis ---------- -->

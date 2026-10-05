@@ -40,7 +40,75 @@ const DOKUMEN_BY_KAWASAN: { [nama: string]: Dokumen[] } = {
   }]
 };
 
-type DetailTab = 'ekonomi' | 'sosial' | 'perencanaan' | 'media';
+interface FisikFakta {
+  label: string;
+  value: string;
+}
+
+interface FisikBlok {
+  judul: string;
+  fakta: FisikFakta[];
+  ringkasan: string;
+}
+
+/** Physical & ecological profile per kawasan, keyed by kawasan name. Only Salor has one so far. */
+const FISIK_BY_KAWASAN: { [nama: string]: FisikBlok[] } = {
+  Salor: [
+    {
+      judul: 'Topografi & geografi',
+      fakta: [
+        { label: 'Ketinggian', value: '-6 hingga ±53 m dpl; selatan (Animha, Malind, Semangga, Kurik) sangat rendah dan dekat pantai' },
+        { label: 'Kelerengan', value: 'Mayoritas 0–8% (datar–landai); lebih curam di timur dan utara menuju perbukitan' },
+        { label: 'Bentang lahan', value: 'Dataran banjir (floodplain) aluvial pesisir, rawa' },
+        { label: 'Bagian tengah–utara', value: 'Jagebob dan Tanah Miring sedikit lebih tinggi, drainase alami lebih baik' }
+      ],
+      ringkasan: 'Elevasi rendah dan kemiringan sangat landai membuat genangan menjadi faktor pembatas utama bagi infrastruktur dan permukiman, namun mempermudah pembangunan serta mendukung pertanian lahan basah, perkebunan, perikanan air tawar, dan konservasi rawa. Perlu perencanaan drainase mikro.'
+    },
+    {
+      judul: 'Karakteristik tanah',
+      fakta: [
+        { label: 'Acrisol (dominan)', value: 'Kurik, Tanah Miring, Jagebob. Tanah tua, masam, hara terbatas; cocok tanaman tahunan dengan pemupukan tambahan, kurang ideal untuk pangan intensif tanpa pengolahan.' },
+        { label: 'Fluvisol', value: 'Pesisir selatan dan sepanjang alur sungai. Tanah muda hasil sedimentasi, lebih subur; potensial untuk lahan basah, hortikultura, dan permukiman bila drainase ditingkatkan.' },
+        { label: 'Histosol', value: 'Rawa dan lahan gambut di tengah dan timur. Bahan organik tinggi tetapi tidak stabil, rawan amblas dan terbakar bila dikeringkan; sebaiknya zona konservasi atau pertanian basah.' }
+      ],
+      ringkasan: 'Kesesuaian lahan sangat bervariasi menurut jenis tanah: Acrisol perlu pengelolaan intensif, Fluvisol paling potensial untuk budidaya dan permukiman, Histosol lebih tepat dilindungi.'
+    },
+    {
+      judul: 'Hidrologi & sumber daya air',
+      fakta: [
+        { label: 'Bahaya banjir', value: 'Tertinggi di selatan dan barat: Semangga, Kurik, Malind, sebagian Tanah Miring; mengikuti alur sungai dan dataran banjir' },
+        { label: 'Penyebab', value: 'Topografi datar, jaringan sungai padat berkapasitas alir terbatas, tanah lempung lunak berinfiltrasi rendah, pengaruh pasang surut di pesisir' },
+        { label: 'Daya dukung air', value: 'Sebagian besar wilayah belum melampaui daya dukung dan daya tampung air (Jagebob, Animha, Tanah Miring utara)' },
+        { label: 'Tekanan air tinggi', value: 'Selatan dan barat (Semangga, Malind, Kurik) telah melampaui daya dukung dan daya tampung air' }
+      ],
+      ringkasan: 'Tekanan air di selatan dan barat dikaitkan dengan permukiman, intensifikasi pertanian lahan basah, irigasi besar, dan perubahan tutupan lahan. Risiko kekeringan umumnya rendah–menengah, dan rawa dataran rendah menahan lembap lebih lama.'
+    },
+    {
+      judul: 'Iklim',
+      fakta: [
+        { label: 'Tipe', value: 'Monsun tropis (pergantian angin musiman Asia–Australia)' },
+        { label: 'Musim hujan', value: 'November–April, puncak Januari–Maret' },
+        { label: 'Musim kering', value: 'Juni–September, presipitasi sangat rendah di seluruh distrik' },
+        { label: 'Sebaran hujan', value: 'Barat dan pesisir (Malind, Semangga) lebih basah; utara dan timur (Animha, Jagebob) cenderung lebih kering' },
+        { label: 'Suhu', value: 'Suhu minimum turun pada puncak kemarau (Juni–Agustus); suhu maksimum naik tajam September–November, terutama di Semangga, Malind, Kurik' }
+      ],
+      ringkasan: 'Pola iklim teratur dan dapat diprediksi, dipengaruhi monsun, konveksi pesisir Laut Arafura, dan ENSO. Hujan awal tahun mendukung pertanian dan pengisian air tanah tetapi menambah risiko genangan; pemanasan menjelang musim hujan meningkatkan kerentanan kekeringan dan kebakaran lahan.'
+    },
+    {
+      judul: 'Komposisi tutupan lahan (2017–2024)',
+      fakta: [
+        { label: 'Hutan', value: 'Dominan, sekitar 48–49 ribu ha; menurun terutama pada 2018 dan 2023' },
+        { label: 'Padang rumput / semak', value: 'Meningkat, hasil degradasi hutan' },
+        { label: 'Lahan pertanian', value: 'Naik perlahan dan konsisten' },
+        { label: 'Area terbangun', value: 'Naik perlahan dan konsisten' },
+        { label: 'Vegetasi tergenang', value: 'Berfluktuasi tajam (turun di awal periode, naik 2021–2022, turun lagi)' }
+      ],
+      ringkasan: 'Pola konversi dari hutan ke semak, pertanian, dan area terbangun. Arahan pengelolaan: lindungi blok hutan yang masih utuh, karena penurunan tutupan hutan berisiko mengurangi simpanan karbon, penyangga banjir, dan penahan erosi.'
+    }
+  ]
+};
+
+type DetailTab = 'ekonomi' | 'sosial' | 'perencanaan' | 'fisik' | 'media';
 
 /** Literal hex (not CSS vars) so each legend row can derive its own tint by appending an alpha
  *  byte — see `LegendRow.bg`. Palette from the "Design system colors updated" bundle. */
@@ -70,7 +138,7 @@ export interface LegendRow {
 
 /** Ports `renderProfil()` (legacy-static/dashboard/index.html) — "Data Induk & Profil Kawasan":
  *  a searchable/filterable landing list plus a per-kawasan drill-down with Ekonomi/Sosial/
- *  Perencanaan/Media tabs. See profilDetailData() in dashboard-data.service.ts for how the
+ *  Perencanaan/Fisik & Ekologi/Media tabs. See profilDetailData() in dashboard-data.service.ts for how the
  *  detail page's numbers are derived. */
 @Component({
   selector: 'dgt-profil',
@@ -221,6 +289,10 @@ export class ProfilComponent implements OnInit {
 
   /** Placeholder photos shown for every kawasan until real per-kawasan photos are uploaded. */
   readonly fotoPlaceholder = ['assets/galeri/foto-1.jpg', 'assets/galeri/foto-2.jpg', 'assets/galeri/foto-3.jpg'];
+
+  fisikFor(k: Kawasan): FisikBlok[] {
+    return FISIK_BY_KAWASAN[k.nama] || [];
+  }
 
   dokumenFor(k: Kawasan): Dokumen[] {
     return DOKUMEN_BY_KAWASAN[k.nama] || [];
