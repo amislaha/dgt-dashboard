@@ -8,12 +8,14 @@ import {
   Province,
   STAGES,
   STAGE_COLOR_HEX,
+  STATUS_HPL,
+  StatusHpl,
   seededRandom
 } from '../../services/dashboard-data.service';
 import { EwsAlert, EwsSeverity, EwsService } from '../../services/ews.service';
 import { KawasanMapComponent } from './kawasan-map.component';
 
-type HplStatus = 'Semua' | 'Penuh' | 'Sebagian' | 'Belum';
+type HplStatus = 'Semua' | StatusHpl;
 
 /**
  * Geospasial landing module, laid out after the "DGT DASHBOARD" reference screenshot: a full-bleed
@@ -27,7 +29,7 @@ type HplStatus = 'Semua' | 'Penuh' | 'Sebagian' | 'Belum';
  * summary figures are derived from `nationalKPI`/`kawasan` with fixed ratios, and the popup's SK
  * HPL / Sertifikat lines are derived per kawasan from a seeded hash, so they stay stable between
  * renders but are not real land-registry values. Kawasan types are the real two (SKP/KPB); the
- * "status HPL" filter buckets each kawasan by its SHM-certified share of HPL.
+ * "status HPL" filter uses each kawasan's `statusHpl` (derived from its SHM-certified share of HPL).
  */
 @Component({
   selector: 'dgt-geospasial',
@@ -69,6 +71,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
 
   layerSearchQuery = '';
   typeFilter: 'Semua' | 'SKP' | 'KPB' = 'Semua';
+  readonly statusHplOptions = STATUS_HPL;
   hplStatusFilter: HplStatus = 'Semua';
 
   /** Per-kawasan checkbox/expand/overlay state, keyed by kawasan id. Everything starts checked and
@@ -151,7 +154,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     return this.kawasan.filter(
       k =>
         (this.typeFilter === 'Semua' || k.tipe === this.typeFilter) &&
-        (this.hplStatusFilter === 'Semua' || this.hplStatusOf(k) === this.hplStatusFilter) &&
+        (this.hplStatusFilter === 'Semua' || k.statusHpl === this.hplStatusFilter) &&
         (!this.selectedProvinsi || k.provinsi === this.selectedProvinsi) &&
         (!q || k.nama.toLowerCase().includes(q) || k.provinsi.toLowerCase().includes(q) || k.kabupaten.toLowerCase().includes(q))
     );

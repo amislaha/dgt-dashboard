@@ -11,6 +11,12 @@ import { Injectable } from '@angular/core';
 export type Tahap = 'Rintisan' | 'Tumbuh' | 'Berkembang' | 'Mandiri';
 export type Risiko = 'low' | 'med' | 'high';
 
+/** Status legalitas lahan (HPL/SHM) — the options of the "Semua status" filter on Geospasial and Profil. */
+export const STATUS_HPL = [
+  'Ada SK HPL', 'Bersertifikat HPL', 'Terinventarisasi Ulang', 'Tervaluasi HPL', 'Tersertifikat SHM'
+] as const;
+export type StatusHpl = typeof STATUS_HPL[number];
+
 export interface Kawasan {
   id: string;
   nama: string;
@@ -24,6 +30,8 @@ export interface Kawasan {
   indeks5t: number;
   hplHa: number;
   shmHa: number;
+  /** Land-legality status; derived from the SHM share of HPL so it agrees with `shmHa`/`hplHa`. */
+  statusHpl: StatusHpl;
   anggaranPct: number;
   risiko: Risiko;
   lat: number;
@@ -290,19 +298,30 @@ function deriveKawasan(seed: KawasanSeed): Kawasan {
     t === 2 ? (riskRoll < 0.6 ? 'low' : 'med') :
     riskRoll < 0.85 ? 'low' : 'med';
 
+  const kecamatan = 2 + Math.round(rnd() * 7);
+  const desa = 3 + Math.round(rnd() * 12);
+  // Drawn after every other field so adding it doesn't shift any existing kawasan's numbers.
+  const statusRoll = rnd();
+  const statusHpl: StatusHpl =
+    shmShare >= 0.7 ? 'Tersertifikat SHM' :
+    shmShare >= 0.5 ? 'Bersertifikat HPL' :
+    shmShare >= 0.3 ? (statusRoll < 0.5 ? 'Tervaluasi HPL' : 'Terinventarisasi Ulang') :
+    (statusRoll < 0.5 ? 'Ada SK HPL' : 'Terinventarisasi Ulang');
+
   return {
     id: seed.id,
     nama: seed.nama,
     provinsi: seed.provinsi,
     kabupaten: seed.kabupaten,
-    kecamatan: 2 + Math.round(rnd() * 7),
-    desa: 3 + Math.round(rnd() * 12),
+    kecamatan,
+    desa,
     tipe: seed.kpb ? 'KPB' : 'SKP',
     tahap,
     populasi,
     indeks5t,
     hplHa,
     shmHa,
+    statusHpl,
     anggaranPct,
     risiko,
     lat: seed.lat,

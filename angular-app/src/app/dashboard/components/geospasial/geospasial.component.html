@@ -110,10 +110,8 @@
           <option value="KPB">KPB</option>
         </select>
         <select class="geo-select" aria-label="Filter status HPL" [(ngModel)]="hplStatusFilter">
-          <option value="Semua">Semua status HPL</option>
-          <option value="Penuh">Bersertifikat (&ge; 70%)</option>
-          <option value="Sebagian">Sebagian (40&ndash;69%)</option>
-          <option value="Belum">Belum (&lt; 40%)</option>
+          <option value="Semua">Semua status</option>
+          <option *ngFor="let s of statusHplOptions" [value]="s">{{ s }}</option>
         </select>
       </div>
 

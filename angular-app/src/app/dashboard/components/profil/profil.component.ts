@@ -12,6 +12,7 @@ import {
   STAGE_BADGE_CLASS,
   STAGE_COLOR_HEX,
   STAGES,
+  STATUS_HPL,
   Tahap
 } from '../../services/dashboard-data.service';
 import { DonutSegment } from '../../../shared/components/charts/chart.model';
@@ -58,12 +59,14 @@ export class ProfilComponent implements OnInit {
   provinces: Province[] = [];
   nationalKPI!: NationalKPI;
   readonly stages = STAGES;
+  readonly statusHplOptions = STATUS_HPL;
   readonly stageBadgeClass = STAGE_BADGE_CLASS;
 
   // landing view state
   view: 'list' | 'detail' = 'list';
   areaFilter = 'Semua';
   statusFilter = 'Semua';
+  statusHplFilter = 'Semua';
   search = '';
   intransSegments: DonutSegment[] = [];
   intransCounts: { [key: string]: number } = {};
@@ -103,6 +106,9 @@ export class ProfilComponent implements OnInit {
         return false;
       }
       if (this.statusFilter !== 'Semua' && k.tahap !== this.statusFilter) {
+        return false;
+      }
+      if (this.statusHplFilter !== 'Semua' && k.statusHpl !== this.statusHplFilter) {
         return false;
       }
       if (q) {

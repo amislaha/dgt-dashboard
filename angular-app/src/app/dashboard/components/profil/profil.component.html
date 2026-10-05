@@ -81,22 +81,27 @@
         <option *ngFor="let p of provinces" [value]="p.nama">{{ p.nama }}</option>
       </select>
       <select class="form-control form-control-sm" style="max-width: 180px" [(ngModel)]="statusFilter">
-        <option value="Semua">Semua status</option>
+        <option value="Semua">Semua tahap</option>
         <option *ngFor="let s of stages" [value]="s">{{ s }}</option>
+      </select>
+      <select class="form-control form-control-sm" style="max-width: 200px" [(ngModel)]="statusHplFilter" aria-label="Filter status HPL">
+        <option value="Semua">Semua status</option>
+        <option *ngFor="let s of statusHplOptions" [value]="s">{{ s }}</option>
       </select>
     </div>
     <div class="table-responsive">
       <table class="table mb-0">
-        <thead><tr><th>Detail Kawasan</th><th>Kabupaten</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Detail Kawasan</th><th>Kabupaten</th><th>Tahap</th><th>Status HPL</th><th></th></tr></thead>
         <tbody>
           <tr *ngFor="let k of filteredRows">
             <td><b>{{ k.nama }}</b><div class="small text-muted">{{ rowSubLabel(k) }}</div></td>
             <td>{{ k.kabupaten }}</td>
             <td><span class="badge" [ngClass]="'badge-stage-' + stageBadgeClass[k.tahap]">{{ k.tahap }}</span></td>
+            <td>{{ k.statusHpl }}</td>
             <td class="text-right"><button type="button" class="btn btn-sm btn-primary" (click)="openDetail(k.id)">Lihat detail</button></td>
           </tr>
           <tr *ngIf="filteredRows.length === 0">
-            <td colspan="4" class="text-center text-muted py-4">Tidak ada kawasan yang cocok dengan filter.</td>
+            <td colspan="5" class="text-center text-muted py-4">Tidak ada kawasan yang cocok dengan filter.</td>
           </tr>
         </tbody>
       </table>
@@ -224,6 +229,7 @@
               <div class="investasi-desc-head">Deskripsi kawasan</div>
               <div class="investasi-desc-body">
                 <div class="investasi-desc-row"><span class="lbl">Luas kawasan</span><b>{{ d.luasHa | number:'1.0-0' }} ha</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Status HPL</span><b>{{ k.statusHpl }}</b></div>
                 <div class="investasi-desc-row"><span class="lbl">Jumlah desa dalam kawasan</span><b>{{ k.desa }}</b></div>
                 <div class="investasi-desc-row"><span class="lbl">Total penduduk</span><b>{{ d.pendudukJiwa | number:'1.0-0' }} jiwa</b></div>
                 <div class="investasi-desc-row"><span class="lbl">Pendapatan per kapita</span><b>Rp {{ d.pendapatanPerKapita | number:'1.0-0' }}/kapita/bulan</b></div>
