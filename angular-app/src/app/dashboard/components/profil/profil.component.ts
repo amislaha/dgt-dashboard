@@ -219,6 +219,9 @@ export class ProfilComponent implements OnInit {
     this.detailTab = tab;
   }
 
+  /** Placeholder photos shown for every kawasan until real per-kawasan photos are uploaded. */
+  readonly fotoPlaceholder = ['assets/galeri/foto-1.jpg', 'assets/galeri/foto-2.jpg', 'assets/galeri/foto-3.jpg'];
+
   dokumenFor(k: Kawasan): Dokumen[] {
     return DOKUMEN_BY_KAWASAN[k.nama] || [];
   }

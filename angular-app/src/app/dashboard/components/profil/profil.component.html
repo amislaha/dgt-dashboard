@@ -414,8 +414,9 @@
           <div class="card-body">
             <h2 class="h6 font-weight-bold mb-3">Foto</h2>
             <div class="media-grid">
-              <button type="button" class="media-thumb" (click)="openLightbox('assets/hero-kawasan.jpg', 'Foto ' + k.nama)">
-                <img src="assets/hero-kawasan.jpg" alt="Foto {{ k.nama }}" />
+              <button type="button" class="media-thumb" *ngFor="let f of fotoPlaceholder; let i = index"
+                      (click)="openLightbox(f, 'Foto ' + (i + 1) + ' ' + k.nama)">
+                <img [src]="f" [alt]="'Foto ' + (i + 1) + ' ' + k.nama" />
               </button>
             </div>
             <p class="small text-muted mt-2 mb-0">Foto placeholder &mdash; foto asli per kawasan belum diunggah.</p>
