@@ -144,11 +144,6 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     return Math.round((k.shmHa / k.hplHa) * 100);
   }
 
-  private hplStatusOf(k: Kawasan): Exclude<HplStatus, 'Semua'> {
-    const p = this.legalPct(k);
-    return p >= 70 ? 'Penuh' : p >= 40 ? 'Sebagian' : 'Belum';
-  }
-
   get kawasanRows(): Kawasan[] {
     const q = this.layerSearchQuery.trim().toLowerCase();
     return this.kawasan.filter(
