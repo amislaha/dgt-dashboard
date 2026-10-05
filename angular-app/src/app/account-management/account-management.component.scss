@@ -8,6 +8,7 @@
   td { vertical-align: middle; font-size: 0.86rem; color: var(--text); }
   .role { margin: 0 0.25rem 0.25rem 0; }
   .actions { white-space: nowrap; text-align: right; }
+  .actions > * + * { margin-left: 0.6rem; }
 }
 
 .confirm-scrim {
@@ -19,4 +20,4 @@
   border-radius: var(--radius); padding: 1.25rem; width: 100%; max-width: 380px;
 }
 
-.am-form { max-width: 560px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+.am-form { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
