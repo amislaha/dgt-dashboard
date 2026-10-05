@@ -1,12 +1,14 @@
 <header class="am-nav">
-  <a routerLink="/" class="back">← Beranda</a>
+  <a routerLink="/" class="brand" aria-label="Beranda DGT">
+    <img src="assets/logo-emblem.png" alt="Lambang Kementerian Transmigrasi">
+  </a>
   <span class="nav-title">Account Management</span>
   <dgt-theme-toggle class="ml-auto"></dgt-theme-toggle>
 </header>
 
 <main class="am-page">
   <dgt-page-head title="Users" description="Kelola akun pengguna dan profil akses (role) DGT.">
-    <button type="button" class="btn btn-primary" (click)="openDrawer('create')">+ Buat pengguna baru</button>
+    <a routerLink="/account-management/new" class="btn btn-primary">+ Buat pengguna baru</a>
   </dgt-page-head>
 
   <div class="input-group search mb-3">
@@ -39,8 +41,8 @@
           <td>{{ a.modifiedBy }}</td>
           <td>{{ a.modifiedDate | date:'dd/MM/yy HH:mm' }}</td>
           <td class="actions">
-            <button type="button" class="btn btn-sm btn-info" (click)="openDrawer('view', a)">Lihat</button>
-            <button type="button" class="btn btn-sm btn-primary" (click)="openDrawer('edit', a)">Ubah</button>
+            <a [routerLink]="[a.id]" class="btn btn-sm btn-info">Lihat</a>
+            <a [routerLink]="[a.id, 'edit']" class="btn btn-sm btn-primary">Ubah</a>
             <button type="button" class="btn btn-sm btn-danger" (click)="pendingDelete = a">Hapus</button>
           </td>
         </tr>
@@ -49,48 +51,6 @@
     </table>
   </div>
 </main>
-
-<dgt-drawer [open]="drawerOpen" [title]="drawerTitle" (closed)="drawerOpen = false">
-  <form id="accountForm" (ngSubmit)="submit()" novalidate>
-    <div class="form-group">
-      <label for="amLogin">Login</label>
-      <input id="amLogin" name="login" class="form-control" [class.is-invalid]="errors.login" [(ngModel)]="form.login" [disabled]="mode === 'view'">
-      <div class="invalid-feedback">{{ errors.login }}</div>
-    </div>
-    <div class="form-group">
-      <label for="amEmail">Email</label>
-      <input id="amEmail" name="email" type="email" class="form-control" [class.is-invalid]="errors.email" [(ngModel)]="form.email" [disabled]="mode === 'view'">
-      <div class="invalid-feedback">{{ errors.email }}</div>
-    </div>
-    <div class="form-group" *ngIf="mode === 'create'">
-      <label for="amPass">Kata sandi</label>
-      <input id="amPass" name="password" type="password" class="form-control" [class.is-invalid]="errors.password" [(ngModel)]="password" autocomplete="new-password">
-      <div class="invalid-feedback">{{ errors.password }}</div>
-    </div>
-    <div class="form-group">
-      <label for="amLang">Bahasa</label>
-      <select id="amLang" name="language" class="form-control" [(ngModel)]="form.language" [disabled]="mode === 'view'">
-        <option value="id">Indonesia (id)</option>
-        <option value="en">English (en)</option>
-      </select>
-    </div>
-    <div class="custom-control custom-switch mb-3">
-      <input type="checkbox" class="custom-control-input" id="amActive" name="activated" [(ngModel)]="form.activated" [disabled]="mode === 'view'">
-      <label class="custom-control-label" for="amActive">Akun aktif</label>
-    </div>
-    <fieldset class="form-group">
-      <legend class="col-form-label">Profil (role)</legend>
-      <div class="custom-control custom-checkbox" *ngFor="let r of roles">
-        <input type="checkbox" class="custom-control-input" [id]="'role-' + r" [checked]="hasRole(r)" [disabled]="mode === 'view'" (change)="toggleRole(r)">
-        <label class="custom-control-label" [for]="'role-' + r">{{ r }}</label>
-      </div>
-    </fieldset>
-  </form>
-  <div drawer-footer class="d-flex justify-content-end">
-    <button type="button" class="btn btn-outline-secondary mr-2" (click)="drawerOpen = false">{{ mode === 'view' ? 'Tutup' : 'Batal' }}</button>
-    <button type="submit" form="accountForm" class="btn btn-primary" *ngIf="mode !== 'view'">Simpan</button>
-  </div>
-</dgt-drawer>
 
 <div class="confirm-scrim" *ngIf="pendingDelete" (click)="pendingDelete = null">
   <div class="confirm-box" role="alertdialog" (click)="$event.stopPropagation()">
