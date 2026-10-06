@@ -12,6 +12,8 @@ import { Program } from '../models/program.model';
 import { Satker } from '../models/satker.model';
 import { Skp } from '../models/skp.model';
 import { Sp } from '../models/sp.model';
+import { ProdukWilayah } from '../models/produk-wilayah.model';
+import { ProfilWilayah } from '../models/profil-wilayah.model';
 import { Wpt } from '../models/wpt.model';
 
 /**
@@ -300,6 +302,63 @@ const PROFIL_GROUP_CONFIG = lookupConfig<ProfilGroup>(
   [{ name: 'categoryId', label: 'Profil Category', type: 'fk', required: true, fkEntity: 'profilCategory' }],
   [{ key: 'categoryId', label: 'Kategori', fk: 'profilCategory' }]
 );
+/** Profil indicator values per Wilayah (template sheet "Profil"). */
+const PROFIL_WILAYAH_CONFIG: EntityConfig<ProfilWilayah> = {
+  key: 'profilWilayah',
+  label: 'Profil Wilayah',
+  sub: 'Nilai indikator profil per wilayah: kategori, sub kategori, indikator, nilai, satuan',
+  idPrefix: 'pfw',
+  titleField: 'measureId',
+  columns: [
+    { key: 'wilayahId', label: 'Wilayah', fk: 'wpt', sortable: true },
+    { key: 'categoryId', label: 'Kategori Profil', fk: 'profilCategory', sortable: true },
+    { key: 'groupId', label: 'Sub Kategori', fk: 'profilGroup', sortable: true },
+    { key: 'measureId', label: 'Indikator', fk: 'profilMeasure', sortable: true },
+    { key: 'nilai', label: 'Nilai', numeric: true, sortable: true },
+    { key: 'satuan', label: 'Satuan', sortable: true },
+    { key: 'keterangan', label: 'Keterangan', sortable: true }
+  ],
+  fields: [
+    { name: 'wilayahId', label: 'Wilayah (ID Wilayah)', type: 'fk', required: true, fkEntity: 'wpt' },
+    { name: 'categoryId', label: 'Kategori Profil', type: 'fk', required: true, fkEntity: 'profilCategory', row: 'cat' },
+    { name: 'groupId', label: 'Sub Kategori', type: 'fk', required: true, fkEntity: 'profilGroup', row: 'cat' },
+    { name: 'measureId', label: 'Indikator', type: 'fk', required: true, fkEntity: 'profilMeasure' },
+    DECIMAL('nilai', 'Nilai', { row: 'val', step: 0.01 }),
+    { name: 'satuan', label: 'Satuan', type: 'text', required: false, row: 'val', placeholder: 'cth. jiwa, ha, unit' },
+    { name: 'keterangan', label: 'Keterangan', type: 'text', required: false, hint: 'Sub-dimensi indikator yang berulang, mis. jenis mata pencaharian, komoditas, atau sektor.' }
+  ]
+};
+
+/** Leading products per Wilayah (template sheet "Produk"). */
+const PRODUK_WILAYAH_CONFIG: EntityConfig<ProdukWilayah> = {
+  key: 'produkWilayah',
+  label: 'Produk Wilayah',
+  sub: 'Produk unggulan per wilayah: tahun, sektor, komoditas, luas, produksi',
+  idPrefix: 'pdw',
+  titleField: 'komoditiId',
+  columns: [
+    { key: 'wilayahId', label: 'Wilayah', fk: 'wpt', sortable: true },
+    { key: 'tahun', label: 'Tahun', sortable: true },
+    { key: 'sektorId', label: 'Sektor', fk: 'produkJenis', sortable: true },
+    { key: 'komoditiId', label: 'Komoditas', fk: 'komoditi', sortable: true },
+    { key: 'luasArea', label: 'Luas Area', numeric: true, sortable: true },
+    { key: 'satuanLuas', label: 'Satuan Luas', sortable: true },
+    { key: 'produksi', label: 'Produksi', numeric: true, sortable: true },
+    { key: 'satuanProduksi', label: 'Satuan Produksi', sortable: true }
+  ],
+  fields: [
+    { name: 'wilayahId', label: 'Wilayah (ID Wilayah)', type: 'fk', required: true, fkEntity: 'wpt' },
+    { name: 'tahun', label: 'Tahun', type: 'text', required: true, placeholder: 'cth. 2025', hint: 'Teks 4 digit.', row: 'tk' },
+    { name: 'sektorId', label: 'Sektor', type: 'fk', required: true, fkEntity: 'produkJenis', row: 'tk' },
+    { name: 'komoditiId', label: 'Komoditas', type: 'fk', required: true, fkEntity: 'komoditi' },
+    DECIMAL('luasArea', 'Luas Area', { row: 'luas' }),
+    { name: 'satuanLuas', label: 'Satuan Luas', type: 'select', required: false, options: ['HA'], row: 'luas' },
+    DECIMAL('produksi', 'Produksi', { row: 'prod' }),
+    { name: 'satuanProduksi', label: 'Satuan Produksi', type: 'select', required: false, options: ['TON', 'KG', 'EKOR'], row: 'prod' },
+    { name: 'keterangan', label: 'Keterangan', type: 'textarea', required: false }
+  ]
+};
+
 const RECOMMENDATION_CATEGORY_CONFIG = lookupConfig<RecommendationCategory>(
   'recommendationCategory', 'Recommendation Category', 'Kategori rekomendasi kebijakan per tipe satker (tabel recommendation_category)', 'rec',
   [{ name: 'satkerTypeId', label: 'Satker Type', type: 'fk', required: true, fkEntity: 'satkerType' }],
@@ -531,7 +590,9 @@ export const ENTITY_CONFIGS: { [key in EntityKey]: EntityConfig } = {
   profilGroup: PROFIL_GROUP_CONFIG,
   profilMeasure: PROFIL_MEASURE_CONFIG,
   applicationSettings: APPLICATION_SETTINGS_CONFIG,
-  approvalFlow: APPROVAL_FLOW_CONFIG
+  approvalFlow: APPROVAL_FLOW_CONFIG,
+  profilWilayah: PROFIL_WILAYAH_CONFIG,
+  produkWilayah: PRODUK_WILAYAH_CONFIG
 };
 
 /**

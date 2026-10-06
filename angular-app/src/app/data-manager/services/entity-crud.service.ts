@@ -51,7 +51,7 @@ export abstract class EntityCrudService<T extends { id: string }> {
   /** Reactive stream of the full current list — subscribe instead of polling `list()`. */
   readonly changes: Observable<T[]>;
 
-  protected constructor(private readonly storageKey: string, seed: T[], private readonly idPrefix: string) {
+  protected constructor(private readonly storageKey: string, seed: T[], private readonly idPrefix: string, private readonly reseedWhenEmpty = false) {
     this.itemsSubject = new BehaviorSubject<T[]>(this.loadInitial(seed));
     this.changes = this.itemsSubject.asObservable();
   }
@@ -109,7 +109,11 @@ export abstract class EntityCrudService<T extends { id: string }> {
     try {
       const raw = localStorage.getItem(STORAGE_PREFIX + this.storageKey);
       if (raw) {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        // A table that used to ship empty and now has seed rows: treat a persisted empty list as never filled.
+        if (!(this.reseedWhenEmpty && Array.isArray(parsed) && parsed.length === 0 && seed.length > 0)) {
+          return parsed;
+        }
       }
     } catch (e) {
       // fall through to seed, matching the original's loadEntity() behaviour

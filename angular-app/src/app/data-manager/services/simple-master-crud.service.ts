@@ -3,6 +3,7 @@ import {
   ApplicationSetting, ApprovalFlow, IkuDefinition, IkuNko, IkuStatus, ProdukJenis, ProfilCategory, ProfilGroup, ProfilMeasure,
   Project, RecommendationCategory, SatkerType, StrategicTarget, WilayahCategory, WilayahStatus, WilayahTarget
 } from '../models/erd-master.model';
+import { PRODUK_JENIS_SEED, PROFIL_CATEGORY_SEED, PROFIL_GROUP_SEED, PROFIL_MEASURE_SEED, WILAYAH_STATUS_SEED } from '../data/profil-master.defs';
 import { EntityCrudService } from './entity-crud.service';
 
 /**
@@ -15,7 +16,7 @@ import { EntityCrudService } from './entity-crud.service';
 @Injectable({ providedIn: 'root' })
 export class WilayahStatusCrudService extends EntityCrudService<WilayahStatus> {
   constructor() {
-    super('wilayahStatus', [], 'wst');
+    super('wilayahStatus', WILAYAH_STATUS_SEED, 'wst', true);
   }
 }
 
@@ -78,7 +79,7 @@ export class IkuStatusCrudService extends EntityCrudService<IkuStatus> {
 @Injectable({ providedIn: 'root' })
 export class ProdukJenisCrudService extends EntityCrudService<ProdukJenis> {
   constructor() {
-    super('produkJenis', [], 'pdj');
+    super('produkJenis', PRODUK_JENIS_SEED, 'pdj', true);
   }
 }
 
@@ -92,21 +93,21 @@ export class RecommendationCategoryCrudService extends EntityCrudService<Recomme
 @Injectable({ providedIn: 'root' })
 export class ProfilCategoryCrudService extends EntityCrudService<ProfilCategory> {
   constructor() {
-    super('profilCategory', [], 'pfc');
+    super('profilCategory', PROFIL_CATEGORY_SEED, 'pfc', true);
   }
 }
 
 @Injectable({ providedIn: 'root' })
 export class ProfilGroupCrudService extends EntityCrudService<ProfilGroup> {
   constructor() {
-    super('profilGroup', [], 'pfg');
+    super('profilGroup', PROFIL_GROUP_SEED, 'pfg', true);
   }
 }
 
 @Injectable({ providedIn: 'root' })
 export class ProfilMeasureCrudService extends EntityCrudService<ProfilMeasure> {
   constructor() {
-    super('profilMeasure', [], 'pfm');
+    super('profilMeasure', PROFIL_MEASURE_SEED, 'pfm', true);
   }
 }
 

@@ -6,6 +6,7 @@ import { EntityCrudService } from './entity-crud.service';
 import { IkuCrudService } from './iku-crud.service';
 import { KomoditiCrudService } from './komoditi-crud.service';
 import { PersonelCrudService } from './personel-crud.service';
+import { ProdukWilayahCrudService, ProfilWilayahCrudService } from './profil-wilayah-crud.service';
 import { ProgramCrudService } from './program-crud.service';
 import { SatkerCrudService } from './satker-crud.service';
 import {
@@ -80,7 +81,9 @@ export class EntityRegistryService {
     profilGroup: ProfilGroupCrudService,
     profilMeasure: ProfilMeasureCrudService,
     applicationSettings: ApplicationSettingsCrudService,
-    approvalFlow: ApprovalFlowCrudService
+    approvalFlow: ApprovalFlowCrudService,
+    profilWilayah: ProfilWilayahCrudService,
+    produkWilayah: ProdukWilayahCrudService
   ) {
     this.registry = {
       wpt: { config: ENTITY_CONFIGS.wpt, service: wpt },
@@ -106,7 +109,9 @@ export class EntityRegistryService {
       profilGroup: { config: ENTITY_CONFIGS.profilGroup, service: profilGroup },
       profilMeasure: { config: ENTITY_CONFIGS.profilMeasure, service: profilMeasure },
       applicationSettings: { config: ENTITY_CONFIGS.applicationSettings, service: applicationSettings },
-      approvalFlow: { config: ENTITY_CONFIGS.approvalFlow, service: approvalFlow }
+      approvalFlow: { config: ENTITY_CONFIGS.approvalFlow, service: approvalFlow },
+      profilWilayah: { config: ENTITY_CONFIGS.profilWilayah, service: profilWilayah },
+      produkWilayah: { config: ENTITY_CONFIGS.produkWilayah, service: produkWilayah }
     };
   }
 
