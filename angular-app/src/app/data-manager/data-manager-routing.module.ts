@@ -6,7 +6,7 @@ import { SubmissionHubComponent } from './submission-hub/submission-hub.componen
 import { WilayahComponent } from './wilayah/wilayah.component';
 
 /**
- * One route per entity (25 of the 26 `EntityKey`s — `wpt` is served by `WilayahComponent`
+ * One route per entity (23 of the 24 `EntityKey`s — `wpt` is served by `WilayahComponent`
  * instead, see below), all rendered by the same generic `EntityListComponent` distinguished by
  * `data.entityKey` — not one routed component per entity. Default route redirects to `wilayah`,
  * the header nav's landing page (moved here from `wpt` on request — see PORT_NOTES.md).
@@ -50,8 +50,6 @@ export const routes: Routes = [
       { path: 'profilMeasure', component: EntityListComponent, data: { entityKey: 'profilMeasure' } },
       { path: 'applicationSettings', component: EntityListComponent, data: { entityKey: 'applicationSettings' } },
       { path: 'approvalFlow', component: EntityListComponent, data: { entityKey: 'approvalFlow' } },
-      { path: 'profilWilayah', component: EntityListComponent, data: { entityKey: 'profilWilayah' } },
-      { path: 'produkWilayah', component: EntityListComponent, data: { entityKey: 'produkWilayah' } },
       // "Submission & Approval" — a single header item covering what used to be two rail entries
       // (Pengajuan Data, Approval); `data.navId` (not `entityKey`) is what
       // DataManagerShellComponent matches against, same as `wilayah` above.

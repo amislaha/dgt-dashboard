@@ -105,6 +105,24 @@ export abstract class EntityCrudService<T extends { id: string }> {
     return this.idPrefix + (max + 1);
   }
 
+  /**
+   * Runs `fn` over the stored list exactly once per browser (guarded by a localStorage flag) and
+   * persists the result. Used to bring data saved by an earlier version up to date — e.g. fill
+   * newly added fields from the seed — without wiping what the user already edited.
+   */
+  protected migrateOnce(flag: string, fn: (items: T[]) => T[]): void {
+    const key = STORAGE_PREFIX + 'migrated:' + this.storageKey + ':' + flag;
+    try {
+      if (localStorage.getItem(key)) {
+        return;
+      }
+      this.persist(fn(this.itemsSubject.value));
+      localStorage.setItem(key, '1');
+    } catch (e) {
+      console.error(`EntityCrudService(${this.storageKey}): migration "${flag}" failed`, e);
+    }
+  }
+
   private loadInitial(seed: T[]): T[] {
     try {
       const raw = localStorage.getItem(STORAGE_PREFIX + this.storageKey);

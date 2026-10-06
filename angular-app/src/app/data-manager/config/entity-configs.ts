@@ -12,8 +12,6 @@ import { Program } from '../models/program.model';
 import { Satker } from '../models/satker.model';
 import { Skp } from '../models/skp.model';
 import { Sp } from '../models/sp.model';
-import { ProdukWilayah } from '../models/produk-wilayah.model';
-import { ProfilWilayah } from '../models/profil-wilayah.model';
 import { Wpt } from '../models/wpt.model';
 
 /**
@@ -79,10 +77,10 @@ const WPT_CONFIG: EntityConfig<Wpt> = {
     { name: 'shmTerbit', label: 'SHM Terbit', type: 'number', required: false, min: 0, step: 1, row: 'shm1' },
     { name: 'shmBelumTerbit', label: 'SHM Belum Terbit', type: 'number', required: false, min: 0, step: 1, row: 'shm2' },
     DECIMAL('shmPersentase', 'SHM Persentase (%)', { row: 'shm2' }),
-    { name: 'programId', label: 'Program (Jenis Transmigrasi)', type: 'fk', required: false, fkEntity: 'program', section: 'Program & Komoditas', row: 'prog' },
+    DECIMAL('luasHplHa', 'Luas HPL (ha)', { min: 0, row: 'luasleg' }),
+    DECIMAL('luasShmHa', 'Luas SHM (ha)', { min: 0, row: 'luasleg' }),
+    { name: 'programId', label: 'Program (Jenis Transmigrasi)', type: 'fk', required: false, fkEntity: 'program', section: 'Program & Kawasan', row: 'prog' },
     { name: 'satkerId', label: 'Satker Penanggung Jawab', type: 'fk', required: false, fkEntity: 'satker', row: 'prog' },
-    { name: 'komoditiUnggulanId', label: 'Komoditi Unggulan', type: 'fk', required: false, fkEntity: 'komoditi', row: 'kom' },
-    { name: 'komoditiPendukungId', label: 'Komoditi Pendukung', type: 'fk', required: false, fkEntity: 'komoditi', row: 'kom' },
     { name: 'tanggalPenetapan', label: 'Tanggal Penetapan', type: 'date', required: false, row: 'tp' },
     { name: 'tahunPenetapan', label: 'Tahun Penetapan', type: 'number', required: false, min: 1900, step: 1, row: 'tp' },
     DECIMAL('luasKawasanHa', 'Luas Kawasan (ha)', { min: 0, row: 'luas' }),
@@ -90,6 +88,71 @@ const WPT_CONFIG: EntityConfig<Wpt> = {
     { name: 'jumlahPenduduk', label: 'Jumlah Penduduk', type: 'number', required: false, min: 0, step: 1, row: 'pop' },
     { name: 'jumlahDesa', label: 'Jumlah Desa/SP', type: 'number', required: false, min: 0, step: 1, row: 'pop' },
     { name: 'keterangan', label: 'Keterangan', type: 'textarea', required: false },
+    { name: 'jumlahKecamatan', label: 'Jumlah Kecamatan/Distrik', type: 'number', required: false, min: 0, step: 1, section: 'Demografi', row: 'dm1' },
+    { name: 'pendapatanPerKapita', label: 'Pendapatan per Kapita (Rp/bulan)', type: 'number', required: false, min: 0, step: 1, row: 'dm1' },
+    { name: 'usiaProduktif', label: 'Penduduk Usia Produktif (15-65 tahun)', type: 'number', required: false, min: 0, step: 1, row: 'dm2' },
+    { name: 'usiaMuda', label: 'Penduduk Usia < 15 tahun', type: 'number', required: false, min: 0, step: 1, row: 'dm2' },
+    { name: 'usiaTua', label: 'Penduduk Usia > 65 tahun', type: 'number', required: false, min: 0, step: 1, row: 'dm3' },
+    { name: 'pasar', label: 'Jumlah Pasar', type: 'number', required: false, min: 0, step: 1, section: 'Ekonomi', row: 'e1' },
+    { name: 'kios', label: 'Jumlah Kios', type: 'number', required: false, min: 0, step: 1, row: 'e1' },
+    { name: 'bumdes', label: 'Jumlah Bumdes', type: 'number', required: false, min: 0, step: 1, row: 'e2' },
+    { name: 'lembagaEkonomiLain', label: 'Jumlah Lembaga Ekonomi Lain', type: 'number', required: false, min: 0, step: 1, row: 'e2' },
+    DECIMAL('kontribusiPdrbPct', 'Kontribusi Sektor PDRB ke Kabupaten (%)', { min: 0, row: 'e3' }),
+    DECIMAL('nilaiSektorPertanianT', 'Nilai Sektor Pertanian, Kehutanan & Perikanan (Rp T)', { min: 0, row: 'e3' }),
+    { name: 'unitUsahaPerorangan', label: 'Unit Usaha Perorangan (SP 2023)', type: 'number', required: false, min: 0, step: 1, row: 'e4' },
+    DECIMAL('prodPertanian', 'Produktivitas Pertanian (t/Ha)', { min: 0, row: 'e5' }),
+    DECIMAL('prodPerkebunan', 'Produktivitas Perkebunan (t/Ha)', { min: 0, row: 'e5' }),
+    DECIMAL('prodPangan', 'Produktivitas Pangan (t/Ha)', { min: 0, row: 'e6' }),
+    DECIMAL('prodPerikanan', 'Produktivitas Perikanan (t/Ha)', { min: 0, row: 'e6' }),
+    DECIMAL('prodKehutanan', 'Produktivitas Kehutanan (t/Ha)', { min: 0, row: 'e7' }),
+    { name: 'mataPencaharian1Jenis', label: 'Mata Pencaharian 1 - Jenis', type: 'text', required: false, row: 'mp1' },
+    { name: 'mataPencaharian1Jumlah', label: 'Mata Pencaharian 1 - Jumlah (orang)', type: 'number', required: false, min: 0, step: 1, row: 'mp1' },
+    { name: 'mataPencaharian2Jenis', label: 'Mata Pencaharian 2 - Jenis', type: 'text', required: false, row: 'mp2' },
+    { name: 'mataPencaharian2Jumlah', label: 'Mata Pencaharian 2 - Jumlah (orang)', type: 'number', required: false, min: 0, step: 1, row: 'mp2' },
+    { name: 'mataPencaharian3Jenis', label: 'Mata Pencaharian 3 - Jenis', type: 'text', required: false, row: 'mp3' },
+    { name: 'mataPencaharian3Jumlah', label: 'Mata Pencaharian 3 - Jumlah (orang)', type: 'number', required: false, min: 0, step: 1, row: 'mp3' },
+    { name: 'pendidikanSd', label: 'Jumlah SD', type: 'number', required: false, min: 0, step: 1, section: 'Sosial', row: 's1' },
+    { name: 'pendidikanSmp', label: 'Jumlah SMP/setara', type: 'number', required: false, min: 0, step: 1, row: 's1' },
+    { name: 'pendidikanSma', label: 'Jumlah SMA/setara', type: 'number', required: false, min: 0, step: 1, row: 's2' },
+    { name: 'puskesmas', label: 'Jumlah Puskesmas', type: 'number', required: false, min: 0, step: 1, row: 's2' },
+    { name: 'pustu', label: 'Jumlah Pustu', type: 'number', required: false, min: 0, step: 1, row: 's3' },
+    { name: 'faskesMandiri', label: 'Jumlah Fasilitas Kesehatan Mandiri', type: 'number', required: false, min: 0, step: 1, row: 's3' },
+    { name: 'faskesBelumTersedia', label: 'Fasilitas Kesehatan yang Belum Tersedia', type: 'text', required: false, hint: 'Daftar jenis fasilitas, dipisah koma (cth. Rumah Sakit, Posyandu).' },
+    { name: 'desaMaju', label: 'Jumlah Desa Maju (IDM)', type: 'number', required: false, min: 0, step: 1, row: 's4' },
+    { name: 'desaBerkembang', label: 'Jumlah Desa Berkembang (IDM)', type: 'number', required: false, min: 0, step: 1, row: 's4' },
+    { name: 'desaTertinggal', label: 'Jumlah Desa Tertinggal (IDM)', type: 'number', required: false, min: 0, step: 1, row: 's5' },
+    { name: 'dokumenRkt', label: 'Dokumen RKT tersedia', type: 'boolean', section: 'Perencanaan & Indeks', row: 'd1' },
+    { name: 'dokumenRtsp', label: 'Dokumen RTSP tersedia', type: 'boolean', row: 'd1' },
+    { name: 'dokumenRskp', label: 'Dokumen RSKP tersedia', type: 'boolean', row: 'd2' },
+    { name: 'konektivitasInternet', label: 'Konektivitas internet tersedia', type: 'boolean', row: 'd2' },
+    DECIMAL('nilaiIntrans', 'Nilai Intrans (0-100)', { min: 0, row: 'i1' }),
+    DECIMAL('indeksInfrastruktur', 'Indeks Kesiapan Infrastruktur (1-5)', { min: 0, row: 'i1' }),
+    DECIMAL('indeksKelembagaan', 'Indeks Kelembagaan (1-5)', { min: 0, row: 'i2' }),
+    DECIMAL('indeksDukungan', 'Indeks Dukungan Investasi (1-5)', { min: 0, row: 'i2' }),
+    { name: 'komoditiUnggulanId', label: 'Produk Unggulan 1 - Komoditas', type: 'fk', required: false, fkEntity: 'komoditi', hint: 'Sektor mengikuti kategori komoditas (Pangan, Peternakan, Perkebunan, Pertambangan).', section: 'Produk Unggulan' },
+    { name: 'produk1Tahun', label: 'Produk Unggulan 1 - Tahun', type: 'text', required: false, placeholder: 'cth. 2025', row: 'produk1a' },
+    DECIMAL('produk1LuasHa', 'Produk Unggulan 1 - Luas Area (ha)', { min: 0, row: 'produk1a' }),
+    DECIMAL('produk1Produksi', 'Produk Unggulan 1 - Produksi per Tahun', { min: 0, row: 'produk1b' }),
+    { name: 'produk1Satuan', label: 'Produk Unggulan 1 - Satuan Produksi', type: 'select', required: false, options: ['TON', 'KG', 'EKOR'], row: 'produk1b' },
+    { name: 'produk1Pelaku', label: 'Produk Unggulan 1 - Pelaku Usaha (orang)', type: 'number', required: false, min: 0, step: 1 },
+    { name: 'komoditiPendukungId', label: 'Produk Unggulan 2 - Komoditas', type: 'fk', required: false, fkEntity: 'komoditi' },
+    { name: 'produk2Tahun', label: 'Produk Unggulan 2 - Tahun', type: 'text', required: false, placeholder: 'cth. 2025', row: 'produk2a' },
+    DECIMAL('produk2LuasHa', 'Produk Unggulan 2 - Luas Area (ha)', { min: 0, row: 'produk2a' }),
+    DECIMAL('produk2Produksi', 'Produk Unggulan 2 - Produksi per Tahun', { min: 0, row: 'produk2b' }),
+    { name: 'produk2Satuan', label: 'Produk Unggulan 2 - Satuan Produksi', type: 'select', required: false, options: ['TON', 'KG', 'EKOR'], row: 'produk2b' },
+    { name: 'produk2Pelaku', label: 'Produk Unggulan 2 - Pelaku Usaha (orang)', type: 'number', required: false, min: 0, step: 1 },
+    { name: 'produk3KomoditiId', label: 'Produk Unggulan 3 - Komoditas', type: 'fk', required: false, fkEntity: 'komoditi' },
+    { name: 'produk3Tahun', label: 'Produk Unggulan 3 - Tahun', type: 'text', required: false, placeholder: 'cth. 2025', row: 'produk3a' },
+    DECIMAL('produk3LuasHa', 'Produk Unggulan 3 - Luas Area (ha)', { min: 0, row: 'produk3a' }),
+    DECIMAL('produk3Produksi', 'Produk Unggulan 3 - Produksi per Tahun', { min: 0, row: 'produk3b' }),
+    { name: 'produk3Satuan', label: 'Produk Unggulan 3 - Satuan Produksi', type: 'select', required: false, options: ['TON', 'KG', 'EKOR'], row: 'produk3b' },
+    { name: 'produk3Pelaku', label: 'Produk Unggulan 3 - Pelaku Usaha (orang)', type: 'number', required: false, min: 0, step: 1 },
+    { name: 'produk4KomoditiId', label: 'Produk Unggulan 4 - Komoditas', type: 'fk', required: false, fkEntity: 'komoditi' },
+    { name: 'produk4Tahun', label: 'Produk Unggulan 4 - Tahun', type: 'text', required: false, placeholder: 'cth. 2025', row: 'produk4a' },
+    DECIMAL('produk4LuasHa', 'Produk Unggulan 4 - Luas Area (ha)', { min: 0, row: 'produk4a' }),
+    DECIMAL('produk4Produksi', 'Produk Unggulan 4 - Produksi per Tahun', { min: 0, row: 'produk4b' }),
+    { name: 'produk4Satuan', label: 'Produk Unggulan 4 - Satuan Produksi', type: 'select', required: false, options: ['TON', 'KG', 'EKOR'], row: 'produk4b' },
+    { name: 'produk4Pelaku', label: 'Produk Unggulan 4 - Pelaku Usaha (orang)', type: 'number', required: false, min: 0, step: 1 },
     { name: 'skpRingkasan', label: 'Ringkasan SKP', type: 'textarea', required: false, section: 'Ringkasan', hint: 'Ringkasan bebas teks dari Matriks 45 Kawasan — bukan daftar SKP yang tertaut (lihat menu SKP untuk data SKP yang sebenarnya).' },
     { name: 'spRingkasan', label: 'Ringkasan SP', type: 'textarea', required: false, hint: 'Ringkasan bebas teks dari Matriks 45 Kawasan — bukan daftar SP yang tertaut (lihat menu SP untuk data SP yang sebenarnya).' },
     { name: 'kpb', label: 'KPB? (isi "Y" jika ya)', type: 'text', required: false, row: 'flags' },
@@ -302,63 +365,6 @@ const PROFIL_GROUP_CONFIG = lookupConfig<ProfilGroup>(
   [{ name: 'categoryId', label: 'Profil Category', type: 'fk', required: true, fkEntity: 'profilCategory' }],
   [{ key: 'categoryId', label: 'Kategori', fk: 'profilCategory' }]
 );
-/** Profil indicator values per Wilayah (template sheet "Profil"). */
-const PROFIL_WILAYAH_CONFIG: EntityConfig<ProfilWilayah> = {
-  key: 'profilWilayah',
-  label: 'Profil Wilayah',
-  sub: 'Nilai indikator profil per wilayah: kategori, sub kategori, indikator, nilai, satuan',
-  idPrefix: 'pfw',
-  titleField: 'measureId',
-  columns: [
-    { key: 'wilayahId', label: 'Wilayah', fk: 'wpt', sortable: true },
-    { key: 'categoryId', label: 'Kategori Profil', fk: 'profilCategory', sortable: true },
-    { key: 'groupId', label: 'Sub Kategori', fk: 'profilGroup', sortable: true },
-    { key: 'measureId', label: 'Indikator', fk: 'profilMeasure', sortable: true },
-    { key: 'nilai', label: 'Nilai', numeric: true, sortable: true },
-    { key: 'satuan', label: 'Satuan', sortable: true },
-    { key: 'keterangan', label: 'Keterangan', sortable: true }
-  ],
-  fields: [
-    { name: 'wilayahId', label: 'Wilayah (ID Wilayah)', type: 'fk', required: true, fkEntity: 'wpt' },
-    { name: 'categoryId', label: 'Kategori Profil', type: 'fk', required: true, fkEntity: 'profilCategory', row: 'cat' },
-    { name: 'groupId', label: 'Sub Kategori', type: 'fk', required: true, fkEntity: 'profilGroup', row: 'cat' },
-    { name: 'measureId', label: 'Indikator', type: 'fk', required: true, fkEntity: 'profilMeasure' },
-    DECIMAL('nilai', 'Nilai', { row: 'val', step: 0.01 }),
-    { name: 'satuan', label: 'Satuan', type: 'text', required: false, row: 'val', placeholder: 'cth. jiwa, ha, unit' },
-    { name: 'keterangan', label: 'Keterangan', type: 'text', required: false, hint: 'Sub-dimensi indikator yang berulang, mis. jenis mata pencaharian, komoditas, atau sektor.' }
-  ]
-};
-
-/** Leading products per Wilayah (template sheet "Produk"). */
-const PRODUK_WILAYAH_CONFIG: EntityConfig<ProdukWilayah> = {
-  key: 'produkWilayah',
-  label: 'Produk Wilayah',
-  sub: 'Produk unggulan per wilayah: tahun, sektor, komoditas, luas, produksi',
-  idPrefix: 'pdw',
-  titleField: 'komoditiId',
-  columns: [
-    { key: 'wilayahId', label: 'Wilayah', fk: 'wpt', sortable: true },
-    { key: 'tahun', label: 'Tahun', sortable: true },
-    { key: 'sektorId', label: 'Sektor', fk: 'produkJenis', sortable: true },
-    { key: 'komoditiId', label: 'Komoditas', fk: 'komoditi', sortable: true },
-    { key: 'luasArea', label: 'Luas Area', numeric: true, sortable: true },
-    { key: 'satuanLuas', label: 'Satuan Luas', sortable: true },
-    { key: 'produksi', label: 'Produksi', numeric: true, sortable: true },
-    { key: 'satuanProduksi', label: 'Satuan Produksi', sortable: true }
-  ],
-  fields: [
-    { name: 'wilayahId', label: 'Wilayah (ID Wilayah)', type: 'fk', required: true, fkEntity: 'wpt' },
-    { name: 'tahun', label: 'Tahun', type: 'text', required: true, placeholder: 'cth. 2025', hint: 'Teks 4 digit.', row: 'tk' },
-    { name: 'sektorId', label: 'Sektor', type: 'fk', required: true, fkEntity: 'produkJenis', row: 'tk' },
-    { name: 'komoditiId', label: 'Komoditas', type: 'fk', required: true, fkEntity: 'komoditi' },
-    DECIMAL('luasArea', 'Luas Area', { row: 'luas' }),
-    { name: 'satuanLuas', label: 'Satuan Luas', type: 'select', required: false, options: ['HA'], row: 'luas' },
-    DECIMAL('produksi', 'Produksi', { row: 'prod' }),
-    { name: 'satuanProduksi', label: 'Satuan Produksi', type: 'select', required: false, options: ['TON', 'KG', 'EKOR'], row: 'prod' },
-    { name: 'keterangan', label: 'Keterangan', type: 'textarea', required: false }
-  ]
-};
-
 const RECOMMENDATION_CATEGORY_CONFIG = lookupConfig<RecommendationCategory>(
   'recommendationCategory', 'Recommendation Category', 'Kategori rekomendasi kebijakan per tipe satker (tabel recommendation_category)', 'rec',
   [{ name: 'satkerTypeId', label: 'Satker Type', type: 'fk', required: true, fkEntity: 'satkerType' }],
@@ -590,9 +596,7 @@ export const ENTITY_CONFIGS: { [key in EntityKey]: EntityConfig } = {
   profilGroup: PROFIL_GROUP_CONFIG,
   profilMeasure: PROFIL_MEASURE_CONFIG,
   applicationSettings: APPLICATION_SETTINGS_CONFIG,
-  approvalFlow: APPROVAL_FLOW_CONFIG,
-  profilWilayah: PROFIL_WILAYAH_CONFIG,
-  produkWilayah: PRODUK_WILAYAH_CONFIG
+  approvalFlow: APPROVAL_FLOW_CONFIG
 };
 
 /**

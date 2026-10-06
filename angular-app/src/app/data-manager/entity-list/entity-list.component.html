@@ -17,17 +17,13 @@
   <div class="panel">
     <dgt-data-table
       [columns]="columns"
-      [rows]="visibleRows"
+      [rows]="rows"
       [sortKey]="sortKey"
       [sortDir]="sortDir"
       [emptyLabel]="emptyLabel"
       (sortChange)="onSort($event)"
       (rowClick)="openEdit($event)">
     </dgt-data-table>
-    <div class="d-flex justify-content-between align-items-center p-2 small text-muted" *ngIf="rows.length > pageStep">
-      <span>Menampilkan {{ visibleRows.length }} dari {{ rows.length }} baris</span>
-      <button type="button" class="btn btn-sm btn-outline-secondary" *ngIf="visibleRows.length < rows.length" (click)="showMore()">Tampilkan {{ pageStep }} lagi</button>
-    </div>
   </div>
 
   <dgt-drawer [open]="drawerOpen && !drawing" [title]="drawerTitle" (closed)="closeDrawer()">

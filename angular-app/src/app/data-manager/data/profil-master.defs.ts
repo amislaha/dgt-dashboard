@@ -1,15 +1,12 @@
 import { ProdukJenis, ProfilCategory, ProfilGroup, ProfilMeasure, WilayahStatus } from '../models/erd-master.model';
-import { ProdukWilayah } from '../models/produk-wilayah.model';
-import { ProfilWilayah } from '../models/profil-wilayah.model';
 
 /**
- * Seed definitions for the Profil / Produk master data: the lookup tables (Wilayah Status, Profil
- * Category / Group / Measure, Produk Jenis) and the expanders that turn the compact per-kawasan
- * tuples in profil-master.data.ts into full `ProfilWilayah` / `ProdukWilayah` records.
- *
- * Structure follows the "To fill" import template: Profil = Kategori Profil > Sub Kategori (group)
- * > Indikator (measure) + Nilai + Satuan; Produk = Tahun, Sektor, Komoditas, Luas, Produksi.
- * Ids are positional (pfc1.., pfg1.., pfm1.., pdj1.., wst1..), so the tuples refer to them by number.
+ * Seed definitions for the Profil / Produk lookup tables (Wilayah Status, Profil Category / Group /
+ * Measure, Produk Jenis). They are the indicator catalogue that follows the "To fill" import template
+ * (Kategori Profil > Sub Kategori > Indikator + Satuan). The per-wilayah values themselves are plain
+ * fields on the Wilayah record and its form tabs (Demografi, Ekonomi, Sosial, Perencanaan & Indeks,
+ * Produk Unggulan), not rows in a separate transaction table.
+ * Ids are positional (pfc1.., pfg1.., pfm1.., pdj1.., wst1..).
  */
 
 /** The five land-legality statuses used by the dashboard's `statusHpl`, in the same order. */
@@ -97,39 +94,3 @@ export const PROFIL_MEASURE_SEED: ProfilMeasure[] = MEASURE_DEFS.map(([code, gro
 export const PRODUK_JENIS_SEED: ProdukJenis[] = ['Pangan', 'Peternakan', 'Perkebunan', 'Pertambangan'].map((name, i) => ({
   id: 'pdj' + (i + 1), code: 'PJ-0' + (i + 1), name, sequence: i + 1, active: true
 }));
-
-/** [wilayah number (1-45), measure number (1-33), value, optional note (the sub-dimension, e.g. the commodity or occupation)]. */
-export type ProfilTuple = [number, number, number, string?];
-
-/** [wilayah number, year, produk jenis number (1-4), komoditi number (kom N), area ha (0 = n/a), production (0 = n/a), production unit]. */
-export type ProdukTuple = [number, string, number, number, number, number, string];
-
-export function buildProfilWilayahSeed(rows: ProfilTuple[]): ProfilWilayah[] {
-  return rows.map((r, i) => {
-    const measure = MEASURE_DEFS[r[1] - 1];
-    return {
-      id: 'pfw' + (i + 1),
-      wilayahId: 'wpt' + r[0],
-      categoryId: 'pfc' + GROUP_DEFS[measure[1] - 1][0],
-      groupId: 'pfg' + measure[1],
-      measureId: 'pfm' + r[1],
-      nilai: r[2],
-      satuan: measure[3],
-      keterangan: r[3]
-    };
-  });
-}
-
-export function buildProdukWilayahSeed(rows: ProdukTuple[]): ProdukWilayah[] {
-  return rows.map((r, i) => ({
-    id: 'pdw' + (i + 1),
-    wilayahId: 'wpt' + r[0],
-    tahun: r[1],
-    sektorId: 'pdj' + r[2],
-    komoditiId: 'kom' + r[3],
-    luasArea: r[4] || undefined,
-    satuanLuas: r[4] ? 'HA' : undefined,
-    produksi: r[5] || undefined,
-    satuanProduksi: r[5] ? r[6] : undefined
-  }));
-}

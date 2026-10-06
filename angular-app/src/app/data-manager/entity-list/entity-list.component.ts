@@ -37,9 +37,6 @@ export class EntityListComponent implements OnDestroy {
   config: EntityConfig | null = null;
   columns: DataTableColumn<any>[] = [];
   rows: any[] = [];
-  /** How many rows are rendered; the rest load on demand (Profil Wilayah has ~2,000 rows). */
-  limit = 100;
-  readonly pageStep = 100;
   query = '';
   sortKey: string | null = null;
   sortDir: SortDirection = 'asc';
@@ -71,22 +68,12 @@ export class EntityListComponent implements OnDestroy {
     }
   }
 
-  get visibleRows(): any[] {
-    return this.rows.length > this.limit ? this.rows.slice(0, this.limit) : this.rows;
-  }
-
-  showMore(): void {
-    this.limit += this.pageStep;
-  }
-
   onSearch(value: string): void {
     this.query = value;
-    this.limit = this.pageStep;
     this.applyFilterAndSort();
   }
 
   onSort(event: { key: string; dir: SortDirection }): void {
-    this.limit = this.pageStep;
     this.sortKey = event.key;
     this.sortDir = event.dir;
     this.applyFilterAndSort();

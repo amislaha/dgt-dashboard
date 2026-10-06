@@ -29,9 +29,7 @@ export type EntityKey =
   | 'profilGroup'
   | 'profilMeasure'
   | 'applicationSettings'
-  | 'approvalFlow'
-  | 'profilWilayah'
-  | 'produkWilayah';
+  | 'approvalFlow';
 
 /** All 24 keys, in the order the "Data Master" dropdown lists them (Wilayah is not in this list —
  *  it's a top-level header item backed by the same `wpt` entity, see WilayahComponent). Used for
@@ -60,9 +58,7 @@ export const ENTITY_ORDER: EntityKey[] = [
   'profilGroup',
   'profilMeasure',
   'applicationSettings',
-  'approvalFlow',
-  'profilWilayah',
-  'produkWilayah'
+  'approvalFlow'
 ];
 
 /** The header nav's "Data Master" dropdown — every entity except `wpt` (which leads the header as
@@ -87,9 +83,7 @@ export const MASTER_DATA_ORDER: EntityKey[] = [
   'produkJenis',
   'recommendationCategory',
   'profilCategory',
-  'profilGroup',
-  'profilWilayah',
-  'produkWilayah'
+  'profilGroup'
 ];
 
 /** The header nav's "Settings" dropdown. */
