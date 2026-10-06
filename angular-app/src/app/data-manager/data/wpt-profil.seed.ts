@@ -18,7 +18,7 @@ export const WPT_PROFIL_FIELDS: { [wptId: string]: Partial<Wpt> } = {
   wpt5: { luasKawasanHa: 7784, hplTotal: 7784, shmTotal: 3063, shmPersentase: 39.3, jumlahPenduduk: 6385, jumlahDesa: 10, komoditiUnggulanId: 'kom5', komoditiPendukungId: 'kom10' },
   wpt6: { luasKawasanHa: 5697, hplTotal: 5697, shmTotal: 709, shmPersentase: 12.4, jumlahPenduduk: 3194, jumlahDesa: 5, komoditiUnggulanId: 'kom5', komoditiPendukungId: 'kom8' },
   wpt7: { luasKawasanHa: 3269, hplTotal: 3269, shmTotal: 2223, shmPersentase: 68, jumlahPenduduk: 7853, jumlahDesa: 14, komoditiUnggulanId: 'kom4', komoditiPendukungId: 'kom11' },
-  wpt8: { luasKawasanHa: 7804, hplTotal: 7804, shmTotal: 5266, shmPersentase: 67.5, jumlahPenduduk: 10568, jumlahDesa: 11, komoditiUnggulanId: 'kom7', komoditiPendukungId: 'kom11' },
+  wpt8: { luasKawasanHa: 616699, hplTotal: 7804, shmTotal: 5266, shmPersentase: 67.5, jumlahPenduduk: 78507, jumlahDesa: 64, komoditiUnggulanId: 'kom4', komoditiPendukungId: 'kom8' },
   wpt9: { luasKawasanHa: 11683, hplTotal: 11683, shmTotal: 6719, shmPersentase: 57.5, jumlahPenduduk: 10011, jumlahDesa: 10, komoditiUnggulanId: 'kom6', komoditiPendukungId: 'kom8' },
   wpt10: { luasKawasanHa: 6850, hplTotal: 6850, shmTotal: 2246, shmPersentase: 32.8, jumlahPenduduk: 6857, jumlahDesa: 12, komoditiUnggulanId: 'kom6', komoditiPendukungId: 'kom8' },
   wpt11: { luasKawasanHa: 13094, hplTotal: 13094, shmTotal: 5513, shmPersentase: 42.1, jumlahPenduduk: 5616, jumlahDesa: 8, komoditiUnggulanId: 'kom5', komoditiPendukungId: 'kom11' },
@@ -76,4 +76,5 @@ export const KOMODITI_PROFIL_SEED: Komoditi[] = [
   { id: 'kom17', code: 'PTB-02', nama: 'Pasir Kuarsa', description: 'Pertambangan', sequence: 14, active: true },
   { id: 'kom18', code: 'PTB-03', nama: 'Nikel Laterit', description: 'Pertambangan', sequence: 15, active: true },
   { id: 'kom19', code: 'PTB-04', nama: 'Emas Rakyat', description: 'Pertambangan', sequence: 16, active: true },
+  { id: 'kom20', code: 'PKB-05', nama: 'Sagu', description: 'Perkebunan', sequence: 17, active: true },
 ];

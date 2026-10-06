@@ -123,7 +123,7 @@
       <div class="profil-detail-header-text">
         <button type="button" class="back-link mb-2" (click)="backToList()">&larr; Kembali ke Daftar</button>
         <div class="page-head mb-2"><h1 class="h4 font-weight-bold mb-1">{{ k.nama }}</h1></div>
-        <div class="profil-detail-source">Sumber: {{ sumber }} &middot; Terakhir diperbarui {{ diperbarui }}</div>
+        <div class="profil-detail-source">Sumber: {{ sumberFor(k) }} &middot; Terakhir diperbarui {{ diperbarui }}</div>
       </div>
       <div class="profil-detail-photo"><img src="assets/hero-kawasan.jpg" alt="Foto {{ k.nama }}" /></div>
     </div>
@@ -159,6 +159,40 @@
           </div>
         </div>
 
+        <div class="investasi-hero mb-3">
+          <img src="assets/hero-kawasan.jpg" alt="Foto kawasan" />
+        </div>
+        <div class="row mb-3">
+          <div class="col-lg-5 mb-3">
+            <div class="investasi-desc-panel h-100">
+              <div class="investasi-desc-head">Deskripsi kawasan</div>
+              <div class="investasi-desc-body">
+                <div class="investasi-desc-row"><span class="lbl">Luas kawasan</span><b>{{ d.luasHa | number:'1.0-0' }} ha</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Status HPL</span><b>{{ k.statusHpl }}</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Jumlah desa dalam kawasan</span><b>{{ k.desa }}</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Total penduduk</span><b>{{ d.pendudukJiwa | number:'1.0-0' }} jiwa</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Pendapatan per kapita</span><b>Rp {{ d.pendapatanPerKapita | number:'1.0-0' }}/kapita/bulan</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Indeks kesiapan infrastruktur</span><b>{{ d.indeksInfra }}</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Indeks kelembagaan</span><b>{{ d.indeksKelembagaan }}</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Indeks dukungan investasi</span><b>{{ d.indeksDukungan }} ({{ d.dukunganLabel }})</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Luas SHM</span><b>{{ k.shmHa | number:'1.0-0' }} ha</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Legalitas lahan (SHM/HPL)</span><b>{{ legalPct(k) }}%</b></div>
+                <div class="investasi-desc-row"><span class="lbl">Realisasi anggaran</span><b>{{ k.anggaranPct }}%</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-7 mb-3">
+            <div class="investasi-minimap">
+              <img src="assets/basemap-indonesia.jpg" alt="Lokasi {{ k.nama }}" />
+              <span class="loc-dot" [style.left.%]="locatorPos(k).xPct" [style.top.%]="locatorPos(k).yPct" [style.background]="stageColor(k.tahap)"></span>
+            </div>
+          </div>
+        </div>
+        <div class="investasi-desc-panel mb-3">
+          <div class="investasi-desc-head teal">Deskripsi kawasan</div>
+          <div class="investasi-desc-text">{{ d.deskripsiInvestasi }}</div>
+        </div>
+
         <div class="card mb-4">
           <div class="card-header"><h2 class="h6 font-weight-bold mb-0">Produk Unggulan Kawasan</h2></div>
           <div class="card-body">
@@ -170,10 +204,10 @@
                   <tr *ngFor="let p of produkRows">
                     <td>{{ p.kategori }}</td>
                     <td>{{ p.komoditas }}</td>
-                    <td class="mono">{{ p.perHa }} ton/ha</td>
-                    <td class="mono">{{ p.luasHa | number:'1.0-0' }} ha</td>
-                    <td class="mono">{{ p.produksiTon | number:'1.0-0' }} ton</td>
-                    <td class="mono">{{ p.pelaku | number:'1.0-0' }}</td>
+                    <td class="mono">{{ p.perHa === '-' ? '-' : p.perHa + ' ton/ha' }}</td>
+                    <td class="mono">{{ p.luasHa ? (p.luasHa | number:'1.0-0') + ' ha' : '-' }}</td>
+                    <td class="mono">{{ p.produksiTon ? (p.produksiTon | number:'1.0-0') + ' ton' : '-' }}</td>
+                    <td class="mono">{{ p.pelaku ? (p.pelaku | number:'1.0-0') : '-' }}</td>
                     <td class="mono">{{ p.tahun }}</td>
                     <td>
                       <button type="button" class="btn btn-sm btn-outline-secondary" title="Non-fungsional pada prototipe ini">Ubah</button>
@@ -258,39 +292,6 @@
           </div>
         </div>
 
-        <div class="investasi-hero mb-3">
-          <img src="assets/hero-kawasan.jpg" alt="Foto kawasan" />
-        </div>
-        <div class="row mb-3">
-          <div class="col-lg-5 mb-3">
-            <div class="investasi-desc-panel h-100">
-              <div class="investasi-desc-head">Deskripsi kawasan</div>
-              <div class="investasi-desc-body">
-                <div class="investasi-desc-row"><span class="lbl">Luas kawasan</span><b>{{ d.luasHa | number:'1.0-0' }} ha</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Status HPL</span><b>{{ k.statusHpl }}</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Jumlah desa dalam kawasan</span><b>{{ k.desa }}</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Total penduduk</span><b>{{ d.pendudukJiwa | number:'1.0-0' }} jiwa</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Pendapatan per kapita</span><b>Rp {{ d.pendapatanPerKapita | number:'1.0-0' }}/kapita/bulan</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Indeks kesiapan infrastruktur</span><b>{{ d.indeksInfra }}</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Indeks kelembagaan</span><b>{{ d.indeksKelembagaan }}</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Indeks dukungan investasi</span><b>{{ d.indeksDukungan }} ({{ d.dukunganLabel }})</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Luas SHM</span><b>{{ k.shmHa | number:'1.0-0' }} ha</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Legalitas lahan (SHM/HPL)</span><b>{{ legalPct(k) }}%</b></div>
-                <div class="investasi-desc-row"><span class="lbl">Realisasi anggaran</span><b>{{ k.anggaranPct }}%</b></div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-7 mb-3">
-            <div class="investasi-minimap">
-              <img src="assets/basemap-indonesia.jpg" alt="Lokasi {{ k.nama }}" />
-              <span class="loc-dot" [style.left.%]="locatorPos(k).xPct" [style.top.%]="locatorPos(k).yPct" [style.background]="stageColor(k.tahap)"></span>
-            </div>
-          </div>
-        </div>
-        <div class="investasi-desc-panel mb-3">
-          <div class="investasi-desc-head teal">Deskripsi kawasan</div>
-          <div class="investasi-desc-text">{{ d.deskripsiInvestasi }}</div>
-        </div>
       </ng-container>
 
       <!-- ---------- Sosial ---------- -->

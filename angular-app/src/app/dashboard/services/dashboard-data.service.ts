@@ -29,6 +29,8 @@ export interface Kawasan {
   populasi: number;
   indeks5t: number;
   hplHa: number;
+  /** Real total area of the kawasan (ha) when a source report gives one; otherwise the HPL area is shown. */
+  luasKawasanHa?: number;
   shmHa: number;
   /** Land-legality status; derived from the SHM share of HPL so it agrees with `shmHa`/`hplHa`. */
   statusHpl: StatusHpl;
@@ -329,7 +331,19 @@ function deriveKawasan(seed: KawasanSeed): Kawasan {
   };
 }
 
-const KAWASAN: Kawasan[] = KAWASAN_SEEDS.map(deriveKawasan);
+/**
+ * Attribute values taken from the Ekspedisi Patriot (TEP) 2025 reports, replacing the fabricated ones
+ * for kawasan that have a report. Everything not listed here (indeks5t, tahap, anggaran, HPL/SHM
+ * area, risk...) stays illustrative because the reports do not give it.
+ *
+ * Salor (Output 6, ITS; BPS Merauke 2024, Tabel 3.1; Output 3, UI, Bab 3.1.3): 6 distrik, 64 kampung,
+ * 78.507 jiwa, 6.166,99 km2 (= 616.699 ha).
+ */
+const KAWASAN_OVERRIDE: { [nama: string]: Partial<Kawasan> } = {
+  Salor: { populasi: 78507, kecamatan: 6, desa: 64, luasKawasanHa: 616699 }
+};
+
+const KAWASAN: Kawasan[] = KAWASAN_SEEDS.map(deriveKawasan).map(k => ({ ...k, ...(KAWASAN_OVERRIDE[k.nama] || {}) }));
 
 const S_CURVE: SCurve = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'],
@@ -516,8 +530,10 @@ export interface ProfilEkonomiSektor {
 }
 
 /** Source line and last-updated date shown for a kawasan profile (Profil page and its modal). */
-export const PROFIL_SUMBER = 'Ditjen PKP2Trans · Data IPKT 2023';
-export const PROFIL_DIPERBARUI = '24 Agustus 2026';
+export function profilSumber(namaKawasan: string): string {
+  return 'Laporan TEP ' + namaKawasan + ' 2025';
+}
+export const PROFIL_DIPERBARUI = '1 Oktober 2026';
 
 export interface ProfilMataPencaharian {
   jenis: string;
@@ -576,6 +592,29 @@ export function profilBucketTahap(t: Tahap): string {
   return t === 'Mandiri' ? 'Mandiri' : t === 'Berkembang' ? 'Berkembang' : 'Tertinggal';
 }
 
+/**
+ * Profil fields taken from the TEP 2025 reports (see KAWASAN_OVERRIDE), merged over the generated
+ * detail. Salor: padi (Output 2 ITS, Imam Robandi, Tabel 3.32/3.34: 16 kampung lokasi studi 2025,
+ * lahan SID 15.981 ha, produksi 58.686,5 ton, = 3,7 ton/ha), sagu (Output 2 IPB, Ratih Kemala Dewi,
+ * Tabel 11: 6 distrik 2022, 500,5 ha, 10.700 ton, 21,4 ton/ha) and sapi potong (Output 2 UNPAD,
+ * Diky Ramdani, Tabel 2.1: sekitar 1.835 ekor; a livestock count, so no area/production). A "-"
+ * perHa and 0 values mean "no figure in the reports" and render as "-".
+ */
+const PROFIL_OVERRIDE: { [nama: string]: Partial<ProfilDetail> } = {
+  Salor: {
+    produkUnggulan: [
+      { kategori: 'Pangan', komoditas: 'Padi Sawah', perHa: '3.7', tahun: 2025, luasHa: 15981, produksiTon: 58687, pelaku: 0 },
+      { kategori: 'Peternakan', komoditas: 'Sapi Potong', perHa: '-', tahun: 2025, luasHa: 0, produksiTon: 0, pelaku: 0 },
+      { kategori: 'Perkebunan', komoditas: 'Sagu', perHa: '21.4', tahun: 2022, luasHa: 500.5, produksiTon: 10700, pelaku: 0 }
+    ],
+    produksiTon: 58687,
+    deskripsiInvestasi:
+      'Komoditas unggulan yang dicantumkan adalah padi sawah, sapi potong, dan sagu. Padi menghasilkan produksi sebesar 58.687 ton per tahun ' +
+      'dari luas lahan 15.981 hektare (16 kampung lokasi studi, 2025). Populasi sapi potong sekitar 1.835 ekor dan merupakan bagian dari ' +
+      'Sentra Peternakan Rakyat. Sagu mencatatkan produksi sebesar 10.700 ton per tahun dengan luas lahan 500,5 hektare (2022).'
+  }
+};
+
 export function profilDetailData(k: Kawasan): ProfilDetail {
   // `k.id` alone mixed in with `k.nama` for the same reason `deriveKawasan()`/`kawasanRing()` do —
   // seededRandom()'s hash doesn't diffuse well for short, near-sequential ids like 'k1'..'k45', which
@@ -583,6 +622,7 @@ export function profilDetailData(k: Kawasan): ProfilDetail {
   // narrow band instead of spreading them out.
   const rnd = seededRandom(k.id + '-' + k.nama);
   const totalJiwa = k.populasi;
+  const luasKawasan = k.luasKawasanHa || k.hplHa;
   const produktifPct = 60 + Math.round(rnd() * 8);
   const tuaPct = 2 + Math.round(rnd() * 3);
   const mudaPct = 100 - produktifPct - tuaPct;
@@ -657,12 +697,12 @@ export function profilDetailData(k: Kawasan): ProfilDetail {
     `${top2[0].komoditas} menghasilkan produksi sebesar ${produksiTon.toLocaleString('id-ID')} ton per tahun dari luas lahan ${lahan1.toLocaleString('id-ID')} hektare. ` +
     `Sementara itu, ${top2[1].komoditas} mencatatkan produksi sebesar ${produksi2.toLocaleString('id-ID')} ton per tahun dengan luas lahan ${lahan2.toLocaleString('id-ID')} hektare.`;
 
-  return {
+  const detail: ProfilDetail = {
     pendudukJiwa: totalJiwa,
-    luasHa: k.hplHa,
+    luasHa: luasKawasan,
     dayaTampungKK: Math.max(20, Math.round(k.populasi * 0.028)),
     nilaiIntrans: (k.indeks5t + (rnd() * 4 - 2)).toFixed(2),
-    kepadatan: (totalJiwa / k.hplHa).toFixed(2),
+    kepadatan: (totalJiwa / luasKawasan).toFixed(2),
     kategoriIntrans: profilBucketIndeks(k.indeks5t),
     produkUnggulan,
     pasar: Math.max(1, Math.round(k.desa / 3)),
@@ -688,6 +728,8 @@ export function profilDetailData(k: Kawasan): ProfilDetail {
     deskripsiInvestasi,
     ekonomiSektor
   };
+  const override = PROFIL_OVERRIDE[k.nama];
+  return override ? { ...detail, ...override } : detail;
 }
 
 /* ---------- Ekonomi & Investasi Kawasan: national wilayah grouping ----------

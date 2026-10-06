@@ -13,7 +13,7 @@ import {
   STAGE_COLOR_HEX,
   STAGES,
   STATUS_HPL,
-  PROFIL_SUMBER,
+  profilSumber,
   PROFIL_DIPERBARUI,
   Tahap
 } from '../../services/dashboard-data.service';
@@ -225,7 +225,10 @@ export class ProfilComponent implements OnInit {
   /** Placeholder photos shown for every kawasan until real per-kawasan photos are uploaded. */
   readonly fotoPlaceholder = ['assets/galeri/foto-1.jpg', 'assets/galeri/foto-2.jpg', 'assets/galeri/foto-3.jpg'];
 
-  readonly sumber = PROFIL_SUMBER;
+  sumberFor(k: Kawasan): string {
+    return profilSumber(k.nama);
+  }
+
   readonly diperbarui = PROFIL_DIPERBARUI;
   readonly fisikBulan = FISIK_BULAN;
   readonly fisikBulanPenuh = FISIK_BULAN_PENUH;

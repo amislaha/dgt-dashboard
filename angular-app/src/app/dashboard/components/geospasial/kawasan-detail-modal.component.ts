@@ -1,5 +1,5 @@
 import { Component, EventEmitter, HostListener, Input, OnChanges, Output } from '@angular/core';
-import { Kawasan, PROFIL_DIPERBARUI, PROFIL_SUMBER, ProfilDetail, ProfilProduk, profilDetailData } from '../../services/dashboard-data.service';
+import { Kawasan, PROFIL_DIPERBARUI, profilSumber, ProfilDetail, ProfilProduk, profilDetailData } from '../../services/dashboard-data.service';
 import { FISIK_BY_KAWASAN, FisikBlok } from '../profil/profil-fisik.data';
 
 interface Kpi {
@@ -65,8 +65,11 @@ export class KawasanDetailModalComponent implements OnChanges {
   detail!: ProfilDetail;
   komoditas: ProfilProduk | null = null;
 
-  readonly sumber = PROFIL_SUMBER;
   readonly diperbarui = PROFIL_DIPERBARUI;
+
+  get sumber(): string {
+    return profilSumber(this.kawasan.nama);
+  }
 
   ngOnChanges(): void {
     if (!this.kawasan) {

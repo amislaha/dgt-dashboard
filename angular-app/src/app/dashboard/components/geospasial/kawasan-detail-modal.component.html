@@ -63,10 +63,10 @@
           <h3 class="kd-panel-title">{{ c.komoditas }}</h3>
           <div class="kd-facts">
             <div class="kd-fact"><b>{{ c.kategori }}</b><span>Kategori</span></div>
-            <div class="kd-fact"><b>{{ c.perHa }} ton/ha</b><span>/Ha</span></div>
-            <div class="kd-fact"><b>{{ fmt(c.luasHa) }} ha</b><span>Luas lahan</span></div>
-            <div class="kd-fact"><b>{{ fmt(c.produksiTon) }} ton</b><span>Produksi per tahun</span></div>
-            <div class="kd-fact"><b>{{ fmt(c.pelaku) }}</b><span>Pelaku usaha</span></div>
+            <div class="kd-fact"><b>{{ c.perHa === '-' ? '-' : c.perHa + ' ton/ha' }}</b><span>/Ha</span></div>
+            <div class="kd-fact"><b>{{ c.luasHa ? fmt(c.luasHa) + ' ha' : '-' }}</b><span>Luas lahan</span></div>
+            <div class="kd-fact"><b>{{ c.produksiTon ? fmt(c.produksiTon) + ' ton' : '-' }}</b><span>Produksi per tahun</span></div>
+            <div class="kd-fact"><b>{{ c.pelaku ? fmt(c.pelaku) : '-' }}</b><span>Pelaku usaha</span></div>
             <div class="kd-fact"><b>{{ c.tahun }}</b><span>Tahun data</span></div>
           </div>
         </ng-container>
@@ -101,7 +101,7 @@
         <ng-container *ngIf="activeTab === 'Perencanaan'">
           <h3 class="kd-panel-title">Perencanaan</h3>
           <div class="kd-facts">
-            <div class="kd-fact"><b>{{ fmt(kawasan.hplHa) }} ha</b><span>Luas Kawasan</span></div>
+            <div class="kd-fact"><b>{{ fmt(detail.luasHa) }} ha</b><span>Luas Kawasan</span></div>
             <div class="kd-fact"><b>{{ fmt(kawasan.shmHa) }} ha</b><span>Luas SHM</span></div>
             <div class="kd-fact"><b>{{ kawasan.statusHpl }}</b><span>Status lahan kawasan</span></div>
             <div class="kd-fact"><b>{{ detail.konektivitas }}</b><span>Konektivitas digital</span></div>
