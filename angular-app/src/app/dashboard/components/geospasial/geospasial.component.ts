@@ -70,7 +70,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   tilt3d = false;
 
   layerSearchQuery = '';
-  typeFilter: 'Semua' | 'SKP' | 'KPB' = 'Semua';
+  typeFilter: 'Semua' | 'KT' | 'SKP' | 'SP' = 'Semua';
   readonly statusHplOptions = STATUS_HPL;
   hplStatusFilter: HplStatus = 'Semua';
 
@@ -148,7 +148,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     const q = this.layerSearchQuery.trim().toLowerCase();
     return this.kawasan.filter(
       k =>
-        (this.typeFilter === 'Semua' || k.tipe === this.typeFilter) &&
+        (this.typeFilter === 'Semua' || this.typeFilter === 'KT' || (this.typeFilter === 'SKP' ? k.punyaSkp : k.punyaSp)) &&
         (this.hplStatusFilter === 'Semua' || k.statusHpl === this.hplStatusFilter) &&
         (!this.selectedProvinsi || k.provinsi === this.selectedProvinsi) &&
         (!q || k.nama.toLowerCase().includes(q) || k.provinsi.toLowerCase().includes(q) || k.kabupaten.toLowerCase().includes(q))

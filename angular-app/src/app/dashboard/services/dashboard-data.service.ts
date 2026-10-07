@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { WPT_SEED } from '../../data-manager/data/seed-data';
 
 /**
  * All data below is fabricated/illustrative — ported verbatim in shape and
@@ -25,6 +26,9 @@ export interface Kawasan {
   kecamatan: number;
   desa: number;
   tipe: 'SKP' | 'KPB';
+  /** Whether the kawasan (KT) has SKP / SP sub-units, from the Wilayah seed's skp/spRingkasan columns. */
+  punyaSkp: boolean;
+  punyaSp: boolean;
   tahap: Tahap;
   populasi: number;
   indeks5t: number;
@@ -310,6 +314,7 @@ function deriveKawasan(seed: KawasanSeed): Kawasan {
     shmShare >= 0.3 ? (statusRoll < 0.5 ? 'Tervaluasi HPL' : 'Terinventarisasi Ulang') :
     (statusRoll < 0.5 ? 'Ada SK HPL' : 'Terinventarisasi Ulang');
 
+  const wilayah = WPT_SEED.find(w => w.id === 'wpt' + seed.id.slice(1));
   return {
     id: seed.id,
     nama: seed.nama,
@@ -318,6 +323,8 @@ function deriveKawasan(seed: KawasanSeed): Kawasan {
     kecamatan,
     desa,
     tipe: seed.kpb ? 'KPB' : 'SKP',
+    punyaSkp: !!(wilayah && wilayah.skpRingkasan),
+    punyaSp: !!(wilayah && wilayah.spRingkasan),
     tahap,
     populasi,
     indeks5t,

@@ -39,14 +39,14 @@ const WPT_CONFIG: EntityConfig<Wpt> = {
   idPrefix: 'wpt',
   titleField: 'nama',
   columns: [
-    { key: 'nama', label: 'Nama WPT', sortable: true },
+    { key: 'nama', label: 'Nama KT', sortable: true },
     { key: 'kawasan', label: 'Kawasan', sortable: true },
     { key: 'provinsi', label: 'Provinsi', sortable: true },
     { key: 'kabupaten', label: 'Kabupaten/Kota', sortable: true }
   ],
   fields: [
-    { name: 'nama', label: 'Nama WPT', type: 'text', required: true, placeholder: 'cth. LUNANG SILAUT', section: 'Identitas' },
-    { name: 'kawasan', label: 'Nama Kawasan', type: 'text', required: false, hint: 'Nama umum/singkat dari Matriks 45 Kawasan — kadang beda penulisan dari Nama WPT di atas.' },
+    { name: 'nama', label: 'Nama KT', type: 'text', required: true, placeholder: 'cth. LUNANG SILAUT', section: 'Identitas' },
+    { name: 'kawasan', label: 'Nama Kawasan', type: 'text', required: false, hint: 'Nama umum/singkat dari Matriks 45 Kawasan — kadang beda penulisan dari Nama KT di atas.' },
     { name: 'wilayahType', label: 'Tipe Wilayah (wilayah_type)', type: 'text', required: false, hint: 'Enum di ERD — isinya tidak terbaca pada gambar.', row: 'id' },
     { name: 'dasarPenetapan', label: 'Dasar Penetapan', type: 'text', required: false, row: 'id' },
     { name: 'geometry', label: 'Gambar di Peta', type: 'geometry', required: false, section: 'Lokasi & Peta', hint: 'Panel akan menyingkir saat Anda menggambar di peta, lalu kembali dengan bentuknya terisi.' },
@@ -164,20 +164,20 @@ const WPT_CONFIG: EntityConfig<Wpt> = {
 const SKP_CONFIG: EntityConfig<Skp> = {
   key: 'skp',
   label: 'SKP',
-  sub: 'Satuan Kawasan Pengembangan — sub-kawasan di bawah satu WPT',
+  sub: 'Satuan Kawasan Pengembangan — sub-kawasan di bawah satu KT',
   idPrefix: 'skp',
   titleField: 'nama',
   columns: [
     { key: 'nama', label: 'Nama SKP', sortable: true },
     { key: 'provinsi', label: 'Provinsi', sortable: true },
     { key: 'kabupaten', label: 'Kabupaten', sortable: true },
-    { key: 'indukWptId', label: 'Induk WPT', fk: 'wpt' }
+    { key: 'indukWptId', label: 'Induk KT', fk: 'wpt' }
   ],
   fields: [
     { name: 'nama', label: 'Nama SKP', type: 'text', required: true, placeholder: 'cth. SKP A Lunang' },
     { name: 'provinsi', label: 'Provinsi', type: 'text', required: true },
     { name: 'kabupaten', label: 'Kabupaten', type: 'text', required: true },
-    { name: 'indukWptId', label: 'Induk WPT', type: 'fk', required: true, fkEntity: 'wpt' },
+    { name: 'indukWptId', label: 'Induk KT', type: 'fk', required: true, fkEntity: 'wpt' },
     { name: 'cakupanSp', label: 'Cakupan SP (ringkasan)', type: 'textarea', required: false, hint: 'Ringkasan bebas teks dari ERD sumber. Keterkaitan sebenarnya ada di field "Induk SKP" pada setiap entri SP.' }
   ]
 };
@@ -201,7 +201,7 @@ const SP_CONFIG: EntityConfig<Sp> = {
     { name: 'provinsi', label: 'Provinsi', type: 'text', required: true },
     { name: 'kabupaten', label: 'Kabupaten', type: 'text', required: true },
     { name: 'indukSkpId', label: 'Induk SKP', type: 'fk', required: true, fkEntity: 'skp' },
-    { name: 'indukWptId', label: 'Induk WPT', type: 'fk', required: true, fkEntity: 'wpt' },
+    { name: 'indukWptId', label: 'Induk KT', type: 'fk', required: true, fkEntity: 'wpt' },
     { name: 'kk', label: 'Jumlah KK (opsional)', type: 'number', required: false, min: 0, step: 1 }
   ]
 };
@@ -423,7 +423,7 @@ const WILAYAH_TARGET_CONFIG: EntityConfig<WilayahTarget> = {
     { key: 'unit', label: 'Satuan', sortable: true }
   ],
   fields: [
-    { name: 'wilayahId', label: 'Wilayah (WPT)', type: 'fk', required: true, fkEntity: 'wpt', hint: 'Tabel wilayah di ERD mencakup WPT/SKP/SP; di sini baru WPT yang bisa dipilih.' },
+    { name: 'wilayahId', label: 'Wilayah (KT)', type: 'fk', required: true, fkEntity: 'wpt', hint: 'Tabel wilayah di ERD mencakup KT/SKP/SP; di sini baru KT yang bisa dipilih.' },
     { name: 'targetType', label: 'Tipe Target', type: 'text', required: true, hint: 'Enum target_type di ERD — isi nilainya tidak terbaca pada gambar, jadi teks bebas.', row: 'a' },
     { name: 'targetYear', label: 'Tahun Target', type: 'number', required: false, min: 2000, step: 1, row: 'a' },
     DECIMAL('targetValue', 'Nilai Target', { row: 'b' }),

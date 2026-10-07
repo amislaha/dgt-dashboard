@@ -82,7 +82,7 @@
       <b>Legenda</b>
       <button type="button" class="geo-legend-x" aria-label="Tutup legenda" (click)="toggleLegend()">&times;</button>
     </div>
-    <div class="lg-row" [class.off]="!overlayArea"><i class="sw sw-area"></i><span>Batas kawasan (WPT)</span></div>
+    <div class="lg-row" [class.off]="!overlayArea"><i class="sw sw-area"></i><span>Batas kawasan (KT)</span></div>
     <div class="lg-row" [class.off]="!overlayHpl"><i class="sw sw-hpl"></i><span>Batas HPL</span></div>
     <div class="lg-row" [class.off]="!overlayShm"><i class="sw sw-shm"></i><span>Area SHM (bersertifikat)</span></div>
     <p class="lg-note">Klik poligon kawasan untuk melihat detail HPL.</p>
@@ -106,8 +106,9 @@
       <div class="geo-filter-row">
         <select class="geo-select" aria-label="Filter tipe" [(ngModel)]="typeFilter">
           <option value="Semua">Semua tipe</option>
+          <option value="KT">KT</option>
           <option value="SKP">SKP</option>
-          <option value="KPB">KPB</option>
+          <option value="SP">SP</option>
         </select>
         <select class="geo-select" aria-label="Filter status HPL" [(ngModel)]="hplStatusFilter">
           <option value="Semua">Semua status</option>
@@ -118,11 +119,11 @@
       <div class="geo-tree">
         <div class="geo-tree-node" *ngFor="let k of kawasanRows">
           <div class="geo-tree-row geo-tree-parent" [class.selected]="k.id === selectedKawasanId">
-            <button type="button" class="geo-tree-chev" [attr.aria-label]="expandedKawasan[k.id] ? 'Ciutkan WPT ' + k.nama : 'Perluas WPT ' + k.nama" (click)="toggleKawasanExpand(k.id)">
+            <button type="button" class="geo-tree-chev" [attr.aria-label]="expandedKawasan[k.id] ? 'Ciutkan KT ' + k.nama : 'Perluas KT ' + k.nama" (click)="toggleKawasanExpand(k.id)">
               <svg [class.collapsed]="!expandedKawasan[k.id]" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 6 5-6z"/></svg>
             </button>
-            <input type="checkbox" [checked]="kawasanVisible[k.id] !== false" (change)="toggleKawasan(k.id, $any($event.target).checked)" [attr.aria-label]="'Tampilkan WPT ' + k.nama" />
-            <span class="geo-tree-name" role="button" tabindex="0" title="Buka profil kawasan" (click)="openDetail(k)" (keydown.enter)="openDetail(k)">WPT {{ k.nama }}</span>
+            <input type="checkbox" [checked]="kawasanVisible[k.id] !== false" (change)="toggleKawasan(k.id, $any($event.target).checked)" [attr.aria-label]="'Tampilkan KT ' + k.nama" />
+            <span class="geo-tree-name" role="button" tabindex="0" title="Buka profil kawasan" (click)="openDetail(k)" (keydown.enter)="openDetail(k)">KT {{ k.nama }}</span>
           </div>
           <ng-container *ngIf="expandedKawasan[k.id]">
             <label class="geo-tree-row geo-tree-child">
