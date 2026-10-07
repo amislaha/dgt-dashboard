@@ -9,13 +9,13 @@ import {
   STAGES,
   STAGE_COLOR_HEX,
   STATUS_HPL,
-  StatusHpl,
+  profilDetailData,
   seededRandom
 } from '../../services/dashboard-data.service';
 import { EwsAlert, EwsSeverity, EwsService } from '../../services/ews.service';
 import { KawasanMapComponent } from './kawasan-map.component';
 
-type HplStatus = 'Semua' | StatusHpl;
+type FilterDimensi = 'tipe' | 'status' | 'legalitas' | 'komoditas';
 
 /**
  * Geospasial landing module, laid out after the "DGT DASHBOARD" reference screenshot: a full-bleed
@@ -70,9 +70,19 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   tilt3d = false;
 
   layerSearchQuery = '';
-  typeFilter: 'Semua' | 'KT' | 'SKP' | 'SP' = 'Semua';
-  readonly statusHplOptions = STATUS_HPL;
-  hplStatusFilter: HplStatus = 'Semua';
+  /** Two linked dropdowns: the first picks which attribute to filter on, the second lists that
+   *  attribute's values. Changing the first resets the second to "Semua". */
+  readonly dimensiOptions: { id: FilterDimensi; label: string; semua: string }[] = [
+    { id: 'tipe', label: 'Tipe Kawasan', semua: 'Semua tipe' },
+    { id: 'status', label: 'Status Kawasan', semua: 'Semua status' },
+    { id: 'legalitas', label: 'Legalitas', semua: 'Semua legalitas' },
+    { id: 'komoditas', label: 'Komoditas', semua: 'Semua komoditas' }
+  ];
+  dimensi: FilterDimensi = 'tipe';
+  nilaiFilter = 'Semua';
+  komoditasOptions: string[] = [];
+  /** Komoditas names per kawasan id, from the same produkUnggulan the Profil page shows. */
+  private komoditasByKawasan: { [id: string]: string[] } = {};
 
   /** Per-kawasan checkbox/expand/overlay state, keyed by kawasan id. Everything starts checked and
    *  expanded, like the reference. */
@@ -102,6 +112,12 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.provinces = this.data.getProvinces();
     this.buildSummary();
     this.selectedKawasanId = this.kawasan.length ? this.kawasan[0].id : null;
+    const names: { [n: string]: boolean } = {};
+    this.kawasan.forEach(k => {
+      this.komoditasByKawasan[k.id] = profilDetailData(k).produkUnggulan.map(p => p.komoditas);
+      this.komoditasByKawasan[k.id].forEach(n => (names[n] = true));
+    });
+    this.komoditasOptions = Object.keys(names).sort();
     this.kawasan.forEach(k => {
       this.kawasanVisible[k.id] = true;
       this.expandedKawasan[k.id] = true;
@@ -144,12 +160,41 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     return Math.round((k.shmHa / k.hplHa) * 100);
   }
 
+  get semuaLabel(): string {
+    return this.dimensiOptions.filter(d => d.id === this.dimensi)[0].semua;
+  }
+
+  get nilaiOptions(): string[] {
+    switch (this.dimensi) {
+      case 'tipe': return ['KT', 'SKP', 'SP'];
+      case 'status': return STAGES;
+      case 'legalitas': return STATUS_HPL.slice();
+      default: return this.komoditasOptions;
+    }
+  }
+
+  onDimensiChange(): void {
+    this.nilaiFilter = 'Semua';
+  }
+
+  private matchesFilter(k: Kawasan): boolean {
+    const v = this.nilaiFilter;
+    if (v === 'Semua') {
+      return true;
+    }
+    switch (this.dimensi) {
+      case 'tipe': return v === 'KT' || (v === 'SKP' ? k.punyaSkp : k.punyaSp);
+      case 'status': return k.tahap === v;
+      case 'legalitas': return k.statusHpl === v;
+      default: return this.komoditasByKawasan[k.id].indexOf(v) > -1;
+    }
+  }
+
   get kawasanRows(): Kawasan[] {
     const q = this.layerSearchQuery.trim().toLowerCase();
     return this.kawasan.filter(
       k =>
-        (this.typeFilter === 'Semua' || this.typeFilter === 'KT' || (this.typeFilter === 'SKP' ? k.punyaSkp : k.punyaSp)) &&
-        (this.hplStatusFilter === 'Semua' || k.statusHpl === this.hplStatusFilter) &&
+        this.matchesFilter(k) &&
         (!this.selectedProvinsi || k.provinsi === this.selectedProvinsi) &&
         (!q || k.nama.toLowerCase().includes(q) || k.provinsi.toLowerCase().includes(q) || k.kabupaten.toLowerCase().includes(q))
     );

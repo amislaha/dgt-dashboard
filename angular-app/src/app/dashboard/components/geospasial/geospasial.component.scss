@@ -348,12 +348,12 @@
   &:focus { box-shadow: 0 0 0 2px var(--primary-line); }
 }
 .geo-filter-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 14px;
 }
 .geo-select {
-  flex: 1 1 0;
   min-width: 0;
   height: 38px;
   padding: 0 12px;

@@ -104,15 +104,12 @@
       </div>
 
       <div class="geo-filter-row">
-        <select class="geo-select" aria-label="Filter tipe" [(ngModel)]="typeFilter">
-          <option value="Semua">Semua tipe</option>
-          <option value="KT">KT</option>
-          <option value="SKP">SKP</option>
-          <option value="SP">SP</option>
+        <select class="geo-select" aria-label="Filter berdasarkan" [(ngModel)]="dimensi" (ngModelChange)="onDimensiChange()">
+          <option *ngFor="let d of dimensiOptions" [value]="d.id">{{ d.label }}</option>
         </select>
-        <select class="geo-select" aria-label="Filter status HPL" [(ngModel)]="hplStatusFilter">
-          <option value="Semua">Semua status</option>
-          <option *ngFor="let s of statusHplOptions" [value]="s">{{ s }}</option>
+        <select class="geo-select" aria-label="Nilai filter" [(ngModel)]="nilaiFilter">
+          <option value="Semua">{{ semuaLabel }}</option>
+          <option *ngFor="let n of nilaiOptions" [value]="n">{{ n }}</option>
         </select>
       </div>
 
