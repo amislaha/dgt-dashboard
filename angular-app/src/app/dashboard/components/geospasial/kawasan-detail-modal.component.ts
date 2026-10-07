@@ -1,4 +1,6 @@
 import { Component, EventEmitter, HostListener, Input, OnChanges, Output } from '@angular/core';
+import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 import { Kawasan, PROFIL_DIPERBARUI, profilSumber, ProfilDetail, ProfilProduk, profilDetailData } from '../../services/dashboard-data.service';
 import { FISIK_BY_KAWASAN, FisikBlok } from '../profil/profil-fisik.data';
 
@@ -66,6 +68,14 @@ export class KawasanDetailModalComponent implements OnChanges {
   komoditas: ProfilProduk | null = null;
 
   readonly diperbarui = PROFIL_DIPERBARUI;
+
+  constructor(private readonly router: Router, private readonly location: Location) {}
+
+  /** Opens the Profil module's per-kawasan "Data Induk" detail (`?kawasan=<id>` deep link) in a new tab. */
+  openProfilDataInduk(): void {
+    const tree = this.router.createUrlTree(['/dashboard/profil'], { queryParams: { kawasan: this.kawasan.id } });
+    window.open(this.location.prepareExternalUrl(this.router.serializeUrl(tree)), '_blank');
+  }
 
   get sumber(): string {
     return profilSumber(this.kawasan.nama);
