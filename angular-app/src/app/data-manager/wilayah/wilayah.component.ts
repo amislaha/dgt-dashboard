@@ -2,6 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Wpt } from '../models/wpt.model';
 import { EntityRegistryService } from '../services/entity-registry.service';
+import { MapDrawService } from '../services/map-draw.service';
 
 /**
  * "Wilayah" — the header nav's default/landing page (route: '', redirects here — see
@@ -29,15 +30,20 @@ export class WilayahComponent implements OnDestroy {
   wilayah: Wpt[] = [];
   selectedId: string | null = null;
   sidebarCollapsed = false;
+  /** While the in-panel form draws on the map, slide the panel off-screen (not *ngIf, so the form survives). */
+  drawing = false;
 
   private readonly sub: Subscription;
+  private readonly drawSub: Subscription;
 
-  constructor(private readonly registry: EntityRegistryService) {
+  constructor(private readonly registry: EntityRegistryService, mapDraw: MapDrawService) {
     this.sub = this.registry.get('wpt').service.changes.subscribe(list => (this.wilayah = list as Wpt[]));
+    this.drawSub = mapDraw.drawType$.subscribe(type => (this.drawing = !!type));
   }
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
+    this.drawSub.unsubscribe();
   }
 
   onSelect(w: Wpt): void {

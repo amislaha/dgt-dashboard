@@ -1,4 +1,4 @@
-import { Component, OnDestroy, ViewChild } from '@angular/core';
+import { Component, HostBinding, Input, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { DataTableColumn, SortDirection } from '../../shared/components/data-table/data-table.model';
@@ -33,6 +33,8 @@ import { SubmissionService } from '../services/submission.service';
 })
 export class EntityListComponent implements OnDestroy {
   @ViewChild(EntityFormComponent, { static: false }) formComponent?: EntityFormComponent;
+  /** Wilayah: edit in place of the list (the host is already a side panel) instead of opening a second drawer on top. */
+  @Input() @HostBinding('class.inline-host') inline = false;
 
   config: EntityConfig | null = null;
   columns: DataTableColumn<any>[] = [];
@@ -92,6 +94,15 @@ export class EntityListComponent implements OnDestroy {
       return this.editing ? `Ajukan ubah ${label}` : `Ajukan tambah ${label}`;
     }
     return this.editing ? `Ubah ${label}` : `Tambah ${label}`;
+  }
+
+  get editorHeading(): string {
+    const config = this.config as EntityConfig;
+    if (!this.editing) {
+      return `${config.label} baru`;
+    }
+    const header = config.headerField ? this.editing[config.headerField] : null;
+    return header ? String(header) : this.labelOf(this.editing);
   }
 
   /** Every entity now writes directly; the submission path below is kept only so approval can be switched back on per entity. */

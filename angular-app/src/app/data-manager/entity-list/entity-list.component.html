@@ -1,4 +1,22 @@
 <ng-container *ngIf="config">
+  <div class="inline-editor" *ngIf="inline && drawerOpen; else listView">
+    <div class="inline-editor-head">
+      <div class="min-w-0">
+        <div class="inline-editor-eyebrow">{{ drawerTitle }}</div>
+        <h2 class="inline-editor-title">{{ editorHeading }}</h2>
+      </div>
+      <button type="button" class="inline-editor-close" (click)="closeDrawer()" aria-label="Tutup">&times;</button>
+    </div>
+
+    <div class="inline-editor-body">
+      <dgt-entity-form [config]="config" [record]="editing" (saved)="onFormSaved($event)"></dgt-entity-form>
+    </div>
+
+    <ng-container *ngTemplateOutlet="formFooter"></ng-container>
+  </div>
+
+  <ng-template #listView>
+  <div [class.inline-list]="inline">
   <dgt-page-head [title]="config.label" [description]="config.sub">
     <div class="input-group input-group-sm search-box mr-2">
       <div class="input-group-prepend">
@@ -25,11 +43,19 @@
       (rowClick)="openEdit($event)">
     </dgt-data-table>
   </div>
+  </div>
+  </ng-template>
 
-  <dgt-drawer [open]="drawerOpen && !drawing" [title]="drawerTitle" (closed)="closeDrawer()">
+  <dgt-drawer *ngIf="!inline" [open]="drawerOpen && !drawing" [title]="drawerTitle" (closed)="closeDrawer()">
     <dgt-entity-form *ngIf="drawerOpen" [config]="config" [record]="editing" (saved)="onFormSaved($event)"></dgt-entity-form>
 
-    <div drawer-footer class="d-flex justify-content-between align-items-center w-100">
+    <div drawer-footer class="w-100">
+      <ng-container *ngTemplateOutlet="formFooter"></ng-container>
+    </div>
+  </dgt-drawer>
+
+  <ng-template #formFooter>
+    <div class="form-footer d-flex justify-content-between align-items-center w-100">
       <button *ngIf="editing" type="button" class="btn btn-outline-danger btn-sm" (click)="deleteCurrent()">{{ needsApproval ? 'Ajukan Hapus' : 'Hapus' }}</button>
       <span *ngIf="!editing"></span>
       <div>
@@ -37,5 +63,5 @@
         <button type="button" class="btn btn-primary btn-sm" (click)="submitForm()">{{ needsApproval ? 'Ajukan' : 'Simpan' }}</button>
       </div>
     </div>
-  </dgt-drawer>
+  </ng-template>
 </ng-container>

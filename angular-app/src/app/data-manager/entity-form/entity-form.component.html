@@ -6,12 +6,16 @@
       [class.sel]="activeTab === i"
       [class.has-error]="tabHasErrors(i)"
       (click)="activeTab = i">
-      {{ tab.label }}
+      <span class="tab-dot" [ngClass]="'tab-dot-' + tabStatus(i)"></span>{{ tab.label }}
     </button>
   </div>
 
   <ng-container *ngFor="let tab of tabs; let i = index">
   <div [class.d-none]="activeTab !== i">
+  <div class="section-head" *ngIf="tab.label">
+    <span class="section-title">{{ tab.label }}</span>
+    <span class="section-count">{{ tabFillCount(i).filled }} dari {{ tabFillCount(i).total }} terisi</span>
+  </div>
   <div class="form-row" *ngFor="let group of tab.groups">
     <div class="form-group" [ngClass]="group.length > 1 ? 'col-6' : 'col-12'" *ngFor="let field of group">
       <label [attr.for]="'f_' + field.name">

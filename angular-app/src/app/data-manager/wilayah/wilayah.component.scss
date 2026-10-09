@@ -2,8 +2,8 @@
 // no gutter at all — `.wilayah-shell` cancels `.dm-content`'s own page padding via a negative
 // margin rather than that padding being removed globally (every other entity route still wants
 // it) — and the record list/search/"+ Tambah" panel (`<dgt-entity-list>`, unmodified) is a flush
-// full-height sidebar on the right, not a floating card with margins on every side. Its own
-// create/edit `<dgt-drawer>` still slides over everything from the right on top of this, unchanged.
+// full-height sidebar on the right, not a floating card with margins on every side. Create/edit
+// replaces the list inside this same panel (`[inline]="true"`) rather than opening a second drawer.
 .wilayah-shell {
   position: relative;
   margin: calc(var(--page-px, 1.5rem) * -1);
@@ -32,7 +32,11 @@
   border-left: 1px solid var(--border);
   box-shadow: var(--shadow-lg, 0 12px 32px rgba(0, 0, 0, .18));
   z-index: 5;
-  transition: width var(--duration-base, .2s) var(--ease-standard, ease);
+  transition: width var(--duration-base, .2s) var(--ease-standard, ease), transform var(--duration-base, .2s) var(--ease-standard, ease);
+
+  &.drawing {
+    transform: translateX(100%);
+  }
 
   &.collapsed {
     width: 0;
@@ -44,7 +48,6 @@
 .sidebar-scroll {
   height: 100%;
   overflow-y: auto;
-  padding: var(--space-4, 1rem);
 }
 
 // Always sits at the panel's current left edge (0/420px/whatever width(100%) resolves to) since

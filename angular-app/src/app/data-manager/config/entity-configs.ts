@@ -38,6 +38,7 @@ const WPT_CONFIG: EntityConfig<Wpt> = {
   sub: '',
   idPrefix: 'wpt',
   titleField: 'nama',
+  headerField: 'kawasan',
   columns: [
     { key: 'nama', label: 'Nama KT', sortable: true },
     { key: 'kawasan', label: 'Kawasan', sortable: true },
@@ -46,9 +47,9 @@ const WPT_CONFIG: EntityConfig<Wpt> = {
   ],
   fields: [
     { name: 'nama', label: 'Nama KT', type: 'text', required: true, placeholder: 'cth. LUNANG SILAUT', section: 'Identitas' },
-    { name: 'kawasan', label: 'Nama Kawasan', type: 'text', required: false, hint: 'Nama umum/singkat dari Matriks 45 Kawasan — kadang beda penulisan dari Nama KT di atas.' },
-    { name: 'wilayahType', label: 'Tipe Wilayah (wilayah_type)', type: 'text', required: false, hint: 'Enum di ERD — isinya tidak terbaca pada gambar.', row: 'id' },
-    { name: 'dasarPenetapan', label: 'Dasar Penetapan', type: 'text', required: false, row: 'id' },
+    { name: 'kawasan', label: 'Nama kawasan', type: 'text', required: false, hint: 'Nama singkat sesuai Matriks 45 Kawasan. Boleh berbeda dari Nama KT.' },
+    { name: 'wilayahType', label: 'Tipe wilayah', type: 'select', required: false, options: ['Kawasan Transmigrasi'], row: 'id' },
+    { name: 'dasarPenetapan', label: 'Dasar penetapan', type: 'text', required: false, placeholder: 'Contoh: Kepmen No. 12/2019', row: 'id' },
     { name: 'geometry', label: 'Gambar di Peta', type: 'geometry', required: false, section: 'Lokasi & Peta', hint: 'Panel akan menyingkir saat Anda menggambar di peta, lalu kembali dengan bentuknya terisi.' },
     DECIMAL('lat', 'Latitude', { row: 'geo', step: 0.000001 }),
     DECIMAL('lon', 'Longitude', { row: 'geo', step: 0.000001 }),

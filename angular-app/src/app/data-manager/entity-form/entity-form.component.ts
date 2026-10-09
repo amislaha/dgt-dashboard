@@ -161,6 +161,21 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
     return this.tabs[index].groups.some(group => group.some(field => this.fieldInvalid(field)));
   }
 
+  /** Booleans always hold an answer, so they count as filled. */
+  tabFillCount(index: number): { filled: number; total: number } {
+    const fields = ([] as FieldConfig[]).concat(...this.tabs[index].groups);
+    const filled = fields.filter(field => {
+      const value = this.form.get(field.name)!.value;
+      return field.type === 'boolean' || (value != null && String(value).trim() !== '');
+    }).length;
+    return { filled, total: fields.length };
+  }
+
+  tabStatus(index: number): 'full' | 'partial' | 'empty' {
+    const { filled, total } = this.tabFillCount(index);
+    return filled === 0 ? 'empty' : filled === total ? 'full' : 'partial';
+  }
+
   private showFirstInvalidTab(): void {
     const first = this.tabs.findIndex((_, i) => this.tabHasErrors(i));
     if (first !== -1) {

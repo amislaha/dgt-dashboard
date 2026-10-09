@@ -1,43 +1,125 @@
 // Ports the original `.field`/`.field-row` spacing (data-manager/index.html)
 // on top of Bootstrap's .form-row/.form-group grid.
 .form-group {
-  margin-bottom: 0.9rem;
+  margin-bottom: 1.1rem;
 
   label {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    color: var(--text-dim);
-    margin-bottom: 0.3rem;
+    color: var(--text);
+    margin-bottom: 0.4rem;
   }
+}
+
+// Filled, borderless-looking controls (per the Wilayah edit mockup).
+.form-control {
+  height: auto;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  background-color: var(--muted);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm, 0.5rem);
+  color: var(--text);
+
+  &:focus {
+    background-color: var(--card);
+    border-color: var(--primary-line);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+
+  &::placeholder {
+    color: var(--text-faint);
+  }
+
+  &.is-invalid {
+    border-color: var(--critical);
+  }
+}
+
+.form-text {
+  font-size: 0.75rem;
 }
 
 .form-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+  margin: 0 0 1.1rem;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   button {
-    border: 1px solid var(--border);
-    background: var(--muted);
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
     color: var(--text-dim);
-    border-radius: 999px;
-    padding: 0.3rem 0.85rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    padding: 0.7rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
     cursor: pointer;
 
-    &.sel {
-      background: var(--primary-soft);
-      border-color: var(--primary-line);
+    &:hover {
       color: var(--text);
     }
 
+    &.sel {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 600;
+    }
+
     &.has-error {
-      border-color: var(--danger, #c0392b);
-      color: var(--danger, #c0392b);
+      color: var(--critical);
     }
   }
+}
+
+.tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tab-dot-full {
+  background: var(--good);
+}
+
+.tab-dot-partial {
+  background: var(--warn);
+}
+
+.tab-dot-empty {
+  background: var(--border);
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.section-count {
+  font-size: 0.75rem;
+  color: var(--text-dim);
 }
 
 .geometry-actions {
@@ -52,4 +134,12 @@
   gap: 0.75rem;
   margin-top: 0.5rem;
   font-size: 0.8rem;
+}
+
+// Keep the tab strip visible while a long section scrolls underneath.
+.form-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--card);
 }

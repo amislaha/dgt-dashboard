@@ -3,7 +3,7 @@
     <dgt-wilayah-map [wilayah]="wilayah" [selectedId]="selectedId" (select)="onSelect($event)"></dgt-wilayah-map>
   </div>
 
-  <div class="wilayah-side-panel" [class.collapsed]="sidebarCollapsed">
+  <div class="wilayah-side-panel" [class.collapsed]="sidebarCollapsed" [class.drawing]="drawing">
     <button
       type="button"
       class="sidebar-collapse-toggle"
@@ -12,7 +12,7 @@
       {{ sidebarCollapsed ? '‹' : '›' }}
     </button>
     <div class="sidebar-scroll" *ngIf="!sidebarCollapsed">
-      <dgt-entity-list></dgt-entity-list>
+      <dgt-entity-list [inline]="true"></dgt-entity-list>
     </div>
   </div>
 </div>

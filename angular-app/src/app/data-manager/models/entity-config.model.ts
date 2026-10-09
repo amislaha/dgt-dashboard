@@ -31,6 +31,8 @@ export interface EntityConfig<T extends { id: string } = any> {
   sub: string;
   idPrefix: string;
   titleField: keyof T & string;
+  /** Inline editor heading; falls back to `titleField` when the record leaves it empty. */
+  headerField?: keyof T & string;
   columns: EntityColumnConfig<T>[];
   fields: FieldConfig<T>[];
 }
