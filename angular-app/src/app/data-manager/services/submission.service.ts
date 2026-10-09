@@ -49,6 +49,11 @@ export class SubmissionService {
 
   submit(input: SubmissionInput): Submission {
     const now = new Date().toISOString();
+    const target = input.targetId ? this.registry.get(input.entityKey).service.get(input.targetId) : null;
+    const previousValues: { [key: string]: any } | null = target ? {} : null;
+    if (target) {
+      ENTITY_CONFIGS[input.entityKey].fields.forEach(f => (previousValues![f.name] = target[f.name]));
+    }
     const record: Submission = {
       id: 'sub' + this.nextSeq(),
       entityKey: input.entityKey,
@@ -59,6 +64,7 @@ export class SubmissionService {
       images: input.images,
       geometry: input.geometry || null,
       fieldValues: input.fieldValues || null,
+      previousValues,
       submittedBy: input.submittedBy,
       submittedAt: now,
       status: 'PENDING',

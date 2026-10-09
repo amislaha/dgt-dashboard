@@ -41,6 +41,10 @@ export interface Submission {
    *  doesn't need field edits. This is what makes a submission's "Ringkasan Perubahan" free text a
    *  supplement rather than the only record of what's being proposed. */
   fieldValues?: { [key: string]: any } | null;
+  /** update/delete: the target record's field values when the submission was made, so the detail
+   *  page can still show "old → new" after approval has overwritten the record. Absent on older
+   *  submissions. */
+  previousValues?: { [key: string]: any } | null;
   submittedBy: string;
   submittedAt: string;
   status: SubmissionStatus;

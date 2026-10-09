@@ -1,61 +1,149 @@
-<div class="dm-toolbar d-flex justify-content-end mb-3">
-  <span class="reviewer-field">
-    <label>Reviewer</label>
-    <input type="text" class="form-control form-control-sm" [(ngModel)]="reviewerDraft" placeholder="Nama Anda" />
-  </span>
-</div>
-
-<div class="panel">
-  <div class="seg">
-    <button type="button" *ngFor="let o of filterOptions" [class.sel]="filter === o[0]" (click)="setFilter(o[0])">{{ o[1] }} ({{ count(o[0]) }})</button>
+<!-- List -->
+<ng-container *ngIf="!selected; else detail">
+  <div class="appr-head">
+    <h1 class="appr-title">Persetujuan</h1>
+    <p class="appr-sub">Tinjau pengajuan perubahan data master di satu tempat.</p>
   </div>
 
-  <div class="list" *ngIf="pool.length; else emptyState">
-    <div class="appr-item" *ngFor="let s of pool" [class.open]="openId[s.id]">
-      <div class="appr-head" (click)="toggleOpen(s.id)">
-        <span class="li-body">
-          <span class="li-title">{{ entityLabel(s.entityKey) }} &middot; {{ modeLabel[s.mode] }} — {{ s.targetLabel }}</span>
-          <span class="li-meta">Diajukan oleh {{ s.submittedBy }} &middot; {{ fmtWhen(s.submittedAt) }}</span>
-        </span>
-        <dgt-severity-badge [severity]="statusMeta[s.status].severity" [label]="statusMeta[s.status].label"></dgt-severity-badge>
-        <span class="appr-caret">&#8250;</span>
-      </div>
+  <div class="tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      *ngFor="let o of filterOptions"
+      [class.sel]="filter === o[0]"
+      [attr.aria-selected]="filter === o[0]"
+      (click)="setFilter(o[0])">
+      {{ o[1] }} <span class="tab-count">{{ count(o[0]) }}</span>
+    </button>
+  </div>
 
-      <div class="appr-body" *ngIf="openId[s.id]">
-        <p class="summary-text">{{ s.summary }}</p>
+  <div class="search">
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" /><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+    <input type="text" placeholder="Cari data atau pengaju…" [value]="query" (input)="onSearch($any($event.target).value)" aria-label="Cari pengajuan" />
+  </div>
 
-        <div class="field-values" *ngIf="fieldEntries(s).length">
-          <div class="qn-row" *ngFor="let entry of fieldEntries(s)"><span class="qn-k">{{ entry.label }}</span><span class="qn-v">{{ entry.value }}</span></div>
-        </div>
+  <div class="table-card">
+    <table class="appr-table" *ngIf="pageItems.length; else emptyState">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Pengaju</th>
+          <th class="text-right">Tanggal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of pageItems" (click)="open(s)" tabindex="0" (keydown.enter)="open(s)">
+          <td>
+            <div class="row-title">{{ s.targetLabel }}</div>
+            <div class="row-meta">{{ entityLabel(s.entityKey) }} &middot; {{ modeLabel[s.mode] }}</div>
+          </td>
+          <td><span class="pill" [ngClass]="'pill-' + statusMeta[s.status].severity">{{ statusMeta[s.status].label }}</span></td>
+          <td>
+            <span class="who"><span class="avatar">{{ initial(s.submittedBy) }}</span>{{ s.submittedBy }}</span>
+          </td>
+          <td class="text-right">
+            <div class="row-date">{{ fmtDate(s.submittedAt) }}</div>
+            <div class="row-meta">{{ fmtTime(s.submittedAt) }}</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #emptyState>
+      <div class="empty">{{ query ? 'Tidak ada pengajuan yang cocok.' : 'Tidak ada pengajuan pada status ini.' }}</div>
+    </ng-template>
 
-        <div class="image-preview" *ngIf="s.images.length">
-          <div class="image-thumb" *ngFor="let src of s.images"><img [src]="src" alt="" /></div>
-        </div>
-
-        <div class="qn-row" *ngIf="s.geometry"><span class="qn-k">Lokasi</span><span class="qn-v">Ditampilkan di peta sebelah kiri ({{ s.geometry.type }}).</span></div>
-
-        <div class="qn-row"><span class="qn-k">Diajukan</span><span class="qn-v">{{ s.submittedBy }} &middot; {{ fmtWhen(s.submittedAt) }}</span></div>
-        <div class="qn-row"><span class="qn-k">Ditinjau</span><span class="qn-v">{{ s.reviewer ? (s.reviewer + ' &middot; ' + fmtWhen(s.reviewedAt)) : '—' }}</span></div>
-        <div class="qn-row" *ngIf="s.reviewNote"><span class="qn-k">Catatan</span><span class="qn-v">{{ s.reviewNote }}</span></div>
-
-        <details class="appr-hist">
-          <summary>Riwayat ({{ s.history.length }})</summary>
-          <div class="hist-list">
-            <div class="hist-item" *ngFor="let h of s.history">
-              <dgt-severity-badge [severity]="historyColor(h.action)" [label]="actionLabel[h.action]"></dgt-severity-badge>
-              <span>{{ h.by || '-' }}{{ h.note ? (' — ' + h.note) : '' }} &middot; {{ fmtWhen(h.at) }}</span>
-            </div>
-          </div>
-        </details>
-
-        <textarea class="appr-note" placeholder="Catatan reviewer (wajib untuk penolakan)" [(ngModel)]="noteDraft[s.id]"></textarea>
-        <div class="appr-actions">
-          <button class="btn btn-success btn-sm" type="button" *ngIf="s.status !== 'APPROVED'" (click)="act(s, 'APPROVED')">Setujui</button>
-          <button class="btn btn-danger btn-sm" type="button" *ngIf="s.status === 'PENDING'" (click)="act(s, 'REJECTED')">Tolak</button>
-          <button class="btn btn-outline-secondary btn-sm" type="button" *ngIf="s.status === 'REJECTED'" (click)="act(s, 'PENDING')">Kembalikan ke Menunggu</button>
-        </div>
+    <div class="table-foot">
+      <span class="row-meta">{{ filtered.length }} data &middot; halaman {{ page > pageCount ? pageCount : page }} dari {{ pageCount }}</span>
+      <div class="pager">
+        <button type="button" class="pg" [disabled]="page <= 1" (click)="goPage(page - 1)">Sebelumnya</button>
+        <button type="button" class="pg pg-num" *ngFor="let p of pages" [class.sel]="p === page" (click)="goPage(p)">{{ p }}</button>
+        <button type="button" class="pg" [disabled]="page >= pageCount" (click)="goPage(page + 1)">Berikutnya</button>
       </div>
     </div>
   </div>
-  <ng-template #emptyState><div class="muted p-4">Tidak ada pengajuan pada status ini.</div></ng-template>
-</div>
+</ng-container>
+
+<!-- Detail -->
+<ng-template #detail>
+  <div class="detail" *ngIf="selected as s">
+    <button type="button" class="back" (click)="close()">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      Kembali ke daftar
+    </button>
+
+    <div class="detail-tags">
+      <span class="pill" [ngClass]="'pill-' + statusMeta[s.status].severity">{{ statusMeta[s.status].label }}</span>
+      <span class="row-meta">{{ modeLabel[s.mode] }}</span>
+    </div>
+    <h1 class="detail-title">{{ s.targetLabel }}</h1>
+
+    <div class="meta-box">
+      <div><div class="meta-k">Data</div><div class="meta-v">{{ entityLabel(s.entityKey) }}</div></div>
+      <div><div class="meta-k">Diajukan oleh</div><div class="meta-v">{{ s.submittedBy }}</div></div>
+      <div><div class="meta-k">Tanggal pengajuan</div><div class="meta-v">{{ fmtDate(s.submittedAt) }}, {{ fmtTime(s.submittedAt) }}</div></div>
+    </div>
+
+    <p class="summary-text" *ngIf="s.summary">{{ s.summary }}</p>
+
+    <ng-container *ngIf="sections.length; else noChanges">
+      <div class="tabs tabs-upper" role="tablist" *ngIf="sections.length > 1">
+        <button type="button" role="tab" *ngFor="let sec of sections; let i = index" [class.sel]="activeSection === i" [attr.aria-selected]="activeSection === i" (click)="activeSection = i">
+          <span class="dot"></span>{{ sec.label }}
+        </button>
+      </div>
+
+      <div class="change-card" *ngIf="sections[activeSection] as sec">
+        <div class="change-card-head">
+          <span><strong>{{ sec.label }}</strong> <span class="row-meta">{{ s.targetLabel }}</span></span>
+          <span class="pill pill-dot" [ngClass]="'pill-' + statusMeta[s.status].severity">{{ statusMeta[s.status].label }}</span>
+        </div>
+        <div class="change-grid">
+          <div class="change" *ngFor="let e of sec.entries">
+            <div class="change-k">{{ e.label }}</div>
+            <div class="change-old" *ngIf="e.before !== null" [class.struck]="e.after !== null || s.mode === 'delete'">{{ e.before }}</div>
+            <div class="change-new" *ngIf="e.after !== null">{{ e.after }}</div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #noChanges><div class="empty">Tidak ada isian yang berubah.</div></ng-template>
+
+    <div class="image-preview" *ngIf="s.images.length">
+      <div class="image-thumb" *ngFor="let src of s.images"><img [src]="src" alt="" /></div>
+    </div>
+    <div class="row-meta mb-3" *ngIf="s.geometry">Lokasi ditampilkan di peta ({{ s.geometry.type }}).</div>
+
+    <div class="review-info" *ngIf="s.reviewer">
+      Ditinjau oleh <strong>{{ s.reviewer }}</strong> &middot; {{ fmtDate(s.reviewedAt) }}, {{ fmtTime(s.reviewedAt) }}
+      <div *ngIf="s.reviewNote" class="review-note">“{{ s.reviewNote }}”</div>
+    </div>
+
+    <details class="hist">
+      <summary>Riwayat ({{ s.history.length }})</summary>
+      <div class="hist-item" *ngFor="let h of s.history">
+        <dgt-severity-badge [severity]="historyColor(h.action)" [label]="actionLabel[h.action]"></dgt-severity-badge>
+        <span>{{ h.by || '-' }}{{ h.note ? (' — ' + h.note) : '' }} &middot; {{ fmtDate(h.at) }}, {{ fmtTime(h.at) }}</span>
+      </div>
+    </details>
+
+    <div class="review-form" *ngIf="s.status !== 'APPROVED'">
+      <label class="field">
+        <span>Reviewer</span>
+        <input type="text" class="form-control" [(ngModel)]="reviewerDraft" placeholder="Nama Anda" />
+      </label>
+      <label class="field">
+        <span>Catatan <span class="row-meta">(wajib untuk penolakan)</span></span>
+        <textarea class="form-control" rows="2" [(ngModel)]="noteDraft"></textarea>
+      </label>
+    </div>
+
+    <div class="detail-foot">
+      <button type="button" class="btn btn-light" (click)="close()">Tutup</button>
+      <span class="flex-spacer"></span>
+      <button type="button" class="btn btn-outline-secondary" *ngIf="s.status === 'REJECTED'" (click)="act('PENDING')">Kembalikan ke Menunggu</button>
+      <button type="button" class="btn btn-outline-danger" *ngIf="s.status === 'PENDING'" (click)="act('REJECTED')">Tolak</button>
+      <button type="button" class="btn btn-primary" *ngIf="s.status !== 'APPROVED'" (click)="act('APPROVED')">Setujui</button>
+    </div>
+  </div>
+</ng-template>

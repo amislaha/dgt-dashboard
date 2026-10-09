@@ -12,25 +12,39 @@ import {
   SUBMISSION_MODE_LABEL,
   SUBMISSION_STATUS_META
 } from '../models/submission.model';
+import { getOperator } from '../services/entity-crud.service';
 import { EntityRegistryService } from '../services/entity-registry.service';
 import { MapDrawService } from '../services/map-draw.service';
 import { SubmissionService } from '../services/submission.service';
 
 type ApprFilter = 'all' | SubmissionStatus;
 
+interface ChangeEntry {
+  label: string;
+  /** null when there is no "old" side to show (create, or an update whose previous values are unknown). */
+  before: string | null;
+  /** null for a delete. */
+  after: string | null;
+}
+
+interface ChangeSection {
+  label: string;
+  entries: ChangeEntry[];
+}
+
+const PAGE_SIZE = 10;
+const TZ = 'Asia/Jakarta';
+
 /**
- * "Approval" — reviews pending/approved/rejected Submissions with their photo evidence. Ports the
- * shape of geomapping's ApprovalComponent (status filter chips, expandable rows, approve/reject/
- * reset with a required rejection note, history log) but against Submission instead of
- * GeomappingFeature, and with no "buka di editor" link — there's no separate editor to jump to, but
- * expanding a row that has a `geometry` does show it on the shared map (`SubmissionHubComponent`'s
- * `<dgt-wilayah-map>`) via `MapDrawService.showPreview()`, the same mediator `SubmissionComponent`
- * uses to draw one in the first place.
+ * "Persetujuan" — reviews Submissions in two views inside the hub's side panel: a paged, searchable
+ * table (status tabs with counts), and a detail page for one submission whose changed fields are
+ * grouped into the target entity's form sections (`FieldConfig.section`), each shown as old value
+ * (struck through) → new value.
  *
- * `fieldEntries()` renders a submission's `fieldValues` (the target entity's own fields, captured
- * via `<dgt-entity-form>` on the submitting side — see SubmissionComponent) as label/value pairs,
- * resolving `fk`-typed fields to their referenced record's display label the same way
- * `EntityListComponent.resolveFkLabel()` does, so a reviewer sees names, not raw ids.
+ * "Old" comes from `Submission.previousValues` (snapshotted at submit time); older submissions
+ * without it fall back to the live record while still PENDING, and to new-values-only afterwards.
+ * Opening a submission that carries a `geometry` previews it on the hub's shared map via
+ * `MapDrawService.showPreview()`.
  */
 @Component({
   selector: 'dgt-submission-approval',
@@ -51,9 +65,14 @@ export class SubmissionApprovalComponent implements OnDestroy {
 
   items: Submission[] = [];
   filter: ApprFilter = 'all';
-  openId: { [id: string]: boolean } = {};
-  noteDraft: { [id: string]: string } = {};
-  reviewerDraft = '';
+  query = '';
+  page = 1;
+
+  selected: Submission | null = null;
+  sections: ChangeSection[] = [];
+  activeSection = 0;
+  noteDraft = '';
+  reviewerDraft = getOperator();
 
   private readonly sub: Subscription;
 
@@ -63,7 +82,13 @@ export class SubmissionApprovalComponent implements OnDestroy {
     private readonly mapDraw: MapDrawService,
     private readonly toast: ToastService
   ) {
-    this.sub = this.submissions.changes.subscribe(list => (this.items = list));
+    this.sub = this.submissions.changes.subscribe(list => {
+      this.items = list;
+      if (this.selected) {
+        const id = this.selected.id;
+        this.selected = list.find(s => s.id === id) || null;
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -71,57 +96,73 @@ export class SubmissionApprovalComponent implements OnDestroy {
     this.mapDraw.clearPreview();
   }
 
+  // ---- list ----
+
   count(status: ApprFilter): number {
     return this.submissions.count(status);
   }
 
-  get pool(): Submission[] {
-    const filtered = this.items.filter(s => this.filter === 'all' || s.status === this.filter);
+  get filtered(): Submission[] {
+    const q = this.query.trim().toLowerCase();
     const rank: { [key in SubmissionStatus]: number } = { PENDING: 0, REJECTED: 1, APPROVED: 2 };
-    return filtered.slice().sort((a, b) => rank[a.status] - rank[b.status] || b.submittedAt.localeCompare(a.submittedAt));
+    return this.items
+      .filter(s => this.filter === 'all' || s.status === this.filter)
+      .filter(s => !q || [s.targetLabel, s.submittedBy, this.entityLabel(s.entityKey), s.summary].some(v => (v || '').toLowerCase().indexOf(q) !== -1))
+      .sort((a, b) => rank[a.status] - rank[b.status] || b.submittedAt.localeCompare(a.submittedAt));
+  }
+
+  get pageCount(): number {
+    return Math.max(1, Math.ceil(this.filtered.length / PAGE_SIZE));
+  }
+
+  get pageItems(): Submission[] {
+    const start = (Math.min(this.page, this.pageCount) - 1) * PAGE_SIZE;
+    return this.filtered.slice(start, start + PAGE_SIZE);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.pageCount }, (_, i) => i + 1);
   }
 
   setFilter(f: ApprFilter): void {
     this.filter = f;
+    this.page = 1;
   }
 
-  toggleOpen(id: string): void {
-    this.openId[id] = !this.openId[id];
-    if (this.openId[id]) {
-      const submission = this.items.find(s => s.id === id);
-      this.mapDraw.showPreview((submission && (submission.geometry || (submission.fieldValues && submission.fieldValues.geometry))) || null);
-    } else {
-      this.mapDraw.clearPreview();
-    }
+  onSearch(value: string): void {
+    this.query = value;
+    this.page = 1;
   }
 
-  fmtWhen(iso: string | null): string {
-    return iso ? new Date(iso).toLocaleString('id-ID') : '-';
+  goPage(p: number): void {
+    this.page = Math.max(1, Math.min(this.pageCount, p));
   }
 
-  fieldEntries(s: Submission): Array<{ label: string; value: string }> {
-    if (!s.fieldValues) {
-      return [];
-    }
-    const config = ENTITY_CONFIGS[s.entityKey];
-    return config.fields
-      .filter(f => s.fieldValues![f.name] != null && s.fieldValues![f.name] !== '')
-      .map(f => ({ label: f.label, value: this.formatFieldValue(f, s.fieldValues![f.name]) }));
+  initial(name: string): string {
+    return (name || '?').trim().charAt(0).toUpperCase();
   }
 
-  private formatFieldValue(field: FieldConfig, value: any): string {
-    if (field.type === 'fk' && field.fkEntity) {
-      const entry = this.registry.get(field.fkEntity);
-      const record = entry.service.get(value);
-      return record ? String(record[entry.config.titleField]) : `⚠ tidak ditemukan (${value})`;
-    }
-    if (field.type === 'geometry') {
-      return describeGeometry(value);
-    }
-    if (field.type === 'boolean') {
-      return value ? 'Ya' : 'Tidak';
-    }
-    return String(value);
+  fmtDate(iso: string | null): string {
+    return iso ? new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: TZ }) : '—';
+  }
+
+  fmtTime(iso: string | null): string {
+    return iso ? new Date(iso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) + ' WIB' : '';
+  }
+
+  // ---- detail ----
+
+  open(s: Submission): void {
+    this.selected = s;
+    this.sections = this.buildSections(s);
+    this.activeSection = 0;
+    this.noteDraft = '';
+    this.mapDraw.showPreview(s.geometry || (s.fieldValues && s.fieldValues.geometry) || null);
+  }
+
+  close(): void {
+    this.selected = null;
+    this.mapDraw.clearPreview();
   }
 
   historyColor(action: SubmissionHistoryEntry['action']): 'good' | 'warn' | 'critical' | 'neutral' {
@@ -130,9 +171,13 @@ export class SubmissionApprovalComponent implements OnDestroy {
     return 'neutral';
   }
 
-  act(s: Submission, status: SubmissionStatus): void {
-    const reviewer = this.reviewerDraft.trim();
-    const note = (this.noteDraft[s.id] || '').trim();
+  act(status: SubmissionStatus): void {
+    const s = this.selected;
+    if (!s) {
+      return;
+    }
+    const reviewer = (this.reviewerDraft || '').trim();
+    const note = this.noteDraft.trim();
     if (!reviewer && status !== 'PENDING') {
       this.toast.show('Isi nama reviewer terlebih dahulu.', 'danger');
       return;
@@ -146,9 +191,59 @@ export class SubmissionApprovalComponent implements OnDestroy {
       this.toast.show(error, 'danger');
       return;
     }
+    this.noteDraft = '';
+    if (this.selected) {
+      this.sections = this.buildSections(this.selected);
+    }
     this.toast.show(
       status === 'APPROVED' ? 'Pengajuan disetujui dan diterapkan ke data.' : 'Status pengajuan diperbarui: ' + this.statusMeta[status].label,
       'success'
     );
+  }
+
+  private buildSections(s: Submission): ChangeSection[] {
+    const config = ENTITY_CONFIGS[s.entityKey];
+    const live = s.status === 'PENDING' && s.targetId ? this.registry.get(s.entityKey).service.get(s.targetId) : null;
+    const previous = s.previousValues || live || null;
+    const next = s.fieldValues || {};
+
+    const sections: ChangeSection[] = [];
+    config.fields.forEach(field => {
+      if (field.section || !sections.length) {
+        sections.push({ label: field.section || 'Data', entries: [] });
+      }
+      const before = previous ? this.formatFieldValue(field, previous[field.name]) : '';
+      const after = this.formatFieldValue(field, next[field.name]);
+      let entry: ChangeEntry | null = null;
+      if (s.mode === 'delete') {
+        entry = before ? { label: field.label, before, after: null } : null;
+      } else if (s.mode === 'update' && previous) {
+        entry = before !== after ? { label: field.label, before: before || '—', after: after || '—' } : null;
+      } else {
+        entry = after ? { label: field.label, before: null, after } : null;
+      }
+      if (entry) {
+        sections[sections.length - 1].entries.push(entry);
+      }
+    });
+    return sections.filter(section => section.entries.length);
+  }
+
+  private formatFieldValue(field: FieldConfig, value: any): string {
+    if (value == null || value === '') {
+      return '';
+    }
+    if (field.type === 'fk' && field.fkEntity) {
+      const entry = this.registry.get(field.fkEntity);
+      const record = entry.service.get(value);
+      return record ? String(record[entry.config.titleField]) : `⚠ tidak ditemukan (${value})`;
+    }
+    if (field.type === 'geometry') {
+      return describeGeometry(value);
+    }
+    if (field.type === 'boolean') {
+      return value ? 'Ya' : 'Tidak';
+    }
+    return String(value);
   }
 }
