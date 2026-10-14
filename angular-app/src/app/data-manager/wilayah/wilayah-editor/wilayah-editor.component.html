@@ -27,13 +27,13 @@
     </div>
   </header>
 
-  <div class="we-tabs" role="tablist">
+  <div class="we-tabs" role="tablist" #tabStrip (wheel)="onTabsWheel($event, tabStrip)">
     <button
       type="button"
       role="tab"
       [attr.aria-selected]="tab === 'umum'"
       [class.sel]="tab === 'umum'"
-      (click)="selectTab('umum')">
+      (click)="selectTab('umum'); reveal($event)">
       Umum
     </button>
     <button
@@ -44,7 +44,7 @@
       [class.sel]="tab === c.key"
       [disabled]="!current"
       [attr.title]="current ? null : 'Simpan kawasan dulu'"
-      (click)="selectTab(c.key)">
+      (click)="selectTab(c.key); reveal($event)">
       {{ c.tab }}<span class="count" *ngIf="tab === c.key && counts[c.key]">{{ counts[c.key] }}</span>
     </button>
   </div>
@@ -57,10 +57,7 @@
 
     <ng-container *ngIf="config && !detail.open">
       <div class="list-head">
-        <div class="min-w-0">
-          <h3 class="list-title">{{ config.heading }}</h3>
-          <div class="list-sub">{{ config.summary(visibleRows) }}</div>
-        </div>
+        <div class="list-sub min-w-0" [attr.title]="config.heading">{{ config.summary(visibleRows) }}</div>
         <div class="list-actions">
           <select *ngIf="config.year && years.length" class="form-control custom-select year-select" [(ngModel)]="yearFilter" aria-label="Filter tahun">
             <option value="">Semua tahun</option>

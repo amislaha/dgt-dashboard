@@ -12,6 +12,11 @@ export const HPL_STATUS = ['Menunggu', 'Diproses', 'Terbit'];
 const num = (value: any, digits = 1): string =>
   value == null || value === '' ? '—' : Number(value).toLocaleString('id-ID', { maximumFractionDigits: digits });
 
+const distinct = (rows: WilayahChildRecord[], key: string): number => new Set(rows.map(row => row[key]).filter(v => v != null && v !== '')).size;
+
+/** "3 sertifikat · 1.240 ha" — empty parts dropped. */
+const parts = (...items: Array<string | false>): string => items.filter(Boolean).join(' · ');
+
 const sum = (rows: WilayahChildRecord[], key: string): number => rows.reduce((total, row) => total + (Number(row[key]) || 0), 0);
 
 const dateLabel = (value: string | undefined): string => {
@@ -37,7 +42,10 @@ const certificate = (key: 'hpl' | 'shm', noun: string, heading: string, withStat
   tab: noun,
   noun,
   heading,
-  summary: rows => `${rows.length} sertifikat · ${num(sum(rows, 'luas'))} ha`,
+  summary: rows => {
+    const terbit = rows.filter(row => row.status === 'Terbit').length;
+    return parts(`${rows.length} sertifikat`, rows.length > 0 && `${num(sum(rows, 'luas'))} ha`, withStatus && rows.length > 0 && `${terbit} terbit`);
+  },
   title: row => row.nomor || '(tanpa nomor)',
   mono: true,
   colorField: 'color',
@@ -77,7 +85,7 @@ export const WILAYAH_CHILD_CONFIGS: WilayahChildConfig[] = [
     tab: 'KK',
     noun: 'KK',
     heading: 'Kepala keluarga',
-    summary: rows => `${rows.length} KK · ${num(sum(rows, 'population'), 0)} jiwa`,
+    summary: rows => parts(`${rows.length} KK`, rows.length > 0 && `${num(sum(rows, 'population'), 0)} jiwa`),
     title: row => row.nomor || '(tanpa nomor)',
     subtitle: (row, r) => {
       const shm = r.child('shm', row.shmId);
@@ -103,7 +111,7 @@ export const WILAYAH_CHILD_CONFIGS: WilayahChildConfig[] = [
     tab: 'Profil',
     noun: 'profil',
     heading: 'Profil kawasan',
-    summary: rows => `${rows.length} indikator`,
+    summary: rows => parts(`${rows.length} indikator`, distinct(rows, 'profilGroupId') > 0 && `${distinct(rows, 'profilGroupId')} grup`),
     title: row => row.name || '(tanpa nama)',
     subtitle: (row, r) => [r.name('profilGroup', row.profilGroupId), yearOf(row.reportingDate)].filter(Boolean).join(' · '),
     year: row => yearOf(row.reportingDate),
@@ -180,7 +188,7 @@ export const WILAYAH_CHILD_CONFIGS: WilayahChildConfig[] = [
     tab: 'PSU',
     noun: 'PSU',
     heading: 'Prasarana, sarana & utilitas',
-    summary: rows => `${rows.length} PSU · ${rupiah(sum(rows, 'anggaran'))}`,
+    summary: rows => parts(`${rows.length} PSU`, rows.length > 0 && `anggaran ${rupiah(sum(rows, 'anggaran'))}`),
     title: row => row.name || '(tanpa nama)',
     subtitle: row => [row.psuType, yearOf(row.reportingDate)].filter(Boolean).join(' · '),
     colorField: 'color',
@@ -209,7 +217,10 @@ export const WILAYAH_CHILD_CONFIGS: WilayahChildConfig[] = [
     tab: 'IKU',
     noun: 'IKU',
     heading: 'Indikator kinerja utama',
-    summary: rows => `${rows.length} indikator`,
+    summary: rows => {
+      const scored = rows.filter(row => row.achievementPercentage != null && row.achievementPercentage !== '');
+      return parts(`${rows.length} indikator`, scored.length > 0 && `rata-rata capaian ${num(sum(scored, 'achievementPercentage') / scored.length)}%`);
+    },
     title: (row, r) => r.name('ikuDefinition', row.ikuDefinitionId),
     subtitle: row => yearOf(row.reportingDate),
     year: row => yearOf(row.reportingDate),
@@ -233,7 +244,7 @@ export const WILAYAH_CHILD_CONFIGS: WilayahChildConfig[] = [
     tab: 'Rekomendasi',
     noun: 'rekomendasi',
     heading: 'Rekomendasi',
-    summary: rows => `${rows.length} rekomendasi`,
+    summary: rows => parts(`${rows.length} rekomendasi`, distinct(rows, 'recommendationCategoryId') > 0 && `${distinct(rows, 'recommendationCategoryId')} kategori`),
     title: (row, r) => r.name('recommendationCategory', row.recommendationCategoryId),
     subtitle: row => String(row.referenceYear || ''),
     year: row => String(row.referenceYear || ''),
@@ -256,7 +267,7 @@ export const WILAYAH_CHILD_CONFIGS: WilayahChildConfig[] = [
     noun: 'target',
     heading: 'Target & anggaran',
     entity: 'wilayahTarget',
-    summary: rows => `${rows.length} target · ${rupiah(sum(rows, 'budgetTarget'))}`,
+    summary: rows => parts(`${rows.length} target`, rows.length > 0 && `anggaran ${rupiah(sum(rows, 'budgetTarget'))}`),
     title: row => row.targetType || '(tanpa tipe)',
     subtitle: row => String(row.targetYear || ''),
     year: row => String(row.targetYear || ''),
