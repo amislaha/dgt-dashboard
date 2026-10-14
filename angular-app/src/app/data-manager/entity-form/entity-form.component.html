@@ -1,5 +1,5 @@
 <form *ngIf="form" [formGroup]="form" class="dm-form">
-  <div class="form-tabs" *ngIf="tabs.length > 1">
+  <div class="form-tabs" *ngIf="tabs.length > 1" dgtScrollX="wheel">
     <button
       type="button"
       *ngFor="let tab of tabs; let i = index"

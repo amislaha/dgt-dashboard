@@ -5,6 +5,7 @@ import { DataManagerShellComponent } from './data-manager-shell/data-manager-she
 import { EntityFormComponent } from './entity-form/entity-form.component';
 import { EntityListComponent } from './entity-list/entity-list.component';
 import { SubmissionApprovalComponent } from './submission-approval/submission-approval.component';
+import { ScrollXDirective } from './shared/scroll-x.directive';
 import { SubmissionHubComponent } from './submission-hub/submission-hub.component';
 import { WilayahMapComponent } from './wilayah/wilayah-map/wilayah-map.component';
 import { WilayahEditorComponent } from './wilayah/wilayah-editor/wilayah-editor.component';
@@ -27,6 +28,7 @@ import { WilayahComponent } from './wilayah/wilayah.component';
     EntityListComponent,
     EntityFormComponent,
     SubmissionApprovalComponent,
+    ScrollXDirective,
     SubmissionHubComponent,
     WilayahComponent,
     WilayahEditorComponent,

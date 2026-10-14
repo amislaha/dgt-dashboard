@@ -57,6 +57,7 @@
       </header>
 
       <div class="dm-table">
+        <div class="dm-table-scroll" dgtScrollX>
         <dgt-data-table
           [columns]="columns"
           [rows]="rows"
@@ -66,6 +67,7 @@
           (sortChange)="onSort($event)"
           (rowClick)="openEdit($event)">
         </dgt-data-table>
+        </div>
       </div>
     </div>
   </ng-template>

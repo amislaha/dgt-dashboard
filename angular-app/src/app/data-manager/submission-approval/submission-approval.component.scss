@@ -129,7 +129,13 @@
   border: 1px solid var(--border);
   border-radius: var(--radius, 0.75rem);
   background: var(--card);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .appr-table {

@@ -108,10 +108,30 @@ svg {
 .dm-table {
   padding: 1.25rem 1.5rem 1.5rem;
 
+  // The wrapper scrolls sideways (scrollbar hidden; drag/trackpad/Shift+wheel) — the shared
+  // table's own wrapper clips instead, so it's flattened here.
+  .dm-table-scroll {
+    border: 1px solid var(--border);
+    border-radius: var(--radius, 0.625rem);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
   ::ng-deep {
     .table-wrap {
-      border: 1px solid var(--border);
-      border-radius: var(--radius, 0.625rem);
+      border: none;
+      border-radius: 0;
+      overflow: visible;
+    }
+
+    thead th,
+    tbody td {
+      white-space: nowrap;
     }
 
     .table {

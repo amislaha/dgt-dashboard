@@ -5,7 +5,7 @@
     <p class="appr-sub">Tinjau pengajuan perubahan data master di satu tempat.</p>
   </div>
 
-  <div class="tabs" role="tablist">
+  <div class="tabs" role="tablist" dgtScrollX="wheel">
     <button
       type="button"
       role="tab"
@@ -22,7 +22,7 @@
     <input type="text" placeholder="Cari data atau pengaju…" [value]="query" (input)="onSearch($any($event.target).value)" aria-label="Cari pengajuan" />
   </div>
 
-  <div class="table-card">
+  <div class="table-card" dgtScrollX>
     <table class="appr-table" *ngIf="pageItems.length; else emptyState">
       <thead>
         <tr>
@@ -87,7 +87,7 @@
     <p class="summary-text" *ngIf="s.summary">{{ s.summary }}</p>
 
     <ng-container *ngIf="sections.length; else noChanges">
-      <div class="tabs tabs-upper" role="tablist" *ngIf="sections.length > 1">
+      <div class="tabs tabs-upper" role="tablist" *ngIf="sections.length > 1" dgtScrollX="wheel">
         <button type="button" role="tab" *ngFor="let sec of sections; let i = index" [class.sel]="activeSection === i" [attr.aria-selected]="activeSection === i" (click)="activeSection = i">
           <span class="dot"></span>{{ sec.label }}
         </button>

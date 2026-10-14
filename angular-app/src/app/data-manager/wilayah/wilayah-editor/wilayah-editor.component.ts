@@ -158,14 +158,6 @@ export class WilayahEditorComponent implements OnChanges, OnDestroy {
     return STATUS_TONE[status] || 'muted';
   }
 
-  /** The tab strip scrolls sideways without a scrollbar: a vertical wheel scrolls it horizontally. */
-  onTabsWheel(event: WheelEvent, strip: HTMLElement): void {
-    if (Math.abs(event.deltaY) > Math.abs(event.deltaX) && strip.scrollWidth > strip.clientWidth) {
-      strip.scrollLeft += event.deltaY;
-      event.preventDefault();
-    }
-  }
-
   /** Keeps a clicked tab fully in view (it may sit half outside the scrolled strip). */
   reveal(event: Event): void {
     const tab = event.currentTarget as HTMLElement | null;
