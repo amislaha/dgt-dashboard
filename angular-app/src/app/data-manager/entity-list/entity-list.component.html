@@ -34,10 +34,8 @@
   <ng-template #listView>
     <div class="list-page" [class.inline]="inline">
       <header class="list-head">
-        <div class="min-w-0">
-          <h2 class="list-title">{{ config.label }}</h2>
-          <div class="list-sub">{{ rows.length }} data<ng-container *ngIf="config.sub"> · {{ config.sub }}</ng-container></div>
-        </div>
+        <h2 class="list-title" [attr.title]="config.sub || null">{{ config.label }}</h2>
+        <span class="list-count">{{ rows.length }}</span>
         <div class="list-actions">
           <div class="search-box">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
