@@ -151,7 +151,9 @@ export class WilayahEditorComponent implements OnChanges, OnDestroy {
     if (!config) {
       return '';
     }
-    return config.columns.map(c => (c.primary ? 'minmax(0, 2.4fr)' : 'minmax(0, 1fr)')).join(' ') + ' 20px';
+    // Plain `fr` values only: Angular 8's style sanitizer strips functions like minmax() and drops the whole
+    // binding (the cells then stack). Cells already have `min-width: 0`, which is what minmax(0, …) was for.
+    return config.columns.map(c => (c.primary ? '2.4fr' : '1fr')).join(' ') + ' 20px';
   }
 
   tone(status: string): string {
