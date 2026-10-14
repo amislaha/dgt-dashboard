@@ -507,3 +507,33 @@ omitted" convention above.
   `wilayah_type` stays free text (enum values not legible in the ERD image).
 - SKP/SP are unchanged and have no map drawing.
 
+
+## Wilayah editor with per-kawasan tabs; list → detail pages everywhere
+
+On request, matching the reference screenshots of the production Data Manager (tab set and fields) and
+the "Ubah kawasan" mockups (styling):
+
+- **`wilayah/wilayah-editor/`** replaces the generic inline form on the Wilayah page. Tabs: **Umum**
+  (ID read-only, Induk, Tipe/Status, Nama, Deskripsi, Alamat, Provinsi/Kabupaten, Dasar penetapan,
+  Kapasitas, Geometri, Warna), then **Kategori, HPL, SHM, KK, Profil, Produk, PSU, IKU, Rekomendasi,
+  Target**. Each list tab is a table (colour chip, mono numbers, status dot, chevron); a row or
+  "+ Tambah …" opens a detail page in the same panel (breadcrumb, 2-column form, Hapus / Batal /
+  Simpan). Child tabs are disabled until a new kawasan is saved. A map click now opens that kawasan.
+- **Umum only patches its own fields.** The older WPT fields (Profil/Produk master fields, Matriks-45
+  summaries, legality totals, …) stay stored on each record and in `WPT_CONFIG` (still used by the
+  approval summary), but are no longer editable from the Wilayah page.
+- **Child records** (`config/wilayah-child-configs.ts`, `services/wilayah-child.service.ts`): one
+  localStorage array per tab under `dgt-data-manager:wilayah-<key>`, rows carry `wilayahId`. Target is
+  the exception: it reads/writes the existing Wilayah Target entity, so Data Master shows the same rows.
+  Kategori is seeded once: every Matriks-45 kawasan → "45 Kawasan Transmigrasi Prioritas Nasional"
+  (Wilayah Category now seeds that and "15 … Prioritas Kementerian"). Deleting a kawasan deletes its
+  child records. HPL/SHM/PSU geometry is drawn on the shared map and previewed there while open.
+- **Form field additions** (`FieldConfig`): `color` (swatches + hex), `readonly`, `mono`, `choices`
+  (runtime select options), `unit` (value + unit dropdown in one control), `showWhen` (Profil's value
+  field follows Tipe nilai), `areaFrom` ("Luas dari geometri: … ha"). Selects keep an existing value
+  that isn't in their option list (e.g. old `wilayahType: 'Kawasan Transmigrasi'`).
+- **Every Data Master screen** (`EntityListComponent`) now uses the same list → detail page layout:
+  no more drawer; header with count + search + Tambah, the shared table restyled for this module only
+  (`.dm-table ::ng-deep`), detail page with breadcrumb and the same footer.
+- Not compiled locally (no `node_modules`); the TS was checked with stubbed Angular types, templates
+  only by the CI build.

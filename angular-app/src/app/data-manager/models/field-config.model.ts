@@ -1,6 +1,6 @@
 import { EntityKey } from './entity-key.model';
 
-export type FieldType = 'text' | 'number' | 'select' | 'textarea' | 'fk' | 'boolean' | 'date' | 'geometry';
+export type FieldType = 'text' | 'number' | 'select' | 'textarea' | 'fk' | 'boolean' | 'date' | 'geometry' | 'color';
 
 /**
  * Describes one Reactive Form field for an entity's create/edit drawer.
@@ -35,4 +35,16 @@ export interface FieldConfig<T = any> {
    * share the same `row` value, matching the original's `f.row` convention.
    */
   row?: string;
+  /** Shown but not editable (e.g. the record id). Never trimmed/required. */
+  readonly?: boolean;
+  /** Monospace control (certificate numbers, codes). */
+  mono?: boolean;
+  /** type: 'select' — value/label pairs built at runtime, used instead of `options`. */
+  choices?: Array<{ value: string; label: string }>;
+  /** A unit dropdown rendered inside the same control (e.g. 5 [ha]); stored as its own field `name`. */
+  unit?: { name: string; options: string[]; defaultValue?: string };
+  /** Only shown (and only saved) while another field holds one of these values. */
+  showWhen?: { field: string; equals: string[] };
+  /** type: 'number' — names a `geometry` field; the hint shows that shape's computed area in ha. */
+  areaFrom?: string;
 }

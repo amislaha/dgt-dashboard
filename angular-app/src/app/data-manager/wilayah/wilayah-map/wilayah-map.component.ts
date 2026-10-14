@@ -385,11 +385,12 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     return w.luasKawasanHa && w.luasKawasanHa > 0 ? Math.sqrt((w.luasKawasanHa * 10000) / Math.PI) : 25000;
   }
 
-  private areaStyle(selected: boolean, approx: boolean): L.PathOptions {
+  private areaStyle(selected: boolean, approx: boolean, color?: string): L.PathOptions {
+    const base = color || '#2c755b';
     return {
-      color: selected ? '#c65b7c' : '#2c755b',
+      color: selected ? '#c65b7c' : base,
       weight: selected ? 3 : 2,
-      fillColor: selected ? '#c65b7c' : '#2c755b',
+      fillColor: selected ? '#c65b7c' : base,
       fillOpacity: selected ? 0.3 : 0.18,
       dashArray: approx ? '6 4' : undefined
     };
@@ -414,13 +415,13 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
         const latlngs = ring.map(c => [c[1], c[0]] as [number, number]);
         shape =
           g.type === 'Polygon'
-            ? L.polygon(latlngs, this.areaStyle(w.id === this.selectedId, false))
-            : L.polyline(latlngs, { color: '#2c755b', weight: 4 });
+            ? L.polygon(latlngs, this.areaStyle(w.id === this.selectedId, false, w.color))
+            : L.polyline(latlngs, { color: w.color || '#2c755b', weight: 4 });
       } else {
         const pin = this.pinOf(w);
         if (pin) {
           approx = true;
-          shape = L.circle(pin, { radius: this.radiusOf(w), ...this.areaStyle(w.id === this.selectedId, true) });
+          shape = L.circle(pin, { radius: this.radiusOf(w), ...this.areaStyle(w.id === this.selectedId, true, w.color) });
         }
       }
       if (!shape) {
@@ -450,7 +451,7 @@ export class WilayahMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.wilayah.forEach(w => {
       const shape = this.markers[w.id];
       if (shape instanceof L.Polygon || shape instanceof L.Circle) {
-        shape.setStyle(this.areaStyle(w.id === this.selectedId, shape instanceof L.Circle));
+        shape.setStyle(this.areaStyle(w.id === this.selectedId, shape instanceof L.Circle, w.color));
       }
     });
     const shape = this.selectedId ? this.markers[this.selectedId] : null;

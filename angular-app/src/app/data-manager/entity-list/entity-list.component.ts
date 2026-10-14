@@ -1,4 +1,4 @@
-import { Component, HostBinding, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, EventEmitter, HostBinding, Input, OnDestroy, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { DataTableColumn, SortDirection } from '../../shared/components/data-table/data-table.model';
@@ -35,6 +35,9 @@ export class EntityListComponent implements OnDestroy {
   @ViewChild(EntityFormComponent, { static: false }) formComponent?: EntityFormComponent;
   /** Wilayah: edit in place of the list (the host is already a side panel) instead of opening a second drawer on top. */
   @Input() @HostBinding('class.inline-host') inline = false;
+  /** The host shows its own editor (Wilayah): row click / "+ Tambah" just emit `editRequest` (null = new). */
+  @Input() customEditor = false;
+  @Output() editRequest = new EventEmitter<any | null>();
 
   config: EntityConfig | null = null;
   columns: DataTableColumn<any>[] = [];
@@ -111,11 +114,19 @@ export class EntityListComponent implements OnDestroy {
   }
 
   openCreate(): void {
+    if (this.customEditor) {
+      this.editRequest.emit(null);
+      return;
+    }
     this.editing = null;
     this.drawerOpen = true;
   }
 
   openEdit(row: any): void {
+    if (this.customEditor) {
+      this.editRequest.emit(row);
+      return;
+    }
     this.editing = row;
     this.drawerOpen = true;
   }

@@ -7,6 +7,7 @@ import { EntityListComponent } from './entity-list/entity-list.component';
 import { SubmissionApprovalComponent } from './submission-approval/submission-approval.component';
 import { SubmissionHubComponent } from './submission-hub/submission-hub.component';
 import { WilayahMapComponent } from './wilayah/wilayah-map/wilayah-map.component';
+import { WilayahEditorComponent } from './wilayah/wilayah-editor/wilayah-editor.component';
 import { WilayahComponent } from './wilayah/wilayah.component';
 
 /**
@@ -28,6 +29,7 @@ import { WilayahComponent } from './wilayah/wilayah.component';
     SubmissionApprovalComponent,
     SubmissionHubComponent,
     WilayahComponent,
+    WilayahEditorComponent,
     WilayahMapComponent
   ],
   imports: [SharedModule, DataManagerRoutingModule]

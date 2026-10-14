@@ -30,6 +30,9 @@ export class WilayahComponent implements OnDestroy {
   wilayah: Wpt[] = [];
   selectedId: string | null = null;
   sidebarCollapsed = false;
+  /** WilayahEditorComponent replaces the list in the side panel; `editing` null = new kawasan. */
+  editorOpen = false;
+  editing: Wpt | null = null;
   /** While the in-panel form draws on the map, slide the panel off-screen (not *ngIf, so the form survives). */
   drawing = false;
 
@@ -46,7 +49,24 @@ export class WilayahComponent implements OnDestroy {
     this.drawSub.unsubscribe();
   }
 
+  /** A map click opens that kawasan in the editor. */
   onSelect(w: Wpt): void {
+    this.openEditor(w);
+  }
+
+  openEditor(w: Wpt | null): void {
+    this.editing = w;
+    this.editorOpen = true;
+    this.selectedId = w ? w.id : null;
+    this.sidebarCollapsed = false;
+  }
+
+  closeEditor(): void {
+    this.editorOpen = false;
+    this.editing = null;
+  }
+
+  onCreated(w: Wpt): void {
     this.selectedId = w.id;
   }
 

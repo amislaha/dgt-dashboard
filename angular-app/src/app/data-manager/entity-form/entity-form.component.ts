@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleCha
 import { FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
-import { describeGeometry, DrawGeometryType, DrawnGeometry } from '../models/drawn-geometry.model';
+import { DrawGeometryType, DrawnGeometry, geometryAreaHa, geometryPointCount } from '../models/drawn-geometry.model';
 import { EntityConfig } from '../models/entity-config.model';
 import { FieldConfig } from '../models/field-config.model';
 import { EntityRegistryService } from '../services/entity-registry.service';
@@ -22,6 +22,13 @@ import { MapDrawService } from '../services/map-draw.service';
  * time the drawer opens, so `ngOnChanges` only ever needs to handle the
  * initial `config`/`record` inputs, not live re-binding mid-edit.
  */
+/** Palette offered by `color` fields (map fill colours). */
+export const COLOR_SWATCHES = ['#b2293d', '#e8961e', '#1fa34a', '#1497b8', '#0b62a8', '#c9a063'];
+
+function formatNumber(value: number, digits: number): string {
+  return value.toLocaleString('id-ID', { maximumFractionDigits: digits });
+}
+
 @Component({
   selector: 'dgt-entity-form',
   templateUrl: './entity-form.component.html',
@@ -37,6 +44,9 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
   tabs: Array<{ label: string; groups: FieldConfig[][] }> = [];
   activeTab = 0;
   fkOptions: { [fieldName: string]: Array<{ id: string; label: string }> } = {};
+  /** `select` options as value/label pairs, from `choices` or `options` — plus the record's current value when it isn't one of them, so older free-text data still shows. */
+  selectOptions: { [fieldName: string]: Array<{ value: string; label: string }> } = {};
+  readonly swatches = COLOR_SWATCHES;
 
   private drawSub?: Subscription;
 
@@ -75,8 +85,46 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
     }
   }
 
-  geometrySummary(field: FieldConfig): string {
-    return describeGeometry(this.form.get(field.name)!.value as DrawnGeometry | null);
+  geometryTitle(g: DrawnGeometry): string {
+    return g.type === 'Point' ? 'Titik tersimpan' : g.type === 'LineString' ? 'Garis tersimpan' : 'Poligon tersimpan';
+  }
+
+  geometryDetail(g: DrawnGeometry): string {
+    if (g.type === 'Point') {
+      return `${formatNumber(g.coordinates[1], 5)}, ${formatNumber(g.coordinates[0], 5)}`;
+    }
+    const points = `${geometryPointCount(g)} titik`;
+    return g.type === 'Polygon' ? `${points} · ${formatNumber(geometryAreaHa(g), 1)} ha` : points;
+  }
+
+  /** `areaFrom` hint: area of the named geometry field, or '' when it holds no polygon. */
+  areaHint(field: FieldConfig): string {
+    const control = field.areaFrom ? this.form.get(field.areaFrom) : null;
+    const ha = control ? geometryAreaHa(control.value) : 0;
+    return ha ? formatNumber(ha, 1) : '';
+  }
+
+  setColor(field: FieldConfig, color: string): void {
+    const control = this.form.get(field.name)!;
+    control.setValue(color);
+    control.markAsDirty();
+  }
+
+  sameColor(a: string | null, b: string): boolean {
+    return !!a && a.toLowerCase() === b.toLowerCase();
+  }
+
+  /** Fields hidden by `showWhen` drop out of the layout and out of the saved value. */
+  isVisible(field: FieldConfig): boolean {
+    if (!field.showWhen) {
+      return true;
+    }
+    const control = this.form.get(field.showWhen.field);
+    return !!control && field.showWhen.equals.indexOf(control.value) !== -1;
+  }
+
+  visibleIn(group: FieldConfig[]): FieldConfig[] {
+    return group.filter(field => this.isVisible(field));
   }
 
   private stopListeningForDraw(): void {
@@ -98,7 +146,8 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
   }
 
   submit(): void {
-    if (this.form.invalid) {
+    const blocking = this.config.fields.some(field => this.isVisible(field) && this.form.get(field.name)!.invalid);
+    if (blocking) {
       Object.values(this.form.controls).forEach(control => control.markAsTouched());
       this.showFirstInvalidTab();
       this.toast.show('Periksa kembali kolom yang wajib diisi.', 'danger');
@@ -107,7 +156,11 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
 
     const value: any = { ...this.form.value };
     this.config.fields.forEach(field => {
-      if (field.type === 'geometry') {
+      if (!this.isVisible(field)) {
+        value[field.name] = undefined;
+      } else if (field.readonly) {
+        // shown only — passed through untouched
+      } else if (field.type === 'geometry') {
         value[field.name] = value[field.name] || undefined;
       } else if (field.type === 'number') {
         value[field.name] = value[field.name] === '' || value[field.name] == null ? undefined : Number(value[field.name]);
@@ -126,11 +179,27 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
       const empty = field.type === 'number' || field.type === 'geometry' ? null : field.type === 'boolean' ? false : '';
       const initial = raw != null ? raw : !this.record && field.defaultValue !== undefined ? field.defaultValue : empty;
       group[field.name] = [initial, this.buildValidators(field)];
+      if (field.unit) {
+        const unitRaw = this.record ? this.record[field.unit.name] : undefined;
+        group[field.unit.name] = [unitRaw != null ? unitRaw : field.unit.defaultValue || field.unit.options[0]];
+      }
     });
     this.form = this.fb.group(group);
 
     this.tabs = this.buildTabs(this.config.fields);
     this.activeTab = 0;
+
+    this.selectOptions = {};
+    this.config.fields.forEach(field => {
+      if (field.type === 'select') {
+        const opts = field.choices ? [...field.choices] : (field.options || []).map(o => ({ value: o, label: o }));
+        const current = this.form.get(field.name)!.value;
+        if (current && !opts.some(o => o.value === current)) {
+          opts.push({ value: current, label: current });
+        }
+        this.selectOptions[field.name] = opts;
+      }
+    });
 
     this.fkOptions = {};
     this.config.fields.forEach(field => {
@@ -143,8 +212,11 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
 
   private buildValidators(field: FieldConfig): ValidatorFn[] {
     const validators: ValidatorFn[] = [];
-    if (field.required) {
+    if (field.required && !field.readonly) {
       validators.push(Validators.required);
+    }
+    if (field.type === 'color') {
+      validators.push(Validators.pattern(/^#[0-9a-fA-F]{6}$/));
     }
     if (field.type === 'number') {
       if (field.min !== undefined) {
@@ -158,7 +230,7 @@ export class EntityFormComponent implements OnChanges, OnDestroy {
   }
 
   tabHasErrors(index: number): boolean {
-    return this.tabs[index].groups.some(group => group.some(field => this.fieldInvalid(field)));
+    return this.tabs[index].groups.some(group => this.visibleIn(group).some(field => this.fieldInvalid(field)));
   }
 
   /** Booleans always hold an answer, so they count as filled. */

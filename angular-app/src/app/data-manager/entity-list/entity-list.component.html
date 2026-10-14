@@ -1,66 +1,71 @@
 <ng-container *ngIf="config">
-  <div class="inline-editor" *ngIf="inline && drawerOpen; else listView">
-    <div class="inline-editor-head">
-      <div class="min-w-0">
-        <div class="inline-editor-eyebrow">{{ drawerTitle }}</div>
-        <h2 class="inline-editor-title">{{ editorHeading }}</h2>
+  <!-- Detail page: replaces the list (no drawer), opened from a row or "+ Tambah". -->
+  <div class="detail-page" [class.inline]="inline" *ngIf="drawerOpen; else listView">
+    <header class="detail-head">
+      <nav class="crumb" aria-label="Breadcrumb">
+        <button type="button" class="link" (click)="closeDrawer()">{{ config.label }}</button>
+        <span aria-hidden="true">/</span>
+        <span class="here">{{ editorHeading }}</span>
+      </nav>
+      <div class="detail-title-row">
+        <button type="button" class="icon-btn" (click)="closeDrawer()" aria-label="Kembali ke daftar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        </button>
+        <h2 class="detail-title">{{ editorHeading }}</h2>
+        <span class="detail-sub">{{ drawerTitle }}</span>
       </div>
-      <button type="button" class="inline-editor-close" (click)="closeDrawer()" aria-label="Tutup">&times;</button>
-    </div>
+    </header>
 
-    <div class="inline-editor-body">
+    <div class="detail-body">
       <dgt-entity-form [config]="config" [record]="editing" (saved)="onFormSaved($event)"></dgt-entity-form>
     </div>
 
-    <ng-container *ngTemplateOutlet="formFooter"></ng-container>
+    <footer class="detail-foot">
+      <button *ngIf="editing" type="button" class="btn-delete" (click)="deleteCurrent()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+        {{ needsApproval ? 'Ajukan hapus' : 'Hapus' }}
+      </button>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-light btn-cancel" (click)="closeDrawer()">Batal</button>
+      <button type="button" class="btn btn-primary btn-save" (click)="submitForm()">{{ needsApproval ? 'Ajukan' : 'Simpan' }}</button>
+    </footer>
   </div>
 
   <ng-template #listView>
-  <div [class.inline-list]="inline">
-  <dgt-page-head [title]="config.label" [description]="config.sub">
-    <div class="input-group input-group-sm search-box mr-2">
-      <div class="input-group-prepend">
-        <span class="input-group-text bg-white">🔎</span>
-      </div>
-      <input
-        type="text"
-        class="form-control"
-        [placeholder]="'Cari ' + config.label.toLowerCase() + '...'"
-        [value]="query"
-        (input)="onSearch($any($event.target).value)" />
-    </div>
-    <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">{{ needsApproval ? '+ Ajukan Tambah' : '+ Tambah' }}</button>
-  </dgt-page-head>
+    <div class="list-page" [class.inline]="inline">
+      <header class="list-head">
+        <div class="min-w-0">
+          <h2 class="list-title">{{ config.label }}</h2>
+          <div class="list-sub">{{ rows.length }} data<ng-container *ngIf="config.sub"> · {{ config.sub }}</ng-container></div>
+        </div>
+        <div class="list-actions">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input
+              type="search"
+              class="form-control"
+              [placeholder]="'Cari ' + config.label.toLowerCase() + '…'"
+              [attr.aria-label]="'Cari ' + config.label.toLowerCase()"
+              [value]="query"
+              (input)="onSearch($any($event.target).value)" />
+          </div>
+          <button type="button" class="btn btn-primary btn-add" (click)="openCreate()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            {{ needsApproval ? 'Ajukan tambah' : 'Tambah' }}
+          </button>
+        </div>
+      </header>
 
-  <div class="panel">
-    <dgt-data-table
-      [columns]="columns"
-      [rows]="rows"
-      [sortKey]="sortKey"
-      [sortDir]="sortDir"
-      [emptyLabel]="emptyLabel"
-      (sortChange)="onSort($event)"
-      (rowClick)="openEdit($event)">
-    </dgt-data-table>
-  </div>
-  </div>
-  </ng-template>
-
-  <dgt-drawer *ngIf="!inline" [open]="drawerOpen && !drawing" [title]="drawerTitle" (closed)="closeDrawer()">
-    <dgt-entity-form *ngIf="drawerOpen" [config]="config" [record]="editing" (saved)="onFormSaved($event)"></dgt-entity-form>
-
-    <div drawer-footer class="w-100">
-      <ng-container *ngTemplateOutlet="formFooter"></ng-container>
-    </div>
-  </dgt-drawer>
-
-  <ng-template #formFooter>
-    <div class="form-footer d-flex justify-content-between align-items-center w-100">
-      <button *ngIf="editing" type="button" class="btn btn-outline-danger btn-sm" (click)="deleteCurrent()">{{ needsApproval ? 'Ajukan Hapus' : 'Hapus' }}</button>
-      <span *ngIf="!editing"></span>
-      <div>
-        <button type="button" class="btn btn-secondary btn-sm mr-2" (click)="closeDrawer()">Batal</button>
-        <button type="button" class="btn btn-primary btn-sm" (click)="submitForm()">{{ needsApproval ? 'Ajukan' : 'Simpan' }}</button>
+      <div class="dm-table">
+        <dgt-data-table
+          [columns]="columns"
+          [rows]="rows"
+          [sortKey]="sortKey"
+          [sortDir]="sortDir"
+          [emptyLabel]="emptyLabel"
+          (sortChange)="onSort($event)"
+          (rowClick)="openEdit($event)">
+        </dgt-data-table>
       </div>
     </div>
   </ng-template>

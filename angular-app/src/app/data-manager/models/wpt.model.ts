@@ -38,6 +38,11 @@ export interface Wpt {
    *  in the table, just absent from the map until set. */
   lat?: number;
   lon?: number;
+  /** Parent wilayah (KT for an SKP, SKP for an SP), editable on the Wilayah editor's "Umum" tab. */
+  parentId?: string;
+  description?: string;
+  /** Fill colour of this wilayah's shape on the map. */
+  color?: string;
   /** Shape drawn on the Wilayah map (point/line/area). Set via the form's map tools, applied on approval. */
   geometry?: DrawnGeometry | null;
 

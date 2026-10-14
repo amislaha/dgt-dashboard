@@ -12,7 +12,9 @@
       {{ sidebarCollapsed ? '‹' : '›' }}
     </button>
     <div class="sidebar-scroll" *ngIf="!sidebarCollapsed">
-      <dgt-entity-list [inline]="true"></dgt-entity-list>
+      <dgt-wilayah-editor *ngIf="editorOpen" [record]="editing" (closed)="closeEditor()" (created)="onCreated($event)"></dgt-wilayah-editor>
+      <!-- Kept alive under the editor so its search/sort survive opening a record. -->
+      <dgt-entity-list [class.d-none]="editorOpen" [inline]="true" [customEditor]="true" (editRequest)="openEditor($event)"></dgt-entity-list>
     </div>
   </div>
 </div>

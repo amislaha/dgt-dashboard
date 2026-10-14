@@ -1,0 +1,126 @@
+<div class="we">
+  <header class="we-head" *ngIf="!detail.open">
+    <button type="button" class="we-back" (click)="closed.emit()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      Kembali
+    </button>
+    <div class="we-eyebrow">{{ current ? 'Ubah kawasan' : 'Tambah kawasan' }}</div>
+    <h2 class="we-title">{{ title }}</h2>
+  </header>
+
+  <header class="we-head we-head-detail" *ngIf="detail.open && config">
+    <nav class="we-crumb" aria-label="Breadcrumb">
+      <button type="button" (click)="selectTab('umum')">{{ title }}</button>
+      <span aria-hidden="true">/</span>
+      <button type="button" class="link" (click)="closeDetail()">{{ config.tab }}</button>
+      <span aria-hidden="true">/</span>
+      <span class="here" [class.mono]="config.mono">{{ detailTitle }}</span>
+    </nav>
+    <div class="we-detail-title">
+      <button type="button" class="we-icon-btn" (click)="closeDetail()" aria-label="Kembali ke daftar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      </button>
+      <span class="color-chip lg" *ngIf="detailColor" [style.background]="detailColor"></span>
+      <h2 class="we-title" [class.mono]="config.mono">{{ detailTitle }}</h2>
+      <span class="we-subtitle" *ngIf="detailSubtitle">{{ detailSubtitle }}</span>
+      <span class="status-pill" *ngIf="detailStatus" [ngClass]="'tone-' + tone(detailStatus)"><i></i>{{ detailStatus }}</span>
+    </div>
+  </header>
+
+  <div class="we-tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab === 'umum'"
+      [class.sel]="tab === 'umum'"
+      (click)="selectTab('umum')">
+      Umum
+    </button>
+    <button
+      type="button"
+      role="tab"
+      *ngFor="let c of childConfigs"
+      [attr.aria-selected]="tab === c.key"
+      [class.sel]="tab === c.key"
+      [disabled]="!current"
+      [attr.title]="current ? null : 'Simpan kawasan dulu'"
+      (click)="selectTab(c.key)">
+      {{ c.tab }}<span class="count" *ngIf="tab === c.key && counts[c.key]">{{ counts[c.key] }}</span>
+    </button>
+  </div>
+
+  <div class="we-body">
+    <!-- Umum: kept alive (hidden, not destroyed) so switching tabs doesn't drop what was typed. -->
+    <div class="we-pad" [class.d-none]="tab !== 'umum'">
+      <dgt-entity-form #basicForm [config]="basicConfig" [record]="current" (saved)="saveBasic($event)"></dgt-entity-form>
+    </div>
+
+    <ng-container *ngIf="config && !detail.open">
+      <div class="list-head">
+        <div class="min-w-0">
+          <h3 class="list-title">{{ config.heading }}</h3>
+          <div class="list-sub">{{ config.summary(visibleRows) }}</div>
+        </div>
+        <div class="list-actions">
+          <select *ngIf="config.year && years.length" class="form-control custom-select year-select" [(ngModel)]="yearFilter" aria-label="Filter tahun">
+            <option value="">Semua tahun</option>
+            <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+          </select>
+          <button type="button" class="btn btn-primary btn-add" (click)="openDetail(null)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah {{ config.noun }}
+          </button>
+        </div>
+      </div>
+
+      <div class="we-pad">
+        <div class="child-table" role="table">
+          <div class="ct-row ct-head" role="row" [style.grid-template-columns]="gridColumns">
+            <div *ngFor="let col of config.columns" role="columnheader" [class.num]="col.numeric" [class.grow]="col.primary">{{ col.label }}</div>
+            <div class="ct-chev" aria-hidden="true"></div>
+          </div>
+          <button
+            type="button"
+            class="ct-row"
+            role="row"
+            [style.grid-template-columns]="gridColumns"
+            *ngFor="let row of visibleRows; trackBy: trackById"
+            [class.sel]="row.id === lastOpenedId"
+            (click)="openDetail(row)">
+            <div *ngFor="let col of config.columns" role="cell" [class.num]="col.numeric" [class.grow]="col.primary" [class.muted]="col.muted">
+              <ng-container *ngIf="col.primary; else plainCell">
+                <span class="color-chip" *ngIf="config.colorField" [style.background]="row[config.colorField] || 'var(--border)'"></span>
+                <span class="primary" [class.mono]="config.mono">{{ cell(row, col) }}</span>
+                <span class="secondary" *ngIf="secondary(row, col) as sec"> · {{ sec }}</span>
+              </ng-container>
+              <ng-template #plainCell>
+                <span *ngIf="col.status; else textCell" class="status-text" [ngClass]="'tone-' + tone(cell(row, col))"><i></i>{{ cell(row, col) }}</span>
+                <ng-template #textCell>{{ cell(row, col) }}</ng-template>
+              </ng-template>
+            </div>
+            <div class="ct-chev" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+          </button>
+          <div class="ct-empty" *ngIf="!visibleRows.length">
+            {{ rows.length ? 'Tidak ada data untuk tahun ini.' : 'Belum ada data. Klik "Tambah ' + config.noun + '".' }}
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="we-pad" *ngIf="config && detail.open && detailConfig">
+      <dgt-entity-form #childForm [config]="detailConfig" [record]="detail.item" (saved)="saveChild($event)"></dgt-entity-form>
+    </div>
+  </div>
+
+  <footer class="we-foot" *ngIf="showFooter">
+    <button type="button" class="btn-delete" *ngIf="canDelete" (click)="deleteCurrent()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+      {{ deleteLabel }}
+    </button>
+    <span class="spacer"></span>
+    <button type="button" class="btn btn-light btn-cancel" (click)="cancel()">Batal</button>
+    <button type="button" class="btn btn-primary btn-save" (click)="save()">Simpan</button>
+  </footer>
+</div>

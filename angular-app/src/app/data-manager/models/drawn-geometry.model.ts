@@ -37,3 +37,31 @@ export function geometryCenter(g: DrawnGeometry | null | undefined): [number, nu
   const lats = ring.map(c => c[1]);
   return [(Math.min(...lats) + Math.max(...lats)) / 2, (Math.min(...lons) + Math.max(...lons)) / 2];
 }
+
+/** Vertex count (a polygon's closing point not counted). */
+export function geometryPointCount(g: DrawnGeometry | null | undefined): number {
+  if (!g) {
+    return 0;
+  }
+  if (g.type === 'Point') {
+    return 1;
+  }
+  return g.type === 'Polygon' ? g.coordinates[0].length - 1 : g.coordinates.length;
+}
+
+/** Polygon area in hectares (spherical approximation, fine at kawasan scale); 0 for points/lines. */
+export function geometryAreaHa(g: DrawnGeometry | null | undefined): number {
+  if (!g || g.type !== 'Polygon') {
+    return 0;
+  }
+  const ring: number[][] = g.coordinates[0];
+  const rad = Math.PI / 180;
+  const earthRadius = 6378137;
+  let sum = 0;
+  for (let i = 0; i < ring.length - 1; i++) {
+    const [lon1, lat1] = ring[i];
+    const [lon2, lat2] = ring[i + 1];
+    sum += (lon2 - lon1) * rad * (2 + Math.sin(lat1 * rad) + Math.sin(lat2 * rad));
+  }
+  return Math.abs((sum * earthRadius * earthRadius) / 2) / 10000;
+}

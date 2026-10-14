@@ -1,4 +1,4 @@
-<form *ngIf="form" [formGroup]="form">
+<form *ngIf="form" [formGroup]="form" class="dm-form">
   <div class="form-tabs" *ngIf="tabs.length > 1">
     <button
       type="button"
@@ -16,77 +16,126 @@
     <span class="section-title">{{ tab.label }}</span>
     <span class="section-count">{{ tabFillCount(i).filled }} dari {{ tabFillCount(i).total }} terisi</span>
   </div>
-  <div class="form-row" *ngFor="let group of tab.groups">
-    <div class="form-group" [ngClass]="group.length > 1 ? 'col-6' : 'col-12'" *ngFor="let field of group">
-      <label [attr.for]="'f_' + field.name">
-        {{ field.label }}<span *ngIf="field.required" class="text-danger"> *</span>
+  <ng-container *ngFor="let group of tab.groups">
+  <div class="form-row" *ngIf="visibleIn(group).length">
+    <div class="form-group" [ngClass]="visibleIn(group).length > 1 ? 'col-sm-6' : 'col-12'" *ngFor="let field of visibleIn(group)">
+      <label *ngIf="field.type !== 'boolean'" [attr.for]="'f_' + field.name">
+        {{ field.label }}<span *ngIf="field.required" class="req"> *</span>
       </label>
 
       <ng-container [ngSwitch]="field.type">
         <select
           *ngSwitchCase="'select'"
           [id]="'f_' + field.name"
-          class="form-control form-control-sm"
+          class="form-control custom-select"
           [class.is-invalid]="fieldInvalid(field)"
           [formControlName]="field.name">
-          <option value="" disabled>— pilih —</option>
-          <option *ngFor="let opt of field.options" [value]="opt">{{ opt }}</option>
+          <option value="" [disabled]="field.required">{{ field.placeholder || '— pilih —' }}</option>
+          <option *ngFor="let opt of selectOptions[field.name]" [value]="opt.value">{{ opt.label }}</option>
         </select>
 
         <select
           *ngSwitchCase="'fk'"
           [id]="'f_' + field.name"
-          class="form-control form-control-sm"
+          class="form-control custom-select"
           [class.is-invalid]="fieldInvalid(field)"
           [formControlName]="field.name">
-          <option value="" disabled>— pilih —</option>
+          <option value="" [disabled]="field.required">{{ field.placeholder || '— pilih —' }}</option>
           <option *ngFor="let opt of fkOptions[field.name]" [value]="opt.id">{{ opt.label }}</option>
         </select>
 
         <textarea
           *ngSwitchCase="'textarea'"
           [id]="'f_' + field.name"
-          class="form-control form-control-sm"
+          class="form-control"
           rows="3"
           [class.is-invalid]="fieldInvalid(field)"
           [formControlName]="field.name"
           [placeholder]="field.placeholder || ''">
         </textarea>
 
-        <input
-          *ngSwitchCase="'number'"
-          type="number"
-          [id]="'f_' + field.name"
-          class="form-control form-control-sm"
-          [class.is-invalid]="fieldInvalid(field)"
-          [formControlName]="field.name"
-          [attr.min]="field.min"
-          [attr.step]="field.step || 'any'"
-          [attr.max]="field.max"
-          [placeholder]="field.placeholder || ''" />
+        <ng-container *ngSwitchCase="'number'">
+          <div class="unit-pair" *ngIf="field.unit; else plainNumber">
+            <input
+              type="number"
+              [id]="'f_' + field.name"
+              class="form-control"
+              [class.is-invalid]="fieldInvalid(field)"
+              [formControlName]="field.name"
+              [attr.min]="field.min"
+              [attr.step]="field.step || 'any'"
+              [attr.max]="field.max"
+              [placeholder]="field.placeholder || ''" />
+            <select class="form-control custom-select unit-select" [formControlName]="field.unit.name" [attr.aria-label]="'Satuan ' + field.label">
+              <option *ngFor="let u of field.unit.options" [value]="u">{{ u }}</option>
+            </select>
+          </div>
+          <ng-template #plainNumber>
+            <input
+              type="number"
+              [id]="'f_' + field.name"
+              class="form-control"
+              [class.is-invalid]="fieldInvalid(field)"
+              [formControlName]="field.name"
+              [attr.min]="field.min"
+              [attr.step]="field.step || 'any'"
+              [attr.max]="field.max"
+              [placeholder]="field.placeholder || ''" />
+          </ng-template>
+        </ng-container>
 
         <div *ngSwitchCase="'geometry'" class="geometry-field">
-          <div class="geometry-actions">
-            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startDraw(field, 'Point')">Tandai Titik</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startDraw(field, 'LineString')">Gambar Garis</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="startDraw(field, 'Polygon')">Gambar Area</button>
+          <div class="geom-box" *ngIf="form.get(field.name)!.value as g; else drawButtons">
+            <svg class="geom-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/></svg>
+            <div class="geom-text">
+              <div class="geom-title">{{ geometryTitle(g) }}</div>
+              <div class="geom-sub">{{ geometryDetail(g) }}</div>
+            </div>
+            <button type="button" class="btn-plain" (click)="clearGeometry(field)">Hapus</button>
+            <button type="button" class="btn-soft" (click)="startDraw(field, g.type)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>
+              Ubah di peta
+            </button>
           </div>
-          <div class="geometry-summary" *ngIf="form.get(field.name)!.value">
-            <span>{{ geometrySummary(field) }}</span>
-            <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="clearGeometry(field)">Hapus</button>
-          </div>
+          <ng-template #drawButtons>
+            <div class="geom-box geom-empty">
+              <span class="geom-sub">Belum ada geometri.</span>
+              <button type="button" class="btn-soft" (click)="startDraw(field, 'Point')">Tandai titik</button>
+              <button type="button" class="btn-soft" (click)="startDraw(field, 'LineString')">Gambar garis</button>
+              <button type="button" class="btn-soft" (click)="startDraw(field, 'Polygon')">Gambar area</button>
+            </div>
+          </ng-template>
+        </div>
+
+        <div *ngSwitchCase="'color'" class="color-field">
+          <button
+            type="button"
+            *ngFor="let c of swatches"
+            class="swatch"
+            [style.background]="c"
+            [class.sel]="sameColor(form.get(field.name)!.value, c)"
+            [attr.aria-label]="'Warna ' + c"
+            (click)="setColor(field, c)"></button>
+          <input
+            type="text"
+            [id]="'f_' + field.name"
+            class="form-control color-hex"
+            maxlength="7"
+            [class.is-invalid]="fieldInvalid(field)"
+            [formControlName]="field.name"
+            placeholder="#000000" />
         </div>
 
         <div *ngSwitchCase="'boolean'" class="custom-control custom-checkbox">
           <input type="checkbox" class="custom-control-input" [id]="'f_' + field.name" [formControlName]="field.name" />
-          <label class="custom-control-label" [attr.for]="'f_' + field.name">Ya</label>
+          <label class="custom-control-label" [attr.for]="'f_' + field.name">{{ field.label }}</label>
         </div>
 
         <input
           *ngSwitchCase="'date'"
           type="date"
           [id]="'f_' + field.name"
-          class="form-control form-control-sm"
+          class="form-control"
           [class.is-invalid]="fieldInvalid(field)"
           [formControlName]="field.name" />
 
@@ -94,16 +143,20 @@
           *ngSwitchDefault
           type="text"
           [id]="'f_' + field.name"
-          class="form-control form-control-sm"
+          class="form-control"
+          [class.mono]="field.mono"
+          [readonly]="field.readonly"
           [class.is-invalid]="fieldInvalid(field)"
           [formControlName]="field.name"
           [placeholder]="field.placeholder || ''" />
       </ng-container>
 
-      <small class="form-text text-muted" *ngIf="field.hint">{{ field.hint }}</small>
-      <small class="form-text text-danger" *ngIf="fieldInvalid(field)">Kolom ini wajib diisi.</small>
+      <small class="form-text" *ngIf="field.areaFrom && areaHint(field) as area">Luas dari geometri: {{ area }} ha</small>
+      <small class="form-text" *ngIf="field.hint">{{ field.hint }}</small>
+      <small class="form-text text-danger" *ngIf="fieldInvalid(field)">{{ field.type === 'color' ? 'Gunakan format #rrggbb.' : 'Kolom ini wajib diisi.' }}</small>
     </div>
   </div>
+  </ng-container>
   </div>
   </ng-container>
 </form>

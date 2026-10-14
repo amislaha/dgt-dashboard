@@ -20,10 +20,16 @@ export class WilayahStatusCrudService extends EntityCrudService<WilayahStatus> {
   }
 }
 
+/** The two national priority lists kawasan are grouped under; `wct1` is what WilayahChildService seeds every Matriks-45 kawasan into. */
+const WILAYAH_CATEGORY_SEED: WilayahCategory[] = [
+  { id: 'wct1', name: '45 Kawasan Transmigrasi Prioritas Nasional', active: true },
+  { id: 'wct2', name: '15 Kawasan Transmigrasi Prioritas Kementerian', active: true }
+];
+
 @Injectable({ providedIn: 'root' })
 export class WilayahCategoryCrudService extends EntityCrudService<WilayahCategory> {
   constructor() {
-    super('wilayahCategory', [], 'wct');
+    super('wilayahCategory', WILAYAH_CATEGORY_SEED, 'wct', true);
   }
 }
 
