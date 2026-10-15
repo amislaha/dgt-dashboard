@@ -8,7 +8,21 @@ import {
 interface LaporanCard {
   jenis: LaporanJenis;
   title: string;
+  /** Themed placeholder illustration, assets/laporan/<jenis>.svg. */
+  img: string;
+  /** 24x24 line icon (full <svg> markup) shown top-right of the card. */
+  icon: string;
 }
+
+const CARD_ICON_PATHS: { [key in LaporanJenis]: string } = {
+  kawasan: '<path d="M12 21s-7-6.3-7-11.5A7 7 0 0 1 19 9.5C19 14.7 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  investasi: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  anggaran: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14.5" r="1.5"/>',
+  kinerja: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'
+};
+const cardIcon = (jenis: LaporanJenis): string =>
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+  CARD_ICON_PATHS[jenis] + '</svg>';
 
 /** Ports `renderLaporan()` (legacy-static/dashboard/index.html) — "Buat Laporan", which replaced
  *  the old "Executive Intelligence & AI" module (was `renderIntelijen()`) per request. The route
@@ -28,7 +42,7 @@ export class IntelijenComponent implements OnInit {
   kawasan: Kawasan[] = [];
 
   readonly cards: LaporanCard[] = (['kawasan', 'investasi', 'anggaran', 'kinerja'] as LaporanJenis[])
-    .map(jenis => ({ jenis, title: LAPORAN_JUDUL[jenis] }));
+    .map(jenis => ({ jenis, title: LAPORAN_JUDUL[jenis], img: `assets/laporan/${jenis}.svg`, icon: cardIcon(jenis) }));
 
   readonly periode = '2026 · TW1';
   kawasanFilter = 'Semua';

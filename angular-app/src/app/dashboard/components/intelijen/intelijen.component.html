@@ -28,13 +28,9 @@
 
 <div class="lap-card-grid mb-4">
   <div class="lap-card" *ngFor="let c of cards">
-    <img src="assets/hero-kawasan.jpg" alt="" />
+    <img [src]="c.img" alt="" />
     <div class="lap-card-overlay">
-      <span class="lap-card-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>
-        </svg>
-      </span>
+      <span class="lap-card-icon" [innerHTML]="c.icon | safeHtml"></span>
       <div>
         <div class="lap-card-title">{{ c.title }}</div>
         <div class="lap-card-sub">{{ kawasanCount }} Kawasan</div>
