@@ -16,7 +16,7 @@ interface LaporanCard {
  *  label/sub (see DashboardShellComponent.navItems) and this module's own content changed.
  *  Its Asisten AI panel reuses `<dgt-chat-panel mode="compact">` — the SAME shared component (and
  *  welcome text) as Geospasial's embedded mini chat — rather than the old module's `mode="full"`
- *  instance, matching the shorter welcome copy in the new wireframe. Each of the 5 report cards
+ *  instance, matching the shorter welcome copy in the new wireframe. Each of the 4 report cards
  *  exports a report (PDF via the browser's print dialog, or CSV) built by LaporanExportService
  *  from the dashboard dataset with fixed text templates — no LLM, no backend. */
 @Component({
@@ -27,7 +27,7 @@ interface LaporanCard {
 export class IntelijenComponent implements OnInit {
   kawasan: Kawasan[] = [];
 
-  readonly cards: LaporanCard[] = (['kawasan', 'investasi', 'anggaran', 'kinerja', '5t'] as LaporanJenis[])
+  readonly cards: LaporanCard[] = (['kawasan', 'investasi', 'anggaran', 'kinerja'] as LaporanJenis[])
     .map(jenis => ({ jenis, title: LAPORAN_JUDUL[jenis] }));
 
   readonly periode = '2026 · TW1';

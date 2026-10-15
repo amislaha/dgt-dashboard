@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import {
-  DashboardDataService, Kawasan, STAGES, profilBucketIndeks, profilDetailData
+  DashboardDataService, Kawasan, STAGES, profilDetailData
 } from './dashboard-data.service';
 
-export type LaporanJenis = 'kawasan' | 'investasi' | 'anggaran' | 'kinerja' | '5t';
+export type LaporanJenis = 'kawasan' | 'investasi' | 'anggaran' | 'kinerja';
 export type LaporanFormat = 'pdf' | 'csv';
 
 type Cell = string | number;
@@ -35,8 +35,7 @@ export const LAPORAN_JUDUL: { [key in LaporanJenis]: string } = {
   kawasan: 'Laporan Kawasan',
   investasi: 'Laporan Investasi',
   anggaran: 'Laporan Anggaran',
-  kinerja: 'Laporan Kinerja',
-  '5t': 'Laporan 5T'
+  kinerja: 'Laporan Kinerja'
 };
 
 const HISTORY_KEY = 'dgt-dashboard:laporan-history';
@@ -75,7 +74,6 @@ export class LaporanExportService {
       case 'investasi': this.fillInvestasi(doc, pool); break;
       case 'anggaran': this.fillAnggaran(doc, pool); break;
       case 'kinerja': this.fillKinerja(doc, pool); break;
-      case '5t': this.fill5t(doc, pool); break;
     }
     return doc;
   }
@@ -241,34 +239,6 @@ export class LaporanExportService {
       judul: 'Indikator Kinerja Utama',
       kolom: ['No', 'Indikator', 'Satuan', 'Nilai', 'Tren', 'PIC'],
       baris: iku.map(i => [i.no, i.indikator, i.satuan, i.nilai, (i.trend > 0 ? '+' : '') + dec(i.trend.toString()), i.pic])
-    });
-  }
-
-  private fill5t(doc: LaporanDoc, pool: Kawasan[]): void {
-    const rows = pool.map(k => ({ k, d: profilDetailData(k) }));
-    const avg = pool.reduce((s, k) => s + k.indeks5t, 0) / pool.length;
-    const sorted = pool.slice().sort((a, b) => b.indeks5t - a.indeks5t);
-    if (pool.length === 1) {
-      const { k, d } = rows[0];
-      doc.ringkasan.push(
-        `Indeks 5T Kawasan ${k.nama} sebesar ${k.indeks5t} (kategori ${profilBucketIndeks(k.indeks5t)}). ` +
-        `Indeks infrastruktur ${dec(d.indeksInfra)}, kelembagaan ${dec(d.indeksKelembagaan)}, dan dukungan ${dec(d.indeksDukungan)} (skala 1–5).`
-      );
-    } else {
-      const bucket = ['Mandiri', 'Berkembang', 'Tertinggal'].map(b => `${b} ${pool.filter(k => profilBucketIndeks(k.indeks5t) === b).length}`).join(', ');
-      doc.ringkasan.push(
-        `Rata-rata Indeks 5T di ${pool.length} kawasan sebesar ${num(avg, 1)}. Sebaran kategori: ${bucket}.`,
-        `Indeks tertinggi: ${sorted.slice(0, 3).map(k => `${k.nama} (${k.indeks5t})`).join(', ')}. ` +
-        `Terendah: ${sorted.slice(-3).reverse().map(k => `${k.nama} (${k.indeks5t})`).join(', ')}.`
-      );
-    }
-    doc.tabel.push({
-      judul: 'Indeks 5T per Kawasan',
-      kolom: ['Peringkat', 'Kawasan', 'Provinsi', 'Indeks 5T', 'Kategori', 'Indeks Infrastruktur', 'Indeks Kelembagaan', 'Indeks Dukungan'],
-      baris: sorted.map((k, i) => {
-        const d = rows.find(r => r.k === k).d;
-        return [i + 1, k.nama, k.provinsi, k.indeks5t, profilBucketIndeks(k.indeks5t), dec(d.indeksInfra), dec(d.indeksKelembagaan), dec(d.indeksDukungan)];
-      })
     });
   }
 
