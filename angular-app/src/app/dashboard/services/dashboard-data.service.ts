@@ -567,7 +567,6 @@ export interface ProfilDetail {
   faskesMissing: string[];
   statusDesa: { maju: number; berkembang: number; tertinggal: number };
   dokumen: { rkt: boolean; rtsp: boolean; rskp: boolean };
-  statusLahan: string;
   konektivitas: string;
   sertifikasi: { total: number; terbit: number; menunggu: number; pct: number };
   indeksInfra: string;
@@ -724,7 +723,6 @@ export function profilDetailData(k: Kawasan): ProfilDetail {
     faskesMissing: FASKES_POOL.slice(0, faskesMissingCount),
     statusDesa: { maju, berkembang, tertinggal },
     dokumen: { rkt: true, rtsp: k.tahap === 'Mandiri' || k.tahap === 'Berkembang', rskp: k.tahap === 'Mandiri' },
-    statusLahan: 'HPL',
     konektivitas: k.risiko === 'high' ? 'Belum ada' : 'Internet',
     sertifikasi: { total: bidangTotal, terbit: bidangTerbit, menunggu: bidangMenunggu, pct: Math.round((bidangTerbit / bidangTotal) * 100) },
     indeksInfra: indeksInfraNum.toFixed(2),
