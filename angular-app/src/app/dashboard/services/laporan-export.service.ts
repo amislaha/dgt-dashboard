@@ -295,7 +295,7 @@ export class LaporanExportService {
       <h2>${esc(t.judul)}</h2>
       <table><thead><tr>${t.kolom.map(k => `<th>${esc(k)}</th>`).join('')}</tr></thead>
       <tbody>${t.baris.map(r => `<tr>${r.map(cell).join('')}</tr>`).join('')}</tbody></table>`).join('');
-    return `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${esc(doc.judul)} — ${esc(doc.cakupan)}</title>
+    return `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${esc(this.baseName(doc))}</title>
 <style>
   body { font-family: "Plus Jakarta Sans", Arial, sans-serif; color: #1b2a25; margin: 32px; font-size: 12px; }
   .bar { position: sticky; top: 0; background: #fff; padding: 8px 0 12px; text-align: right; }
@@ -335,9 +335,15 @@ ${tables}
     w.focus();
   }
 
+  /** e.g. "Laporan Kawasan Semua Kawasan 2026 TW1". Also the page <title>, which browsers use as
+   *  the default file name for "Simpan sebagai PDF". */
+  private baseName(doc: LaporanDoc): string {
+    return [doc.judul, doc.cakupan.replace(/\(\d+\)/g, ''), doc.periode].join(' ')
+      .replace(/[^A-Za-z0-9]+/g, ' ').trim();
+  }
+
   private fileName(doc: LaporanDoc, ext: string): string {
-    const slug = (doc.judul + '-' + doc.cakupan + '-' + doc.periode).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    return slug + '.' + ext;
+    return this.baseName(doc) + '.' + ext;
   }
 
   private download(name: string, content: string, type: string): void {
