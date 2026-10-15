@@ -45,6 +45,48 @@
 .lap-card-icon { width: 26px; height: 26px; color: #fff; opacity: .92; align-self: flex-end; }
 .lap-card-title { color: #fff; font-weight: 700; font-size: .92rem; }
 .lap-card-sub { color: rgba(255, 255, 255, .82); font-size: .7rem; margin-top: .1rem; }
+.lap-card-actions {
+  display: flex;
+  gap: .4rem;
+  margin-top: .5rem;
+
+  button {
+    background: rgba(255, 255, 255, .16);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .55);
+    border-radius: 6px;
+    padding: .22rem .65rem;
+    font-size: .7rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 28px;
+
+    &:hover { background: rgba(255, 255, 255, .3); }
+    &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  }
+}
+
+.lap-history {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .75rem .9rem;
+}
+.lap-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: .76rem;
+
+  li { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .3rem 0; border-bottom: 1px solid var(--border); }
+  li:last-child { border-bottom: none; }
+}
+.lap-history-fmt {
+  font-size: .64rem; font-weight: 700; color: var(--primary); background: var(--primary-soft);
+  border-radius: 4px; padding: .05rem .35rem;
+}
+.lap-history-title { font-weight: 600; flex: 1 1 auto; }
+.lap-history-time { color: var(--muted-foreground); }
 
 .lap-ai-panel {
   background: var(--card);

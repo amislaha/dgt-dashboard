@@ -3,19 +3,31 @@
 <div class="lap-toolbar d-flex flex-wrap justify-content-between align-items-center mb-2">
   <div class="d-flex flex-wrap align-items-center" style="gap: .6rem">
     <span class="lap-toolbar-label">Pilih Periode</span>
-    <span class="info-chip">Periode: 2026 &middot; TW1</span>
+    <span class="info-chip">Periode: {{ periode }}</span>
     <span class="lap-toolbar-label ml-2">Pilih Kawasan</span>
     <select class="form-control form-control-sm" style="width: auto" [(ngModel)]="kawasanFilter">
       <option value="Semua">Semua Kawasan</option>
       <option *ngFor="let k of kawasan" [value]="k.id">{{ k.nama }}</option>
     </select>
   </div>
-  <button type="button" class="lap-history-link" (click)="toggleHistoryNote()">History ekspor laporan</button>
+  <button type="button" class="lap-history-link" (click)="toggleHistory()" [attr.aria-expanded]="showHistory">History ekspor laporan</button>
 </div>
-<p class="small text-muted" *ngIf="showHistoryNote">Belum ada riwayat ekspor laporan pada prototipe ini.</p>
+<div class="lap-history mb-3" *ngIf="showHistory">
+  <p class="small text-muted mb-0" *ngIf="!history.length">Belum ada laporan yang diekspor di browser ini.</p>
+  <ng-container *ngIf="history.length">
+    <ul class="lap-history-list">
+      <li *ngFor="let h of history">
+        <span class="lap-history-fmt">{{ h.format | uppercase }}</span>
+        <span class="lap-history-title">{{ h.judul }} &middot; {{ h.cakupan }}</span>
+        <span class="lap-history-time">{{ h.waktu | date: 'd MMM yyyy, HH:mm' }}</span>
+      </li>
+    </ul>
+    <button type="button" class="lap-history-link mt-2" (click)="clearHistory()">Hapus riwayat</button>
+  </ng-container>
+</div>
 
 <div class="lap-card-grid mb-4">
-  <div class="lap-card" *ngFor="let c of cards" title="Ekspor laporan belum tersedia pada prototipe ini.">
+  <div class="lap-card" *ngFor="let c of cards">
     <img src="assets/hero-kawasan.jpg" alt="" />
     <div class="lap-card-overlay">
       <span class="lap-card-icon">
@@ -23,8 +35,14 @@
           <rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>
         </svg>
       </span>
-      <div class="lap-card-title">{{ c.title }}</div>
-      <div class="lap-card-sub">{{ kawasanCount }} Kawasan</div>
+      <div>
+        <div class="lap-card-title">{{ c.title }}</div>
+        <div class="lap-card-sub">{{ kawasanCount }} Kawasan</div>
+        <div class="lap-card-actions">
+          <button type="button" (click)="exportLaporan(c, 'pdf')" [attr.aria-label]="'Ekspor ' + c.title + ' sebagai PDF'">PDF</button>
+          <button type="button" (click)="exportLaporan(c, 'csv')" [attr.aria-label]="'Ekspor ' + c.title + ' sebagai CSV'">CSV</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -33,3 +51,4 @@
   <h2 class="h6 font-weight-bold mb-3 ai-title"><img class="ai-ico" src="assets/asisten-ai.svg" alt="" />Asisten AI</h2>
   <dgt-chat-panel mode="compact"></dgt-chat-panel>
 </div>
+<dgt-toast-container></dgt-toast-container>

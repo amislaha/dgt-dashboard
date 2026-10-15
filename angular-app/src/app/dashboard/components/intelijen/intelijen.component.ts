@@ -1,7 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { ToastService } from '../../../shared/services/toast.service';
 import { DashboardDataService, Kawasan } from '../../services/dashboard-data.service';
+import {
+  LAPORAN_JUDUL, LaporanExportService, LaporanFormat, LaporanHistoryItem, LaporanJenis
+} from '../../services/laporan-export.service';
 
 interface LaporanCard {
+  jenis: LaporanJenis;
   title: string;
 }
 
@@ -11,9 +16,9 @@ interface LaporanCard {
  *  label/sub (see DashboardShellComponent.navItems) and this module's own content changed.
  *  Its Asisten AI panel reuses `<dgt-chat-panel mode="compact">` — the SAME shared component (and
  *  welcome text) as Geospasial's embedded mini chat — rather than the old module's `mode="full"`
- *  instance, matching the shorter welcome copy in the new wireframe. The 5 report cards are
- *  cosmetic/non-functional on this static prototype, same treatment as the Ubah/Hapus buttons
- *  elsewhere — there's no backend to actually generate or export a report from. */
+ *  instance, matching the shorter welcome copy in the new wireframe. Each of the 5 report cards
+ *  exports a report (PDF via the browser's print dialog, or CSV) built by LaporanExportService
+ *  from the dashboard dataset with fixed text templates — no LLM, no backend. */
 @Component({
   selector: 'dgt-intelijen',
   templateUrl: './intelijen.component.html',
@@ -22,18 +27,19 @@ interface LaporanCard {
 export class IntelijenComponent implements OnInit {
   kawasan: Kawasan[] = [];
 
-  readonly cards: LaporanCard[] = [
-    { title: 'Laporan Kawasan' },
-    { title: 'Laporan Investasi' },
-    { title: 'Laporan Anggaran' },
-    { title: 'Laporan Kinerja' },
-    { title: 'Laporan 5T' }
-  ];
+  readonly cards: LaporanCard[] = (['kawasan', 'investasi', 'anggaran', 'kinerja', '5t'] as LaporanJenis[])
+    .map(jenis => ({ jenis, title: LAPORAN_JUDUL[jenis] }));
 
+  readonly periode = '2026 · TW1';
   kawasanFilter = 'Semua';
-  showHistoryNote = false;
+  showHistory = false;
+  history: LaporanHistoryItem[] = [];
 
-  constructor(private readonly data: DashboardDataService) {}
+  constructor(
+    private readonly data: DashboardDataService,
+    private readonly laporan: LaporanExportService,
+    private readonly toast: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.kawasan = this.data.getKawasan();
@@ -43,7 +49,19 @@ export class IntelijenComponent implements OnInit {
     return this.kawasanFilter === 'Semua' ? this.kawasan.length : 1;
   }
 
-  toggleHistoryNote(): void {
-    this.showHistoryNote = !this.showHistoryNote;
+  exportLaporan(card: LaporanCard, format: LaporanFormat): void {
+    const doc = this.laporan.export(card.jenis, this.kawasanFilter, this.periode, format);
+    this.history = this.laporan.getHistory();
+    this.toast.show(`${doc.judul} (${format.toUpperCase()}) — ${doc.cakupan} diekspor.`);
+  }
+
+  toggleHistory(): void {
+    this.showHistory = !this.showHistory;
+    this.history = this.laporan.getHistory();
+  }
+
+  clearHistory(): void {
+    this.laporan.clearHistory();
+    this.history = [];
   }
 }
