@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6ead3"/><stop offset="1" stop-color="#dfb87e"/></linearGradient>
+  </defs>
+  <rect width="400" height="200" fill="url(#bg)"/>
+  <path d="M0 150 C120 136 260 146 400 132 V200 H0Z" fill="#438f72"/>
+  <g fill="#174838">
+    <g transform="translate(40 96)"><rect x="-2" y="0" width="4" height="56" fill="#765a28"/><path d="M0 2 C-18 -6 -30 4 -34 12 C-20 4 -8 4 0 4Z M0 2 C18 -6 30 4 34 12 C20 4 8 4 0 4Z M0 0 C-10 -18 -24 -18 -30 -14 C-16 -12 -6 -6 0 2Z M0 0 C10 -18 24 -18 30 -14 C16 -12 6 -6 0 2Z" fill="#2c755b"/></g>
+    <g transform="translate(100 108) scale(.8)"><rect x="-2" y="0" width="4" height="56" fill="#765a28"/><path d="M0 2 C-18 -6 -30 4 -34 12 C-20 4 -8 4 0 4Z M0 2 C18 -6 30 4 34 12 C20 4 8 4 0 4Z M0 0 C-10 -18 -24 -18 -30 -14 C-16 -12 -6 -6 0 2Z M0 0 C10 -18 24 -18 30 -14 C16 -12 6 -6 0 2Z" fill="#2c755b"/></g>
+  </g>
+  <g transform="translate(176 52) scale(.9)">
+    <rect x="0" y="80" width="26" height="40" rx="3" fill="#33809c"/>
+    <rect x="38" y="60" width="26" height="60" rx="3" fill="#33809c"/>
+    <rect x="76" y="38" width="26" height="82" rx="3" fill="#33809c"/>
+    <rect x="114" y="14" width="26" height="106" rx="3" fill="#c09546"/>
+    <path d="M-6 74 L50 46 L88 30 L150 -6" fill="none" stroke="#ce1126" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M136 -10 L154 -8 L148 9" fill="none" stroke="#ce1126" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
