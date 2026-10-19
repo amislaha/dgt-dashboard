@@ -1,6 +1,9 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
+import { Hpl } from '../../../data-manager/models/hpl.model';
 import { Kawasan, STAGE_COLOR_HEX, kawasanAreaLatLngs, kawasanShmLatLngs } from '../../services/dashboard-data.service';
+
+const HPL_HEX = '#7c5cff'; // raw hex — Leaflet can't resolve CSS vars
 
 /**
  * Real Leaflet + OpenStreetMap basemap for the Geospasial module — ports the
@@ -66,7 +69,13 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   /** Kawasan boundaries, HPL outlines and SHM areas are three independent layers: hiding a
    *  kawasan's boundary leaves its HPL/SHM on the map, and vice versa. */
   @Input() areaHidden: { [id: string]: boolean } = {};
+  /** HPL records hidden by the parent, keyed by HPL id. */
   @Input() hplHidden: { [id: string]: boolean } = {};
+  /** HPL lokasi from the Data Manager's HPL page, drawn as their own layer (independent of kawasan):
+   *  each record's drawn geometry, else a dashed circle of its `luas` around its lat/lon. Only drawn
+   *  when `showLegality` is on. */
+  @Input() hplRecords: Hpl[] = [];
+  @Input() hplPopupOf: ((h: Hpl) => string) | null = null;
   @Input() shmHidden: { [id: string]: boolean } = {};
   @Output() select = new EventEmitter<Kawasan>();
   /** Fires when the "Lihat profil kawasan" link inside a popup is clicked. */
@@ -81,7 +90,7 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   private map: L.Map | null = null;
   private baseLayer: L.TileLayer | null = null;
   private areas: { [id: string]: L.Polygon } = {};
-  private hplAreas: { [id: string]: L.Polygon } = {};
+  private hplAreas: { [id: string]: L.Layer } = {};
   private shmAreas: { [id: string]: L.Polygon } = {};
 
   ngAfterViewInit(): void {
@@ -99,6 +108,7 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
     this.applyBasemap();
     this.plotAreas();
+    this.plotHpl();
 
     this.map.on('popupopen', e => {
       const el = (e as any).popup.getElement() as HTMLElement | undefined;
@@ -137,6 +147,9 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
     if (this.map && (changes.kawasan || changes.polygonStyle)) {
       this.plotAreas();
+    }
+    if (this.map && changes.hplRecords) {
+      this.plotHpl();
     }
     if (this.map && changes.selectedId && !changes.selectedId.firstChange) {
       this.panToSelected();
@@ -184,8 +197,7 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.toggleLayer(this.areas[id], visible && this.showAreaLayer);
   }
 
-  /** Called by the parent's per-kawasan checkbox in the "HPL" layer group — just that one
-   *  kawasan's HPL outline. A no-op if `showLegality` is off (the polygon was never built). */
+  /** Called by the parent's per-record checkbox in the "HPL" layer group (id = HPL id). */
   setHplVisibleFor(id: string, visible: boolean): void {
     this.toggleLayer(this.hplAreas[id], visible && this.showHplLayer);
   }
@@ -299,8 +311,6 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
     Object.keys(this.areas).forEach(id => this.map!.removeLayer(this.areas[id]));
     this.areas = {};
-    Object.keys(this.hplAreas).forEach(id => this.map!.removeLayer(this.hplAreas[id]));
-    this.hplAreas = {};
     Object.keys(this.shmAreas).forEach(id => this.map!.removeLayer(this.shmAreas[id]));
     this.shmAreas = {};
 
@@ -315,24 +325,11 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       this.areas[k.id] = area;
     });
 
-    // Built per-kawasan (not one combined layer group each) so each kawasan's HPL/SHM can be
-    // toggled independently via setHplVisibleFor()/setShmVisibleFor() — see GeospasialComponent's
-    // HPL/SHM layer groups. Shown by default (matching that UI's "all checked"
-    // starting state) whenever the feature is opted into at all.
+    // Built per-kawasan (not one combined layer group) so each kawasan's SHM can be toggled
+    // independently via setShmVisibleFor() — see GeospasialComponent's SHM layer group. HPL is
+    // drawn separately from its own records (plotHpl()).
     if (this.showLegality) {
       this.kawasan.forEach(k => {
-        this.hplAreas[k.id] = L.polygon(kawasanAreaLatLngs(k), {
-          color: this.polygonStyle === 'boundary' ? '#7c5cff' : '#33809c', // raw hex — Leaflet can't resolve CSS vars
-          weight: 2,
-          opacity: 0.9,
-          dashArray: '5 4',
-          fill: false,
-          interactive: false
-        });
-        if (this.showHplLayer && !this.hplHidden[k.id]) {
-          this.hplAreas[k.id].addTo(this.map!);
-        }
-
         this.shmAreas[k.id] = L.polygon(kawasanShmLatLngs(k), {
           color: '#2c755b', // STAGE_COLOR_HEX.Mandiri's raw hex twin — Leaflet can't resolve CSS vars
           weight: 1.5,
@@ -363,6 +360,45 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
         Object.keys(this.areas).forEach(id => this.areas[id].redraw());
       }, 60);
     }
+  }
+
+  /** One layer per HPL record: its own drawn shape, else an approximate circle of its `luas`. */
+  private plotHpl(): void {
+    if (!this.map) {
+      return;
+    }
+    Object.keys(this.hplAreas).forEach(id => this.map!.removeLayer(this.hplAreas[id]));
+    this.hplAreas = {};
+    if (!this.showLegality) {
+      return;
+    }
+    this.hplRecords.forEach(h => {
+      const style: L.PathOptions = { color: h.color || HPL_HEX, weight: 2, opacity: 0.95, fillColor: h.color || HPL_HEX, fillOpacity: 0.12 };
+      const g = h.geometry;
+      let layer: L.Path | null = null;
+      if (g && g.type === 'Polygon') {
+        layer = L.polygon((g.coordinates[0] as number[][]).map(c => [c[1], c[0]] as [number, number]), style);
+      } else if (g && g.type === 'LineString') {
+        layer = L.polyline((g.coordinates as number[][]).map(c => [c[1], c[0]] as [number, number]), { ...style, weight: 3 });
+      } else {
+        const pin: [number, number] | null =
+          g && g.type === 'Point' ? [g.coordinates[1], g.coordinates[0]] : h.lat != null && h.lon != null ? [h.lat, h.lon] : null;
+        if (pin) {
+          const radius = h.luas && h.luas > 0 ? Math.sqrt((h.luas * 10000) / Math.PI) : 1500;
+          layer = L.circle(pin, { ...style, radius, dashArray: '5 4' });
+        }
+      }
+      if (!layer) {
+        return;
+      }
+      if (this.hplPopupOf) {
+        layer.bindPopup(this.hplPopupOf(h), { maxWidth: 330, minWidth: 280, className: 'kpop-wrap', autoPanPadding: [40, 40] });
+      }
+      this.hplAreas[h.id] = layer;
+      if (this.showHplLayer && !this.hplHidden[h.id]) {
+        layer.addTo(this.map!);
+      }
+    });
   }
 
   private panToSelected(): void {

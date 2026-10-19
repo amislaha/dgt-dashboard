@@ -12,6 +12,8 @@ import {
   profilDetailData,
   seededRandom
 } from '../../services/dashboard-data.service';
+import { Hpl } from '../../../data-manager/models/hpl.model';
+import { HplCrudService } from '../../../data-manager/services/hpl-crud.service';
 import { EwsAlert, EwsSeverity, EwsService } from '../../services/ews.service';
 import { KawasanMapComponent } from './kawasan-map.component';
 
@@ -105,9 +107,15 @@ export class GeospasialComponent implements OnInit, OnDestroy {
 
   @ViewChild(KawasanMapComponent, { static: false }) kawasanMap?: KawasanMapComponent;
 
-  private ewsSub?: Subscription;
+  /** HPL lokasi from the Data Manager's HPL page (shared HplCrudService). `hplOnMap` is a plain
+   *  field (province filter only) for the same reference-stability reason as `visibleKawasan`. */
+  hplAll: Hpl[] = [];
+  hplOnMap: Hpl[] = [];
 
-  constructor(private readonly data: DashboardDataService, private readonly ews: EwsService) {}
+  private ewsSub?: Subscription;
+  private hplSub?: Subscription;
+
+  constructor(private readonly data: DashboardDataService, private readonly ews: EwsService, private readonly hplCrud: HplCrudService) {}
 
   ngOnInit(): void {
     this.kawasan = this.data.getKawasan();
@@ -123,10 +131,14 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.komoditasOptions = Object.keys(names).sort();
     this.kawasan.forEach(k => {
       this.kawasanVisible[k.id] = true;
-      this.hplVisible[k.id] = true;
       this.shmVisible[k.id] = true;
     });
     this.refreshVisibleKawasan();
+
+    this.hplSub = this.hplCrud.changes.subscribe(list => {
+      this.hplAll = list;
+      this.refreshHplOnMap();
+    });
 
     this.ewsSub = this.ews.alerts$.subscribe(alerts => {
       this.alerts = alerts;
@@ -143,6 +155,9 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     if (this.ewsSub) {
       this.ewsSub.unsubscribe();
     }
+    if (this.hplSub) {
+      this.hplSub.unsubscribe();
+    }
   }
 
   // ---------- filtering / layer tree ----------
@@ -151,8 +166,13 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.visibleKawasan = this.kawasan.filter(k => !this.selectedProvinsi || k.provinsi === this.selectedProvinsi);
   }
 
+  private refreshHplOnMap(): void {
+    this.hplOnMap = this.hplAll.filter(h => !this.selectedProvinsi || h.provinsi === this.selectedProvinsi);
+  }
+
   onProvinsiChange(): void {
     this.refreshVisibleKawasan();
+    this.refreshHplOnMap();
   }
 
   /** Share of a kawasan's HPL that already holds SHM certificates (%). */
@@ -211,6 +231,37 @@ export class GeospasialComponent implements OnInit, OnDestroy {
       this.kawasanMap.setAreaVisibleFor(id, visible);
     }
   }
+
+  /** HPL group rows: the province filter plus the search box (nomor SK / provinsi / kabupaten). The
+   *  kawasan-only filters (tipe, tahap, komoditas) don't apply to HPL records. */
+  get hplRows(): Hpl[] {
+    const q = this.layerSearchQuery.trim().toLowerCase();
+    return this.hplOnMap.filter(
+      h => !q || [h.nomorSk, h.provinsi, h.kabupaten].some(v => (v || '').toLowerCase().includes(q))
+    );
+  }
+
+  /** Popup on an HPL record's shape — same card look as the kawasan popup, values escaped since
+   *  they're user-entered in the Data Manager. */
+  readonly hplRecordPopupOf = (h: Hpl): string => {
+    const e = (v: any) => String(v == null || v === '' ? '—' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as any)[c]);
+    const ha = (v: number | undefined) => (v == null ? '—' : `${v.toLocaleString('id-ID')} ha`);
+    const row = (key: string, val: string, cls = '') => `<div class="kpop-row"><span class="kpop-k">${key}</span><span class="kpop-v ${cls}">${val}</span></div>`;
+    return (
+      `<div class="kpop">` +
+      `<div class="kpop-head"><span class="kpop-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/></svg></span>` +
+      `<div><div class="kpop-title">${e(h.nomorSk)}</div><div class="kpop-sub">HPL TRANSMIGRASI</div></div></div>` +
+      row('Tahun SK', e(h.tahunSk)) +
+      row('Generasi', e(h.generasi)) +
+      row('Luas', ha(h.luas), 'hl') +
+      row('Bersertifikat', ha(h.luasSertifikat)) +
+      row('Dokumen SK', e(h.dokumenSk)) +
+      row('Inventarisasi', e(h.inventarisasi)) +
+      row('Kabupaten', e(h.kabupaten)) +
+      row('Provinsi', e(h.provinsi)) +
+      `</div>`
+    );
+  };
 
   toggleKawasanHpl(id: string, visible: boolean): void {
     this.hplVisible[id] = visible;
