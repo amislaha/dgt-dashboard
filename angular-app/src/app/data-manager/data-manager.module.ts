@@ -10,6 +10,7 @@ import { SubmissionHubComponent } from './submission-hub/submission-hub.componen
 import { WilayahMapComponent } from './wilayah/wilayah-map/wilayah-map.component';
 import { WilayahEditorComponent } from './wilayah/wilayah-editor/wilayah-editor.component';
 import { WilayahComponent } from './wilayah/wilayah.component';
+import { HplComponent } from './hpl/hpl.component';
 
 /**
  * Feature module for the "DGT Data Manager" CRUD tool (see CLAUDE.md
@@ -32,7 +33,8 @@ import { WilayahComponent } from './wilayah/wilayah.component';
     SubmissionHubComponent,
     WilayahComponent,
     WilayahEditorComponent,
-    WilayahMapComponent
+    WilayahMapComponent,
+    HplComponent
   ],
   imports: [SharedModule, DataManagerRoutingModule]
 })

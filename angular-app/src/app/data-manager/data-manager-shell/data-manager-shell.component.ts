@@ -40,6 +40,7 @@ export class DataManagerShellComponent implements OnInit, OnDestroy {
   settingsItems: HeaderNavItem[] = [];
   operatorName = getOperator();
   wilayahSub = '0 wilayah';
+  hplSub = '0 HPL';
   submissionSub = '0 pengajuan';
 
   private readonly subscriptions: Subscription[] = [];
@@ -65,6 +66,7 @@ export class DataManagerShellComponent implements OnInit, OnDestroy {
         this.masterItems = MASTER_DATA_ORDER.map(key => ({ id: key, label: ENTITY_CONFIGS[key].label, sub: `${countByKey[key]} entri` }));
         this.settingsItems = SETTINGS_ORDER.map(key => ({ id: key, label: ENTITY_CONFIGS[key].label, sub: `${countByKey[key]} entri` }));
         this.wilayahSub = `${countByKey.wpt} wilayah`;
+        this.hplSub = `${countByKey.hpl} HPL`;
 
         const pendingCount = submissionList.filter(s => s.status === 'PENDING').length;
         this.submissionSub = pendingCount ? `${pendingCount} menunggu` : `${submissionList.length} pengajuan`;

@@ -3,6 +3,7 @@ import { ENTITY_CONFIGS } from '../config/entity-configs';
 import { EntityConfig } from '../models/entity-config.model';
 import { EntityKey, ENTITY_ORDER } from '../models/entity-key.model';
 import { EntityCrudService } from './entity-crud.service';
+import { HplCrudService } from './hpl-crud.service';
 import { IkuCrudService } from './iku-crud.service';
 import { KomoditiCrudService } from './komoditi-crud.service';
 import { PersonelCrudService } from './personel-crud.service';
@@ -58,6 +59,7 @@ export class EntityRegistryService {
 
   constructor(
     wpt: WptCrudService,
+    hpl: HplCrudService,
     skp: SkpCrudService,
     sp: SpCrudService,
     komoditi: KomoditiCrudService,
@@ -84,6 +86,7 @@ export class EntityRegistryService {
   ) {
     this.registry = {
       wpt: { config: ENTITY_CONFIGS.wpt, service: wpt },
+      hpl: { config: ENTITY_CONFIGS.hpl, service: hpl },
       skp: { config: ENTITY_CONFIGS.skp, service: skp },
       sp: { config: ENTITY_CONFIGS.sp, service: sp },
       komoditi: { config: ENTITY_CONFIGS.komoditi, service: komoditi },

@@ -7,6 +7,7 @@
  */
 export type EntityKey =
   | 'wpt'
+  | 'hpl'
   | 'skp'
   | 'sp'
   | 'komoditi'
@@ -36,6 +37,7 @@ export type EntityKey =
  *  the aggregate entry-count total and to build the registry map exhaustively. */
 export const ENTITY_ORDER: EntityKey[] = [
   'wpt',
+  'hpl',
   'skp',
   'sp',
   'komoditi',

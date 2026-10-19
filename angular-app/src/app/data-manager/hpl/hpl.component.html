@@ -1,0 +1,19 @@
+<div class="wilayah-shell">
+  <div class="wilayah-map-panel">
+    <dgt-wilayah-map [wilayah]="mapItems" [selectedId]="selectedId" (select)="onSelect($event)"></dgt-wilayah-map>
+  </div>
+
+  <div class="wilayah-side-panel" [class.collapsed]="sidebarCollapsed" [class.drawing]="drawing">
+    <button
+      type="button"
+      class="sidebar-collapse-toggle"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="sidebarCollapsed ? 'Buka panel HPL' : 'Ciutkan panel HPL'">
+      {{ sidebarCollapsed ? '‹' : '›' }}
+    </button>
+    <!-- [hidden], not *ngIf: the list (and an open, half-filled form) must survive collapsing. -->
+    <div class="sidebar-scroll" [hidden]="sidebarCollapsed">
+      <dgt-entity-list [inline]="true"></dgt-entity-list>
+    </div>
+  </div>
+</div>

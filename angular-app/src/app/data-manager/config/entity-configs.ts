@@ -5,6 +5,7 @@ import {
   Project, RecommendationCategory, SatkerType, StrategicTarget, WilayahCategory, WilayahStatus, WilayahTarget
 } from '../models/erd-master.model';
 import { FieldConfig } from '../models/field-config.model';
+import { Hpl, HPL_DOKUMEN, HPL_GENERASI, HPL_INVENTARISASI, HPL_PRIORITAS } from '../models/hpl.model';
 import { Iku } from '../models/iku.model';
 import { Komoditi } from '../models/komoditi.model';
 import { Personel } from '../models/personel.model';
@@ -573,8 +574,46 @@ const APPLICATION_SETTINGS_CONFIG: EntityConfig<ApplicationSetting> = {
   ]
 };
 
+/** The standalone "HPL" header page (HplComponent) — columns of the Daftar Induk HPL Transmigrasi. */
+const HPL_CONFIG: EntityConfig<Hpl> = {
+  key: 'hpl',
+  label: 'HPL',
+  sub: 'Hak Pengelolaan Lahan transmigrasi',
+  idPrefix: 'hpl',
+  titleField: 'nomorSk',
+  columns: [
+    { key: 'nomorSk', label: 'Nomor SK', sortable: true },
+    { key: 'provinsi', label: 'Provinsi', sortable: true },
+    { key: 'kabupaten', label: 'Kabupaten/Kota', sortable: true },
+    { key: 'luas', label: 'Luas (ha)', sortable: true, numeric: true },
+    { key: 'inventarisasi', label: 'Inventarisasi', sortable: true }
+  ],
+  fields: [
+    { name: 'nomorSk', label: 'Nomor SK HPL', type: 'text', required: true, mono: true, placeholder: '23/HPL/BPN/95', section: 'Identitas', row: 'sk' },
+    { name: 'tahunSk', label: 'Tahun SK', type: 'number', min: 1950, max: 2100, step: 1, row: 'sk' },
+    { name: 'generasi', label: 'Generasi SK', type: 'select', options: HPL_GENERASI },
+    { name: 'wilayahId', label: 'Kawasan terkait', type: 'fk', fkEntity: 'wpt', placeholder: 'Tidak terkait kawasan', hint: 'Opsional — HPL tetap tersimpan terpisah dari kawasan.' },
+    DESCRIPTION_FIELD,
+    { name: 'geometry', label: 'Gambar di Peta', type: 'geometry', section: 'Lokasi & Peta', hint: 'Panel akan menyingkir saat Anda menggambar di peta, lalu kembali dengan bentuknya terisi.' },
+    DECIMAL('lat', 'Latitude', { row: 'geo', step: 0.000001 }),
+    DECIMAL('lon', 'Longitude', { row: 'geo', step: 0.000001 }),
+    { name: 'color', label: 'Warna di peta', type: 'color', defaultValue: '#b2293d' },
+    { name: 'provinsi', label: 'Provinsi', type: 'text', required: true, section: 'Administratif', row: 'adm' },
+    { name: 'kabupaten', label: 'Kabupaten/Kota', type: 'text', required: true, row: 'adm' },
+    DECIMAL('luas', 'Luas HPL (ha)', { section: 'Legalitas & Sertifikasi', min: 0, areaFrom: 'geometry', row: 'l1' }),
+    { name: 'dokumenSk', label: 'Dokumen SK', type: 'select', options: HPL_DOKUMEN, row: 'l1' },
+    { name: 'jumlahSertifikat', label: 'Jumlah sertifikat', type: 'number', min: 0, step: 1, row: 'l2' },
+    DECIMAL('luasSertifikat', 'Luas bersertifikat (ha)', { min: 0, row: 'l2' }),
+    { name: 'sertifikatAsliHilang', label: 'Sertifikat asli hilang', type: 'number', min: 0, step: 1, hint: 'Sertifikat yang hanya tersedia sebagai pindaian atau tidak ada sama sekali.' },
+    { name: 'adaPeta', label: 'Peta tersedia', type: 'boolean', section: 'Kesiapan Lapangan' },
+    { name: 'inventarisasi', label: 'Status inventarisasi', type: 'select', options: HPL_INVENTARISASI, defaultValue: 'Belum', row: 'kl' },
+    { name: 'prioritas', label: 'Prioritas (indeks risiko)', type: 'select', options: HPL_PRIORITAS, placeholder: 'Tanpa prioritas', row: 'kl' }
+  ]
+};
+
 export const ENTITY_CONFIGS: { [key in EntityKey]: EntityConfig } = {
   wpt: WPT_CONFIG,
+  hpl: HPL_CONFIG,
   skp: SKP_CONFIG,
   sp: SP_CONFIG,
   komoditi: KOMODITI_CONFIG,
@@ -610,6 +649,7 @@ export const ENTITY_CONFIGS: { [key in EntityKey]: EntityConfig } = {
  * `entityIconSvg()` falls back to '' rather than requiring one.
  */
 export const ENTITY_ICON_PATHS: Partial<{ [key in EntityKey]: string }> = {
+  hpl: '<path d="M3 7l6-3 6 3 6-3v9"/><path d="M3 7v13l6-3 3 1.5"/><path d="M9 4v13"/><circle cx="17.5" cy="16.5" r="3"/>',
   wpt: '<path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16"/><path d="M16 6v16"/>',
   skp: '<path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
   sp: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1V9"/>',

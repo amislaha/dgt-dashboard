@@ -11,6 +11,7 @@ import { EkonomiComponent } from './components/ekonomi/ekonomi.component';
 import { AnalitikComponent } from './components/analitik/analitik.component';
 import { IntelijenComponent } from './components/intelijen/intelijen.component';
 import { SibarduktransComponent } from './components/sibarduktrans/sibarduktrans.component';
+import { HplComponent } from './components/hpl/hpl.component';
 
 /**
  * Geospasial is the default/index child route, matching `state.tab`
@@ -25,6 +26,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'geospasial', pathMatch: 'full' },
       { path: 'geospasial', component: GeospasialComponent, data: { navId: 'geospasial' } },
       { path: 'profil', component: ProfilComponent, data: { navId: 'profil' } },
+      { path: 'hpl', component: HplComponent, data: { navId: 'hpl' } },
       { path: 'sibarduktrans', component: SibarduktransComponent, data: { navId: 'sibarduktrans' } },
       { path: 'demografi', component: DemografiComponent, data: { navId: 'demografi' } },
       { path: 'infrastruktur', component: InfrastrukturComponent, data: { navId: 'infrastruktur' } },

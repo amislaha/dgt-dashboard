@@ -31,6 +31,7 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
   readonly navItems: NavItem[] = [
     { id: 'geospasial', label: 'Geospasial & Legalitas Lahan', sub: 'HPL · SHM · Trans Tuntas', icon: moduleIconSvg('geospasial') },
     { id: 'profil', label: 'Data Induk & Profil Kawasan', sub: '5T · SKP / KPB', icon: moduleIconSvg('profil') },
+    { id: 'hpl', label: 'HPL Transmigrasi', sub: 'Executive Overview', icon: moduleIconSvg('hpl') },
     { id: 'sibarduktrans', label: 'Data Transmigran', sub: 'Sibarduktrans', icon: moduleIconSvg('sibarduktrans') },
     /* hidden per request ("make demografi & pembauran hidden but dont delete") — route and
        component both stay fully intact (see dashboard-routing.module.ts), just filtered out of

@@ -4,6 +4,7 @@ import { DataManagerShellComponent } from './data-manager-shell/data-manager-she
 import { EntityListComponent } from './entity-list/entity-list.component';
 import { SubmissionHubComponent } from './submission-hub/submission-hub.component';
 import { WilayahComponent } from './wilayah/wilayah.component';
+import { HplComponent } from './hpl/hpl.component';
 
 /**
  * One route per entity (23 of the 24 `EntityKey`s — `wpt` is served by `WilayahComponent`
@@ -27,6 +28,8 @@ export const routes: Routes = [
       // `wpt`'s own entity list is embedded inside WilayahComponent (see its doc comment) rather
       // than routed to directly, so `data.entityKey: 'wpt'` lives here instead of on a `wpt` path.
       { path: 'wilayah', component: WilayahComponent, data: { entityKey: 'wpt', navId: 'wilayah' } },
+      // "HPL" — HPL lokasi on their own map page, same layout as Wilayah (see HplComponent).
+      { path: 'hpl', component: HplComponent, data: { entityKey: 'hpl', navId: 'hpl' } },
       { path: 'skp', component: EntityListComponent, data: { entityKey: 'skp' } },
       { path: 'sp', component: EntityListComponent, data: { entityKey: 'sp' } },
       { path: 'komoditi', component: EntityListComponent, data: { entityKey: 'komoditi' } },

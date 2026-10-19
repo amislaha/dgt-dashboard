@@ -7,6 +7,8 @@
  */
 export const MODULE_ICON_PATHS: { [id: string]: string } = {
   profil: '<path d="M12 2 L21 7 L12 12 L3 7 Z"/><path d="M3 12 L12 17 L21 12"/><path d="M3 17 L12 22 L21 17"/>',
+  // land parcel with a certificate seal: HPL / sertifikasi lahan
+  hpl: '<path d="M3 7l6-3 6 3 6-3v9"/><path d="M3 7v13l6-3 3 1.5"/><path d="M9 4v13"/><circle cx="17.5" cy="16.5" r="3"/><path d="M16 19.2V22l1.5-.8 1.5.8v-2.8"/>',
   // people + a rising bar chart: transmigran statistics
   sibarduktrans:
     '<circle cx="8" cy="7.5" r="2.6"/><path d="M3 20v-2.5a5 5 0 0 1 10 0V20"/><path d="M16 20v-5M20 20V9M12.500 20h9"/>',
