@@ -98,39 +98,16 @@
   <ng-container *ngTemplateOutlet="stack; context: { $implicit: inventarisasi, title: 'Status inventarisasi' }"></ng-container>
   <ng-container *ngTemplateOutlet="stack; context: { $implicit: peta, title: 'Ketersediaan peta' }"></ng-container>
 
-  <!-- Per-wilayah bars: 100% stacked by luas, so small and large wilayah compare on the same footing. -->
-  <div class="hp-ready">
-    <div class="hp-ready-head">
-      <h3>Kesiapan per {{ readyLevel }} <small>&middot; {{ readyBars.length }} {{ readyLevel }} terluas</small></h3>
-      <div class="hp-seg" role="tablist" aria-label="Status yang ditampilkan">
-        <button type="button" role="tab" [class.active]="readyMode === 'inv'" [attr.aria-selected]="readyMode === 'inv'" (click)="setReadyMode('inv')">Inventarisasi</button>
-        <button type="button" role="tab" [class.active]="readyMode === 'peta'" [attr.aria-selected]="readyMode === 'peta'" (click)="setReadyMode('peta')">Peta</button>
-      </div>
-    </div>
-    <div class="hp-ready-legend" *ngIf="readyBars.length">
-      <span *ngFor="let s of readyBars[0].segs"><i [style.background]="s.color"></i>{{ s.label }}</span>
-    </div>
-    <p class="hp-empty" *ngIf="!readyBars.length">Tidak ada data.</p>
-    <div class="hp-ready-list" role="list">
-      <div class="hp-ready-row" role="listitem" *ngFor="let b of readyBars">
-        <span class="nm" [title]="b.label">{{ b.label }}</span>
-        <div class="bar" [attr.aria-label]="b.label + ': ' + fmt(b.readyPct, 1) + '% ' + b.segs[0].label.toLowerCase()">
-          <span *ngFor="let s of b.segs" [style.width.%]="s.pct" [style.background]="s.color" [hidden]="!s.luas" [title]="s.label + ': ' + fmt(s.luas) + ' Ha (' + fmt(s.pct, 1) + '%)'"></span>
-        </div>
-        <span class="val"><b>{{ fmt(b.readyPct, 1) }}%</b> &middot; {{ fmt(b.luas) }} Ha</span>
-      </div>
-    </div>
-  </div>
 </section>
 
 <ng-template #stack let-segs let-title="title">
   <div class="hp-stack">
     <h3>{{ title }}</h3>
     <div class="hp-stk">
-      <span *ngFor="let s of segs" [style.width.%]="segWidth(s)" [style.background]="s.color" [title]="s.label + ': ' + fmt(s.luas) + ' Ha'"></span>
+      <span *ngFor="let s of segs" [style.width.%]="segWidth(s)" [ngClass]="'tone-' + s.tone" [title]="s.label + ': ' + fmt(s.luas) + ' Ha'"></span>
     </div>
     <div class="hp-lg">
-      <span *ngFor="let s of segs"><i [style.background]="s.color"></i>{{ s.label }} &middot; {{ fmt(s.luas) }} Ha ({{ pct(s.luas, totalLuas) }})</span>
+      <span *ngFor="let s of segs"><i [ngClass]="'tone-' + s.tone"></i>{{ s.label }} &middot; {{ fmt(s.luas) }} Ha ({{ pct(s.luas, totalLuas) }})</span>
     </div>
   </div>
 </ng-template>
