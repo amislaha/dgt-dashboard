@@ -86,7 +86,7 @@
             (click)="openDetail(row)">
             <div *ngFor="let col of config.columns" role="cell" [class.num]="col.numeric" [class.grow]="col.primary" [class.muted]="col.muted">
               <ng-container *ngIf="col.primary; else plainCell">
-                <span class="color-chip" *ngIf="config.colorField" [style.background]="row[config.colorField] || 'var(--border)'"></span>
+                <span class="color-chip" *ngIf="config.colorField" [style.background]="(row[config.colorField] || 'var(--border)') | cssVar"></span>
                 <span class="primary" [class.mono]="config.mono">{{ cell(row, col) }}</span>
                 <span class="secondary" *ngIf="secondary(row, col) as sec"> · {{ sec }}</span>
               </ng-container>

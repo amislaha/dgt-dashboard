@@ -44,7 +44,7 @@
       <span class="li-title">{{ row.feature.title || '(tanpa judul)' }}</span>
       <span class="li-meta">{{ geomLabel(row.feature.geometry.type) }} · {{ row.meta }}{{ row.compartmentName ? ' · ' + row.compartmentName : '' }}</span>
     </span>
-    <span class="appr-dot" [title]="'Approval: ' + row.approvalLabel" [style.background]="row.approvalColor"></span>
+    <span class="appr-dot" [title]="'Approval: ' + row.approvalLabel" [style.background]="row.approvalColor | cssVar"></span>
     <button class="li-act" type="button" [class.confirm]="deleteArmedId === row.feature.id" aria-label="Hapus" (click)="armDelete(row.feature.id, $event)">
       <ng-container *ngIf="deleteArmedId === row.feature.id; else trashIcon">Hapus?</ng-container>
       <ng-template #trashIcon>

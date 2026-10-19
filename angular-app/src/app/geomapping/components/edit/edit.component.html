@@ -130,8 +130,8 @@
       <div class="step-head">
         <span class="step-title">Status Approval</span>
         <span style="flex:1"></span>
-        <span class="appr-chip" *ngIf="editing.isNew" [style.color]="statusMeta('PENDING').color" [style.border-color]="statusMeta('PENDING').color">
-          <span class="appr-dot" [style.background]="statusMeta('PENDING').color"></span>{{ statusMeta('PENDING').label }}
+        <span class="appr-chip" *ngIf="editing.isNew" [style.color]="statusMeta('PENDING').color | cssVar" [style.border-color]="statusMeta('PENDING').color | cssVar">
+          <span class="appr-dot" [style.background]="statusMeta('PENDING').color | cssVar"></span>{{ statusMeta('PENDING').label }}
         </span>
       </div>
       <div class="qn-row" *ngIf="editing.isNew"><span class="qn-k">Status</span><span class="qn-v">Menunggu — diajukan saat disimpan</span></div>
@@ -139,8 +139,8 @@
         <div class="qn-row">
           <span class="qn-k">Status</span>
           <span class="qn-v">
-            <span class="appr-chip" [style.color]="statusMeta(editing.feature.approval.status).color" [style.border-color]="statusMeta(editing.feature.approval.status).color">
-              <span class="appr-dot" [style.background]="statusMeta(editing.feature.approval.status).color"></span>{{ statusMeta(editing.feature.approval.status).label }}
+            <span class="appr-chip" [style.color]="statusMeta(editing.feature.approval.status).color | cssVar" [style.border-color]="statusMeta(editing.feature.approval.status).color | cssVar">
+              <span class="appr-dot" [style.background]="statusMeta(editing.feature.approval.status).color | cssVar"></span>{{ statusMeta(editing.feature.approval.status).label }}
             </span>
           </span>
         </div>
@@ -152,7 +152,7 @@
           <div style="margin-top:.4rem">
             <ng-container *ngIf="editing.feature.approval.history.length; else noHist">
               <div class="act-item" *ngFor="let h of editing.feature.approval.history">
-                <span class="act-dot" [style.background]="historyDotColor(h.action)"></span>
+                <span class="act-dot" [style.background]="historyDotColor(h.action) | cssVar"></span>
                 <span>
                   <span>{{ actionLabel(h.action) }} &middot; {{ h.by || '-' }}{{ h.note ? (' — ' + h.note) : '' }}</span>
                   <span class="act-when">{{ fmtWhen(h.at) }}</span>
@@ -260,7 +260,7 @@
         <span class="li-title">{{ f.title || '(tanpa judul)' }}</span>
         <span class="li-meta">{{ geomLabel(f.geometry.type) }} &middot; {{ rowMeta(f) }}</span>
       </span>
-      <span class="appr-dot" [title]="'Approval: ' + apprLabel(f)" [style.background]="apprColor(f)"></span>
+      <span class="appr-dot" [title]="'Approval: ' + apprLabel(f)" [style.background]="apprColor(f) | cssVar"></span>
       <button class="li-act" type="button" [class.confirm]="rowDeleteArmedId === f.id" aria-label="Hapus" (click)="armRowDelete(f.id, $event)">
         <ng-container *ngIf="rowDeleteArmedId === f.id; else trashIcon">Hapus?</ng-container>
         <ng-template #trashIcon><span [innerHTML]="iconSvg('trash') | safeHtml"></span></ng-template>

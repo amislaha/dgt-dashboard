@@ -15,8 +15,8 @@
         <span class="li-title">{{ f.title || '(tanpa judul)' }}</span>
         <span class="li-meta">{{ geomLabel(f) }} &middot; {{ f.approval.submittedBy || '-' }}{{ wcOf(f) ? (' &middot; ' + wcOf(f)!.name) : '' }}</span>
       </span>
-      <span class="appr-chip" [style.color]="statusMeta(f.approval.status).color" [style.border-color]="statusMeta(f.approval.status).color">
-        <span class="appr-dot" [style.background]="statusMeta(f.approval.status).color"></span>{{ statusMeta(f.approval.status).label }}
+      <span class="appr-chip" [style.color]="statusMeta(f.approval.status).color | cssVar" [style.border-color]="statusMeta(f.approval.status).color | cssVar">
+        <span class="appr-dot" [style.background]="statusMeta(f.approval.status).color | cssVar"></span>{{ statusMeta(f.approval.status).label }}
       </span>
       <span class="appr-caret" [innerHTML]="iconSvg('arrowRight') | safeHtml"></span>
     </div>
@@ -24,8 +24,8 @@
     <div class="appr-body" *ngIf="openId[f.id]">
       <div class="appr-meta">
         <div class="qn-row"><span class="qn-k">Status</span><span class="qn-v">
-          <span class="appr-chip" [style.color]="statusMeta(f.approval.status).color" [style.border-color]="statusMeta(f.approval.status).color">
-            <span class="appr-dot" [style.background]="statusMeta(f.approval.status).color"></span>{{ statusMeta(f.approval.status).label }}
+          <span class="appr-chip" [style.color]="statusMeta(f.approval.status).color | cssVar" [style.border-color]="statusMeta(f.approval.status).color | cssVar">
+            <span class="appr-dot" [style.background]="statusMeta(f.approval.status).color | cssVar"></span>{{ statusMeta(f.approval.status).label }}
           </span>
         </span></div>
         <div class="qn-row"><span class="qn-k">Diajukan</span><span class="qn-v mono">{{ f.approval.submittedBy || '-' }} &middot; {{ fmtWhen(f.approval.submittedAt) }}</span></div>
@@ -36,7 +36,7 @@
           <div style="margin-top:.4rem">
             <ng-container *ngIf="f.approval.history.length; else noHist">
               <div class="act-item" *ngFor="let h of f.approval.history">
-                <span class="act-dot" [style.background]="historyDotColor(h.action)"></span>
+                <span class="act-dot" [style.background]="historyDotColor(h.action) | cssVar"></span>
                 <span>
                   <span>{{ actionLabel(h.action) }} &middot; {{ h.by || '-' }}{{ h.note ? (' — ' + h.note) : '' }}</span>
                   <span class="act-when">{{ fmtWhen(h.at) }}</span>

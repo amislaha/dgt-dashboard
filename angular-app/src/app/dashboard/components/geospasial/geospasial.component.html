@@ -64,7 +64,7 @@
         </div>
         <label class="ews-cat-item" *ngFor="let c of ewsCategories">
           <input type="checkbox" [checked]="ewsCategoryVisible[c.category] !== false" (change)="toggleEwsCategory(c.category, $any($event.target).checked)" />
-          <span class="dot" [style.background]="sevColorVar(c.sev)"></span>
+          <span class="dot" [style.background]="sevColorVar(c.sev) | cssVar"></span>
           <span class="nm">{{ c.category }}</span>
           <span class="ct">{{ c.count }}</span>
         </label>

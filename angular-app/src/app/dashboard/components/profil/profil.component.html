@@ -307,7 +307,7 @@
                 <dgt-donut-chart [segments]="usiaSegments" [centerLabel]="d.strukturUsia.produktifPct + '%'" centerSub="usia produktif"></dgt-donut-chart>
                 <div class="d-flex flex-column" style="gap: .5rem">
                   <span class="small d-flex align-items-center" *ngFor="let s of usiaSegments">
-                    <span class="legend-chip mr-1" [style.background]="s.color"></span>{{ s.label }} &nbsp;<b>{{ s.value | number:'1.0-0' }} &middot; {{ pctOf(s.value, d.pendudukJiwa) }}%</b>
+                    <span class="legend-chip mr-1" [style.background]="s.color | cssVar"></span>{{ s.label }} &nbsp;<b>{{ s.value | number:'1.0-0' }} &middot; {{ pctOf(s.value, d.pendudukJiwa) }}%</b>
                   </span>
                 </div>
               </div>
@@ -352,7 +352,7 @@
                 <dgt-donut-chart [segments]="desaSegments" [centerLabel]="totalDesaIdm" centerSub="desa"></dgt-donut-chart>
                 <div class="d-flex flex-column" style="gap: .5rem">
                   <span class="small d-flex align-items-center" *ngFor="let s of desaSegments">
-                    <span class="legend-chip mr-1" [style.background]="s.color"></span>{{ s.label }} &nbsp;<b>{{ s.value }} &middot; {{ pctOf(s.value, totalDesaIdm) }}%</b>
+                    <span class="legend-chip mr-1" [style.background]="s.color | cssVar"></span>{{ s.label }} &nbsp;<b>{{ s.value }} &middot; {{ pctOf(s.value, totalDesaIdm) }}%</b>
                   </span>
                 </div>
               </div>
@@ -432,7 +432,7 @@
                   <dgt-donut-chart [segments]="shmSegments" [centerLabel]="d.sertifikasi.pct + '%'" centerSub="tersertifikasi"></dgt-donut-chart>
                   <div class="d-flex flex-column" style="gap: .5rem">
                     <span class="small d-flex align-items-center" *ngFor="let s of shmSegments">
-                      <span class="legend-chip mr-1" [style.background]="s.color"></span>{{ s.label }} &nbsp;<b>{{ s.value | number:'1.0-0' }} bidang</b>
+                      <span class="legend-chip mr-1" [style.background]="s.color | cssVar"></span>{{ s.label }} &nbsp;<b>{{ s.value | number:'1.0-0' }} bidang</b>
                     </span>
                   </div>
                 </div>

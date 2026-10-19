@@ -18,6 +18,7 @@ import { DonutChartComponent } from './components/charts/donut-chart/donut-chart
 import { GaugeChartComponent } from './components/charts/gauge-chart/gauge-chart.component';
 import { ThemeToggleComponent } from './components/theme-toggle/theme-toggle.component';
 import { SafeHtmlPipe } from './pipes/safe-html.pipe';
+import { CssVarPipe } from './pipes/css-var.pipe';
 
 export const COMPONENTS = [
   RailNavComponent,
@@ -43,8 +44,8 @@ export const COMPONENTS = [
  * shared code — see the token-reconciliation note in the port spec).
  */
 @NgModule({
-  declarations: [...COMPONENTS, SafeHtmlPipe],
+  declarations: [...COMPONENTS, SafeHtmlPipe, CssVarPipe],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NgbDropdownModule],
-  exports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NgbDropdownModule, ...COMPONENTS, SafeHtmlPipe]
+  exports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, NgbDropdownModule, ...COMPONENTS, SafeHtmlPipe, CssVarPipe]
 })
 export class SharedModule {}
