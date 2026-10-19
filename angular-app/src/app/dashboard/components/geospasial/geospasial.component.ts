@@ -20,7 +20,7 @@ type FilterDimensi = 'tipe' | 'status' | 'legalitas' | 'komoditas';
 /**
  * Geospasial landing module, laid out after the "DGT DASHBOARD" reference screenshot: a full-bleed
  * satellite map with a teal brand card + filter pills (top-left), an icon card (top-right), a
- * "Layer Kawasan" tree (left), a "Summary Nasional" panel of five coloured sections (right), a
+ * "Layer" tree (left; Kawasan Transmigrasi, HPL and SHM as three peer groups), a "Summary Nasional" panel of five coloured sections (right), a
  * basemap switcher + dark toolbar (bottom-centre), and a HPL popup card on the map. Clicking a
  * kawasan's name (or the popup's "Lihat profil kawasan" link) opens `KawasanDetailModalComponent`,
  * the "KAWASAN DETAIL" reference.
@@ -84,13 +84,16 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   /** Komoditas names per kawasan id, from the same produkUnggulan the Profil page shows. */
   private komoditasByKawasan: { [id: string]: string[] } = {};
 
-  /** Per-kawasan checkbox/expand/overlay state, keyed by kawasan id. Everything starts checked and
-   *  expanded, like the reference. */
+  /** Layer tree: three peer groups — Kawasan Transmigrasi, HPL, SHM — each with a group switch
+   *  (the global overlayArea/overlayHpl/overlayShm) and one checkbox per kawasan. HPL and SHM are
+   *  layers in their own right, not children of a kawasan: unchecking a kawasan hides only its
+   *  boundary. Everything starts checked; only the Kawasan group starts expanded. */
+  groupOpen: { [group: string]: boolean } = { kawasan: true, hpl: false, shm: false };
   kawasanVisible: { [id: string]: boolean } = {};
-  expandedKawasan: { [id: string]: boolean } = {};
   hplVisible: { [id: string]: boolean } = {};
   shmVisible: { [id: string]: boolean } = {};
-  /** Inverse maps handed to the map component so overlays stay hidden across replots. */
+  /** Inverse maps handed to the map component so hidden layers stay hidden across replots. */
+  areaHidden: { [id: string]: boolean } = {};
   hplHidden: { [id: string]: boolean } = {};
   shmHidden: { [id: string]: boolean } = {};
   ewsCategoryVisible: { [category: string]: boolean } = {};
@@ -120,7 +123,6 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     this.komoditasOptions = Object.keys(names).sort();
     this.kawasan.forEach(k => {
       this.kawasanVisible[k.id] = true;
-      this.expandedKawasan[k.id] = true;
       this.hplVisible[k.id] = true;
       this.shmVisible[k.id] = true;
     });
@@ -146,9 +148,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
   // ---------- filtering / layer tree ----------
 
   private refreshVisibleKawasan(): void {
-    this.visibleKawasan = this.kawasan.filter(
-      k => this.kawasanVisible[k.id] !== false && (!this.selectedProvinsi || k.provinsi === this.selectedProvinsi)
-    );
+    this.visibleKawasan = this.kawasan.filter(k => !this.selectedProvinsi || k.provinsi === this.selectedProvinsi);
   }
 
   onProvinsiChange(): void {
@@ -200,13 +200,16 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     );
   }
 
-  toggleKawasan(id: string, visible: boolean): void {
-    this.kawasanVisible[id] = visible;
-    this.refreshVisibleKawasan();
+  toggleGroup(group: string): void {
+    this.groupOpen[group] = !this.groupOpen[group];
   }
 
-  toggleKawasanExpand(id: string): void {
-    this.expandedKawasan[id] = !this.expandedKawasan[id];
+  toggleKawasan(id: string, visible: boolean): void {
+    this.kawasanVisible[id] = visible;
+    this.areaHidden[id] = !visible;
+    if (this.kawasanMap) {
+      this.kawasanMap.setAreaVisibleFor(id, visible);
+    }
   }
 
   toggleKawasanHpl(id: string, visible: boolean): void {

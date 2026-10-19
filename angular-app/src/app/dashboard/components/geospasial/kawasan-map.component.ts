@@ -63,6 +63,9 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   @Input() showAreaLayer = true;
   @Input() showHplLayer = true;
   @Input() showShmLayer = true;
+  /** Kawasan boundaries, HPL outlines and SHM areas are three independent layers: hiding a
+   *  kawasan's boundary leaves its HPL/SHM on the map, and vice versa. */
+  @Input() areaHidden: { [id: string]: boolean } = {};
   @Input() hplHidden: { [id: string]: boolean } = {};
   @Input() shmHidden: { [id: string]: boolean } = {};
   @Output() select = new EventEmitter<Kawasan>();
@@ -176,14 +179,18 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
   }
 
-  /** Called by the parent's per-kawasan "HPL" checkbox (nested under that kawasan's expandable
-   *  layer-list row) — same add/remove-layer pattern as `setAreaVisible()`, just for that one
+  /** Called by the parent's per-kawasan checkbox in the "Kawasan Transmigrasi" layer group. */
+  setAreaVisibleFor(id: string, visible: boolean): void {
+    this.toggleLayer(this.areas[id], visible && this.showAreaLayer);
+  }
+
+  /** Called by the parent's per-kawasan checkbox in the "HPL" layer group — just that one
    *  kawasan's HPL outline. A no-op if `showLegality` is off (the polygon was never built). */
   setHplVisibleFor(id: string, visible: boolean): void {
     this.toggleLayer(this.hplAreas[id], visible && this.showHplLayer);
   }
 
-  /** Called by the parent's per-kawasan "SHM" checkbox — same pattern as `setHplVisibleFor()`. */
+  /** Called by the parent's per-kawasan checkbox in the "SHM" layer group — same pattern as `setHplVisibleFor()`. */
   setShmVisibleFor(id: string, visible: boolean): void {
     this.toggleLayer(this.shmAreas[id], visible && this.showShmLayer);
   }
@@ -201,9 +208,9 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     }
   }
 
-  /** Re-applies the three global overlay switches (and each kawasan's own HPL/SHM state). */
+  /** Re-applies the three global overlay switches (and each kawasan's own boundary/HPL/SHM state). */
   private applyOverlayVisibility(): void {
-    Object.keys(this.areas).forEach(id => this.toggleLayer(this.areas[id], this.showAreaLayer));
+    Object.keys(this.areas).forEach(id => this.toggleLayer(this.areas[id], this.showAreaLayer && !this.areaHidden[id]));
     Object.keys(this.hplAreas).forEach(id => this.toggleLayer(this.hplAreas[id], this.showHplLayer && !this.hplHidden[id]));
     Object.keys(this.shmAreas).forEach(id => this.toggleLayer(this.shmAreas[id], this.showShmLayer && !this.shmHidden[id]));
   }
@@ -310,7 +317,7 @@ export class KawasanMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
     // Built per-kawasan (not one combined layer group each) so each kawasan's HPL/SHM can be
     // toggled independently via setHplVisibleFor()/setShmVisibleFor() — see GeospasialComponent's
-    // expandable per-kawasan layer-list rows. Shown by default (matching that UI's "all checked"
+    // HPL/SHM layer groups. Shown by default (matching that UI's "all checked"
     // starting state) whenever the feature is opted into at all.
     if (this.showLegality) {
       this.kawasan.forEach(k => {

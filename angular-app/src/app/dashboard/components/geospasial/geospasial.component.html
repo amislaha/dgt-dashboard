@@ -88,10 +88,10 @@
     <p class="lg-note">Klik poligon kawasan untuk melihat detail HPL.</p>
   </div>
 
-  <!-- Left panel: Layer Kawasan -->
+  <!-- Left panel: Layer (Kawasan / HPL / SHM) -->
   <div class="geo-panel geo-panel-left" [class.collapsed]="!leftPanelOpen">
     <div class="geo-panel-head">
-      <h2 class="geo-panel-title">Layer Kawasan</h2>
+      <h2 class="geo-panel-title">Layer</h2>
       <button type="button" class="geo-panel-collapse" [attr.title]="leftPanelOpen ? 'Ciutkan panel' : 'Buka panel'" [attr.aria-label]="leftPanelOpen ? 'Ciutkan panel' : 'Buka panel'" (click)="toggleLeftPanel()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h12M3 18h18"/><path d="m18 9-3 3 3 3"/></svg>
       </button>
@@ -113,23 +113,59 @@
         </select>
       </div>
 
+      <!-- Three peer layer groups: kawasan boundaries, HPL, SHM. The group checkbox is the same
+           switch as the Overlay panel's; each row toggles that kawasan's own layer in the group. -->
       <div class="geo-tree">
-        <div class="geo-tree-node" *ngFor="let k of kawasanRows">
-          <div class="geo-tree-row geo-tree-parent" [class.selected]="k.id === selectedKawasanId">
-            <button type="button" class="geo-tree-chev" [attr.aria-label]="expandedKawasan[k.id] ? 'Ciutkan KT ' + k.nama : 'Perluas KT ' + k.nama" (click)="toggleKawasanExpand(k.id)">
-              <svg [class.collapsed]="!expandedKawasan[k.id]" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 6 5-6z"/></svg>
+        <div class="geo-tree-node">
+          <div class="geo-tree-row geo-tree-parent">
+            <button type="button" class="geo-tree-chev" [attr.aria-expanded]="groupOpen.kawasan" [attr.aria-label]="groupOpen.kawasan ? 'Ciutkan Kawasan Transmigrasi' : 'Perluas Kawasan Transmigrasi'" (click)="toggleGroup('kawasan')">
+              <svg [class.collapsed]="!groupOpen.kawasan" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 6 5-6z"/></svg>
             </button>
-            <input type="checkbox" [checked]="kawasanVisible[k.id] !== false" (change)="toggleKawasan(k.id, $any($event.target).checked)" [attr.aria-label]="'Tampilkan KT ' + k.nama" />
-            <span class="geo-tree-name" role="button" tabindex="0" title="Buka profil kawasan" (click)="openDetail(k)" (keydown.enter)="openDetail(k)">KT {{ k.nama }}</span>
+            <input type="checkbox" [(ngModel)]="overlayArea" aria-label="Tampilkan layer Kawasan Transmigrasi" />
+            <i class="sw sw-area" aria-hidden="true"></i>
+            <span class="geo-group-name">Kawasan Transmigrasi</span>
+            <span class="geo-group-ct">{{ kawasanRows.length }}</span>
           </div>
-          <ng-container *ngIf="expandedKawasan[k.id]">
-            <label class="geo-tree-row geo-tree-child">
+          <ng-container *ngIf="groupOpen.kawasan">
+            <div class="geo-tree-row geo-tree-child" *ngFor="let k of kawasanRows" [class.selected]="k.id === selectedKawasanId" [class.off]="!overlayArea">
+              <input type="checkbox" [checked]="kawasanVisible[k.id] !== false" (change)="toggleKawasan(k.id, $any($event.target).checked)" [attr.aria-label]="'Tampilkan KT ' + k.nama" />
+              <span class="geo-tree-name" role="button" tabindex="0" title="Buka profil kawasan" (click)="openDetail(k)" (keydown.enter)="openDetail(k)">KT {{ k.nama }}</span>
+            </div>
+          </ng-container>
+        </div>
+
+        <div class="geo-tree-node">
+          <div class="geo-tree-row geo-tree-parent">
+            <button type="button" class="geo-tree-chev" [attr.aria-expanded]="groupOpen.hpl" [attr.aria-label]="groupOpen.hpl ? 'Ciutkan HPL' : 'Perluas HPL'" (click)="toggleGroup('hpl')">
+              <svg [class.collapsed]="!groupOpen.hpl" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 6 5-6z"/></svg>
+            </button>
+            <input type="checkbox" [(ngModel)]="overlayHpl" aria-label="Tampilkan layer HPL" />
+            <i class="sw sw-hpl" aria-hidden="true"></i>
+            <span class="geo-group-name">HPL</span>
+            <span class="geo-group-ct">{{ kawasanRows.length }}</span>
+          </div>
+          <ng-container *ngIf="groupOpen.hpl">
+            <label class="geo-tree-row geo-tree-child" *ngFor="let k of kawasanRows" [class.off]="!overlayHpl">
               <input type="checkbox" [checked]="hplVisible[k.id] !== false" (change)="toggleKawasanHpl(k.id, $any($event.target).checked)" />
-              <span>HPL</span>
+              <span>HPL {{ k.nama }}</span>
             </label>
-            <label class="geo-tree-row geo-tree-child">
+          </ng-container>
+        </div>
+
+        <div class="geo-tree-node">
+          <div class="geo-tree-row geo-tree-parent">
+            <button type="button" class="geo-tree-chev" [attr.aria-expanded]="groupOpen.shm" [attr.aria-label]="groupOpen.shm ? 'Ciutkan SHM' : 'Perluas SHM'" (click)="toggleGroup('shm')">
+              <svg [class.collapsed]="!groupOpen.shm" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 6 5-6z"/></svg>
+            </button>
+            <input type="checkbox" [(ngModel)]="overlayShm" aria-label="Tampilkan layer SHM" />
+            <i class="sw sw-shm" aria-hidden="true"></i>
+            <span class="geo-group-name">SHM</span>
+            <span class="geo-group-ct">{{ kawasanRows.length }}</span>
+          </div>
+          <ng-container *ngIf="groupOpen.shm">
+            <label class="geo-tree-row geo-tree-child" *ngFor="let k of kawasanRows" [class.off]="!overlayShm">
               <input type="checkbox" [checked]="shmVisible[k.id] !== false" (change)="toggleKawasanShm(k.id, $any($event.target).checked)" />
-              <span>SHM</span>
+              <span>SHM {{ k.nama }}</span>
             </label>
           </ng-container>
         </div>
