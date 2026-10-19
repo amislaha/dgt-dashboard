@@ -29,6 +29,15 @@ interface StackSeg {
   color: string;
 }
 
+/** One bar of the Kesiapan Lapangan per-wilayah chart: luas split by status, as shares of 100%. */
+interface ReadyBar {
+  label: string;
+  luas: number;
+  /** Share of the first (most-ready) segment, for the direct label. */
+  readyPct: number;
+  segs: Array<StackSeg & { pct: number }>;
+}
+
 interface ChartBar {
   x: number;
   y: number;
@@ -67,6 +76,10 @@ export class HplComponent implements OnInit, OnDestroy {
   inventarisasi: StackSeg[] = [];
   peta: StackSeg[] = [];
   totalLuas = 0;
+  /** Kesiapan Lapangan bar chart: which status the bars split by, and the bars themselves. */
+  readyMode: 'inv' | 'peta' = 'inv';
+  readyBars: ReadyBar[] = [];
+  readyLevel = 'provinsi';
 
   chartTitle = '';
   chartSub = '';
@@ -131,6 +144,8 @@ export class HplComponent implements OnInit, OnDestroy {
       { label: 'Belum ditemukan', luas: o.luas - o.lpeta, color: 'var(--border)' }
     ];
 
+    this.buildReadiness(rows, scoped);
+
     let groups: HplGroup[];
     if (this.dim === 'gen') {
       groups = this.hpl.byGenerasi(rows);
@@ -142,6 +157,11 @@ export class HplComponent implements OnInit, OnDestroy {
       this.chartSub = `12 ${scoped ? 'kabupaten' : 'provinsi'} terluas · ${this.scopeLabel}`;
     }
     this.buildChart(groups);
+  }
+
+  setReadyMode(mode: 'inv' | 'peta'): void {
+    this.readyMode = mode;
+    this.recompute();
   }
 
   fmt(v: number, d = 0): string {
@@ -223,6 +243,42 @@ export class HplComponent implements OnInit, OnDestroy {
         note: 'Lokasi berprioritas tinggi menurut indeks risiko — tangani lebih dulu.'
       }
     ];
+  }
+
+  /** Top 12 wilayah by luas (provinsi, or kabupaten once a provinsi is chosen), each split into
+   *  the same status segments and colours as the overall bars above. */
+  private buildReadiness(rows: HplRow[], byKab: boolean): void {
+    this.readyLevel = byKab ? 'kabupaten' : 'provinsi';
+    const groups = new Map<string, HplRow[]>();
+    rows.forEach(r => {
+      const k = (byKab ? r.kab : r.prov) || '(tanpa nama)';
+      groups.set(k, [...(groups.get(k) || []), r]);
+    });
+    const sum = (rr: HplRow[], f: (r: HplRow) => boolean) => rr.filter(f).reduce((a, r) => a + r.luas, 0);
+    this.readyBars = Array.from(groups.entries())
+      .map(([label, rr]) => {
+        const luas = rr.reduce((a, r) => a + r.luas, 0);
+        const segs: StackSeg[] =
+          this.readyMode === 'inv'
+            ? [
+                { label: 'Sudah', luas: sum(rr, r => r.inv === 'Sudah'), color: 'var(--good)' },
+                { label: 'Rencana 2026', luas: sum(rr, r => r.inv === 'Rencana 2026'), color: 'var(--warn)' },
+                { label: 'Belum', luas: sum(rr, r => r.inv !== 'Sudah' && r.inv !== 'Rencana 2026'), color: 'var(--border)' }
+              ]
+            : [
+                { label: 'Ada peta', luas: sum(rr, r => r.peta), color: 'var(--series-2)' },
+                { label: 'Belum ditemukan', luas: sum(rr, r => !r.peta), color: 'var(--border)' }
+              ];
+        return {
+          label,
+          luas,
+          readyPct: luas ? (100 * segs[0].luas) / luas : 0,
+          segs: segs.map(s => ({ ...s, pct: luas ? (100 * s.luas) / luas : 0 }))
+        };
+      })
+      .filter(b => b.luas > 0)
+      .sort((a, b) => b.luas - a.luas)
+      .slice(0, 12);
   }
 
   private buildChart(groups: HplGroup[]): void {
