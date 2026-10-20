@@ -580,16 +580,17 @@ const HPL_CONFIG: EntityConfig<Hpl> = {
   label: 'HPL',
   sub: 'Hak Pengelolaan Lahan transmigrasi',
   idPrefix: 'hpl',
-  titleField: 'nomorSk',
+  titleField: 'nama',
   columns: [
-    { key: 'nomorSk', label: 'Nomor SK', sortable: true },
+    { key: 'nama', label: 'Nama HPL', sortable: true },
     { key: 'provinsi', label: 'Provinsi', sortable: true },
     { key: 'kabupaten', label: 'Kabupaten/Kota', sortable: true },
     { key: 'luas', label: 'Luas (ha)', sortable: true, numeric: true },
     { key: 'inventarisasi', label: 'Inventarisasi', sortable: true }
   ],
   fields: [
-    { name: 'nomorSk', label: 'Nomor SK HPL', type: 'text', required: true, mono: true, placeholder: '23/HPL/BPN/95', section: 'Identitas', row: 'sk' },
+    { name: 'desa', label: 'Nama Desa', type: 'text', required: true, placeholder: 'Muting', hint: 'Nama HPL = Desa + Nomor SK, mis. "Desa Muting 85/HPL/BPN/180".', section: 'Identitas' },
+    { name: 'nomorSk', label: 'Nomor SK HPL', type: 'text', required: true, mono: true, placeholder: '85/HPL/BPN/180', row: 'sk' },
     { name: 'tahunSk', label: 'Tahun SK', type: 'number', min: 1950, max: 2100, step: 1, row: 'sk' },
     { name: 'generasi', label: 'Generasi SK', type: 'select', options: HPL_GENERASI },
     { name: 'wilayahId', label: 'Kawasan terkait', type: 'fk', fkEntity: 'wpt', placeholder: 'Tidak terkait kawasan', hint: 'Opsional — HPL tetap tersimpan terpisah dari kawasan.' },

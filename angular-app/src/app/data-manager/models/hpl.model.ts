@@ -5,6 +5,13 @@ export const HPL_DOKUMEN = ['Ada', 'Tidak ada'];
 export const HPL_INVENTARISASI = ['Belum', 'Rencana 2026', 'Sudah'];
 export const HPL_PRIORITAS = ['Tinggi', 'Sedang', 'Rendah'];
 
+/** Display name of an HPL: nama desa + nomor SK, e.g. "Desa Muting 85/HPL/BPN/180". */
+export function hplNama(h: Pick<Hpl, 'desa' | 'nomorSk'>): string {
+  const desa = (h.desa || '').trim();
+  const prefixed = desa && !/^desa\s/i.test(desa) ? 'Desa ' + desa : desa;
+  return [prefixed, (h.nomorSk || '').trim()].filter(Boolean).join(' ');
+}
+
 /**
  * One HPL (Hak Pengelolaan) lokasi, managed on its own "HPL" page rather than under a kawasan —
  * columns follow the Daftar Induk HPL Transmigrasi (nomor/tahun/generasi SK, luas, sertifikat,
@@ -16,6 +23,9 @@ export const HPL_PRIORITAS = ['Tinggi', 'Sedang', 'Rendah'];
  */
 export interface Hpl {
   id: string;
+  /** Derived by HplCrudService on every save — always `hplNama(this)`, never edited directly. */
+  nama?: string;
+  desa?: string;
   nomorSk: string;
   tahunSk?: number;
   generasi?: string;

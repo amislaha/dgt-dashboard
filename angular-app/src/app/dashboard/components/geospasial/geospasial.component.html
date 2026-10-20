@@ -149,7 +149,7 @@
           <ng-container *ngIf="groupOpen.hpl">
             <label class="geo-tree-row geo-tree-child" *ngFor="let h of hplRows" [class.off]="!overlayHpl">
               <input type="checkbox" [checked]="hplVisible[h.id] !== false" (change)="toggleKawasanHpl(h.id, $any($event.target).checked)" />
-              <span class="geo-hpl-row"><span class="mono">{{ h.nomorSk }}</span><small>{{ h.kabupaten }}</small></span>
+              <span class="geo-hpl-row"><span>{{ hplNama(h) }}</span><small>{{ h.kabupaten }}</small></span>
             </label>
             <p class="layer-empty" *ngIf="!hplRows.length">Belum ada HPL. Tambahkan di <a routerLink="/data-manager/hpl">Data Manager &rarr; HPL</a>.</p>
           </ng-container>

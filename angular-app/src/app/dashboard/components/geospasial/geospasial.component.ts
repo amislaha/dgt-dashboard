@@ -12,7 +12,7 @@ import {
   profilDetailData,
   seededRandom
 } from '../../services/dashboard-data.service';
-import { Hpl } from '../../../data-manager/models/hpl.model';
+import { Hpl, hplNama } from '../../../data-manager/models/hpl.model';
 import { HplCrudService } from '../../../data-manager/services/hpl-crud.service';
 import { EwsAlert, EwsSeverity, EwsService } from '../../services/ews.service';
 import { KawasanMapComponent } from './kawasan-map.component';
@@ -234,10 +234,12 @@ export class GeospasialComponent implements OnInit, OnDestroy {
 
   /** HPL group rows: the province filter plus the search box (nomor SK / provinsi / kabupaten). The
    *  kawasan-only filters (tipe, tahap, komoditas) don't apply to HPL records. */
+  readonly hplNama = hplNama;
+
   get hplRows(): Hpl[] {
     const q = this.layerSearchQuery.trim().toLowerCase();
     return this.hplOnMap.filter(
-      h => !q || [h.nomorSk, h.provinsi, h.kabupaten].some(v => (v || '').toLowerCase().includes(q))
+      h => !q || [h.desa, h.nomorSk, h.provinsi, h.kabupaten].some(v => (v || '').toLowerCase().includes(q))
     );
   }
 
@@ -250,7 +252,7 @@ export class GeospasialComponent implements OnInit, OnDestroy {
     return (
       `<div class="kpop">` +
       `<div class="kpop-head"><span class="kpop-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/></svg></span>` +
-      `<div><div class="kpop-title">${e(h.nomorSk)}</div><div class="kpop-sub">HPL TRANSMIGRASI</div></div></div>` +
+      `<div><div class="kpop-title">${e(hplNama(h))}</div><div class="kpop-sub">HPL TRANSMIGRASI</div></div></div>` +
       row('Tahun SK', e(h.tahunSk)) +
       row('Generasi', e(h.generasi)) +
       row('Luas', ha(h.luas), 'hl') +

@@ -1,4 +1,4 @@
-import { Hpl, HPL_GENERASI } from '../models/hpl.model';
+import { Hpl, HPL_GENERASI, hplNama } from '../models/hpl.model';
 import { WPT_SEED } from './seed-data';
 
 /**
@@ -17,6 +17,12 @@ function prng(seed: number): () => number {
 
 const SK_CODE = ['DA', 'BPN', 'KEM-ATR/BPN'];
 
+/** Generic transmigration-village names, picked by row index (not the PRNG, so the other seed values stay as they were). */
+const DESA = [
+  'Sumber Rejo', 'Margo Mulyo', 'Karya Jaya', 'Bumi Harapan', 'Sido Makmur', 'Tunas Baru', 'Mekar Sari', 'Suka Maju',
+  'Tri Mulya', 'Jaya Makmur', 'Wono Rejo', 'Purwo Sari', 'Sri Mulyo', 'Bina Karya', 'Harapan Jaya', 'Sido Mulyo', 'Rejo Sari'
+];
+
 function buildSeed(): Hpl[] {
   const rand = prng(20261019);
   const out: Hpl[] = [];
@@ -32,8 +38,11 @@ function buildSeed(): Hpl[] {
       const inv = rand();
       const prio = rand();
       const nomor = `${1 + Math.floor(rand() * 140)}/HPL/${SK_CODE[gen]}/${String(tahun).slice(gen === 2 ? 0 : 2)}`;
+      const desa = DESA[(out.length * 7) % DESA.length];
       out.push({
         id: 'hpl' + (out.length + 1),
+        nama: hplNama({ desa, nomorSk: nomor }),
+        desa,
         nomorSk: nomor,
         tahunSk: tahun,
         generasi: HPL_GENERASI[gen],

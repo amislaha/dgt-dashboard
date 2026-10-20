@@ -1,7 +1,7 @@
 import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { EntityListComponent } from '../entity-list/entity-list.component';
-import { Hpl } from '../models/hpl.model';
+import { Hpl, hplNama } from '../models/hpl.model';
 import { Wpt } from '../models/wpt.model';
 import { EntityRegistryService } from '../services/entity-registry.service';
 import { MapDrawService } from '../services/map-draw.service';
@@ -12,7 +12,7 @@ import { MapDrawService } from '../services/map-draw.service';
  * under a collapsible side panel holding the generic `<dgt-entity-list>` (search, sort, add/edit/
  * delete, geometry drawn on the map). Reuses wilayah.component.scss for the shell styles.
  *
- * The map is typed for Wpt, so each Hpl is handed to it in that shape (`nama` = nomor SK, the area
+ * The map is typed for Wpt, so each Hpl is handed to it in that shape (`nama` = desa + nomor SK, the area
  * circle sized from `luas`); a click maps back to the Hpl and opens it in the list's inline editor.
  */
 @Component({
@@ -37,7 +37,7 @@ export class HplComponent implements OnDestroy {
       this.hpl = list as Hpl[];
       this.mapItems = this.hpl.map(h => ({
         id: h.id,
-        nama: h.nomorSk,
+        nama: hplNama(h),
         provinsi: h.provinsi,
         kabupaten: h.kabupaten,
         lat: h.lat,
