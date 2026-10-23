@@ -391,13 +391,6 @@
 
 // ---------- 5T programs ----------
 .cc-programs { margin-bottom: .8em; }
-.cc-section-title {
-  margin: 0 0 .6em;
-  font-size: 1.45em;
-  font-weight: 800;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-}
 .cc-program-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -435,7 +428,7 @@
     h3 { margin: 0; font-size: 1.3em; font-weight: 800; text-transform: uppercase; letter-spacing: .02em; }
     p { margin: 0; font-size: .9em; color: var(--cc-dim); }
   }
-  > img { display: block; width: 100%; aspect-ratio: 16 / 6; height: auto; object-fit: cover; }
+  > img { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; object-fit: cover; }
   ul { margin: 0; padding: .6em .9em .1em; list-style: none; }
   li {
     position: relative;
@@ -661,7 +654,7 @@
   .cc { min-height: 100vh; }
   .cc-programs { flex: 1 0 auto; display: flex; flex-direction: column; }
   .cc-program-grid { flex: 1 0 auto; }
-  .cc-program > img { flex: 1 0 0; min-height: 4.5em; aspect-ratio: auto; }
+  .cc-program > img { flex: 1 0 0; min-height: 7em; aspect-ratio: auto; }
 }
 
 // ---------- Narrower screens ----------
