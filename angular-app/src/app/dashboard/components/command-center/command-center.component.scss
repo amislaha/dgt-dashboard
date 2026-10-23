@@ -39,8 +39,11 @@
   font-size: clamp(11px, #{'min(.78vw, 1.12vh)'}, 32px); // escaped: Sass's own min() rejects mixed vw/vh
   color: var(--cc-text);
   background-color: var(--cc-bg);
-  background-position: top center;
-  background-size: cover;
+  // Two layers: the overlay gradient, then the tile pattern (assets/command-center-bg.svg, a vector
+  // so it stays sharp when scaled). The pattern is 1.5x screen height, anchored right where its
+  // brightest tiles are.
+  background-position: 0 0, right top;
+  background-size: 100% 100%, auto 150%;
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
