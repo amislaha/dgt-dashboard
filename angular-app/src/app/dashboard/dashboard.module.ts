@@ -19,6 +19,7 @@ import { IntelijenComponent } from './components/intelijen/intelijen.component';
 import { SibarduktransComponent } from './components/sibarduktrans/sibarduktrans.component';
 import { SibColumnChartComponent } from './components/sibarduktrans/sib-column-chart.component';
 import { HplComponent } from './components/hpl/hpl.component';
+import { HplMapComponent } from './components/hpl/hpl-map.component';
 import { CommandCenterComponent } from './components/command-center/command-center.component';
 
 /**
@@ -45,6 +46,7 @@ import { CommandCenterComponent } from './components/command-center/command-cent
     SibarduktransComponent,
     SibColumnChartComponent,
     HplComponent,
+    HplMapComponent,
     CommandCenterComponent
   ],
   imports: [SharedModule, ShellModule, DashboardRoutingModule]

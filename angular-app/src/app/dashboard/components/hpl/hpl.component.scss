@@ -108,6 +108,11 @@
   b.neg { color: var(--critical); }
 }
 
+.hp-map { height: 440px; }
+.hp-map-lg { margin-top: 12px; }
+.hp-lg .hp-dot { display: inline-block; width: 11px; height: 11px; margin-right: 6px; border-radius: 50%; border: 1.5px solid #fff; box-shadow: 0 0 0 1px var(--border); vertical-align: -1px; }
+.hp-map-note { color: var(--text-faint); }
+
 .hp-main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -213,6 +218,7 @@
 
 @media (max-width: 1100px) {
   .hp-main { grid-template-columns: 1fr; }
+  .hp-map { height: 340px; }
 }
 @media (max-width: 640px) {
   .hp-head h1 { font-size: 22px; }

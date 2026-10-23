@@ -1,6 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { HplAgg, HplGroup, HplOverviewService, HplRow } from '../../services/hpl-overview.service';
+import { Hpl } from '../../../data-manager/models/hpl.model';
+import { HPL_SERT_HEX, HPL_SERT_LABEL, HplSertStatus, hplSertStatus } from './hpl-map.component';
 
 interface Kpi {
   label: string;
@@ -77,8 +79,17 @@ export class HplComponent implements OnInit, OnDestroy {
   bars: ChartBar[] = [];
   linePoints = '';
 
+  /** Map: a plain field (not a getter) so <dgt-hpl-map> only redraws when the filter changes. */
+  mapRecords: Hpl[] = [];
+  mapBasemap: 'street' | 'satelit' = 'street';
+  mapLegend: Array<{ status: HplSertStatus; label: string; color: string; count: number }> = [];
+  /** Records in scope that have neither coordinates nor a drawn shape, so can't be placed. */
+  mapUnplaced = 0;
+
   private all: HplRow[] = [];
+  private allRecords: Hpl[] = [];
   private sub?: Subscription;
+  private recSub?: Subscription;
 
   constructor(private readonly hpl: HplOverviewService) {}
 
@@ -93,12 +104,32 @@ export class HplComponent implements OnInit, OnDestroy {
       this.kabupatenOptions = this.hpl.kabupatenOf(rows, this.prov);
       this.recompute();
     });
+    this.recSub = this.hpl.records().subscribe(list => {
+      this.allRecords = list;
+      this.recomputeMap();
+    });
   }
 
   ngOnDestroy(): void {
     if (this.sub) {
       this.sub.unsubscribe();
     }
+    if (this.recSub) {
+      this.recSub.unsubscribe();
+    }
+  }
+
+  private recomputeMap(): void {
+    const inScope = this.allRecords.filter(h => (!this.prov || h.provinsi === this.prov) && (!this.kab || h.kabupaten === this.kab));
+    const placeable = (h: Hpl) => !!h.geometry || (h.lat != null && h.lon != null);
+    this.mapRecords = inScope.filter(placeable);
+    this.mapUnplaced = inScope.length - this.mapRecords.length;
+    this.mapLegend = (['penuh', 'sebagian', 'belum'] as HplSertStatus[]).map(s => ({
+      status: s,
+      label: HPL_SERT_LABEL[s],
+      color: HPL_SERT_HEX[s],
+      count: this.mapRecords.filter(h => hplSertStatus(h) === s).length
+    }));
   }
 
   onProv(): void {
@@ -113,6 +144,7 @@ export class HplComponent implements OnInit, OnDestroy {
   }
 
   recompute(): void {
+    this.recomputeMap();
     const rows = this.all.filter(r => (!this.prov || r.prov === this.prov) && (!this.kab || r.kab === this.kab));
     const o = this.hpl.agg(rows);
     const nas = this.hpl.agg(this.all);

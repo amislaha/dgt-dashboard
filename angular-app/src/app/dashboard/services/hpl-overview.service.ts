@@ -54,6 +54,11 @@ export interface HplGroup {
 export class HplOverviewService {
   constructor(private readonly crud: HplCrudService) {}
 
+  /** The raw records, for the map (which needs coordinates/geometry the rows don't keep). */
+  records(): Observable<Hpl[]> {
+    return this.crud.changes;
+  }
+
   rows(): Observable<HplRow[]> {
     return this.crud.changes.pipe(map(list => list.map(toRow)));
   }

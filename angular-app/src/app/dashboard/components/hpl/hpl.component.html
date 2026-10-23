@@ -42,6 +42,26 @@
   </div>
 </div>
 
+<!-- Map -->
+<section class="hp-card hp-map-card">
+  <header class="hp-card-head">
+    <div>
+      <h2>Peta Sebaran HPL</h2>
+      <p>{{ mapRecords.length }} lokasi &middot; {{ scopeLabel }}<ng-container *ngIf="mapUnplaced"> &middot; {{ mapUnplaced }} lokasi belum punya koordinat</ng-container></p>
+    </div>
+    <div class="hp-seg" role="tablist" aria-label="Peta dasar">
+      <button type="button" role="tab" [class.active]="mapBasemap === 'street'" [attr.aria-selected]="mapBasemap === 'street'" (click)="mapBasemap = 'street'">Peta</button>
+      <button type="button" role="tab" [class.active]="mapBasemap === 'satelit'" [attr.aria-selected]="mapBasemap === 'satelit'" (click)="mapBasemap = 'satelit'">Satelit</button>
+    </div>
+  </header>
+  <p class="hp-empty" *ngIf="!mapRecords.length">Belum ada HPL dengan koordinat di lingkup ini. Tambahkan lokasinya di Data Manager &rarr; HPL.</p>
+  <dgt-hpl-map class="hp-map" [records]="mapRecords" [basemap]="mapBasemap"></dgt-hpl-map>
+  <div class="hp-lg hp-map-lg">
+    <span *ngFor="let l of mapLegend"><i class="hp-dot" [style.background]="l.color"></i>{{ l.label }} &middot; {{ l.count }}</span>
+    <span class="hp-map-note">Ukuran titik menurut luas HPL</span>
+  </div>
+</section>
+
 <div class="hp-main">
   <!-- Combo chart -->
   <section class="hp-card hp-chart">
