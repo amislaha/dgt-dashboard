@@ -123,6 +123,16 @@
   &:hover { border-color: rgba(255, 255, 255, 0.5); color: #fff; }
 }
 
+// Command Center is always dark (wall display): a translucent button that sits in the header's
+// reserved left padding.
+.rail-fab.on-cc:not(.shifted) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+
+  &:hover { border-color: rgba(255, 255, 255, 0.5); color: #fff; }
+}
+
 // Once the rail is expanded on desktop, nudge the fab clear of the rail's
 // own header instead of sitting on top of it.
 .rail-fab.shifted {

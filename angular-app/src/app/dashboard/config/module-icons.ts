@@ -6,6 +6,8 @@
  * one piece of it not yet carried over to the dashboard's own rail.
  */
 export const MODULE_ICON_PATHS: { [id: string]: string } = {
+  // wall display with a tile grid: Command Center
+  'command-center': '<rect x="2.5" y="3.5" width="19" height="13" rx="1.5"/><path d="M8 20.5h8M12 16.5v4"/><path d="M6 7h5v5H6zM14 7h4M14 10h4M14 13h4"/>',
   profil: '<path d="M12 2 L21 7 L12 12 L3 7 Z"/><path d="M3 12 L12 17 L21 12"/><path d="M3 17 L12 22 L21 17"/>',
   // land parcel with a certificate seal: HPL / sertifikasi lahan
   hpl: '<path d="M3 7l6-3 6 3 6-3v9"/><path d="M3 7v13l6-3 3 1.5"/><path d="M9 4v13"/><circle cx="17.5" cy="16.5" r="3"/><path d="M16 19.2V22l1.5-.8 1.5.8v-2.8"/>',

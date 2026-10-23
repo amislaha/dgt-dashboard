@@ -23,15 +23,16 @@
   <button
     type="button"
     class="rail-fab"
-    [class.hidden-until-hover]="!isNarrow && activeId !== 'geospasial'"
+    [class.hidden-until-hover]="!isNarrow && activeId !== 'geospasial' && activeId !== 'command-center'"
     [class.shifted]="!isNarrow && !railCollapsed"
     [class.on-geo]="activeId === 'geospasial'"
+    [class.on-cc]="activeId === 'command-center'"
     aria-label="Buka/tutup menu modul"
     (click)="toggleRail()">
     &#9776;
   </button>
 
-  <dgt-theme-toggle *ngIf="activeId !== 'geospasial'" [fixed]="true"></dgt-theme-toggle>
+  <dgt-theme-toggle *ngIf="activeId !== 'geospasial' && activeId !== 'command-center'" [fixed]="true"></dgt-theme-toggle>
 
   <main class="main flex-grow-1">
     <router-outlet></router-outlet>

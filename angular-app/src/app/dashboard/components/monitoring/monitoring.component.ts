@@ -1,12 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DashboardDataService, Kawasan, SCurve, seededRandom } from '../../services/dashboard-data.service';
-
-/** Total national budget envelope (Rp miliar) — not tracked as its own field anywhere in the data
- *  layer, so this is one fixed illustrative figure ("Pagu DIPA 2026"). Each kawasan's own pagu below
- *  is a seeded share of it (summing back to exactly this), and its realisasi is that pagu times the
- *  kawasan's existing `anggaranPct` — so the KPI tiles, the Kurva S end-point and the per-kawasan
- *  list all tie back to the same numbers instead of being separately hand-picked. */
-const PAGU_TOTAL_MILIAR = 310;
+import { DashboardDataService, Kawasan, PAGU_TOTAL_MILIAR, SCurve, anggaranPerKawasan } from '../../services/dashboard-data.service';
 
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 const BULAN_PANJANG = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -75,16 +68,13 @@ export class MonitoringComponent implements OnInit {
   }
 
   private buildRows(kawasan: Kawasan[]): void {
-    const weights = kawasan.map(k => 0.5 + seededRandom('pagu-' + k.id + '-' + k.nama)());
-    const wSum = weights.reduce((s, w) => s + w, 0);
-    this.rows = kawasan
-      .map((k, i) => {
-        const pagu = (PAGU_TOTAL_MILIAR * weights[i]) / wSum;
+    this.rows = anggaranPerKawasan(kawasan)
+      .map(({ kawasan: k, pagu, realisasi }) => {
         return {
           nama: k.nama,
           provinsi: k.provinsi,
           pagu,
-          realisasi: (pagu * k.anggaranPct) / 100,
+          realisasi,
           pct: k.anggaranPct,
           band: (k.anggaranPct >= 60 ? 'good' : k.anggaranPct >= 25 ? 'mid' : 'low') as Band
         };

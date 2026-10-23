@@ -12,6 +12,7 @@ import { AnalitikComponent } from './components/analitik/analitik.component';
 import { IntelijenComponent } from './components/intelijen/intelijen.component';
 import { SibarduktransComponent } from './components/sibarduktrans/sibarduktrans.component';
 import { HplComponent } from './components/hpl/hpl.component';
+import { CommandCenterComponent } from './components/command-center/command-center.component';
 
 /**
  * Geospasial is the default/index child route, matching `state.tab`
@@ -24,6 +25,7 @@ export const routes: Routes = [
     component: DashboardShellComponent,
     children: [
       { path: '', redirectTo: 'geospasial', pathMatch: 'full' },
+      { path: 'command-center', component: CommandCenterComponent, data: { navId: 'command-center' } },
       { path: 'geospasial', component: GeospasialComponent, data: { navId: 'geospasial' } },
       { path: 'profil', component: ProfilComponent, data: { navId: 'profil' } },
       { path: 'hpl', component: HplComponent, data: { navId: 'hpl' } },

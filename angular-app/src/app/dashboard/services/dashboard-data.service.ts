@@ -737,6 +737,29 @@ export function profilDetailData(k: Kawasan): ProfilDetail {
   return override ? { ...detail, ...override } : detail;
 }
 
+/* ---------- Monitoring Program & Anggaran: per-kawasan pagu / realisasi ----------
+   Total national budget envelope (Rp miliar) — not tracked as its own field anywhere in the data
+   layer, so this is one fixed illustrative figure ("Pagu DIPA 2026"). Each kawasan's own pagu is a
+   seeded share of it (summing back to exactly this), and its realisasi is that pagu times the
+   kawasan's existing `anggaranPct`. Shared by Monitoring and the Command Center so both show the
+   same totals. */
+export const PAGU_TOTAL_MILIAR = 310;
+
+export interface AnggaranKawasan {
+  kawasan: Kawasan;
+  pagu: number;
+  realisasi: number;
+}
+
+export function anggaranPerKawasan(kawasan: Kawasan[]): AnggaranKawasan[] {
+  const weights = kawasan.map(k => 0.5 + seededRandom('pagu-' + k.id + '-' + k.nama)());
+  const wSum = weights.reduce((s, w) => s + w, 0);
+  return kawasan.map((k, i) => {
+    const pagu = (PAGU_TOTAL_MILIAR * weights[i]) / wSum;
+    return { kawasan: k, pagu, realisasi: (pagu * k.anggaranPct) / 100 };
+  });
+}
+
 /* ---------- Ekonomi & Investasi Kawasan: national wilayah grouping ----------
    "Wilayah Indonesia Bagian Barat/Tengah/Timur" is a standard 3-way regional classification
    (Sumatra+Jawa+Kalimantan Barat / rest of Kalimantan+Sulawesi+Bali-Nusra / Maluku+Papua) — looked

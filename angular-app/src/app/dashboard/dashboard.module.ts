@@ -19,6 +19,7 @@ import { IntelijenComponent } from './components/intelijen/intelijen.component';
 import { SibarduktransComponent } from './components/sibarduktrans/sibarduktrans.component';
 import { SibColumnChartComponent } from './components/sibarduktrans/sib-column-chart.component';
 import { HplComponent } from './components/hpl/hpl.component';
+import { CommandCenterComponent } from './components/command-center/command-center.component';
 
 /**
  * DGT Dashboard feature module — Angular port of dashboard/index.html (see
@@ -43,7 +44,8 @@ import { HplComponent } from './components/hpl/hpl.component';
     IntelijenComponent,
     SibarduktransComponent,
     SibColumnChartComponent,
-    HplComponent
+    HplComponent,
+    CommandCenterComponent
   ],
   imports: [SharedModule, ShellModule, DashboardRoutingModule]
 })

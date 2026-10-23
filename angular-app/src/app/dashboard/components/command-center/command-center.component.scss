@@ -1,0 +1,552 @@
+@import 'tokens';
+
+// Command Center is a dark navy "situation room" screen in both app themes, after the reference
+// screenshot (LED wall / 4K display). Colours come from the design-system ramps in _tokens.scss.
+// All sizes are in `em` off `.cc`'s fluid font-size, so the whole page scales with the viewport
+// width: ~15px at 1920px, ~30px at 3840px.
+:host {
+  display: block;
+  margin: calc(-1 * var(--space-6, 1.5rem)) calc(-1 * var(--space-6, 1.5rem)) -3rem;
+
+  --cc-bg: #{$biru-900};
+  --cc-panel: #{rgba($biru-700, .72)};
+  --cc-panel-2: #{rgba($biru-600, .55)};
+  --cc-line: #{rgba($teal-300, .22)};
+  --cc-text: #ffffff;
+  --cc-dim: #{$biru-100};
+  --cc-faint: #{$biru-300};
+  --cc-teal: #{$teal-500};
+  --cc-green: #{$hijau-300};
+  --cc-gold: #{$emas-400};
+  --cc-amber: #{$color-warning};
+  --cc-red: #{$merah-400};
+  --cc-violet: #a78bfa;
+  --cc-sky: #{$chart-2};
+
+  // Re-point the tokens the shared <dgt-gauge-chart> draws with.
+  --text: var(--cc-text);
+  --text-faint: var(--cc-faint);
+  --muted: #{rgba(#fff, .12)};
+}
+
+.cc {
+  min-height: 100vh;
+  padding: 1.1em 1.4em 1em;
+  font-family: var(--font-sans);
+  font-size: clamp(13px, .78vw, 30px);
+  color: var(--cc-text);
+  background-color: var(--cc-bg);
+  background-position: top center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+// ---------- Header ----------
+.cc-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.5em;
+  padding: .4em 0 1em 2.6em; // left room for the rail ☰ button
+  border-bottom: 1px solid var(--cc-line);
+  margin-bottom: 1em;
+}
+.cc-brand {
+  display: flex;
+  align-items: center;
+  gap: .7em;
+
+  img { width: 3.4em; height: 3.4em; object-fit: contain; }
+  div { display: flex; flex-direction: column; line-height: 1.1; }
+}
+.cc-brand-sub { font-size: .78em; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--cc-dim); }
+.cc-brand-name { font-size: 1.7em; font-weight: 800; letter-spacing: .06em; }
+.cc-title {
+  margin: 0;
+  font-size: 2.2em;
+  font-weight: 800;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.15;
+
+  span { display: block; font-size: .5em; font-weight: 600; letter-spacing: .14em; color: var(--cc-teal); }
+}
+.cc-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .2em;
+  font-size: 1em;
+  color: var(--cc-dim);
+
+  b {
+    display: flex;
+    align-items: center;
+    gap: .4em;
+    font-family: var(--font-mono);
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--cc-text);
+    font-variant-numeric: tabular-nums;
+  }
+  svg { width: 1em; height: 1em; color: var(--cc-teal); }
+}
+
+// ---------- Cards ----------
+.cc-row {
+  display: grid;
+  gap: 1em;
+  margin-bottom: 1em;
+}
+.cc-row-top { grid-template-columns: 1.45fr 1fr 1fr 1.15fr; }
+.cc-row-bottom { grid-template-columns: 1fr 1fr 1.5fr; }
+
+.cc-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1em 1.1em;
+  background: var(--cc-panel);
+  border: 1px solid var(--cc-line);
+  border-radius: $radius-xl;
+  box-shadow: inset 0 1px 0 rgba(#fff, .06), 0 .8em 2em -1.2em rgba(#000, .6);
+  backdrop-filter: blur(6px);
+}
+.cc-card-head {
+  margin-bottom: .8em;
+
+  h2 { margin: 0; font-size: 1.25em; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--cc-text); }
+  p { margin: .2em 0 0; font-size: .95em; color: var(--cc-dim); }
+}
+.cc-head-icon {
+  display: flex;
+  align-items: center;
+  gap: .7em;
+
+  > svg { flex: 0 0 auto; width: 2.2em; height: 2.2em; color: var(--cc-gold); }
+}
+.cc-sub {
+  margin: .9em 0 .5em;
+  font-size: .9em;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--cc-dim);
+}
+
+.cc-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4em;
+  margin-top: auto;
+  padding: .55em 1em;
+  font-size: .95em;
+  font-weight: 700;
+  color: var(--cc-text);
+  background: var(--cc-panel-2);
+  border: 1px solid var(--cc-line);
+  border-radius: $radius-md;
+  text-decoration: none;
+  transition: background $duration-fast $ease-standard, border-color $duration-fast $ease-standard;
+
+  &:hover, &:focus-visible { color: var(--cc-text); background: rgba($teal-500, .3); border-color: var(--cc-teal); text-decoration: none; }
+  &:focus-visible { outline: 2px solid var(--cc-teal); outline-offset: 2px; }
+}
+.cc-card > .cc-link { align-self: stretch; margin-top: auto; }
+
+.cc-delta {
+  font-size: .9em;
+  font-weight: 700;
+  color: var(--cc-green);
+
+  &.neg { color: var(--cc-red); }
+}
+
+// ---------- Map ----------
+.cc-map-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1em;
+}
+.cc-map {
+  position: relative;
+  border-radius: $radius-md;
+  overflow: hidden;
+  border: 1px solid var(--cc-line);
+
+  img { display: block; width: 100%; height: auto; filter: saturate(.7) brightness(.8); }
+}
+.cc-dot {
+  position: absolute;
+  width: .75em;
+  height: .75em;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 .6em rgba(#000, .5);
+}
+.cc-legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .6em;
+
+  li { display: grid; grid-template-columns: 1em auto 2em; align-items: center; gap: .5em; font-size: 1em; }
+  i { width: 1em; height: 1em; border-radius: 50%; }
+  b { font-size: 1.35em; text-align: right; }
+}
+.cc-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .6em;
+  margin: .9em 0;
+
+  div { display: flex; flex-direction: column; padding: .5em .7em; background: var(--cc-panel-2); border-radius: $radius-md; }
+  b { font-size: 1.8em; font-weight: 800; line-height: 1.1; }
+  span { font-size: .85em; color: var(--cc-dim); }
+}
+
+// ---------- Indeks ----------
+.cc-gauges {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .8em;
+}
+.cc-gauge {
+  text-align: center;
+
+  ::ng-deep svg { height: auto; }
+  p { margin: .3em 0 0; font-size: .9em; color: var(--cc-dim); line-height: 1.3; }
+}
+.cc-tahap {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .5em;
+  margin-bottom: .9em;
+
+  div { display: flex; flex-direction: column; align-items: center; padding: .6em .3em; border-radius: $radius-md; }
+  b { font-size: 2em; font-weight: 800; line-height: 1; }
+  span { margin-top: .25em; font-size: .85em; font-weight: 600; }
+  .t-Tumbuh { color: $biru-900; }
+}
+
+// ---------- Progress rings (legalitas + 5T targets) ----------
+.track { fill: none; stroke: rgba(#fff, .12); stroke-width: 5; }
+.fill {
+  fill: none;
+  stroke: var(--cc-teal);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 20px 20px;
+}
+
+// ---------- Legalitas ----------
+.cc-legal-ring {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-bottom: 1em;
+
+  svg { flex: 0 0 auto; width: 6.5em; height: 6.5em; }
+  .fill { stroke: var(--cc-green); }
+  b { display: block; font-size: 2.6em; font-weight: 800; line-height: 1; }
+  span { font-size: .95em; color: var(--cc-dim); }
+}
+.cc-legal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .6em;
+  margin-bottom: .9em;
+
+  div { padding: .55em .7em; background: var(--cc-panel-2); border-radius: $radius-md; }
+  b { display: block; font-size: 1.6em; font-weight: 800; line-height: 1.1; }
+  span { font-size: .85em; color: var(--cc-dim); }
+}
+
+// ---------- Tata kelola ----------
+.cc-gov {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .6em;
+}
+.cc-gov-tile {
+  display: flex;
+  align-items: center;
+  gap: .6em;
+  padding: .6em .7em;
+  background: #fff;
+  color: $biru-800;
+  border-radius: $radius-md;
+
+  b { display: block; font-size: 1.7em; font-weight: 800; line-height: 1.1; color: $biru-700; }
+  .cc-delta { font-size: .78em; color: $hijau-600; }
+  .cc-delta.neg { color: $merah-500; }
+}
+.cc-gov-ico {
+  flex: 0 0 auto;
+  width: 2.3em;
+  height: 2.3em;
+  color: $teal-700;
+
+  ::ng-deep svg { width: 100%; height: 100%; }
+}
+.cc-gov-label { display: block; font-size: .8em; font-weight: 700; color: $abu-600; line-height: 1.2; }
+.cc-budget {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5em;
+
+  div { display: flex; flex-direction: column; }
+  span { font-size: .85em; color: var(--cc-dim); }
+  b { font-size: 1.35em; font-weight: 800; }
+}
+.cc-bar {
+  height: .7em;
+  margin: .6em 0 .9em;
+  background: rgba(#fff, .12);
+  border-radius: $radius-full;
+  overflow: hidden;
+
+  i { display: block; height: 100%; background: linear-gradient(90deg, var(--cc-teal), var(--cc-green)); border-radius: inherit; }
+}
+
+// ---------- 5T programs ----------
+.cc-programs { margin-bottom: 1em; }
+.cc-section-title {
+  margin: 0 0 .6em;
+  font-size: 1.45em;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.cc-program-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1em;
+}
+.cc-program {
+  $accents: (tuntas: $teal-500, lokal: $hijau-400, patriot: #8b5cf6, karya-nusa: $color-warning, gotong-royong: $chart-3);
+
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--cc-panel);
+  border: 1px solid var(--cc-line);
+  border-top: .35em solid var(--cc-teal);
+  border-radius: $radius-xl;
+  overflow: hidden;
+
+  @each $id, $c in $accents {
+    &.prog-#{$id} {
+      border-top-color: $c;
+
+      header { background: linear-gradient(90deg, rgba($c, .55), rgba($c, .12)); }
+      .cc-program-ico { background: $c; }
+      li::before { background: $c; }
+      .fill { stroke: $c; }
+    }
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: .7em;
+    padding: .7em .9em;
+
+    h3 { margin: 0; font-size: 1.3em; font-weight: 800; text-transform: uppercase; letter-spacing: .02em; }
+    p { margin: 0; font-size: .9em; color: var(--cc-dim); }
+  }
+  > img { display: block; width: 100%; aspect-ratio: 16 / 7; height: auto; object-fit: cover; }
+  ul { margin: 0; padding: .8em .9em .2em; list-style: none; }
+  li {
+    position: relative;
+    padding-left: 1.2em;
+    margin-bottom: .4em;
+    font-size: 1em;
+    line-height: 1.35;
+
+    &::before { content: ''; position: absolute; left: 0; top: .45em; width: .55em; height: .55em; border-radius: 50%; }
+  }
+  .cc-link { margin: auto .9em .9em; }
+}
+.cc-program-ico {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5em;
+  height: 2.5em;
+  padding: .45em;
+  border-radius: 50%;
+  color: #fff;
+
+  ::ng-deep svg { width: 100%; height: 100%; }
+}
+.cc-target {
+  display: grid;
+  grid-template-columns: 3.4em auto;
+  grid-template-rows: auto auto;
+  column-gap: .7em;
+  align-items: center;
+  margin: .4em .9em .8em;
+  padding: .55em .7em;
+  background: var(--cc-panel-2);
+  border-radius: $radius-md;
+
+  svg { grid-row: 1 / 3; width: 3.4em; height: 3.4em; }
+  b { font-size: 1.5em; font-weight: 800; line-height: 1; }
+  span {
+    font-size: .8em;
+    color: var(--cc-dim);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// ---------- EWS / rekomendasi lists ----------
+.cc-list {
+  margin: 0 0 .9em;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .5em;
+
+  li { display: flex; align-items: flex-start; gap: .7em; padding: .5em .6em; background: var(--cc-panel-2); border-radius: $radius-md; }
+  li > div { min-width: 0; display: flex; flex-direction: column; }
+  b { font-size: 1em; font-weight: 600; line-height: 1.35; }
+  span { font-size: .85em; color: var(--cc-faint); }
+}
+.cc-num {
+  flex: 0 0 auto;
+  min-width: 2em;
+  padding: .2em .5em;
+  font-size: .8em !important;
+  font-weight: 800;
+  text-align: center;
+  color: #fff !important;
+  background: var(--cc-teal);
+  border-radius: $radius-full;
+}
+.cc-ews .cc-head-icon > svg { color: var(--cc-red); }
+.sev-high .cc-num { background: $merah-500; }
+.sev-med .cc-num { background: $color-warning; color: $biru-900 !important; }
+.sev-low .cc-num { background: $emas-500; color: $biru-900 !important; }
+.cc-reko .cc-num { background: rgba($teal-500, .8); }
+.cc-empty { color: var(--cc-dim); }
+
+// ---------- Prioritas intervensi ----------
+.cc-prio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .7em;
+  margin-bottom: .9em;
+}
+.cc-prio-item {
+  $ranks: (1: $merah-400, 2: $color-warning, 3: $emas-400);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: .8em .8em .7em;
+  color: var(--cc-text);
+  background: var(--cc-panel-2);
+  border: 2px solid var(--cc-line);
+  border-radius: $radius-lg;
+  text-decoration: none;
+  transition: transform $duration-fast $ease-standard;
+
+  @each $n, $c in $ranks {
+    &.rank-#{$n} {
+      border-color: $c;
+
+      .cc-prio-rank { background: $c; }
+    }
+  }
+
+  &:hover, &:focus-visible { color: var(--cc-text); text-decoration: none; transform: translateY(-2px); }
+  &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+  h3 { margin: .3em 0 0; font-size: 1.2em; font-weight: 800; line-height: 1.2; }
+  p { margin: .3em 0 0; font-size: .9em; color: var(--cc-dim); }
+  dl { display: flex; gap: 1em; margin: .5em 0 0; }
+  dt { font-size: .75em; font-weight: 600; color: var(--cc-faint); }
+  dd { margin: 0; font-size: 1.4em; font-weight: 800; }
+  .cc-link { margin-top: .7em; padding: .35em .6em; font-size: .85em; }
+}
+.cc-prio-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9em;
+  height: 1.9em;
+  font-weight: 800;
+  color: $biru-900;
+  border-radius: 50%;
+}
+.cc-prio-prov { font-size: .85em; color: var(--cc-faint); }
+.cc-prio-act { color: var(--cc-text) !important; font-weight: 700; }
+
+// ---------- Footer quick nav ----------
+.cc-foot {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: .5em;
+  padding: .7em;
+  background: rgba($biru-950, .7);
+  border: 1px solid var(--cc-line);
+  border-radius: $radius-xl;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .55em;
+    padding: .55em .4em;
+    font-size: .95em;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--cc-dim);
+    border-radius: $radius-md;
+    text-decoration: none;
+
+    &:hover, &:focus-visible { color: #fff; background: rgba($teal-500, .25); text-decoration: none; }
+  }
+  span { display: inline-flex; width: 1.7em; height: 1.7em; color: var(--cc-teal); }
+  ::ng-deep svg { width: 100%; height: 100%; }
+}
+
+// ---------- Narrower screens ----------
+@media (max-width: 1400px) {
+  .cc-row-top { grid-template-columns: repeat(2, 1fr); }
+  .cc-program-grid { grid-template-columns: repeat(3, 1fr); }
+  .cc-row-bottom { grid-template-columns: 1fr 1fr; }
+  .cc-prio-card { grid-column: 1 / -1; }
+  .cc-foot { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 760px) {
+  .cc { padding: 1em 16px; }
+  .cc-head { grid-template-columns: 1fr; padding-left: 2.8em; text-align: left; }
+  .cc-title { text-align: left; font-size: 1.6em; }
+  .cc-clock { align-items: flex-start; }
+  .cc-row-top, .cc-row-bottom, .cc-program-grid, .cc-prio { grid-template-columns: 1fr; }
+  .cc-stats { grid-template-columns: repeat(2, 1fr); }
+  .cc-map-body { grid-template-columns: 1fr; }
+  .cc-legend { flex-direction: row; flex-wrap: wrap; }
+  .cc-foot { grid-template-columns: repeat(2, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cc-prio-item, .cc-link { transition: none; }
+}
