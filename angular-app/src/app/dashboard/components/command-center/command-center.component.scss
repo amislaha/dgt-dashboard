@@ -345,31 +345,42 @@
 // ---------- Tata kelola ----------
 .cc-gov {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: .6em;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5em;
 }
 .cc-gov-tile {
   display: flex;
-  align-items: center;
-  gap: .6em;
-  padding: .6em .7em;
+  flex-direction: column;
+  min-width: 0;
+  padding: .5em .6em;
   background: #fff;
   color: $biru-800;
   border-radius: $radius-md;
 
-  b { display: block; font-size: 1.7em; font-weight: 800; line-height: 1.1; color: $biru-700; }
-  .cc-delta { font-size: .78em; color: $hijau-600; }
-  .cc-delta.neg { color: $merah-500; }
+  b { display: block; margin-top: .15em; font-size: 1.6em; font-weight: 800; line-height: 1.1; color: $biru-700; }
+
+  // No source data: same tile, muted, with a dash instead of a number.
+  &.empty {
+    background: rgba(#fff, .06);
+    border: 1px dashed rgba(#fff, .25);
+    color: var(--cc-dim);
+
+    b { color: var(--cc-faint); }
+    .cc-gov-ico { color: var(--cc-faint); }
+    .cc-gov-label { color: var(--cc-dim); }
+  }
 }
+.cc-gov-top { display: flex; align-items: center; gap: .4em; min-width: 0; }
 .cc-gov-ico {
   flex: 0 0 auto;
-  width: 2.3em;
-  height: 2.3em;
+  width: 1.6em;
+  height: 1.6em;
   color: $teal-700;
 
   ::ng-deep svg { width: 100%; height: 100%; }
 }
-.cc-gov-label { display: block; font-size: .8em; font-weight: 700; color: $abu-600; line-height: 1.2; }
+.cc-gov-label { min-width: 0; font-size: .8em; font-weight: 700; color: $abu-600; line-height: 1.2; }
+.cc-gov-note { font-size: .72em; color: var(--cc-faint); }
 .cc-budget {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

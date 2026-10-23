@@ -33,11 +33,11 @@ interface TahapStat {
   color: string;
 }
 
+/** Governance scores (SAKIP, SPIP, Opini BPK, SPBE, IKPA...) have no source in the data layer, so
+ *  `value` stays null and the tile renders empty rather than borrowing a different figure. */
 interface GovTile {
   label: string;
-  sub: string;
-  value: number;
-  trend: number;
+  value: string | null;
   icon: string;
 }
 
@@ -49,7 +49,8 @@ interface ProgramCard {
   icon: string;
   route: string;
   points: string[];
-  target: { label: string; value: number };
+  /** null when there's no indicator for this program: the ring renders empty. */
+  target: { label: string; value: number | null };
 }
 
 interface Rekomendasi {
@@ -94,7 +95,10 @@ const ICON = {
   building: '<path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/>',
   shield: '<path d="M12 3 4 6v6c0 4.5 3.2 7.6 8 9 4.8-1.4 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/>',
   archive: '<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v11h14V9"/><path d="M10 13h4"/>',
-  check: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>'
+  check: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+  star: '<path d="m12 3 2.6 5.5 6 .8-4.4 4.2 1.1 6L12 16.6 6.7 19.5l1.1-6L3.4 9.3l6-.8Z"/>',
+  monitor: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/><path d="M7 12l3-3 2 2 4-4"/>',
+  coin: '<circle cx="12" cy="12" r="9"/><path d="M9 8.5h4a2 2 0 0 1 0 4H9V8.5ZM9 12.5V16M12 12.5l2.5 3.5"/>'
 };
 
 function lineIcon(paths: string): string {
@@ -190,10 +194,12 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
     this.shmPct = Math.round((kpi.shmTotal / kpi.hplTotal) * 100);
 
     this.govTiles = [
-      { label: 'Reformasi Birokrasi', sub: 'IKU 14', value: ikuNo(14).nilai, trend: ikuNo(14).trend, icon: lineIcon(ICON.building) },
-      { label: 'SAKIP', sub: 'IKU 17', value: ikuNo(17).nilai, trend: ikuNo(17).trend, icon: lineIcon(ICON.check) },
-      { label: 'Pengendalian Intern', sub: 'IKU 16', value: ikuNo(16).nilai, trend: ikuNo(16).trend, icon: lineIcon(ICON.shield) },
-      { label: 'Pengawasan Kearsipan', sub: 'IKU 15', value: ikuNo(15).nilai, trend: ikuNo(15).trend, icon: lineIcon(ICON.archive) }
+      { label: 'Reformasi Birokrasi', value: null, icon: lineIcon(ICON.building) },
+      { label: 'SAKIP', value: null, icon: lineIcon(ICON.check) },
+      { label: 'SPIP', value: null, icon: lineIcon(ICON.shield) },
+      { label: 'Opini BPK RI', value: null, icon: lineIcon(ICON.star) },
+      { label: 'Indeks SPBE', value: null, icon: lineIcon(ICON.monitor) },
+      { label: 'IKPA', value: null, icon: lineIcon(ICON.coin) }
     ];
 
     const anggaran = anggaranPerKawasan(kawasan);
@@ -258,8 +264,11 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
   }
 
   /** Stroke-dasharray for a full-circle progress ring of radius 16 (circumference ≈ 100.53). */
-  ring(pct: number): string {
+  ring(pct: number | null): string {
     const c = 2 * Math.PI * 16;
+    if (pct === null) {
+      return `0 ${c.toFixed(2)}`;
+    }
     const v = (Math.max(0, Math.min(100, pct)) / 100) * c;
     return `${v.toFixed(2)} ${c.toFixed(2)}`;
   }
@@ -313,8 +322,6 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
     const komoditas = this.data.getKomoditas().slice().sort((a, b) => b.nilai - a.nilai).slice(0, 3);
     const kl = this.data.getKlCollab();
     const klKawasan = kl.reduce((s, c) => s + c.kawasanCount, 0);
-    const infra = this.data.getInfraKategori();
-    const infraAvg = Math.round(infra.reduce((s, c) => s + c.capaian, 0) / infra.length);
 
     this.programs = [
       {
@@ -381,7 +388,7 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
           `${klKawasan} keterlibatan di kawasan`,
           `${kl.filter(c => c.status === 'Selesai').length} program selesai · ${kl.filter(c => c.status === 'Berjalan').length} berjalan`
         ],
-        target: { label: 'Rata-rata capaian infrastruktur dasar kawasan', value: infraAvg }
+        target: { label: 'Belum ada indikator target', value: null }
       }
     ];
   }
