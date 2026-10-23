@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
   DashboardDataService,
@@ -19,6 +19,8 @@ import { moduleIconSvg } from '../../config/module-icons';
 interface MapDot {
   id: string;
   nama: string;
+  tahap: Tahap;
+  risiko: string;
   x: number;
   y: number;
   color: string;
@@ -60,6 +62,11 @@ interface Prioritas {
   kawasan: Kawasan;
   isu: string;
   tindakan: string;
+}
+
+interface TickerItem {
+  text: string;
+  tone: 'high' | 'med' | 'low' | 'info';
 }
 
 interface QuickLink {
@@ -141,6 +148,8 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
   rekomendasi: Rekomendasi[] = [];
   prioritas: Prioritas[] = [];
   quickLinks: QuickLink[] = [];
+  ticker: TickerItem[] = [];
+  isFullscreen = false;
 
   private animoKk = 0;
   private clock?: number;
@@ -167,7 +176,7 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
 
     this.mapDots = kawasan.map(k => {
       const p = basemapPct(k.lon, k.lat);
-      return { id: k.id, nama: k.nama, x: p.xPct, y: p.yPct, color: STAGE_COLOR_HEX[k.tahap] };
+      return { id: k.id, nama: k.nama, tahap: k.tahap, risiko: k.risiko, x: p.xPct, y: p.yPct, color: STAGE_COLOR_HEX[k.tahap] };
     });
     this.tahapStats = STAGES.slice()
       .reverse()
@@ -196,7 +205,10 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
     this.buildQuickLinks();
 
     this.subs.push(
-      this.ews.alerts$.subscribe(list => (this.alerts = list.filter(a => !a.ack))),
+      this.ews.alerts$.subscribe(list => {
+        this.alerts = list.filter(a => !a.ack);
+        this.buildTicker();
+      }),
       this.hplOverview.rows().subscribe(rows => (this.hplAgg = this.hplOverview.agg(rows))),
       // The program cards wait on this one async figure (animo KK), so they're built here.
       this.sib.getJumlahAnimo('KK').subscribe(n => {
@@ -212,6 +224,20 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
     this.subs.forEach(s => s.unsubscribe());
     if (this.clock) {
       window.clearInterval(this.clock);
+    }
+  }
+
+  @HostListener('document:fullscreenchange')
+  onFullscreenChange(): void {
+    this.isFullscreen = !!document.fullscreenElement;
+  }
+
+  /** For the wall display: hides the browser chrome. Esc also exits (handled by the browser). */
+  toggleFullscreen(): void {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
     }
   }
 
@@ -271,11 +297,11 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
     const naik = kawasan.filter(k => k.tahap === 'Berkembang' && k.indeks5t >= 70).length;
     const komoditas = this.data.getKomoditas().slice().sort((a, b) => b.nilai - a.nilai)[0];
     this.rekomendasi = [
-      { text: 'kawasan perlu percepatan legalisasi lahan (SK HPL / inventarisasi ulang)', count: legal },
+      { text: 'kawasan perlu percepatan legalisasi lahan', count: legal },
       { text: 'kawasan dengan serapan anggaran di bawah 25%', count: serapan },
       { text: 'kawasan berisiko tinggi perlu mitigasi sosial & lahan', count: risiko },
       { text: 'kawasan Berkembang siap didorong menuju Mandiri', count: naik },
-      { text: `Prioritaskan hilirisasi ${komoditas.nama}, komoditas unggulan dengan indeks tertinggi (${komoditas.nilai})`, count: null }
+      { text: `Prioritaskan hilirisasi ${komoditas.nama}, komoditas dengan indeks tertinggi`, count: null }
     ];
   }
 
@@ -358,6 +384,19 @@ export class CommandCenterComponent implements OnInit, OnDestroy {
         target: { label: 'Rata-rata capaian infrastruktur dasar kawasan', value: infraAvg }
       }
     ];
+  }
+
+  private buildTicker(): void {
+    const items: TickerItem[] = this.alerts.map(a => ({ text: `${a.title}: ${a.detail}`, tone: a.sev }));
+    if (!items.length) {
+      items.push({ text: 'Tidak ada peringatan dini aktif', tone: 'low' });
+    }
+    items.push(
+      { text: `Penyerapan anggaran ${this.penyerapanPct}% dari pagu Rp ${this.fmt(this.paguMiliar)} M`, tone: 'info' },
+      { text: `${this.shmPct}% lahan HPL sudah bersertifikat SHM`, tone: 'info' },
+      { text: `Indeks Transformasi 45 kawasan: ${this.ikuUtama.nilai} (${this.ikuUtama.trend >= 0 ? '+' : ''}${this.ikuUtama.trend})`, tone: 'info' }
+    );
+    this.ticker = items;
   }
 
   private buildQuickLinks(): void {

@@ -17,6 +17,10 @@
         {{ jam }} WIB
       </b>
     </div>
+    <button type="button" class="cc-fs" (click)="toggleFullscreen()" [attr.aria-label]="isFullscreen ? 'Keluar dari layar penuh' : 'Tampilkan layar penuh'" [title]="isFullscreen ? 'Keluar dari layar penuh' : 'Layar penuh'">
+      <svg *ngIf="!isFullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+      <svg *ngIf="isFullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /></svg>
+    </button>
   </header>
 
   <!-- Row 1 -->
@@ -30,13 +34,18 @@
       <div class="cc-map-body">
         <div class="cc-map">
           <img src="assets/basemap-indonesia.jpg" alt="Peta sebaran kawasan transmigrasi di Indonesia" />
-          <span
+          <a
             *ngFor="let d of mapDots; trackBy: trackById"
             class="cc-dot"
+            [class.pulse]="d.risiko === 'high'"
             [style.left.%]="d.x"
             [style.top.%]="d.y"
             [style.background]="d.color"
-            [title]="d.nama"></span>
+            [title]="d.nama + ' — ' + d.tahap"
+            [attr.aria-label]="'Profil kawasan ' + d.nama"
+            routerLink="/dashboard/profil"
+            [queryParams]="{ kawasan: d.id }"></a>
+          <span class="cc-map-note"><i></i>Berdenyut: risiko tinggi</span>
         </div>
         <ul class="cc-legend">
           <li *ngFor="let t of tahapStats">
@@ -45,7 +54,7 @@
         </ul>
       </div>
       <div class="cc-stats">
-        <div><b>{{ totalKawasan }}</b><span>Kawasan transmigrasi</span></div>
+        <div><b>{{ totalKawasan }}</b><span>Total kawasan</span></div>
         <div><b>{{ totalKpb }}</b><span>Kawasan KPB</span></div>
         <div><b>{{ totalSkp }}</b><span>Kawasan SKP</span></div>
         <div><b>{{ totalProvinsi }}</b><span>Provinsi</span></div>
@@ -60,12 +69,18 @@
       </header>
       <div class="cc-gauges">
         <div class="cc-gauge">
-          <dgt-gauge-chart [value]="ikuUtama.nilai" color="#14a5c0" label="dari 100"></dgt-gauge-chart>
+          <div class="cc-gauge-svg">
+            <dgt-gauge-chart [value]="ikuUtama.nilai" color="#14a5c0"></dgt-gauge-chart>
+            <b>{{ ikuUtama.nilai }}</b>
+          </div>
           <span class="cc-delta" [class.neg]="ikuUtama.trend < 0">{{ ikuUtama.trend < 0 ? '▼' : '▲' }} {{ ikuUtama.trend | number: '1.1-1' }}</span>
           <p>45 kawasan prioritas nasional</p>
         </div>
         <div class="cc-gauge">
-          <dgt-gauge-chart [value]="ikuPrioritas.nilai" color="#cfa460" label="dari 100"></dgt-gauge-chart>
+          <div class="cc-gauge-svg">
+            <dgt-gauge-chart [value]="ikuPrioritas.nilai" color="#cfa460"></dgt-gauge-chart>
+            <b>{{ ikuPrioritas.nilai }}</b>
+          </div>
           <span class="cc-delta" [class.neg]="ikuPrioritas.trend < 0">{{ ikuPrioritas.trend < 0 ? '▼' : '▲' }} {{ ikuPrioritas.trend | number: '1.1-1' }}</span>
           <p>Kawasan prioritas kementerian</p>
         </div>
@@ -215,20 +230,33 @@
           [ngClass]="'rank-' + (i + 1)"
           routerLink="/dashboard/profil"
           [queryParams]="{ kawasan: p.kawasan.id }">
-          <span class="cc-prio-rank">{{ i + 1 }}</span>
-          <h3>{{ p.kawasan.nama }}</h3>
-          <span class="cc-prio-prov">{{ p.kawasan.provinsi }}</span>
+          <div class="cc-prio-top">
+            <span class="cc-prio-rank">{{ i + 1 }}</span>
+            <h3>{{ p.kawasan.nama }}</h3>
+            <span class="cc-prio-go" aria-hidden="true">&rarr;</span>
+          </div>
+          <span class="cc-prio-prov">{{ p.kawasan.provinsi }} &middot; {{ p.isu }}</span>
           <dl>
             <div><dt>Indeks 5T</dt><dd>{{ p.kawasan.indeks5t }}</dd></div>
             <div><dt>Anggaran</dt><dd>{{ p.kawasan.anggaranPct }}%</dd></div>
           </dl>
-          <p>{{ p.isu }}</p>
           <p class="cc-prio-act">{{ p.tindakan }}</p>
-          <span class="cc-link">Lihat profil <span aria-hidden="true">&rarr;</span></span>
         </a>
       </div>
       <a class="cc-link" routerLink="/dashboard/analitik">Lihat skoring prioritas <span aria-hidden="true">&rarr;</span></a>
     </section>
+  </div>
+
+  <!-- Running ticker: active alerts + headline figures. The list is rendered twice so the loop is seamless. -->
+  <div class="cc-ticker" role="marquee" aria-label="Informasi berjalan">
+    <span class="cc-ticker-tag">Live</span>
+    <div class="cc-ticker-track">
+      <div class="cc-ticker-run">
+        <ng-container *ngFor="let pass of [0, 1]">
+          <span *ngFor="let t of ticker" class="cc-ticker-item" [ngClass]="'tk-' + t.tone" [attr.aria-hidden]="pass === 1 ? 'true' : null">{{ t.text }}</span>
+        </ng-container>
+      </div>
+    </div>
   </div>
 
   <!-- Footer quick nav -->
